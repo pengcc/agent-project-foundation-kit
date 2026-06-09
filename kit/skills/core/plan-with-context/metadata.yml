@@ -1,0 +1,5 @@
+name: plan-with-context
+version: 0.1.0
+category: core
+required: true
+description: Creates bounded, context-aware implementation plans without executing changes.

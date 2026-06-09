@@ -62,7 +62,7 @@ Workflow:
 - Mode:
 ```
 
-The declaration should stay short.
+The declaration should stay short and must be truthful.
 
 ### Decision 5: v0.1 skills
 
@@ -255,6 +255,52 @@ This theme does not define:
 - publish-current-branch behavior
 - installer behavior
 - technology-specific official documentation lists
+
+These will be handled in later themes.
+
+## Theme 3: Plan With Context
+
+### Accepted decisions
+
+1. `plan-with-context` is a planning-only workflow.
+2. It must not modify production code, install dependencies, change configuration, run destructive commands, commit changes, push changes, or update project memory silently.
+3. Before planning, it must apply the `project-guideline` skill as the unified entry point for project memory.
+4. It must not redefine project memory reading rules separately from `project-guideline`.
+5. It should inspect relevant project docs, code, configuration, tests, package files, previous local plans, and handoffs as needed.
+6. If the plan involves technical judgment, it must use `docs-first-research`.
+7. Codex plan mode does not replace `plan-with-context`.
+8. Skill usage declarations must be truthful. The agent must not claim that a skill was used unless its required steps were actually performed.
+9. If required context was not read, the plan must be marked as an incomplete draft.
+10. Executable plans default to `dev_locals/plans/YYYY-MM-DD-topic.md`.
+11. Small conversational plans do not need to be saved.
+12. Multi-step, executable, cross-session, multi-file, architecture, dependency, configuration, deployment, testing, workflow, or user-requested plans must be saved.
+13. Saved plans must use fixed sections: Goal, Context Checked, Research Basis, Scope, Non-Goals, Assumptions and Open Questions, Recommendation, Implementation Steps, Validation Plan, Risks and Rollback, Project Memory Updates Needed, Execution Status.
+14. Context Checked and Research Basis must be truthful.
+15. When requirements are unclear, the agent must decide whether to use `grill-me` before planning.
+16. If an answer can be found by inspecting project docs, project guideline, existing code, configuration, tests, package files, or official documentation, the agent should inspect those sources before asking the user.
+17. The plan must include a recommendation.
+18. Default recommendation should prefer the smallest useful, verifiable, reversible option unless project guideline or user goals require otherwise.
+19. Plan creation does not grant execution approval.
+20. The default execution status is waiting for user approval.
+21. Add `kit/prompts/force-plan-with-context.md` as an explicit workflow trigger prompt for cases where Codex or another agent does not automatically use the installed skill.
+
+### Resulting files
+
+```txt
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/plan-with-context/metadata.yml
+kit/prompts/force-plan-with-context.md
+```
+
+### Boundary
+
+This theme does not define:
+
+- execute-plan behavior
+- code review behavior
+- publish-current-branch behavior
+- installer behavior
+- full prompt library design
 
 These will be handled in later themes.
 
