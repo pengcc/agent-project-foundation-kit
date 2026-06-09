@@ -1,5 +1,0 @@
-name: update-project-guideline
-version: 0.1.0
-category: core
-required: true
-description: Defines how agents update durable project memory with a required pre-update summary and impact check.

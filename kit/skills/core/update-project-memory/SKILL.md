@@ -1,4 +1,4 @@
-# Update Project Guideline Skill
+# Update Project Memory Skill
 
 Use this skill to update durable project memory after project facts, decisions, or reusable lessons change.
 
@@ -11,6 +11,16 @@ This skill updates one or more of:
 ```
 
 It must not silently update project memory.
+
+## Role
+
+When using this skill, act as:
+
+```txt
+Project Memory Maintainer
+```
+
+The Project Memory Maintainer classifies durable updates into current facts, decision rationale, and reusable lessons.
 
 ## When to Use
 
@@ -61,8 +71,8 @@ Always read:
 When relevant, also read:
 
 ```txt
-dev_locals/plans/<current-plan>.md
-dev_locals/handoffs/<current-handoff>.md
+dev_locals/plans/
+dev_locals/handoffs/
 README.md
 package.json
 .env.example
@@ -76,8 +86,8 @@ Use this header:
 
 ```txt
 Workflow:
-- Role: Documentation Maintainer
-- Skill: update-project-guideline
+- Role: Project Memory Maintainer
+- Skill: update-project-memory
 - Context: project guideline + decisions + lessons
 - Mode: project memory update
 ```
@@ -203,18 +213,18 @@ After updating, report:
 
 ```txt
 Updated:
-- <file>
+- <file>: <summary>
 
 Not updated:
-- <file>, because <reason>
+- <file>: <reason>
 
 Validation:
-- <what was checked>
+- <check>
 ```
 
 If no update is needed, say:
 
 ```txt
 No project memory update needed.
-Reason: <reason>
+Reason:
 ```

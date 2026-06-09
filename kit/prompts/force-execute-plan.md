@@ -45,21 +45,7 @@ Commit boundary:
 - Do not push.
 - If publish is needed, recommend `publish-current-branch`.
 
-At the end or when pausing, output:
-
-```txt
-Execution Summary:
-- Plan:
-- Execution mode:
-- Completed:
-- Changed files:
-- Validation:
-- Commit:
-- Deviations:
-- Blockers:
-- Project memory update check:
-- Recommended next workflow:
-```
+At the end or when pausing, output the fixed Execution Summary.
 
 Project memory update check must classify:
 

@@ -1,0 +1,5 @@
+name: update-project-memory
+version: 0.1.0
+category: core
+required: true
+description: Updates durable project memory across guideline, decisions, and lessons learned.

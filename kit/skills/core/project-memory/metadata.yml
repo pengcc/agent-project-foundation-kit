@@ -1,0 +1,5 @@
+name: project-memory
+version: 0.1.0
+category: core
+required: true
+description: Reads and applies durable project memory across guideline, decisions, and lessons.

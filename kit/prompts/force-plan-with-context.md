@@ -10,7 +10,7 @@ Use the `plan-with-context` workflow.
 
 Before creating the plan:
 
-1. Apply the `project-guideline` skill.
+1. Apply the `project-memory` skill.
 2. Read `AGENTS.md`.
 3. Read `.codex/project/project-guideline.md`.
 4. Read `.codex/project/project-decisions.md` and `.codex/project/lessons-learned.md` if they exist or are relevant.
@@ -29,21 +29,6 @@ Planning boundaries:
 - Do not update project memory silently.
 - Do not treat plan creation as approval to execute.
 
-The plan must include:
-
-- Goal
-- Context Checked
-- Research Basis
-- Scope
-- Non-Goals
-- Assumptions and Open Questions
-- Recommendation
-- Implementation Steps
-- Validation Plan
-- Risks and Rollback
-- Project Memory Updates Needed
-- Execution Status
-
 If the plan is multi-step, executable, cross-session, affects multiple files/modules, or I ask you to save it, save it under:
 
 ```txt
@@ -52,7 +37,7 @@ dev_locals/plans/YYYY-MM-DD-short-topic.md
 
 The plan output must be truthful.
 
-Do not claim that `project-guideline`, `docs-first-research`, `grill-me`, or any other skill was used unless its required steps were actually performed.
+Do not claim that `project-memory`, `docs-first-research`, `grill-me`, or any other skill was used unless its required steps were actually performed.
 
 If required context was not read, mark the plan as:
 

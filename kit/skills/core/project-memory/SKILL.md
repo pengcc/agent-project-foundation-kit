@@ -1,14 +1,32 @@
-# Project Guideline Skill
+# Project Memory Skill
 
-Use this skill when a task depends on project-specific facts, constraints, architecture, workflow, or current implementation status.
+Use this skill when a task depends on project-specific facts, constraints, architecture, workflow, decisions, lessons, or current implementation status.
 
-This skill defines how agents must use and maintain:
+This skill is the unified entry point for reading and applying durable project memory.
+
+It covers:
 
 ```txt
 .codex/project/project-guideline.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
 ```
 
-The project guideline is the current source of truth for project facts.
+The memory file names stay specific:
+
+- `project-guideline.md` stores current project facts.
+- `project-decisions.md` stores durable decision rationale.
+- `lessons-learned.md` stores reusable lessons, mistakes, and debugging findings.
+
+## Role
+
+When using this skill, act as:
+
+```txt
+Project Memory Reader
+```
+
+The Project Memory Reader loads relevant project memory before planning, executing, reviewing, debugging, documenting, or publishing project work.
 
 ## When to Use
 
@@ -25,6 +43,7 @@ Use this skill before:
 - Changing environment variables
 - Updating project memory
 - Publishing or preparing project changes
+- Making any decision that depends on current project state
 
 ## When Not to Use
 
@@ -57,19 +76,31 @@ dev_locals/plans/
 dev_locals/handoffs/
 ```
 
+If the task depends on project implementation details, inspect relevant:
+
+```txt
+README.md
+package.json
+lockfile
+.env.example
+config files
+source files
+tests
+```
+
 ## Workflow Header
 
 Start with a short workflow header for explicit project workflows:
 
 ```txt
 Workflow:
-- Role: Project Context Reader
-- Skill: project-guideline
+- Role: Project Memory Reader
+- Skill: project-memory
 - Context: .codex/project/project-guideline.md
 - Mode: context check
 ```
 
-If the guideline is missing, say so:
+If project memory is missing, say so:
 
 ```txt
 Context: .codex/project/project-guideline.md missing
@@ -97,27 +128,33 @@ Use it for:
 - Known constraints
 - Agent-specific project notes
 
-### 2. Plans are not durable truth
+### 2. Decisions explain why
+
+Treat `.codex/project/project-decisions.md` as the source for durable decision rationale.
+
+Use it to avoid re-litigating settled decisions.
+
+### 3. Lessons prevent repeated mistakes
+
+Treat `.codex/project/lessons-learned.md` as the source for reusable execution, debugging, and workflow lessons.
+
+Use it to avoid repeating previous mistakes.
+
+### 4. Plans are not durable truth
 
 Plans are execution and process documents.
 
-A plan may become outdated after execution. Do not treat an old plan as the current state of the project.
+A plan may become outdated after execution.
+
+Do not treat an old plan as the current state of the project.
 
 Use the plan only as the execution source for the current task.
 
-After execution, update the project guideline if the resulting current facts changed.
+After execution, update project memory if the resulting current facts, decisions, or lessons changed.
 
-### 3. Prefer existing sections
+### 5. Separate facts, decisions, and lessons
 
-When updating `project-guideline.md`, prefer updating existing sections.
-
-Do not create duplicate sections.
-
-Only add a new section if the existing fixed structure cannot reasonably hold the information. If a new section is added, explain why in the update summary.
-
-### 4. Separate facts, decisions, and lessons
-
-Use the right project memory file:
+Use the right memory file:
 
 ```txt
 .codex/project/project-guideline.md
@@ -137,13 +174,13 @@ For important decision rationale.
 
 For reusable mistakes, debugging discoveries, or lessons future agents should avoid.
 
-### 5. Do not store secrets
+### 6. Do not store secrets
 
 Never store secrets, private tokens, credentials, production data, private customer data, or local-only environment values in project memory.
 
 Reference `.env.example` for variable names and purposes.
 
-### 6. Keep project memory useful
+### 7. Keep project memory useful
 
 Project memory should be concise and durable.
 
@@ -160,8 +197,8 @@ Do not add:
 
 When using this skill, briefly state:
 
-- Which context files were read
-- Whether the guideline was sufficient
+- Which memory files were read
+- Whether the memory was sufficient
 - Whether a project memory update may be needed
 
 If no update is needed, say why.
