@@ -4,7 +4,7 @@
 
 `agent-project-foundation-kit` is a reusable foundation kit for initializing software projects with agent-ready project memory, skills, prompts, rules, and workflow constraints.
 
-The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, and durable project memory.
+The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, publishing boundaries, and durable project memory.
 
 This repository develops the reusable foundation kit itself.
 
@@ -20,6 +20,7 @@ Completed themes:
 - Theme 4: `execute-plan`
 - Theme 5: project memory rename migration
 - Theme 6: this repository's own `.codex/project/` memory
+- Theme 7: `publish-current-branch`
 
 Current canonical core skill names:
 
@@ -49,6 +50,7 @@ v0.1 does not aim to solve:
 - Technology-specific skills
 - GitHub ruleset / branch protection automation
 - Full prompt library design
+- Full project initialization / GitHub setup workflow
 
 ## 4. Tech Stack and Runtime
 
@@ -61,6 +63,7 @@ Current known tooling:
 - Zip-based theme delivery during development
 - `ripgrep` recommended for migration/reference checks
 - Git / GitHub for version control
+- GitHub CLI expected for PR publishing workflows when available
 
 ## 5. Directory Structure
 
@@ -244,7 +247,7 @@ No deployment workflow is currently defined.
 
 Publishing repository changes is separate from deployment.
 
-Push / PR / merge behavior belongs to the future `publish-current-branch` theme.
+Push / PR / merge behavior belongs to `publish-current-branch`.
 
 Release and deploy workflows are future work.
 
@@ -261,11 +264,13 @@ Completed:
   - `update-project-guideline` skill renamed to `update-project-memory`
   - memory files remain named `project-guideline.md`, `project-decisions.md`, and `lessons-learned.md`
 - `scripts/apply-theme-zip.sh` improved to support `dev_locals/theme-zips/`, configurable `THEME_ZIP_DIR`, file-only remote verify commands, and optional zip cleanup
+- Foundation-kit repo self project memory under `.codex/project/`
+- `publish-current-branch`
 
 In progress / next likely themes:
 
-- `publish-current-branch`
 - `code-review`
+- `initialize-project-context`
 - installer behavior
 - GitHub ruleset / branch protection setup guidance
 
@@ -276,6 +281,7 @@ In progress / next likely themes:
 - The reusable templates under `kit/project-templates/` must stay generic and must not contain this repo's own development history.
 - `.codex/project/` belongs to this repo and must not be treated as installable payload.
 - `.codex/skills/` is not committed for this repo to avoid duplicating `kit/skills/`.
+- GitHub repo-level settings readiness belongs to future `initialize-project-context`, not to every `publish-current-branch` run.
 
 ## 14. Agent Notes
 
@@ -284,5 +290,6 @@ When working on this repo:
 - Use `project-memory` as the entry point for repo context.
 - Use `plan-with-context` for new theme planning.
 - Use `execute-plan` for approved theme implementation.
+- Use `publish-current-branch` for push / PR / merge preparation.
 - Use `update-project-memory` when this repo's current facts, decisions, or lessons change.
 - Do not write foundation-kit development lessons into `kit/project-templates/lessons-learned.md`.

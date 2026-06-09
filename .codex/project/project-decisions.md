@@ -128,3 +128,64 @@ dev_locals/theme-zips/
 ### Impact
 
 The helper script supports a configurable `THEME_ZIP_DIR` and can resolve either a full zip path or a filename under the default theme zip directory.
+
+## Decision: Publish current branch workflow boundary
+
+### Status
+
+Accepted
+
+### Context
+
+`execute-plan` may create local commits, but remote publishing, PR creation, and merge preparation require a separate workflow boundary.
+
+### Decision
+
+Use `publish-current-branch` for:
+
+- pushing the current completed branch
+- creating or updating PRs
+- preparing merge or auto-merge when supported and authorized
+
+`publish-current-branch` must not:
+
+- implement features
+- execute plans
+- release
+- deploy
+- bypass branch protection
+- force push to main
+
+### Impact
+
+Publishing is separated from local implementation.
+
+Release and deployment remain future workflows.
+
+## Decision: GitHub repo-level settings belong to setup workflow
+
+### Status
+
+Accepted
+
+### Context
+
+Repo-level settings such as branch protection, rulesets, required checks, and auto-merge support do not normally change on every publish.
+
+Checking them fully during every publish would make `publish-current-branch` too heavy.
+
+### Decision
+
+Repo-level GitHub readiness belongs to a future project setup workflow such as `initialize-project-context`.
+
+`publish-current-branch` performs only lightweight runtime preflight checks each time.
+
+It uses project memory for known GitHub workflow readiness.
+
+If readiness is unknown, it creates/updates PR only and recommends setup check.
+
+### Impact
+
+Publishing stays fast and safe.
+
+Project initialization must eventually record GitHub workflow readiness in project memory.

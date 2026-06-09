@@ -132,10 +132,7 @@ Accepted decisions:
 2. Rename `update-project-guideline` skill to `update-project-memory`.
 3. `project-memory` is the canonical skill for reading and applying project memory.
 4. `update-project-memory` is the canonical skill for updating durable project memory.
-5. Do not rename memory files in v0.1:
-   - `project-guideline.md`
-   - `project-decisions.md`
-   - `lessons-learned.md`
+5. Do not rename memory files in v0.1.
 6. Do not perform blind global string replacement.
 7. Update affected templates, skills, prompts, metadata, rules, and this design log semantically.
 8. Delete old skill directories before applying the migration zip.
@@ -147,12 +144,7 @@ Accepted decisions:
 Accepted decisions:
 
 1. `agent-project-foundation-kit` needs its own project memory.
-2. This repo's own durable project memory lives under:
-
-```txt
-.codex/project/
-```
-
+2. This repo's own durable project memory lives under `.codex/project/`.
 3. It records foundation-kit development facts, decisions, and lessons.
 4. It is not part of the installable `kit/` payload.
 5. The installer should copy only `kit/` content into downstream projects.
@@ -162,13 +154,38 @@ Accepted decisions:
 9. Theme 6 does not create or commit `.codex/skills/` to avoid duplicating `kit/skills/`.
 10. Theme 6 does not modify `kit/project-templates/AGENTS.md` or `kit/project-templates/lessons-learned.md`.
 
+## Theme 7: Publish Current Branch
+
+Accepted decisions:
+
+1. `publish-current-branch` publishes the current completed and validated branch into the GitHub workflow.
+2. It can push the current branch, create/update PR, and prepare merge or auto-merge when supported and authorized.
+3. It does not implement features, execute plans, release, or deploy.
+4. It supports short trigger commands:
+   - `publish-current-branch`
+   - `Use publish-current-branch`
+5. Before publishing, it restates workflow, branch, scope, out of scope, and stop conditions.
+6. It performs lightweight runtime preflight checks on branch, working tree, local commits, remote, upstream, gh CLI/auth, and existing PR state.
+7. If the current branch is `main` or `master`, it pauses by default.
+8. If the working tree is dirty or there is no local commit, it pauses.
+9. It can create or update PRs.
+10. Auto-merge requires explicit authorization or known project convention, and known repo support.
+11. Repo-level GitHub settings readiness belongs to future `initialize-project-context`, not to every publish run.
+12. If repo settings are unknown in project memory, it defaults to create/update PR only and recommends setup check.
+13. It does not immediately merge by default.
+14. It must not bypass branch protection, rulesets, checks, or reviews.
+15. It ends or pauses with a fixed Publish Summary.
+16. Theme 7 does not implement `initialize-project-context`; it only records that dependency.
+
 Resulting files:
 
 ```txt
+kit/skills/core/publish-current-branch/SKILL.md
+kit/skills/core/publish-current-branch/metadata.yml
+kit/prompts/force-publish-current-branch.md
+docs/foundation-design-log.md
 .codex/project/project-guideline.md
 .codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-docs/foundation-design-log.md
 ```
 
 ## Future Ideas
@@ -183,5 +200,6 @@ docs/foundation-design-log.md
 - support for agent directories beyond `.codex/`
 - optional teach workflow for learning-oriented projects
 - GitHub ruleset / branch protection setup checklist
+- initialize-project-context
 - release workflow
 - deployment workflow

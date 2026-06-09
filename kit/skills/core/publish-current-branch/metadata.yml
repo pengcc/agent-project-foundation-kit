@@ -1,0 +1,5 @@
+name: publish-current-branch
+version: 0.1.0
+category: core
+required: true
+description: Publishes the current completed branch by pushing it, creating or updating a PR, and preparing merge when allowed.
