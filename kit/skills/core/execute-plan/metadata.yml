@@ -1,0 +1,5 @@
+name: execute-plan
+version: 0.1.0
+category: core
+required: true
+description: Executes approved plans in bounded steps with validation, pause conditions, and completion summaries.

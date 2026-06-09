@@ -304,6 +304,72 @@ This theme does not define:
 
 These will be handled in later themes.
 
+## Theme 4: Execute Plan
+
+### Accepted decisions
+
+1. `execute-plan` only executes an existing and explicitly approved plan.
+2. Default input should be a plan file path, usually under `dev_locals/plans/`.
+3. If no plan exists, the agent must recommend `plan-with-context`.
+4. If the plan is marked `incomplete draft` or `blocked`, it must not be executed.
+5. Generic Codex modes are not trusted workflow boundaries.
+6. Codex plan mode does not replace `plan-with-context`.
+7. Codex default execution confirmation does not replace `execute-plan`.
+8. If the user only confirms a generic Codex plan, the agent must restate workflow, approved plan, scope, and stop conditions before editing files.
+9. A current-conversation full plan may be executed only if it is complete and explicitly approved.
+10. `execute-plan` does not accept vague task descriptions as input.
+11. Before execution, the agent must check for Goal, Scope, Non-Goals, Implementation Steps, Validation Plan, Risks and Rollback, and Execution Status.
+12. Execution must happen in stages.
+13. After each reasonable step group, the agent should run relevant validation.
+14. The agent must pause on scope drift, unplanned technical decisions, failed validation, missing credentials or permissions, dependency/configuration/architecture changes, or high-risk unknowns.
+15. Unverified technical assumptions must trigger `docs-first-research`.
+16. Two execution approval modes exist:
+   - `strict`
+   - `autonomous-within-plan`
+17. Default execution mode is `strict`.
+18. `autonomous-within-plan` is allowed only when the user explicitly authorizes it.
+19. `execute-plan` must not silently update project memory.
+20. At the end or pause point, it must classify whether `project-guideline.md`, `project-decisions.md`, or `lessons-learned.md` need updates.
+21. Actual memory updates must be performed by `update-project-memory`.
+22. The current `update-project-guideline` concept should later be renamed to `update-project-memory`.
+23. The current `project-guideline` skill should later be renamed to `project-memory`.
+24. Do not rename the project memory files themselves in v0.1.
+25. `execute-plan` must report progress in the conversation.
+26. v0.1 does not require execution log files for every run.
+27. For multi-step, cross-session, interruption-prone, or user-requested execution, suggest `dev_locals/plans/<plan-name>.execution.md`.
+28. Execution logs are local-only and are not project truth.
+29. `execute-plan` may create a local commit only when the approved plan explicitly includes a commit step or the user explicitly requested commit.
+30. Commit requires completed implementation steps and passing validation, or explicitly justified skipped validation.
+31. `execute-plan` must not push, create PR, merge, release, or deploy.
+32. Push, PR, and merge require explicit `publish-current-branch`.
+33. Release and deploy are outside v0.1 execute-plan and publish-current-branch default responsibilities.
+34. `publish-current-branch` should support short triggers such as `publish-current-branch` and `Use publish-current-branch`.
+35. Safer publish prompts should explicitly include push current branch, create PR, prepare for merge, and exclude release/deploy unless requested.
+36. GitHub ruleset, branch protection, auto-merge, and gh CLI PR support belong to the publish-current-branch or project initialization theme.
+37. `execute-plan` must output a fixed Execution Summary when execution ends or pauses.
+38. The summary must include plan source, execution mode, completed steps, changed files, validation, commit status, deviations, blockers, project memory update check, and recommended next workflow.
+
+### Resulting files
+
+```txt
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/execute-plan/metadata.yml
+kit/prompts/force-execute-plan.md
+```
+
+### Boundary
+
+This theme does not define:
+
+- project-memory rename migration
+- publish-current-branch implementation
+- GitHub ruleset setup
+- deployment workflow
+- release workflow
+- code review checklist
+
+These will be handled in later themes.
+
 ## Future Ideas
 
 - safe update for non-empty projects
@@ -315,3 +381,7 @@ These will be handled in later themes.
 - GitHub PR creation workflow
 - support for agent directories beyond `.codex/`
 - optional teach workflow for learning-oriented projects
+- project-memory rename migration
+- GitHub ruleset / branch protection setup checklist
+- release workflow
+- deployment workflow
