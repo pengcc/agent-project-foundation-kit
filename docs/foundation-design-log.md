@@ -76,18 +76,7 @@ Core Productivity:
 
 ## Theme 1: Project Guideline Foundation
 
-Theme 1 created the original project guideline foundation:
-
-```txt
-kit/project-templates/AGENTS.md
-kit/project-templates/project-guideline.md
-kit/project-templates/project-decisions.md
-kit/project-templates/lessons-learned.md
-kit/skills/core/project-guideline/SKILL.md
-kit/skills/core/project-guideline/metadata.yml
-kit/skills/core/update-project-guideline/SKILL.md
-kit/skills/core/update-project-guideline/metadata.yml
-```
+Theme 1 created the original project guideline foundation.
 
 Later Theme 5 renamed the skills but kept the memory files.
 
@@ -101,14 +90,6 @@ Accepted decisions:
 4. Degraded mode can continue for low-impact local documentation work, but high-impact technical decisions require confirmation.
 5. `docs-first-research` does not directly update project memory.
 6. Durable findings should suggest `update-project-memory`.
-
-Resulting files:
-
-```txt
-kit/skills/core/docs-first-research/SKILL.md
-kit/skills/core/docs-first-research/metadata.yml
-kit/rules/docs-first-policy.md
-```
 
 ## Theme 3: Plan With Context
 
@@ -124,14 +105,6 @@ Accepted decisions:
 8. Plans must include a recommendation.
 9. Plans wait for user approval before execution.
 10. `force-plan-with-context.md` exists as a workflow trigger prompt.
-
-Resulting files:
-
-```txt
-kit/skills/core/plan-with-context/SKILL.md
-kit/skills/core/plan-with-context/metadata.yml
-kit/prompts/force-plan-with-context.md
-```
 
 ## Theme 4: Execute Plan
 
@@ -151,14 +124,6 @@ Accepted decisions:
 12. Execution ends or pauses with a fixed Execution Summary.
 13. `force-execute-plan.md` exists as a workflow trigger prompt.
 
-Resulting files:
-
-```txt
-kit/skills/core/execute-plan/SKILL.md
-kit/skills/core/execute-plan/metadata.yml
-kit/prompts/force-execute-plan.md
-```
-
 ## Theme 5: Project Memory Rename Migration
 
 Accepted decisions:
@@ -172,26 +137,37 @@ Accepted decisions:
    - `project-decisions.md`
    - `lessons-learned.md`
 6. Do not perform blind global string replacement.
-7. Update affected templates, skills, prompts, metadata, and this design log semantically.
-8. Delete old skill directories before applying the migration zip:
-   - `kit/skills/core/project-guideline`
-   - `kit/skills/core/update-project-guideline`
+7. Update affected templates, skills, prompts, metadata, rules, and this design log semantically.
+8. Delete old skill directories before applying the migration zip.
 9. Do not keep legacy alias skills in v0.1.
 10. Old skill names may appear only in this historical design log or as part of the `project-guideline.md` filename.
+
+## Theme 6: Foundation Kit Self Project Memory
+
+Accepted decisions:
+
+1. `agent-project-foundation-kit` needs its own project memory.
+2. This repo's own durable project memory lives under:
+
+```txt
+.codex/project/
+```
+
+3. It records foundation-kit development facts, decisions, and lessons.
+4. It is not part of the installable `kit/` payload.
+5. The installer should copy only `kit/` content into downstream projects.
+6. This repo's `.codex/project/` can reuse the same project-memory concepts and skills.
+7. `.codex/project/` should be committed for this repo.
+8. `dev_locals/` remains local-only and must not be committed.
+9. Theme 6 does not create or commit `.codex/skills/` to avoid duplicating `kit/skills/`.
+10. Theme 6 does not modify `kit/project-templates/AGENTS.md` or `kit/project-templates/lessons-learned.md`.
 
 Resulting files:
 
 ```txt
-kit/skills/core/project-memory/SKILL.md
-kit/skills/core/project-memory/metadata.yml
-kit/skills/core/update-project-memory/SKILL.md
-kit/skills/core/update-project-memory/metadata.yml
-kit/project-templates/AGENTS.md
-kit/skills/core/docs-first-research/SKILL.md
-kit/skills/core/plan-with-context/SKILL.md
-kit/skills/core/execute-plan/SKILL.md
-kit/prompts/force-plan-with-context.md
-kit/prompts/force-execute-plan.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
 docs/foundation-design-log.md
 ```
 
