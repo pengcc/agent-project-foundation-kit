@@ -1,0 +1,5 @@
+name: project-guideline
+version: 0.1.0
+category: core
+required: true
+description: Defines how agents read and maintain the project guideline as the current source of truth for project facts.
