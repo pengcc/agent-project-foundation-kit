@@ -55,4 +55,4 @@ For high-impact technical decisions, the agent must request user confirmation be
 
 For local low-impact documentation or workflow cleanup, the agent may recommend continuing after explaining that the impact is limited and official docs are not required for the current step.
 
-Project memory updates still require the `update-project-guideline` workflow and its required update summary.
+Project memory updates still require the `update-project-memory` workflow and its required update summary.
