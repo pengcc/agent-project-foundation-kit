@@ -209,6 +209,55 @@ This theme does not define:
 
 These will be handled in later themes.
 
+## Theme 2: Docs-First Research
+
+### Accepted decisions
+
+1. `docs-first-research` must trigger when a task involves technical judgment, versions, APIs, dependencies, configuration, deployment, testing, external services, debugging, or review best practices.
+2. Pure wording changes, small README copy edits, and low-impact non-technical changes do not require docs-first research.
+3. Sources are prioritized in four levels:
+   - Level 1: official sources
+   - Level 2: project sources
+   - Level 3: high-quality secondary sources
+   - Level 4: model knowledge
+4. Official documentation and project files are the primary sources of truth.
+5. Model memory must not override official documentation or project reality.
+6. If official documentation conflicts with project files, the agent must report the conflict and recommend a resolution.
+7. Research depth has three levels:
+   - Quick Check
+   - Standard Research
+   - Deep Research
+8. The agent should choose the smallest useful research depth.
+9. Outputs must list sources, but source detail should match the research depth.
+10. If official documentation is unavailable, the agent may use degraded research mode.
+11. Degraded mode does not block all work. It blocks unconfirmed high-impact technical decisions.
+12. For local low-impact documentation or workflow cleanup, the agent may recommend continuing after explaining that the impact is limited.
+13. Project memory updates must still use the `update-project-guideline` workflow and its required summary.
+14. `docs-first-research` does not directly update project memory.
+15. At the end of research, the agent must state whether project memory should be updated.
+16. `docs-first-research` can be used independently or as a pre-check for `plan-with-context`, `execute-plan`, `code-review`, `publish-current-branch`, and `update-project-guideline`.
+
+### Resulting files
+
+```txt
+kit/skills/core/docs-first-research/SKILL.md
+kit/skills/core/docs-first-research/metadata.yml
+kit/rules/docs-first-policy.md
+```
+
+### Boundary
+
+This theme does not define:
+
+- plan creation structure
+- execution plan tracking
+- code review checklist
+- publish-current-branch behavior
+- installer behavior
+- technology-specific official documentation lists
+
+These will be handled in later themes.
+
 ## Future Ideas
 
 - safe update for non-empty projects

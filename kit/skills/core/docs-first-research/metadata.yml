@@ -1,0 +1,5 @@
+name: docs-first-research
+version: 0.1.0
+category: core
+required: true
+description: Requires agents to verify technical facts with official documentation and project files before relying on model memory.
