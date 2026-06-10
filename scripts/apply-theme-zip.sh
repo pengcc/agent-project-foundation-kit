@@ -322,35 +322,95 @@ maybe_delete_zip() {
 }
 
 maybe_refresh_default_branch_after_merge() {
+
+  local backup_branch
+
   printf "\n"
+
   info "Post-merge refresh check."
 
   if ! confirm "Has the PR/branch been merged into '$DEFAULT_BRANCH' and should I switch back and refresh '$DEFAULT_BRANCH'?"; then
+
     warn "Skipped default branch refresh."
-    warn "When the PR is merged, run: git switch $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
+
+    warn "When the PR is merged, run:"
+
+    warn "  git switch $DEFAULT_BRANCH && git fetch origin $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
+
     return
+
   fi
 
   if ! is_worktree_clean; then
+
     warn "Working tree is not clean. Cannot switch branches safely."
+
     git --no-pager status --short
-    warn "Commit, stash, or reset changes, then run:"
-    warn "  git switch $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
+
+    warn "Commit, stash, or reset changes, then refresh '$DEFAULT_BRANCH' manually."
+
     return
+
   fi
 
   info "Fetching latest '$DEFAULT_BRANCH' from origin..."
+
   git fetch origin "$DEFAULT_BRANCH"
 
   info "Switching to '$DEFAULT_BRANCH'..."
+
   git switch "$DEFAULT_BRANCH"
 
-  info "Refreshing '$DEFAULT_BRANCH' with fast-forward only..."
-  git pull --ff-only origin "$DEFAULT_BRANCH"
+  if git merge-base --is-ancestor HEAD "origin/$DEFAULT_BRANCH"; then
 
-  ok "Refreshed '$DEFAULT_BRANCH'."
+    info "Refreshing '$DEFAULT_BRANCH' with fast-forward only..."
+
+    git pull --ff-only origin "$DEFAULT_BRANCH"
+
+    ok "Refreshed '$DEFAULT_BRANCH'."
+
+  else
+
+    warn "Local '$DEFAULT_BRANCH' cannot be fast-forwarded to 'origin/$DEFAULT_BRANCH'."
+
+    warn "This can happen if a local direct-push commit was rejected, then the same change was merged through PR."
+
+    backup_branch="backup/${DEFAULT_BRANCH}-before-reset-$(date +%Y%m%d-%H%M%S)"
+
+    warn "A backup branch will be created before any reset:"
+
+    warn "  $backup_branch"
+
+    if confirm "Create backup branch and reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'?"; then
+
+      git branch "$backup_branch"
+
+      git reset --hard "origin/$DEFAULT_BRANCH"
+
+      ok "Reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'."
+
+      ok "Backup branch created: $backup_branch"
+
+    else
+
+      warn "Skipped reset. Local '$DEFAULT_BRANCH' may still be diverged."
+
+      warn "Manual recovery:"
+
+      warn "  git branch $backup_branch"
+
+      warn "  git reset --hard origin/$DEFAULT_BRANCH"
+
+      return
+
+    fi
+
+  fi
+
   ok "Current branch: $(git rev-parse --abbrev-ref HEAD)"
+
   git --no-pager status --short
+
 }
 
 main() {
