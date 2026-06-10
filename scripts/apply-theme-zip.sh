@@ -2,10 +2,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Disable interactive pagers for script review output.
-# Automation should not leave users stuck in less/(END).
-export GIT_PAGER=cat
-export PAGER=cat
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/workflow-common.sh
+source "$SCRIPT_DIR/lib/workflow-common.sh"
 
 # ============================================================
 # apply-theme-zip.sh
@@ -20,7 +19,7 @@ export PAGER=cat
 # - Show incoming files, line counts, local line counts, git status, diff stat
 # - Optionally commit, push, and create PR
 # - Never merge by default
-# - After the user requests a post-merge refresh, verify the PR is actually merged before refreshing the default branch
+# - Optionally run a verified post-PR merge / refresh flow
 #
 # Usage:
 #   bash scripts/apply-theme-zip.sh <zip-path-or-file-name> "Commit message"
@@ -40,44 +39,16 @@ export PAGER=cat
 # - If the current branch is main/master/default branch, the script asks to create a feature branch.
 # - If an incoming file overwrites an existing file and line count drops significantly,
 #   the script marks it as DANGER and requires typing APPLY_DESTRUCTIVE to continue.
-# - The script can create a PR with gh, but it never merges.
+# - The script can create a PR with gh, but it never merges by default.
 # - If a theme package requires a post-apply script, answer "no" to commit, run the post-apply
 #   script, review diff, then commit/push/PR manually.
-# - After deleting or keeping the local zip, the script can ask whether to verify a merged PR.
-#   It only switches back to DEFAULT_BRANCH and refreshes after gh confirms merged=true.
 #
 # ============================================================
 
 THEME_ZIP_DIR="${THEME_ZIP_DIR:-dev_locals/theme-zips}"
-DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
 THEME_BRANCH_PREFIX="${THEME_BRANCH_PREFIX:-theme}"
 DESTRUCTIVE_DROP_PERCENT="${DESTRUCTIVE_DROP_PERCENT:-30}"
 DESTRUCTIVE_DROP_LINES="${DESTRUCTIVE_DROP_LINES:-50}"
-
-RED=$'\033[0;31m'
-GREEN=$'\033[0;32m'
-YELLOW=$'\033[0;33m'
-BLUE=$'\033[0;34m'
-BOLD=$'\033[1m'
-RESET=$'\033[0m'
-
-info() { printf "%s[INFO]%s %s\n" "$BLUE" "$RESET" "$*"; }
-ok() { printf "%s[OK]%s %s\n" "$GREEN" "$RESET" "$*"; }
-warn() { printf "%s[WARNING]%s %s\n" "$YELLOW" "$RESET" "$*"; }
-danger() { printf "%s[DANGER]%s %s\n" "$RED" "$RESET" "$*"; }
-die() { danger "$*"; exit 1; }
-
-confirm() {
-  local prompt="$1"
-  local answer
-  read -r -p "$prompt [y/N] " answer
-  [[ "$answer" == "y" || "$answer" == "Y" ]]
-}
-
-require_command() {
-  local cmd="$1"
-  command -v "$cmd" >/dev/null 2>&1 || die "Required command not found: $cmd"
-}
 
 line_count() {
   local file="$1"
@@ -113,15 +84,6 @@ safe_branch_name() {
   printf "%s/%s-%s" "$THEME_BRANCH_PREFIX" "$stem" "$timestamp"
 }
 
-ensure_git_repo() {
-  git rev-parse --show-toplevel >/dev/null 2>&1 || die "Not inside a git repository."
-  cd "$(git rev-parse --show-toplevel)"
-}
-
-is_worktree_clean() {
-  [[ -z "$(git status --porcelain)" ]]
-}
-
 require_clean_worktree() {
   if ! is_worktree_clean; then
     git --no-pager status --short
@@ -131,14 +93,14 @@ require_clean_worktree() {
 
 ensure_feature_branch() {
   local zip_path="$1"
-  local current_branch target_branch
+  local branch target_branch
 
-  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  branch="$(current_branch)"
 
-  if [[ "$current_branch" == "$DEFAULT_BRANCH" || "$current_branch" == "main" || "$current_branch" == "master" ]]; then
+  if [[ "$branch" == "$DEFAULT_BRANCH" || "$branch" == "main" || "$branch" == "master" ]]; then
     target_branch="$(safe_branch_name "$zip_path")"
 
-    warn "Current branch is '$current_branch'."
+    warn "Current branch is '$branch'."
     warn "Theme updates should be applied on a feature branch and reviewed via PR."
     info "Suggested branch: $target_branch"
 
@@ -146,10 +108,10 @@ ensure_feature_branch() {
       git switch -c "$target_branch"
       ok "Switched to $target_branch"
     else
-      die "Stopped before applying zip on '$current_branch'."
+      die "Stopped before applying zip on '$branch'."
     fi
   else
-    info "Current branch: $current_branch"
+    info "Current branch: $branch"
   fi
 }
 
@@ -277,7 +239,7 @@ show_review_info() {
 
 maybe_commit_push_pr() {
   local commit_message="$1"
-  local current_branch
+  local branch
 
   if ! confirm "Commit these changes now?"; then
     warn "Changes left uncommitted for manual review."
@@ -289,16 +251,16 @@ maybe_commit_push_pr() {
   git commit -m "$commit_message"
   ok "Committed changes."
 
-  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  branch="$(current_branch)"
 
-  if confirm "Push branch '$current_branch' to origin?"; then
-    git push -u origin "$current_branch"
+  if confirm "Push branch '$branch' to origin?"; then
+    git push -u origin "$branch"
     ok "Pushed branch."
 
     if command -v gh >/dev/null 2>&1; then
       if gh auth status >/dev/null 2>&1; then
-        if confirm "Create PR for '$current_branch'?"; then
-          gh pr create --fill --base "$DEFAULT_BRANCH" --head "$current_branch" || warn "gh pr create failed. Create/update PR manually."
+        if confirm "Create PR for '$branch'?"; then
+          gh pr create --fill --base "$DEFAULT_BRANCH" --head "$branch" || warn "gh pr create failed. Create/update PR manually."
           ok "PR creation attempted."
           warn "No merge was performed. Review the PR diff and merge manually, or use publish-current-branch with explicit merge/auto-merge authorization."
         fi
@@ -320,121 +282,6 @@ maybe_delete_zip() {
     rm -f "$zip_path"
     ok "Deleted zip."
   fi
-}
-
-verify_merged_pr_for_default_branch() {
-  local pr_number pr_info state merged base_ref url
-
-  if ! command -v gh >/dev/null 2>&1; then
-    warn "GitHub CLI not found. Cannot verify PR merge status."
-    return 1
-  fi
-
-  if ! gh auth status >/dev/null 2>&1; then
-    warn "GitHub CLI is installed but not authenticated. Cannot verify PR merge status."
-    return 1
-  fi
-
-  read -r -p "Enter merged PR number to verify before refreshing '$DEFAULT_BRANCH' (empty to skip): " pr_number
-
-  if [[ -z "$pr_number" ]]; then
-    warn "Skipped default branch refresh because no PR number was provided."
-    return 1
-  fi
-
-  pr_number="${pr_number#\#}"
-  pr_number="$(printf "%s" "$pr_number" | tr -d '[:space:]')"
-
-  if ! [[ "$pr_number" =~ ^[0-9]+$ ]]; then
-    warn "Invalid PR number. Use a number like '9' or '#9'."
-    return 1
-  fi
-
-  if ! pr_info="$(gh pr view "$pr_number" --json state,merged,baseRefName,url --jq '[.state, (.merged|tostring), .baseRefName, .url] | @tsv' 2>/dev/null)"; then
-    warn "Could not read PR #$pr_number with gh."
-    return 1
-  fi
-
-  IFS=$'\t' read -r state merged base_ref url <<< "$pr_info"
-
-  if [[ "$merged" != "true" ]]; then
-    warn "PR #$pr_number is not merged. State: $state. Skipping default branch refresh."
-    warn "PR URL: $url"
-    return 1
-  fi
-
-  if [[ "$base_ref" != "$DEFAULT_BRANCH" ]]; then
-    warn "PR #$pr_number is merged, but its base branch is '$base_ref', not '$DEFAULT_BRANCH'."
-    warn "Skipping default branch refresh."
-    warn "PR URL: $url"
-    return 1
-  fi
-
-  ok "Verified PR #$pr_number is merged into '$DEFAULT_BRANCH'."
-  info "PR URL: $url"
-  return 0
-}
-
-maybe_refresh_default_branch_after_merge() {
-  local backup_branch
-
-  printf "\n"
-  info "Post-merge refresh check."
-
-  if ! confirm "Verify a merged PR and refresh '$DEFAULT_BRANCH'?"; then
-    warn "Skipped default branch refresh."
-    warn "When the PR is merged, run:"
-    warn "  git switch $DEFAULT_BRANCH && git fetch origin $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
-    return
-  fi
-
-  if ! verify_merged_pr_for_default_branch; then
-    warn "Default branch refresh was not performed."
-    return
-  fi
-
-  if ! is_worktree_clean; then
-    warn "Working tree is not clean. Cannot switch branches safely."
-    git --no-pager status --short
-    warn "Commit, stash, or reset changes, then refresh '$DEFAULT_BRANCH' manually."
-    return
-  fi
-
-  info "Fetching latest '$DEFAULT_BRANCH' from origin..."
-  git fetch origin "$DEFAULT_BRANCH"
-
-  info "Switching to '$DEFAULT_BRANCH'..."
-  git switch "$DEFAULT_BRANCH"
-
-  if git merge-base --is-ancestor HEAD "origin/$DEFAULT_BRANCH"; then
-    info "Refreshing '$DEFAULT_BRANCH' with fast-forward only..."
-    git pull --ff-only origin "$DEFAULT_BRANCH"
-    ok "Refreshed '$DEFAULT_BRANCH'."
-  else
-    warn "Local '$DEFAULT_BRANCH' cannot be fast-forwarded to 'origin/$DEFAULT_BRANCH'."
-    warn "This can happen if a local direct-push commit was rejected, then the same change was merged through PR."
-
-    backup_branch="backup/${DEFAULT_BRANCH}-before-reset-$(date +%Y%m%d-%H%M%S)"
-
-    warn "A backup branch will be created before any reset:"
-    warn "  $backup_branch"
-
-    if confirm "Create backup branch and reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'?"; then
-      git branch "$backup_branch"
-      git reset --hard "origin/$DEFAULT_BRANCH"
-      ok "Reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'."
-      ok "Backup branch created: $backup_branch"
-    else
-      warn "Skipped reset. Local '$DEFAULT_BRANCH' may still be diverged."
-      warn "Manual recovery:"
-      warn "  git branch $backup_branch"
-      warn "  git reset --hard origin/$DEFAULT_BRANCH"
-      return
-    fi
-  fi
-
-  ok "Current branch: $(git rev-parse --abbrev-ref HEAD)"
-  git --no-pager status --short
 }
 
 main() {
@@ -473,7 +320,7 @@ main() {
   show_review_info
   maybe_commit_push_pr "$commit_message"
   maybe_delete_zip "$zip_path"
-  maybe_refresh_default_branch_after_merge
+  maybe_post_pr_action
 
   ok "Done."
 }
