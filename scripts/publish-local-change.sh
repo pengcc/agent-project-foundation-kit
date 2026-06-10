@@ -242,10 +242,14 @@ verify_merged_pr_for_default_branch() {
     return 1
   fi
 
+  pr_number="${pr_number#\#}"
+  pr_number="$(printf "%s" "$pr_number" | tr -d '[:space:]')"
+
   if ! [[ "$pr_number" =~ ^[0-9]+$ ]]; then
-    warn "Invalid PR number: $pr_number"
+    warn "Invalid PR number. Use a number like '9' or '#9'."
     return 1
   fi
+
 
   if ! pr_info="$(gh pr view "$pr_number" --json state,merged,baseRefName,url --jq '[.state, (.merged|tostring), .baseRefName, .url] | @tsv' 2>/dev/null)"; then
     warn "Could not read PR #$pr_number with gh."
