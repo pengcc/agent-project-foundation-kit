@@ -323,3 +323,68 @@ It may create only a provisional architecture draft if the user explicitly confi
 Technology choices require `docs-first-research` when they involve technical facts, versions, APIs, deployment limits, database/ORM compatibility, security constraints, external services, or long-term maintenance risk.
 
 Multiple technology options must be compared with relevant weighted dimensions and must be confirmed by the user before being recorded as architecture facts.
+
+## Decision: Code review is a core Review Workflow Skill
+
+### Status
+
+Accepted
+
+### Context
+
+After planning, execution, publishing, role routing, engineering quality principles, and project architecture planning were added, the remaining v0.1 core gap was a review workflow.
+
+The user needs both normal PR/diff review and staged plan-alignment review to prevent quality regressions, scope drift, and architecture drift.
+
+### Decision
+
+Create `code-review` as a core Review Workflow Skill.
+
+It supports two review modes:
+
+```txt
+Change Review
+Plan Alignment Review
+```
+
+Change Review reviews concrete change targets:
+
+```txt
+PR diff
+current local diff
+generated theme zip / package before applying
+specific commit
+branch diff
+```
+
+PR diff is the primary Change Review target.
+
+Plan Alignment Review is independent from normal diff review and focuses on architecture, engineering direction, plan consistency, roadmap / phase boundaries, scope, project memory, and accepted decisions.
+
+Plan Alignment Review requires an explicit baseline. Without a baseline, it may only output a Provisional Alignment Review.
+
+Important review reports should be saved as local-only artifacts under:
+
+```txt
+dev_locals/research-notes/YYYY-MM-DD-code-review-<topic>.md
+```
+
+Full review reports are not committed by default.
+
+`code-review` may output issue-specific Fix Recommendations, but it must not output a full executable fix plan by default.
+
+Larger, scope-affecting, architecture-affecting, data, security, migration, workflow, or unclear fixes must be routed to `plan-with-context`.
+
+Tiny isolated fixes may be routed to `execute-plan` only after user confirmation.
+
+Review reports may include lesson candidates categorized as:
+
+```txt
+Avoid
+Keep
+Mixed
+```
+
+Only distilled and user-confirmed facts, decisions, or lessons may be promoted into `.codex/project/` through `update-project-memory`.
+
+`code-review` may output an advisory Merge / Apply Readiness verdict, but it does not approve, merge, apply, publish, release, deploy, modify code, or update memory.

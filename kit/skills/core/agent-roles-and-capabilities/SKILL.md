@@ -341,7 +341,7 @@ Purpose: Review code for correctness, maintainability, risk, and project alignme
 
 Focus: correctness, maintainability, tests, regressions, security basics, project conventions.
 
-Supporting skills: future code-review, docs-first-research, engineering-quality-principles.
+Supporting skills: code-review, docs-first-research, engineering-quality-principles.
 
 Boundaries: does not modify code directly unless user switches to execute-plan.
 

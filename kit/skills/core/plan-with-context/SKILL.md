@@ -143,6 +143,18 @@ Plans are not continuously maintained after execution.
 
 Durable results belong in project memory and must be updated through `update-project-memory`.
 
+## Review Report Integration
+
+When planning from a `code-review` report:
+
+- treat the review report as the primary problem statement
+- read the original PR, diff, commit, branch, package, or reviewed target when available
+- read relevant project memory, architecture, previous plan, or baseline context
+- classify findings into tiny isolated fixes, grouped fixes, and re-plan-required issues
+- recommend direct `execute-plan` only for tiny isolated low-risk fixes after user confirmation
+- use full `plan-with-context` for multi-file, architectural, data, security, migration, workflow, or scope-affecting fixes
+- ask user approval before turning review findings into an executable plan
+
 ## Saved Plan Structure
 
 Saved plans must use this structure:

@@ -37,6 +37,8 @@ Completed core skills:
 7. initialize-project-context
 8. agent-roles-and-capabilities
 9. project-architecture-plan
+10. code-review
+
 
 Completed core rules:
 
@@ -378,17 +380,54 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
+## Theme 11: Code Review
+
+Accepted decisions:
+
+1. `code-review` is a core Review Workflow Skill, not only a PR review skill.
+2. It has two review modes:
+   - Change Review
+   - Plan Alignment Review
+3. Change Review reviews concrete change targets.
+4. PR diff is the primary Change Review target.
+5. Secondary Change Review targets are current local diff, generated theme zip / package before applying, specific commit, and branch diff.
+6. Plan Alignment Review is independent from normal diff review and requires architecture, engineering direction, and planning-level judgment.
+7. Plan Alignment Review requires an explicit baseline; without one, it may only output a Provisional Alignment Review.
+8. Important review reports are saved as local-only artifacts under `dev_locals/research-notes/YYYY-MM-DD-code-review-<topic>.md`.
+9. Full review reports are not committed by default.
+10. Only distilled and user-confirmed facts, decisions, or lessons may be promoted into `.codex/project/` through `update-project-memory`.
+11. `code-review` must not output a full executable fix plan by default.
+12. It may output issue-specific Fix Recommendations.
+13. Larger, scope-affecting, architecture-affecting, data, security, migration, workflow, or unclear fixes should be routed to `plan-with-context`.
+14. Tiny isolated fixes may be routed directly to `execute-plan` only after user confirmation.
+15. `plan-with-context` supports a Review Report Integration path for planning from review findings.
+16. Review reports may include lesson candidates categorized as Avoid, Keep, or Mixed.
+17. `code-review` may output an advisory Merge / Apply Readiness verdict.
+18. The readiness verdict does not approve, merge, apply, publish, release, deploy, modify code, or update memory.
+
+Resulting files:
+
+```txt
+kit/skills/core/code-review/SKILL.md
+kit/skills/core/code-review/metadata.yml
+kit/prompts/force-code-review.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 10:
+Priority order after Theme 11:
 
-1. `code-review`
-2. installer / install workflow hardening
-3. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
-4. GitHub ruleset / branch protection setup guidance
-5. technology-specific skills
-6. release workflow
-7. deployment workflow
+1. installer / install workflow hardening
+2. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+3. GitHub ruleset / branch protection setup guidance
+4. technology-specific skills
+5. release workflow
+6. deployment workflow
 
 Rationale:
 
