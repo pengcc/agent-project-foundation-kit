@@ -10,33 +10,91 @@ Create a reusable foundation kit for initializing new software projects with age
 
 The kit should support a minimal usable starter workflow first, while leaving room for future expansion.
 
-## v0.1 Core Skills
+The project must keep a clear boundary between:
 
-Core Required:
+```txt
+kit/
+```
+
+Reusable installable payload for downstream projects.
+
+```txt
+.codex/project/
+```
+
+This repository's own development memory.
+
+## v0.1 Core Scope
+
+Completed core skills:
 
 1. project-memory
 2. docs-first-research
 3. plan-with-context
 4. execute-plan
 5. update-project-memory
-6. code-review
-7. publish-current-branch
-8. initialize-project-context
-9. agent-roles-and-capabilities
+6. publish-current-branch
+7. initialize-project-context
+8. agent-roles-and-capabilities
 
-Core Productivity:
+Completed core rules:
 
-9. grill-me
-10. handoff
-11. write-a-skill
+1. engineering-quality-principles
 
-`teach` and `caveman` are optional / future.
+Planned core skills:
+
+1. project-architecture-plan
+2. code-review
+
+Planned productivity skills:
+
+1. grill-me
+2. handoff
+3. write-a-skill
+
+Future / optional:
+
+- technology-specific skills
+- installer / install workflow hardening
+- GitHub ruleset / branch protection setup guidance
+- release workflow
+- deployment workflow
+- teach
+- caveman
 
 ## Theme 1: Project Guideline Foundation
 
 Theme 1 created the original project guideline foundation.
 
 Later Theme 5 renamed the skills but kept the memory files.
+
+Accepted decisions:
+
+1. `AGENTS.md` is the short, stable agent entry point.
+2. `AGENTS.md` must not contain project-specific technology stack rules.
+3. Project-specific facts belong in `.codex/project/project-guideline.md`.
+4. `project-guideline.md` is the current project source of truth.
+5. Plans are process documents and are not continuously maintained after execution.
+6. Old plans must not be treated as current project facts.
+7. `project-guideline.md` should use fixed sections.
+8. Agents should update existing sections before adding new ones.
+9. `project-decisions.md` should use a lightweight ADR-style format.
+10. `lessons-learned.md` should record reusable lessons, not one-off scratch notes.
+11. The original update skill must output an update summary before changing project memory files.
+12. The update summary must mention files to update, reason, major changes, impact, decisions to record, and lessons learned.
+
+Resulting files:
+
+```txt
+kit/project-templates/AGENTS.md
+kit/project-templates/project-guideline.md
+kit/project-templates/project-decisions.md
+kit/project-templates/lessons-learned.md
+kit/skills/core/project-guideline/SKILL.md
+kit/skills/core/project-guideline/metadata.yml
+kit/skills/core/update-project-guideline/SKILL.md
+kit/skills/core/update-project-guideline/metadata.yml
+```
 
 ## Theme 2: Docs-First Research
 
@@ -48,6 +106,14 @@ Accepted decisions:
 4. Degraded mode can continue for low-impact local documentation work, but high-impact technical decisions require confirmation.
 5. `docs-first-research` does not directly update project memory.
 6. Durable findings should suggest `update-project-memory`.
+
+Resulting files:
+
+```txt
+kit/skills/core/docs-first-research/SKILL.md
+kit/skills/core/docs-first-research/metadata.yml
+kit/rules/docs-first-policy.md
+```
 
 ## Theme 3: Plan With Context
 
@@ -63,6 +129,14 @@ Accepted decisions:
 8. Plans must include a recommendation.
 9. Plans wait for user approval before execution.
 10. `force-plan-with-context.md` exists as a workflow trigger prompt.
+
+Resulting files:
+
+```txt
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/plan-with-context/metadata.yml
+kit/prompts/force-plan-with-context.md
+```
 
 ## Theme 4: Execute Plan
 
@@ -82,6 +156,14 @@ Accepted decisions:
 12. Execution ends or pauses with a fixed Execution Summary.
 13. `force-execute-plan.md` exists as a workflow trigger prompt.
 
+Resulting files:
+
+```txt
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/execute-plan/metadata.yml
+kit/prompts/force-execute-plan.md
+```
+
 ## Theme 5: Project Memory Rename Migration
 
 Accepted decisions:
@@ -91,6 +173,15 @@ Accepted decisions:
 3. Do not rename memory files in v0.1.
 4. Do not perform blind global string replacement.
 5. Do not keep legacy alias skills in v0.1.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/project-memory/
+kit/skills/core/update-project-memory/
+```
+
+Old skill directories were removed after applying the migration.
 
 ## Theme 6: Foundation Kit Self Project Memory
 
@@ -103,6 +194,14 @@ Accepted decisions:
 5. `.codex/project/` should be committed for this repo.
 6. `dev_locals/` remains local-only and must not be committed.
 7. Theme 6 does not create or commit `.codex/skills/` to avoid duplicating `kit/skills/`.
+
+Resulting files:
+
+```txt
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
+```
 
 ## Theme 7: Publish Current Branch
 
@@ -120,6 +219,17 @@ Accepted decisions:
 10. It does not immediately merge by default.
 11. It must not bypass branch protection, rulesets, checks, or reviews.
 12. It ends or pauses with a fixed Publish Summary.
+
+Resulting files:
+
+```txt
+kit/skills/core/publish-current-branch/SKILL.md
+kit/skills/core/publish-current-branch/metadata.yml
+kit/prompts/force-publish-current-branch.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```
 
 ## Theme 8: Initialize Project Context
 
@@ -164,23 +274,6 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
-## Future Ideas
-
-- safe update for non-empty projects
-- backup before overwrite
-- diff before overwrite
-- project-specific file protection
-- skill version migration
-- optional technology-specific skills
-- support for agent directories beyond `.codex/`
-- optional teach workflow for learning-oriented projects
-- GitHub ruleset / branch protection setup checklist
-- agent-roles-and-capabilities
-- code-review
-- release workflow
-- deployment workflow
-
-
 ## Theme 9: Agent Roles and Capabilities
 
 Accepted decisions:
@@ -224,3 +317,58 @@ docs/foundation-design-log.md
 .codex/project/project-guideline.md
 .codex/project/project-decisions.md
 ```
+
+## Theme 9.1: Project Memory and Roadmap Alignment Cleanup
+
+Accepted decisions:
+
+1. Pause new theme work after Theme 9 to review repo status, project goal alignment, current progress, and next priorities.
+2. Clean project memory and design log before starting the next feature/theme.
+3. Do not add new installable `kit/` content in this cleanup theme.
+4. Keep foundation-kit-specific lessons in `.codex/project/lessons-learned.md` first.
+5. Do not prematurely copy development lessons into `kit/project-templates/lessons-learned.md`.
+6. Generic reusable rules may be distilled into `kit/` later as a deliberate theme.
+7. For multi-location documentation updates, full-file replacement plus diff review is safer than manual partial editing.
+
+Resulting files:
+
+```txt
+.codex/project/project-guideline.md
+.codex/project/lessons-learned.md
+docs/foundation-design-log.md
+```
+
+## Current Recommended Next Themes
+
+Priority order after Theme 9.1:
+
+1. `project-architecture-plan`
+2. `code-review`
+3. installer / install workflow hardening
+4. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+5. GitHub ruleset / branch protection setup guidance
+6. technology-specific skills
+7. release workflow
+8. deployment workflow
+
+Rationale:
+
+- `project-architecture-plan` should come first because it uses the newly added `Project Architect` role and fills the gap between project initialization and feature-level implementation plans.
+- `code-review` should follow because it is a core planned skill and will use role routing plus engineering quality principles.
+- Installer hardening should follow once the core installed workflow set is clearer.
+- Productivity and technology-specific skills should come after the core project lifecycle is more stable.
+
+## Future Ideas
+
+- safe update for non-empty projects
+- backup before overwrite
+- diff before overwrite
+- project-specific file protection
+- skill version migration
+- optional technology-specific skills
+- support for agent directories beyond `.codex/`
+- optional teach workflow for learning-oriented projects
+- GitHub ruleset / branch protection setup checklist
+- release workflow
+- deployment workflow
+- deliberate reusable lesson/rule distillation from `.codex/project/lessons-learned.md` into `kit/`

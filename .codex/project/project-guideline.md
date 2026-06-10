@@ -4,7 +4,7 @@
 
 `agent-project-foundation-kit` is a reusable foundation kit for initializing software projects with agent-ready project memory, skills, prompts, rules, and workflow constraints.
 
-The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, publishing boundaries, project initialization checks, and durable project memory.
+The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, publishing boundaries, project initialization checks, role routing, engineering quality principles, and durable project memory.
 
 This repository develops the reusable foundation kit itself.
 
@@ -23,6 +23,7 @@ Completed themes:
 - Theme 7: `publish-current-branch`
 - Theme 8: `initialize-project-context`
 - Theme 9: `agent-roles-and-capabilities`
+- Theme 9.1: project memory and roadmap alignment cleanup
 
 Current canonical core skill names:
 
@@ -31,12 +32,18 @@ Current canonical core skill names:
 - `plan-with-context`
 - `execute-plan`
 - `update-project-memory`
-- `code-review`
 - `publish-current-branch`
 - `initialize-project-context`
 - `agent-roles-and-capabilities`
+
+Current canonical core rules:
+
 - `engineering-quality-principles`
-- `agent-roles-and-capabilities`
+
+Planned core skill names:
+
+- `project-architecture-plan`
+- `code-review`
 
 Current canonical productivity skill names:
 
@@ -44,15 +51,22 @@ Current canonical productivity skill names:
 - `handoff`
 - `write-a-skill`
 
-Future planned skill/theme:
+Future planned themes:
 
 - `project-architecture-plan`
 - `code-review`
+- installer / install workflow hardening
+- productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+- GitHub ruleset / branch protection setup guidance
 - technology-specific skills
+- release workflow
+- deployment workflow
 
 ## 3. Non-Goals
 
-v0.1 does not aim to solve full role taxonomy, technology-specific skills, release/deploy workflows, GitHub settings automation, or safe migration for existing non-empty `.codex/` installations.
+v0.1 does not aim to solve full technology-specific expertise, release/deploy workflows, GitHub settings automation, or safe migration for existing non-empty `.codex/` installations.
+
+Full role routing is now available at the generic level through `agent-roles-and-capabilities`, but framework-specific or provider-specific expert skills remain future work.
 
 ## 4. Tech Stack and Runtime
 
@@ -103,7 +117,29 @@ Theme zip files should normally be stored under:
 dev_locals/theme-zips/
 ```
 
-The script supports configurable `THEME_ZIP_DIR` and `DEFAULT_BRANCH`.
+The script supports configurable environment variables:
+
+```txt
+THEME_ZIP_DIR
+DEFAULT_BRANCH
+THEME_BRANCH_PREFIX
+DESTRUCTIVE_DROP_PERCENT
+DESTRUCTIVE_DROP_LINES
+```
+
+Current `apply-theme-zip.sh` safety behavior:
+
+- requires a clean working tree
+- warns before applying a theme zip on `main` / `master` / default branch
+- suggests and can create a feature branch
+- lists zip contents
+- lists incoming line counts
+- scans for destructive-looking line-count drops
+- requires `APPLY_DESTRUCTIVE` before applying high-risk overwrites
+- shows local line counts after apply
+- shows `git status` and `git diff --stat`
+- can optionally commit, push, and create a PR
+- never merges by default
 
 ## 7. Environment Variables
 
@@ -112,6 +148,9 @@ Known script-level environment variables:
 ```txt
 THEME_ZIP_DIR
 DEFAULT_BRANCH
+THEME_BRANCH_PREFIX
+DESTRUCTIVE_DROP_PERCENT
+DESTRUCTIVE_DROP_LINES
 ```
 
 ## 8. Architecture and Data Flow
@@ -148,7 +187,9 @@ Current validation is mostly file/content based:
 - Check line counts before/after apply
 - Run `rg` to detect stale references
 - Check old directories are removed after rename migration
-- Verify remote raw GitHub file line counts after push
+- Check diff stats before commit
+- Verify remote raw GitHub file line counts after push when needed
+- Prefer PR review for high-risk or multi-file theme updates
 
 ## 10. Development Workflow
 
@@ -156,12 +197,17 @@ The repo is developed theme by theme:
 
 1. Discuss theme decisions.
 2. Freeze accepted decisions.
-3. Generate a theme zip.
-4. Put the zip under `dev_locals/theme-zips/`.
-5. Apply it with `scripts/apply-theme-zip.sh`.
-6. Verify local and remote file counts.
-7. Commit and push.
-8. Update this repo's project memory when durable facts, decisions, or lessons change.
+3. Choose the safest update method:
+   - single small edit: manual edit
+   - multiple coordinated edits in one file: full-file replacement
+   - multiple coordinated files: zip or full-file replacement bundle
+   - mature files: verify line counts and diff before commit
+4. Generate the selected artifact when needed.
+5. Put theme zip files under `dev_locals/theme-zips/` when using zip delivery.
+6. Apply with `scripts/apply-theme-zip.sh` when using zip delivery.
+7. Verify local diff, line counts, and stale references.
+8. Commit and push.
+9. Update this repo's project memory when durable facts, decisions, or lessons change.
 
 ## 11. Deployment
 
@@ -187,13 +233,17 @@ Completed:
 - `publish-current-branch`
 - `initialize-project-context`
 - `agent-roles-and-capabilities`
+- `engineering-quality-principles`
+- Theme 9.1 project memory and roadmap alignment cleanup
 
 In progress / next likely themes:
 
-- `agent-roles-and-capabilities`
+- `project-architecture-plan`
 - `code-review`
-- installer behavior
+- installer / install workflow hardening
+- productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
+- technology-specific skills
 
 ## 13. Known Constraints and Risks
 
@@ -202,8 +252,11 @@ In progress / next likely themes:
 - Reusable templates under `kit/project-templates/` must stay generic.
 - `.codex/project/` belongs to this repo and must not be treated as installable payload.
 - `.codex/skills/` is not committed for this repo to avoid duplicating `kit/skills/`.
-- `initialize-project-context`
-- `agent-roles-and-capabilities` can identify capability areas, but full role definitions belong to future `agent-roles-and-capabilities`.
+- `initialize-project-context` can identify capability areas and use `agent-roles-and-capabilities` when installed.
+- `agent-roles-and-capabilities` now defines generic role profiles and role routing, but technology-specific expert skills remain future work.
+- `project-architecture-plan` and `code-review` are still planned and not yet implemented.
+- Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
+- Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
 
 ## 14. Agent Notes
 
@@ -211,12 +264,13 @@ When working on this repo:
 
 - Use `project-memory` as the entry point for repo context.
 - Use `initialize-project-context` after installing the kit into a new project or when first taking over an existing project.
+- Use `agent-roles-and-capabilities` for role routing and workflow boundary checks.
 - Use `plan-with-context` for new theme planning.
 - Use `execute-plan` for approved theme implementation.
 - Use `publish-current-branch` for push / PR / merge preparation.
 - Use `update-project-memory` when this repo's current facts, decisions, or lessons change.
+- Apply `engineering-quality-principles` to engineering, architecture, implementation, and review work.
 - Do not write foundation-kit development lessons into `kit/project-templates/lessons-learned.md`.
-
 
 ## Theme 9 Note: Agent Roles and Engineering Quality
 
@@ -225,3 +279,11 @@ Theme 9 adds `agent-roles-and-capabilities` as a core role-routing skill and `en
 Existing workflow skills are only lightly patched with a short Role Routing Integration section.
 
 Important safety constraint: mature workflow skills must not be replaced with short stubs unless an explicit full rewrite is approved.
+
+## Theme 9.1 Note: Roadmap Alignment
+
+Theme 9.1 cleans up project memory and design-log status after Theme 9.
+
+It does not add new skills, rules, prompts, or installable kit content.
+
+It aligns completed themes, planned themes, current core skills, current rules, known risks, and next likely work so future tasks do not drift away from the project goal.

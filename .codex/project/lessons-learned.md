@@ -92,6 +92,13 @@ Reusable downstream template content belongs in:
 kit/project-templates/lessons-learned.md
 ```
 
+### Reuse guidance
+
+When updating memory in a template/foundation repository, first decide whether the update belongs to:
+
+- the repository's own project memory, or
+- the reusable template shipped to future projects
+
 ## Lesson: Preserve mature workflow files during theme updates
 
 ### Context
@@ -106,8 +113,7 @@ Large deletions or major line-count drops in existing files must be treated as h
 
 ### Future Rule
 
-Before applying or recommending a theme zip, compare line counts and flag large drops clearly for user review
-
+Before applying or recommending a theme zip, compare line counts and flag large drops clearly for user review.
 
 ## Lesson: Prefer the simplest safe path
 
@@ -123,11 +129,31 @@ Automation should reduce risk and mental load, not add process complexity.
 
 ### Future Rule
 
-For isolated single-file changes, consider direct replacement plus git diff review. Use theme zips for structured multi-file changes.
+For isolated single-file changes, consider direct replacement plus git diff review.
 
-### Reuse guidance
+Use theme zips for structured multi-file changes.
 
-When updating memory in a template/foundation repository, first decide whether the update belongs to:
+## Lesson: Prefer full-file replacement for multi-location document updates
 
-- the repository's own project memory, or
-- the reusable template shipped to future projects
+### Context
+
+During project memory and roadmap alignment cleanup after Theme 9, the update required several coordinated edits across documentation files.
+
+Manual edits across multiple sections can introduce typos, missed replacements, or inconsistent wording.
+
+### Lesson
+
+For single-line or single-location edits, manual patching is usually simple and safe.
+
+For multi-location documentation updates in one or more files, prefer generating the complete updated file and replacing the old file, then reviewing with `git diff`.
+
+For structured multi-file changes, use a theme zip or full-file replacement bundle.
+
+### Future Rule
+
+Choose the update method based on review safety:
+
+- single small edit: manual edit
+- multiple coordinated edits in one file: full-file replacement
+- multiple coordinated files: zip or full-file replacement bundle
+- mature files: always verify line counts and diff before commit
