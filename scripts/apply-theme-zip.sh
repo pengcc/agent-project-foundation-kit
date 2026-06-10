@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Disable interactive pagers for script review output.
+# Automation should not leave users stuck in less/(END).
+export GIT_PAGER=cat
+export PAGER=cat
+
 # ============================================================
 # apply-theme-zip.sh
 # ============================================================
@@ -14,6 +19,7 @@ set -euo pipefail
 # - Show incoming files, line counts, local line counts, git status, diff stat
 # - Optionally commit, push, and create PR
 # - Never merge by default
+# - After the user confirms the PR was merged, optionally switch back to the default branch and refresh it
 #
 # Usage:
 #   bash scripts/apply-theme-zip.sh <zip-path-or-file-name> "Commit message"
@@ -36,6 +42,8 @@ set -euo pipefail
 # - The script can create a PR with gh, but it never merges.
 # - If a theme package requires a post-apply script, answer "no" to commit, run the post-apply
 #   script, review diff, then commit/push/PR manually.
+# - After deleting or keeping the local zip, the script can ask whether the PR has already
+#   been merged. If confirmed, it switches back to DEFAULT_BRANCH and pulls latest.
 #
 # ============================================================
 
@@ -109,9 +117,13 @@ ensure_git_repo() {
   cd "$(git rev-parse --show-toplevel)"
 }
 
+is_worktree_clean() {
+  [[ -z "$(git status --porcelain)" ]]
+}
+
 require_clean_worktree() {
-  if [[ -n "$(git status --porcelain)" ]]; then
-    git status --short
+  if ! is_worktree_clean; then
+    git --no-pager status --short
     die "Working tree is not clean. Commit, stash, or reset changes before applying a theme zip."
   fi
 }
@@ -251,10 +263,10 @@ show_changed_line_counts() {
 
 show_review_info() {
   info "Git status:"
-  git status --short
+  git --no-pager status --short
 
   info "Diff stat:"
-  git diff --stat || true
+  git --no-pager diff --stat || true
 
   printf "\n"
   warn "Review the diff carefully before committing."
@@ -309,6 +321,38 @@ maybe_delete_zip() {
   fi
 }
 
+maybe_refresh_default_branch_after_merge() {
+  printf "\n"
+  info "Post-merge refresh check."
+
+  if ! confirm "Has the PR/branch been merged into '$DEFAULT_BRANCH' and should I switch back and refresh '$DEFAULT_BRANCH'?"; then
+    warn "Skipped default branch refresh."
+    warn "When the PR is merged, run: git switch $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
+    return
+  fi
+
+  if ! is_worktree_clean; then
+    warn "Working tree is not clean. Cannot switch branches safely."
+    git --no-pager status --short
+    warn "Commit, stash, or reset changes, then run:"
+    warn "  git switch $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
+    return
+  fi
+
+  info "Fetching latest '$DEFAULT_BRANCH' from origin..."
+  git fetch origin "$DEFAULT_BRANCH"
+
+  info "Switching to '$DEFAULT_BRANCH'..."
+  git switch "$DEFAULT_BRANCH"
+
+  info "Refreshing '$DEFAULT_BRANCH' with fast-forward only..."
+  git pull --ff-only origin "$DEFAULT_BRANCH"
+
+  ok "Refreshed '$DEFAULT_BRANCH'."
+  ok "Current branch: $(git rev-parse --abbrev-ref HEAD)"
+  git --no-pager status --short
+}
+
 main() {
   if [[ $# -lt 2 ]]; then
     die "Usage: bash scripts/apply-theme-zip.sh <zip-path-or-file-name> \"Commit message\""
@@ -345,6 +389,7 @@ main() {
   show_review_info
   maybe_commit_push_pr "$commit_message"
   maybe_delete_zip "$zip_path"
+  maybe_refresh_default_branch_after_merge
 
   ok "Done."
 }
