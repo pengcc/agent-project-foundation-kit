@@ -10,50 +10,6 @@ Create a reusable foundation kit for initializing new software projects with age
 
 The kit should support a minimal usable starter workflow first, while leaving room for future expansion.
 
-## Confirmed Decisions
-
-### Core directory decisions
-
-Installed agent files use `.codex/`.
-
-v0.1 targets empty new projects.
-
-Installable source files live under `kit/`.
-
-Project templates live under `kit/project-templates/`.
-
-The installer copies from `kit/` into the target project `.codex/`.
-
-### Project memory files
-
-Project memory files remain:
-
-```txt
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
-
-`project-guideline.md` remains the current project source of truth.
-
-`project-decisions.md` stores durable decisions and rationale.
-
-`lessons-learned.md` stores reusable mistakes, debugging findings, and lessons.
-
-### Local-only workspace
-
-The installer creates:
-
-```txt
-dev_locals/plans/
-dev_locals/handoffs/
-dev_locals/scratch/
-dev_locals/research-notes/
-dev_locals/theme-zips/
-```
-
-The installer ensures `.gitignore` contains `dev_locals/`.
-
 ## v0.1 Core Skills
 
 Core Required:
@@ -65,12 +21,13 @@ Core Required:
 5. update-project-memory
 6. code-review
 7. publish-current-branch
+8. initialize-project-context
 
 Core Productivity:
 
-8. grill-me
-9. handoff
-10. write-a-skill
+9. grill-me
+10. handoff
+11. write-a-skill
 
 `teach` and `caveman` are optional / future.
 
@@ -130,14 +87,9 @@ Accepted decisions:
 
 1. Rename `project-guideline` skill to `project-memory`.
 2. Rename `update-project-guideline` skill to `update-project-memory`.
-3. `project-memory` is the canonical skill for reading and applying project memory.
-4. `update-project-memory` is the canonical skill for updating durable project memory.
-5. Do not rename memory files in v0.1.
-6. Do not perform blind global string replacement.
-7. Update affected templates, skills, prompts, metadata, rules, and this design log semantically.
-8. Delete old skill directories before applying the migration zip.
-9. Do not keep legacy alias skills in v0.1.
-10. Old skill names may appear only in this historical design log or as part of the `project-guideline.md` filename.
+3. Do not rename memory files in v0.1.
+4. Do not perform blind global string replacement.
+5. Do not keep legacy alias skills in v0.1.
 
 ## Theme 6: Foundation Kit Self Project Memory
 
@@ -147,12 +99,9 @@ Accepted decisions:
 2. This repo's own durable project memory lives under `.codex/project/`.
 3. It records foundation-kit development facts, decisions, and lessons.
 4. It is not part of the installable `kit/` payload.
-5. The installer should copy only `kit/` content into downstream projects.
-6. This repo's `.codex/project/` can reuse the same project-memory concepts and skills.
-7. `.codex/project/` should be committed for this repo.
-8. `dev_locals/` remains local-only and must not be committed.
-9. Theme 6 does not create or commit `.codex/skills/` to avoid duplicating `kit/skills/`.
-10. Theme 6 does not modify `kit/project-templates/AGENTS.md` or `kit/project-templates/lessons-learned.md`.
+5. `.codex/project/` should be committed for this repo.
+6. `dev_locals/` remains local-only and must not be committed.
+7. Theme 6 does not create or commit `.codex/skills/` to avoid duplicating `kit/skills/`.
 
 ## Theme 7: Publish Current Branch
 
@@ -161,28 +110,54 @@ Accepted decisions:
 1. `publish-current-branch` publishes the current completed and validated branch into the GitHub workflow.
 2. It can push the current branch, create/update PR, and prepare merge or auto-merge when supported and authorized.
 3. It does not implement features, execute plans, release, or deploy.
-4. It supports short trigger commands:
-   - `publish-current-branch`
-   - `Use publish-current-branch`
-5. Before publishing, it restates workflow, branch, scope, out of scope, and stop conditions.
-6. It performs lightweight runtime preflight checks on branch, working tree, local commits, remote, upstream, gh CLI/auth, and existing PR state.
-7. If the current branch is `main` or `master`, it pauses by default.
-8. If the working tree is dirty or there is no local commit, it pauses.
-9. It can create or update PRs.
-10. Auto-merge requires explicit authorization or known project convention, and known repo support.
-11. Repo-level GitHub settings readiness belongs to future `initialize-project-context`, not to every publish run.
-12. If repo settings are unknown in project memory, it defaults to create/update PR only and recommends setup check.
-13. It does not immediately merge by default.
-14. It must not bypass branch protection, rulesets, checks, or reviews.
-15. It ends or pauses with a fixed Publish Summary.
-16. Theme 7 does not implement `initialize-project-context`; it only records that dependency.
+4. It supports short trigger commands.
+5. It performs lightweight runtime preflight checks.
+6. If the current branch is `main` or `master`, it pauses by default.
+7. If the working tree is dirty or there is no local commit, it pauses.
+8. Auto-merge requires explicit authorization or known project convention, and known repo support.
+9. Repo-level GitHub settings readiness belongs to `initialize-project-context` / setup check, not every publish run.
+10. It does not immediately merge by default.
+11. It must not bypass branch protection, rulesets, checks, or reviews.
+12. It ends or pauses with a fixed Publish Summary.
+
+## Theme 8: Initialize Project Context
+
+Accepted decisions:
+
+1. `initialize-project-context` is the foundation-kit installation / first project adoption workflow.
+2. It runs before formal feature planning.
+3. It combines product descriptions, project development plans, README, docs, configuration, code, tests, Git/GitHub state, and existing project memory.
+4. It compares product/plan documents against repo reality.
+5. It must identify product goals, current implementation state, tech stack, key versions, scripts, validation, deployment, GitHub readiness, missing information, and manual setup tasks.
+6. It does not implement features, execute plans, refactor code, modify GitHub settings, release, or deploy.
+7. Durable memory updates must be performed through `update-project-memory`.
+8. Its report must distinguish:
+   - Product / Plan says
+   - Repo currently shows
+   - Gap / Risk
+   - Question for user
+   - Recommended project memory update
+9. It must output a fixed Project Initialization Report.
+10. The report includes Project Identity, Product / Plan Summary, Repo Reality Check, Tech Stack and Version Check, Scripts and Validation Check, Environment and Secrets Check, Git and GitHub Readiness, Deployment Readiness, Capability Areas Detected, Gaps/Risks/Open Questions, Manual Setup Tasks, Recommended Project Memory Updates, and Recommended Next Workflow.
+11. If `agent-roles-and-capabilities` exists, it may be used for Agent Role Profile Suggestions.
+12. If that skill does not exist, role suggestions must be provisional and only capability areas are detected.
+13. Full role taxonomy, capability boundaries, and task-to-role routing belong to later `agent-roles-and-capabilities`.
+14. Full reports default to `dev_locals/research-notes/YYYY-MM-DD-project-initialization-report.md`.
+15. Initialization reports are local-only analysis artifacts, not long-term source of truth.
+16. Missing information must be classified as Blocking before project memory update, Needed before first feature planning, or Nice to clarify later.
+17. It must ask high-priority blocking questions first, one tight group at a time, with a recommendation or direction.
+18. It must not silently write project memory.
+19. It outputs recommended project memory updates grouped by `project-guideline.md`, `project-decisions.md`, and `lessons-learned.md`.
+20. It uses `docs-first-research` for external technical facts, version recommendations, compatibility, deployment/GitHub Actions behavior, security/auth/database choices, or external constraints that may be written into project memory.
+21. It does not need `docs-first-research` for reading repo-internal facts.
+22. `force-initialize-project-context.md` exists as a workflow trigger prompt.
 
 Resulting files:
 
 ```txt
-kit/skills/core/publish-current-branch/SKILL.md
-kit/skills/core/publish-current-branch/metadata.yml
-kit/prompts/force-publish-current-branch.md
+kit/skills/core/initialize-project-context/SKILL.md
+kit/skills/core/initialize-project-context/metadata.yml
+kit/prompts/force-initialize-project-context.md
 docs/foundation-design-log.md
 .codex/project/project-guideline.md
 .codex/project/project-decisions.md
@@ -196,10 +171,10 @@ docs/foundation-design-log.md
 - project-specific file protection
 - skill version migration
 - optional technology-specific skills
-- GitHub PR creation workflow
 - support for agent directories beyond `.codex/`
 - optional teach workflow for learning-oriented projects
 - GitHub ruleset / branch protection setup checklist
-- initialize-project-context
+- agent-roles-and-capabilities
+- code-review
 - release workflow
 - deployment workflow

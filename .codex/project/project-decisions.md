@@ -8,12 +8,6 @@ This file records durable decisions for the `agent-project-foundation-kit` repos
 
 Accepted
 
-### Context
-
-This repository develops reusable skills, templates, prompts, and rules for downstream projects. It also needs its own durable project memory while being developed.
-
-The reusable templates under `kit/project-templates/` are intended for downstream projects and should not contain this repo's development history.
-
 ### Decision
 
 Use two separate memory layers:
@@ -32,21 +26,11 @@ Durable project memory for this repository itself.
 
 The repo's own `.codex/project/` is committed to this repository but is not part of the installable kit payload.
 
-### Impact
-
-- Foundation-kit development lessons can be recorded without polluting reusable templates.
-- Downstream projects receive generic templates, not this repo's history.
-- Project memory skills can still be reused conceptually for this repo.
-
 ## Decision: Keep memory file names but rename memory skills
 
 ### Status
 
 Accepted
-
-### Context
-
-The original skill names `project-guideline` and `update-project-guideline` were too narrow because the workflows cover guideline, decisions, and lessons.
 
 ### Decision
 
@@ -65,23 +49,11 @@ project-decisions.md
 lessons-learned.md
 ```
 
-### Impact
-
-- Skill names describe workflow responsibility.
-- Memory file names describe concrete content responsibility.
-- Existing mental model remains clear.
-
 ## Decision: Do not commit `.codex/skills/` for this repo yet
 
 ### Status
 
 Accepted
-
-### Context
-
-This repository's canonical skill source already lives under `kit/skills/`.
-
-Committing another copy under `.codex/skills/` would create duplicate maintenance.
 
 ### Decision
 
@@ -99,8 +71,6 @@ Do not commit:
 
 for now.
 
-### Impact
-
 Agents should reference canonical skill sources under `kit/skills/` while developing this repo.
 
 ## Decision: Theme zips belong under `dev_locals/theme-zips/`
@@ -108,12 +78,6 @@ Agents should reference canonical skill sources under `kit/skills/` while develo
 ### Status
 
 Accepted
-
-### Context
-
-Theme zip files are generated delivery artifacts used during development.
-
-They should not clutter the repo root and should not be committed.
 
 ### Decision
 
@@ -125,42 +89,17 @@ dev_locals/theme-zips/
 
 `dev_locals/` remains local-only and ignored by git.
 
-### Impact
-
-The helper script supports a configurable `THEME_ZIP_DIR` and can resolve either a full zip path or a filename under the default theme zip directory.
-
 ## Decision: Publish current branch workflow boundary
 
 ### Status
 
 Accepted
 
-### Context
-
-`execute-plan` may create local commits, but remote publishing, PR creation, and merge preparation require a separate workflow boundary.
-
 ### Decision
 
-Use `publish-current-branch` for:
+Use `publish-current-branch` for pushing the current completed branch, creating/updating PRs, and preparing merge or auto-merge when supported and authorized.
 
-- pushing the current completed branch
-- creating or updating PRs
-- preparing merge or auto-merge when supported and authorized
-
-`publish-current-branch` must not:
-
-- implement features
-- execute plans
-- release
-- deploy
-- bypass branch protection
-- force push to main
-
-### Impact
-
-Publishing is separated from local implementation.
-
-Release and deployment remain future workflows.
+It must not implement features, execute plans, release, deploy, bypass branch protection, or force push to main.
 
 ## Decision: GitHub repo-level settings belong to setup workflow
 
@@ -168,24 +107,112 @@ Release and deployment remain future workflows.
 
 Accepted
 
-### Context
-
-Repo-level settings such as branch protection, rulesets, required checks, and auto-merge support do not normally change on every publish.
-
-Checking them fully during every publish would make `publish-current-branch` too heavy.
-
 ### Decision
 
-Repo-level GitHub readiness belongs to a future project setup workflow such as `initialize-project-context`.
+Repo-level GitHub readiness belongs to `initialize-project-context` or a future deeper setup workflow.
 
 `publish-current-branch` performs only lightweight runtime preflight checks each time.
 
-It uses project memory for known GitHub workflow readiness.
-
 If readiness is unknown, it creates/updates PR only and recommends setup check.
 
-### Impact
+## Decision: Initialize project context before feature planning
 
-Publishing stays fast and safe.
+### Status
 
-Project initialization must eventually record GitHub workflow readiness in project memory.
+Accepted
+
+### Context
+
+After installing the foundation kit, an agent should not jump directly into feature planning or implementation without understanding project identity, product goals, repo reality, scripts, validation, deployment readiness, and GitHub readiness.
+
+### Decision
+
+Use `initialize-project-context` after foundation kit installation or when an existing project first adopts the kit.
+
+It must compare product/plan documents against repo reality and output a fixed Project Initialization Report.
+
+It must not implement features, execute plans, refactor code, modify GitHub settings, release, deploy, or silently write project memory.
+
+## Decision: Product/plan documents must be compared against repo reality
+
+### Status
+
+Accepted
+
+### Decision
+
+`initialize-project-context` must prioritize and compare product descriptions, project development plans, README, docs, configuration, code, tests, and Git/GitHub state.
+
+The report must separate:
+
+```txt
+Product / Plan says:
+Repo currently shows:
+Gap / Risk:
+Question for user:
+Recommended project memory update:
+```
+
+## Decision: Role suggestions depend on future agent-roles-and-capabilities
+
+### Status
+
+Accepted
+
+### Decision
+
+`initialize-project-context` may detect capability areas.
+
+If an `agent-roles-and-capabilities` skill exists, it may use or reference that skill to generate role profile suggestions.
+
+If that skill does not exist, role suggestions must be marked provisional.
+
+Full role taxonomy, capability boundaries, and task-to-role routing belong to a later `agent-roles-and-capabilities` skill.
+
+## Decision: Initialization reports are local-only analysis artifacts
+
+### Status
+
+Accepted
+
+### Decision
+
+By default, save the full initialization report to:
+
+```txt
+dev_locals/research-notes/YYYY-MM-DD-project-initialization-report.md
+```
+
+The report is local-only and not committed.
+
+Durable facts, decisions, and lessons must be written to `.codex/project/` via `update-project-memory`.
+
+## Decision: Initialization questions must be prioritized
+
+### Status
+
+Accepted
+
+### Decision
+
+Classify missing information as:
+
+```txt
+Blocking before project memory update
+Needed before first feature planning
+Nice to clarify later
+```
+
+Ask the highest-priority blocking questions first, one tight group at a time, and include a recommended answer or direction.
+
+## Decision: Initialization uses docs-first-research only for external technical facts
+
+### Status
+
+Accepted
+
+### Decision
+
+`initialize-project-context` must prioritize repo-internal facts.
+
+It must use `docs-first-research` when analysis depends on external technical facts, version recommendations, compatibility, deployment/GitHub Actions behavior, security/auth/database choices, or external constraints that may be written into project memory.

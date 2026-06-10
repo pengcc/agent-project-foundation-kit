@@ -4,7 +4,7 @@
 
 `agent-project-foundation-kit` is a reusable foundation kit for initializing software projects with agent-ready project memory, skills, prompts, rules, and workflow constraints.
 
-The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, publishing boundaries, and durable project memory.
+The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, publishing boundaries, project initialization checks, and durable project memory.
 
 This repository develops the reusable foundation kit itself.
 
@@ -21,6 +21,7 @@ Completed themes:
 - Theme 5: project memory rename migration
 - Theme 6: this repository's own `.codex/project/` memory
 - Theme 7: `publish-current-branch`
+- Theme 8: `initialize-project-context`
 
 Current canonical core skill names:
 
@@ -31,6 +32,7 @@ Current canonical core skill names:
 - `update-project-memory`
 - `code-review`
 - `publish-current-branch`
+- `initialize-project-context`
 
 Current canonical productivity skill names:
 
@@ -38,19 +40,13 @@ Current canonical productivity skill names:
 - `handoff`
 - `write-a-skill`
 
+Future planned skill/theme:
+
+- `agent-roles-and-capabilities`
+
 ## 3. Non-Goals
 
-v0.1 does not aim to solve:
-
-- Safe migration for existing non-empty `.codex/` installations
-- Multi-agent framework support beyond Codex-oriented structure
-- Full installer backup / diff / merge support
-- Deployment workflow
-- Release workflow
-- Technology-specific skills
-- GitHub ruleset / branch protection automation
-- Full prompt library design
-- Full project initialization / GitHub setup workflow
+v0.1 does not aim to solve full role taxonomy, technology-specific skills, release/deploy workflows, GitHub settings automation, or safe migration for existing non-empty `.codex/` installations.
 
 ## 4. Tech Stack and Runtime
 
@@ -71,57 +67,21 @@ Important directories:
 
 ```txt
 kit/
-```
-
-Installable payload source. This is what the future installer copies into downstream projects.
-
-```txt
 kit/project-templates/
-```
-
-Reusable project memory templates for downstream projects.
-
-```txt
 kit/skills/
-```
-
-Canonical reusable skill source.
-
-```txt
 kit/prompts/
-```
-
-Reusable workflow trigger prompts.
-
-```txt
 kit/rules/
-```
-
-Reusable policy/rule documents.
-
-```txt
 docs/
-```
-
-Foundation design and planning documentation.
-
-```txt
 scripts/
-```
-
-Development helper scripts for this repo.
-
-```txt
 .codex/project/
-```
-
-Durable project memory for this repository itself. This is not part of the installable `kit/` payload.
-
-```txt
 dev_locals/
 ```
 
-Local-only workspace for plans, handoffs, scratch notes, research notes, and theme zip files. This must not be committed.
+`kit/` is the installable payload source.
+
+`.codex/project/` is durable project memory for this repository itself and is not part of the installable `kit/` payload.
+
+`dev_locals/` is local-only and contains plans, handoffs, scratch notes, research notes, initialization reports, and theme zip files.
 
 ## 6. Scripts and Commands
 
@@ -131,23 +91,13 @@ Current helper script:
 scripts/apply-theme-zip.sh
 ```
 
-Purpose:
-
-- Apply generated theme zip files
-- Show zip contents and line counts
-- Apply files to repo root
-- Show local line counts
-- Optionally commit and push
-- Generate remote raw GitHub verify commands for files only
-- Optionally delete the local zip at the end
-
 Theme zip files should normally be stored under:
 
 ```txt
 dev_locals/theme-zips/
 ```
 
-The script supports a configurable `THEME_ZIP_DIR`.
+The script supports configurable `THEME_ZIP_DIR` and `DEFAULT_BRANCH`.
 
 ## 7. Environment Variables
 
@@ -155,27 +105,8 @@ Known script-level environment variables:
 
 ```txt
 THEME_ZIP_DIR
-```
-
-Default:
-
-```txt
-dev_locals/theme-zips
-```
-
-Used by `scripts/apply-theme-zip.sh` to locate theme zip files when only a filename is passed.
-
-```txt
 DEFAULT_BRANCH
 ```
-
-Default:
-
-```txt
-main
-```
-
-Used by `scripts/apply-theme-zip.sh` for branch checks and raw GitHub verify command generation.
 
 ## 8. Architecture and Data Flow
 
@@ -193,7 +124,7 @@ Repository development memory:
 .codex/project/
 ```
 
-Local-only execution/planning artifacts:
+Local-only execution/planning/research artifacts:
 
 ```txt
 dev_locals/
@@ -213,24 +144,11 @@ Current validation is mostly file/content based:
 - Check old directories are removed after rename migration
 - Verify remote raw GitHub file line counts after push
 
-Example migration reference check:
-
-```bash
-rg "project-guideline|update-project-guideline" .
-```
-
-Allowed old-name matches after Theme 5:
-
-- `project-guideline.md` file/path references
-- historical entries in `docs/foundation-design-log.md`
-
 ## 10. Development Workflow
 
-The repo is developed theme by theme.
+The repo is developed theme by theme:
 
-Typical flow:
-
-1. Discuss theme decisions one by one.
+1. Discuss theme decisions.
 2. Freeze accepted decisions.
 3. Generate a theme zip.
 4. Put the zip under `dev_locals/theme-zips/`.
@@ -238,8 +156,6 @@ Typical flow:
 6. Verify local and remote file counts.
 7. Commit and push.
 8. Update this repo's project memory when durable facts, decisions, or lessons change.
-
-For rename/migration themes, manually delete old directories before applying the migration zip when deletions are required.
 
 ## 11. Deployment
 
@@ -259,35 +175,34 @@ Completed:
 - `docs-first-research`
 - `plan-with-context`
 - `execute-plan`
-- Project memory rename migration:
-  - `project-guideline` skill renamed to `project-memory`
-  - `update-project-guideline` skill renamed to `update-project-memory`
-  - memory files remain named `project-guideline.md`, `project-decisions.md`, and `lessons-learned.md`
-- `scripts/apply-theme-zip.sh` improved to support `dev_locals/theme-zips/`, configurable `THEME_ZIP_DIR`, file-only remote verify commands, and optional zip cleanup
+- Project memory rename migration
+- `scripts/apply-theme-zip.sh` improvements
 - Foundation-kit repo self project memory under `.codex/project/`
 - `publish-current-branch`
+- `initialize-project-context`
 
 In progress / next likely themes:
 
+- `agent-roles-and-capabilities`
 - `code-review`
-- `initialize-project-context`
 - installer behavior
 - GitHub ruleset / branch protection setup guidance
 
 ## 13. Known Constraints and Risks
 
-- Theme zip files cannot express deletions. Old files/directories must be removed separately.
-- Rename migrations can miss references outside skills/prompts/templates/docs, such as `kit/rules/`.
-- The reusable templates under `kit/project-templates/` must stay generic and must not contain this repo's own development history.
+- Theme zip files cannot express deletions.
+- Rename migrations can miss references outside skills/prompts/templates/docs.
+- Reusable templates under `kit/project-templates/` must stay generic.
 - `.codex/project/` belongs to this repo and must not be treated as installable payload.
 - `.codex/skills/` is not committed for this repo to avoid duplicating `kit/skills/`.
-- GitHub repo-level settings readiness belongs to future `initialize-project-context`, not to every `publish-current-branch` run.
+- `initialize-project-context` can identify capability areas, but full role definitions belong to future `agent-roles-and-capabilities`.
 
 ## 14. Agent Notes
 
 When working on this repo:
 
 - Use `project-memory` as the entry point for repo context.
+- Use `initialize-project-context` after installing the kit into a new project or when first taking over an existing project.
 - Use `plan-with-context` for new theme planning.
 - Use `execute-plan` for approved theme implementation.
 - Use `publish-current-branch` for push / PR / merge preparation.

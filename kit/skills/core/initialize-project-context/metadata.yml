@@ -1,0 +1,5 @@
+name: initialize-project-context
+version: 0.1.0
+category: core
+required: true
+description: Initializes project context by comparing product/plan docs with repo reality, setup readiness, gaps, and project memory update needs.
