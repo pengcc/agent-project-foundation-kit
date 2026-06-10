@@ -1,328 +1,352 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
-# ------------------------------------------------------------
-# Config
-# ------------------------------------------------------------
+# ============================================================
+# apply-theme-zip.sh
+# ============================================================
+#
+# Safely apply a foundation-kit theme zip.
+#
+# Goals:
+# - Prefer feature branch + PR review workflow
+# - Detect destructive-looking overwrites before applying
+# - Prevent accidental large content loss
+# - Show incoming files, line counts, local line counts, git status, diff stat
+# - Optionally commit, push, and create PR
+# - Never merge by default
+#
+# Usage:
+#   bash scripts/apply-theme-zip.sh <zip-path-or-file-name> "Commit message"
+#
+# Examples:
+#   bash scripts/apply-theme-zip.sh agent-theme9.zip "Add agent roles"
+#   THEME_ZIP_DIR=dev_locals/theme-zips bash scripts/apply-theme-zip.sh agent-theme9.zip "Add agent roles"
+#
+# Config:
+#   THEME_ZIP_DIR=dev_locals/theme-zips
+#   DEFAULT_BRANCH=main
+#   THEME_BRANCH_PREFIX=theme
+#   DESTRUCTIVE_DROP_PERCENT=30
+#   DESTRUCTIVE_DROP_LINES=50
+#
+# Notes:
+# - If the current branch is main/master/default branch, the script asks to create a feature branch.
+# - If an incoming file overwrites an existing file and line count drops significantly,
+#   the script marks it as DANGER and requires typing APPLY_DESTRUCTIVE to continue.
+# - The script can create a PR with gh, but it never merges.
+# - If a theme package requires a post-apply script, answer "no" to commit, run the post-apply
+#   script, review diff, then commit/push/PR manually.
+#
+# ============================================================
 
-# Default location for downloaded/generated theme zip files.
-# You can still pass a full path to the zip file.
 THEME_ZIP_DIR="${THEME_ZIP_DIR:-dev_locals/theme-zips}"
-
 DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
+THEME_BRANCH_PREFIX="${THEME_BRANCH_PREFIX:-theme}"
+DESTRUCTIVE_DROP_PERCENT="${DESTRUCTIVE_DROP_PERCENT:-30}"
+DESTRUCTIVE_DROP_LINES="${DESTRUCTIVE_DROP_LINES:-50}"
 
-# ------------------------------------------------------------
-# Output helpers
-# ------------------------------------------------------------
+RED=$'\033[0;31m'
+GREEN=$'\033[0;32m'
+YELLOW=$'\033[0;33m'
+BLUE=$'\033[0;34m'
+BOLD=$'\033[1m'
+RESET=$'\033[0m'
 
-if [[ -t 1 ]]; then
-  COLOR_INFO="\033[36m"
-  COLOR_PROCESS="\033[34m"
-  COLOR_SUCCESS="\033[32m"
-  COLOR_WARNING="\033[33m"
-  COLOR_DANGER="\033[31m"
-  COLOR_RESET="\033[0m"
-else
-  COLOR_INFO=""
-  COLOR_PROCESS=""
-  COLOR_SUCCESS=""
-  COLOR_WARNING=""
-  COLOR_DANGER=""
-  COLOR_RESET=""
-fi
+info() { printf "%s[INFO]%s %s\n" "$BLUE" "$RESET" "$*"; }
+ok() { printf "%s[OK]%s %s\n" "$GREEN" "$RESET" "$*"; }
+warn() { printf "%s[WARNING]%s %s\n" "$YELLOW" "$RESET" "$*"; }
+danger() { printf "%s[DANGER]%s %s\n" "$RED" "$RESET" "$*"; }
+die() { danger "$*"; exit 1; }
 
-info() {
-  echo -e "${COLOR_INFO}[INFO]${COLOR_RESET} $*"
-}
-
-process() {
-  echo -e "${COLOR_PROCESS}[PROCESS]${COLOR_RESET} $*"
-}
-
-success() {
-  echo -e "${COLOR_SUCCESS}[SUCCESS]${COLOR_RESET} $*"
-}
-
-warning() {
-  echo -e "${COLOR_WARNING}[WARNING]${COLOR_RESET} $*"
-}
-
-danger() {
-  echo -e "${COLOR_DANGER}[DANGER]${COLOR_RESET} $*"
-}
-
-die() {
-  danger "$*"
-  exit 1
-}
-
-ask_yes_no() {
+confirm() {
   local prompt="$1"
   local answer
-
-  while true; do
-    read -r -p "$prompt [y/N] " answer
-    case "$answer" in
-      y|Y|yes|YES) return 0 ;;
-      ""|n|N|no|NO) return 1 ;;
-      *) warning "Please answer y or n." ;;
-    esac
-  done
+  read -r -p "$prompt [y/N] " answer
+  [[ "$answer" == "y" || "$answer" == "Y" ]]
 }
 
-# ------------------------------------------------------------
-# Usage
-# ------------------------------------------------------------
-
-usage() {
-  cat <<EOF
-Usage:
-  bash scripts/apply-theme-zip.sh <zip-file-or-name> "<commit message>"
-
-Examples:
-  bash scripts/apply-theme-zip.sh agent-execute-plan.zip "Add execute-plan skill"
-  bash scripts/apply-theme-zip.sh dev_locals/theme-zips/agent-execute-plan.zip "Add execute-plan skill"
-  THEME_ZIP_DIR=/tmp/theme-zips bash scripts/apply-theme-zip.sh agent-execute-plan.zip "Add execute-plan skill"
-
-Default theme zip directory:
-  ${THEME_ZIP_DIR}
-EOF
+require_command() {
+  local cmd="$1"
+  command -v "$cmd" >/dev/null 2>&1 || die "Required command not found: $cmd"
 }
 
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  usage
-  exit 0
-fi
-
-if [[ $# -lt 2 ]]; then
-  usage
-  exit 1
-fi
-
-ZIP_INPUT="$1"
-COMMIT_MESSAGE="$2"
-
-# ------------------------------------------------------------
-# Repo checks
-# ------------------------------------------------------------
-
-git rev-parse --show-toplevel >/dev/null 2>&1 || die "Not inside a git repository."
-
-REPO_ROOT="$(git rev-parse --show-toplevel)"
-cd "$REPO_ROOT"
-
-CURRENT_BRANCH="$(git branch --show-current)"
-if [[ -z "$CURRENT_BRANCH" ]]; then
-  die "Could not detect current git branch."
-fi
-
-info "Repository: $REPO_ROOT"
-info "Current branch: $CURRENT_BRANCH"
-
-if [[ "$CURRENT_BRANCH" != "$DEFAULT_BRANCH" ]]; then
-  warning "Current branch is '$CURRENT_BRANCH', not '$DEFAULT_BRANCH'."
-  if ! ask_yes_no "Continue anyway?"; then
-    die "Aborted."
+line_count() {
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    awk 'END { print NR }' "$file"
+  else
+    printf "0"
   fi
-fi
+}
 
-# ------------------------------------------------------------
-# Resolve zip path
-# ------------------------------------------------------------
-
-resolve_zip_path() {
+resolve_zip() {
   local input="$1"
 
-  # Full or relative path provided directly.
   if [[ -f "$input" ]]; then
-    realpath "$input"
-    return 0
+    printf "%s" "$input"
+    return
   fi
 
-  # Filename provided, look inside THEME_ZIP_DIR.
   if [[ -f "$THEME_ZIP_DIR/$input" ]]; then
-    realpath "$THEME_ZIP_DIR/$input"
-    return 0
+    printf "%s" "$THEME_ZIP_DIR/$input"
+    return
   fi
 
-  return 1
+  die "Zip not found: '$input' or '$THEME_ZIP_DIR/$input'"
 }
 
-ZIP_FILE="$(resolve_zip_path "$ZIP_INPUT")" || {
-  danger "Zip file not found: $ZIP_INPUT"
-  echo
-  info "Checked:"
-  echo "  $ZIP_INPUT"
-  echo "  $THEME_ZIP_DIR/$ZIP_INPUT"
-  exit 1
+safe_branch_name() {
+  local zip_path="$1"
+  local stem timestamp
+  stem="$(basename "$zip_path" .zip)"
+  stem="$(printf "%s" "$stem" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+  timestamp="$(date +%Y%m%d-%H%M%S)"
+  printf "%s/%s-%s" "$THEME_BRANCH_PREFIX" "$stem" "$timestamp"
 }
 
-[[ "$ZIP_FILE" == *.zip ]] || die "File is not a .zip: $ZIP_FILE"
+ensure_git_repo() {
+  git rev-parse --show-toplevel >/dev/null 2>&1 || die "Not inside a git repository."
+  cd "$(git rev-parse --show-toplevel)"
+}
 
-success "Using zip file: $ZIP_FILE"
-
-# ------------------------------------------------------------
-# Required tools
-# ------------------------------------------------------------
-
-command -v unzip >/dev/null 2>&1 || die "Missing required command: unzip"
-command -v wc >/dev/null 2>&1 || die "Missing required command: wc"
-command -v find >/dev/null 2>&1 || die "Missing required command: find"
-command -v sort >/dev/null 2>&1 || die "Missing required command: sort"
-
-# ------------------------------------------------------------
-# Temporary extraction
-# ------------------------------------------------------------
-
-TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "$TMP_DIR"' EXIT
-
-process "Extracting zip to temporary directory..."
-unzip -q "$ZIP_FILE" -d "$TMP_DIR"
-
-success "Extracted to: $TMP_DIR"
-
-# ------------------------------------------------------------
-# Zip content checks
-# ------------------------------------------------------------
-
-info "Files in zip:"
-echo
-
-find "$TMP_DIR" -type f | sort | while read -r file; do
-  rel_path="${file#$TMP_DIR/}"
-  echo "  $rel_path"
-done
-
-echo
-info "Line counts in zip:"
-echo
-
-find "$TMP_DIR" -type f | sort | while read -r file; do
-  rel_path="${file#$TMP_DIR/}"
-  lines="$(wc -l < "$file" | tr -d ' ')"
-  printf "%5s %s\n" "$lines" "$rel_path"
-done
-
-echo
-
-if ! ask_yes_no "Apply these files to the repository root?"; then
-  die "Aborted before applying files."
-fi
-
-# ------------------------------------------------------------
-# Apply files
-# ------------------------------------------------------------
-
-process "Applying files to repository root..."
-
-# Copy only file contents while preserving paths.
-# Directories are created as needed.
-find "$TMP_DIR" -type f | sort | while read -r file; do
-  rel_path="${file#$TMP_DIR/}"
-  target="$REPO_ROOT/$rel_path"
-  mkdir -p "$(dirname "$target")"
-  cp "$file" "$target"
-done
-
-success "Files applied."
-
-# ------------------------------------------------------------
-# Local verify
-# ------------------------------------------------------------
-
-info "Local line counts after apply:"
-echo
-
-find "$TMP_DIR" -type f | sort | while read -r file; do
-  rel_path="${file#$TMP_DIR/}"
-  target="$REPO_ROOT/$rel_path"
-
-  if [[ -f "$target" ]]; then
-    lines="$(wc -l < "$target" | tr -d ' ')"
-    printf "%5s %s\n" "$lines" "$rel_path"
-  else
-    printf "%5s %s\n" "MISSING" "$rel_path"
+require_clean_worktree() {
+  if [[ -n "$(git status --porcelain)" ]]; then
+    git status --short
+    die "Working tree is not clean. Commit, stash, or reset changes before applying a theme zip."
   fi
-done
+}
 
-echo
+ensure_feature_branch() {
+  local zip_path="$1"
+  local current_branch target_branch
 
-# ------------------------------------------------------------
-# Git status and diff
-# ------------------------------------------------------------
+  current_branch="$(git rev-parse --abbrev-ref HEAD)"
 
-info "Git status:"
-git status --short
+  if [[ "$current_branch" == "$DEFAULT_BRANCH" || "$current_branch" == "main" || "$current_branch" == "master" ]]; then
+    target_branch="$(safe_branch_name "$zip_path")"
 
-echo
-info "Git diff stat:"
-git diff --stat || true
+    warn "Current branch is '$current_branch'."
+    warn "Theme updates should be applied on a feature branch and reviewed via PR."
+    info "Suggested branch: $target_branch"
 
-echo
-
-if ! git diff --quiet || [[ -n "$(git status --short)" ]]; then
-  if ask_yes_no "Create local commit with message: '$COMMIT_MESSAGE'?"; then
-    process "Creating local commit..."
-    git add .
-    git commit -m "$COMMIT_MESSAGE"
-    success "Committed."
-
-    if ask_yes_no "Push current branch '$CURRENT_BRANCH'?"; then
-      process "Pushing..."
-      git push
-      success "Pushed."
+    if confirm "Create and switch to this feature branch now?"; then
+      git switch -c "$target_branch"
+      ok "Switched to $target_branch"
     else
-      warning "Skipped push."
+      die "Stopped before applying zip on '$current_branch'."
     fi
   else
-    warning "Skipped commit."
+    info "Current branch: $current_branch"
   fi
-else
-  success "No changes detected."
-fi
+}
 
-# ------------------------------------------------------------
-# Remote verify commands
-# ------------------------------------------------------------
+extract_zip() {
+  local zip_path="$1"
+  local tmp_dir="$2"
 
-REMOTE_URL="$(git remote get-url origin 2>/dev/null || true)"
-GITHUB_REPO=""
+  unzip -q "$zip_path" -d "$tmp_dir"
 
-if [[ "$REMOTE_URL" =~ github.com[:/](.+/.+)(\.git)?$ ]]; then
-  GITHUB_REPO="${BASH_REMATCH[1]}"
-  GITHUB_REPO="${GITHUB_REPO%.git}"
-fi
+  if [[ -z "$(find "$tmp_dir" -type f -print -quit)" ]]; then
+    die "Zip contains no files."
+  fi
+}
 
-if [[ -n "$GITHUB_REPO" ]]; then
-  echo
-  info "Remote verify commands:"
-  echo
+show_zip_contents() {
+  local zip_path="$1"
+  info "Zip contents:"
+  unzip -l "$zip_path"
+}
 
-  # Only generate verify commands for files, never directories.
-  find "$TMP_DIR" -type f | sort | while read -r file; do
-    rel_path="${file#$TMP_DIR/}"
-    echo "curl -sL https://raw.githubusercontent.com/${GITHUB_REPO}/${DEFAULT_BRANCH}/${rel_path} | wc -l"
-  done
+show_incoming_line_counts() {
+  local tmp_dir="$1"
 
-  echo
-else
-  warning "Could not detect GitHub repo from origin remote. Skipped remote verify commands."
-fi
+  info "Incoming file line counts:"
+  while IFS= read -r -d '' file; do
+    local rel
+    rel="${file#$tmp_dir/}"
+    printf "%5s %s\n" "$(line_count "$file")" "$rel"
+  done < <(find "$tmp_dir" -type f -print0 | sort -z)
+}
 
-# ------------------------------------------------------------
-# Optional zip cleanup
-# ------------------------------------------------------------
+scan_destructive_changes() {
+  local tmp_dir="$1"
+  local danger_count=0
+  local overwrite_count=0
+  local new_count=0
+  local file rel old_lines new_lines drop_lines drop_percent
 
-if [[ -f "$ZIP_FILE" ]]; then
-  echo
-  if ask_yes_no "Delete local zip file now?"; then
-    rm "$ZIP_FILE"
-    success "Deleted zip file: $ZIP_FILE"
+  info "Scanning incoming files for destructive-looking overwrites..."
+
+  while IFS= read -r -d '' file; do
+    rel="${file#$tmp_dir/}"
+
+    if [[ -f "$rel" ]]; then
+      overwrite_count=$((overwrite_count + 1))
+      old_lines="$(line_count "$rel")"
+      new_lines="$(line_count "$file")"
+      drop_lines=$((old_lines - new_lines))
+
+      if (( old_lines > 0 && drop_lines > 0 )); then
+        drop_percent=$((drop_lines * 100 / old_lines))
+
+        if (( drop_percent >= DESTRUCTIVE_DROP_PERCENT || drop_lines >= DESTRUCTIVE_DROP_LINES )); then
+          danger "Potential destructive overwrite: $rel"
+          printf "         old lines: %s\n" "$old_lines"
+          printf "         new lines: %s\n" "$new_lines"
+          printf "         dropped:   %s lines (%s%%)\n" "$drop_lines" "$drop_percent"
+          danger_count=$((danger_count + 1))
+        fi
+      fi
+    else
+      new_count=$((new_count + 1))
+    fi
+  done < <(find "$tmp_dir" -type f -print0 | sort -z)
+
+  info "Incoming files: $((overwrite_count + new_count)) total, $overwrite_count overwrite(s), $new_count new file(s)."
+
+  if (( danger_count > 0 )); then
+    danger "Detected $danger_count high-risk line-count drop(s)."
+    danger "This may indicate accidental full-file replacement or content loss."
+    printf "\n"
+    printf "To continue, type %sAPPLY_DESTRUCTIVE%s exactly. Anything else stops: " "$BOLD" "$RESET"
+
+    local answer
+    read -r answer
+
+    if [[ "$answer" != "APPLY_DESTRUCTIVE" ]]; then
+      die "Stopped before applying destructive-looking changes."
+    fi
   else
-    info "Kept zip file: $ZIP_FILE"
+    ok "No high-risk line-count drops detected."
   fi
-fi
+}
 
-success "Theme zip apply workflow finished."
+copy_files() {
+  local tmp_dir="$1"
+
+  info "Applying files..."
+  while IFS= read -r -d '' file; do
+    local rel
+    rel="${file#$tmp_dir/}"
+    mkdir -p "$(dirname "$rel")"
+    cp "$file" "$rel"
+  done < <(find "$tmp_dir" -type f -print0 | sort -z)
+
+  ok "Files applied."
+}
+
+show_changed_line_counts() {
+  local tmp_dir="$1"
+
+  info "Local line counts after apply:"
+  while IFS= read -r -d '' file; do
+    local rel
+    rel="${file#$tmp_dir/}"
+
+    if [[ -f "$rel" ]]; then
+      printf "%5s %s\n" "$(line_count "$rel")" "$rel"
+    fi
+  done < <(find "$tmp_dir" -type f -print0 | sort -z)
+}
+
+show_review_info() {
+  info "Git status:"
+  git status --short
+
+  info "Diff stat:"
+  git diff --stat || true
+
+  printf "\n"
+  warn "Review the diff carefully before committing."
+  warn "Large deletions, unexpected line-count drops, or full-file rewrites should be treated as high risk."
+  printf "\n"
+}
+
+maybe_commit_push_pr() {
+  local commit_message="$1"
+  local current_branch
+
+  if ! confirm "Commit these changes now?"; then
+    warn "Changes left uncommitted for manual review."
+    warn "If this package has a post-apply script, run it before committing."
+    return
+  fi
+
+  git add .
+  git commit -m "$commit_message"
+  ok "Committed changes."
+
+  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+  if confirm "Push branch '$current_branch' to origin?"; then
+    git push -u origin "$current_branch"
+    ok "Pushed branch."
+
+    if command -v gh >/dev/null 2>&1; then
+      if gh auth status >/dev/null 2>&1; then
+        if confirm "Create PR for '$current_branch'?"; then
+          gh pr create --fill --base "$DEFAULT_BRANCH" --head "$current_branch" || warn "gh pr create failed. Create/update PR manually."
+          ok "PR creation attempted."
+          warn "No merge was performed. Review the PR diff and merge manually, or use publish-current-branch with explicit merge/auto-merge authorization."
+        fi
+      else
+        warn "GitHub CLI is installed but not authenticated. Create PR manually."
+      fi
+    else
+      warn "GitHub CLI not found. Create PR manually."
+    fi
+  else
+    warn "Branch not pushed. Push manually when ready."
+  fi
+}
+
+maybe_delete_zip() {
+  local zip_path="$1"
+
+  if confirm "Delete local zip '$zip_path'?"; then
+    rm -f "$zip_path"
+    ok "Deleted zip."
+  fi
+}
+
+main() {
+  if [[ $# -lt 2 ]]; then
+    die "Usage: bash scripts/apply-theme-zip.sh <zip-path-or-file-name> \"Commit message\""
+  fi
+
+  local zip_input="$1"
+  local commit_message="$2"
+  local zip_path tmp_dir
+
+  require_command unzip
+  require_command git
+
+  ensure_git_repo
+  require_clean_worktree
+
+  zip_path="$(resolve_zip "$zip_input")"
+
+  ensure_feature_branch "$zip_path"
+
+  tmp_dir="$(mktemp -d)"
+  trap 'rm -rf "$tmp_dir"' EXIT
+
+  show_zip_contents "$zip_path"
+  extract_zip "$zip_path" "$tmp_dir"
+  show_incoming_line_counts "$tmp_dir"
+  scan_destructive_changes "$tmp_dir"
+
+  if ! confirm "Apply this theme zip now?"; then
+    die "Stopped before apply."
+  fi
+
+  copy_files "$tmp_dir"
+  show_changed_line_counts "$tmp_dir"
+  show_review_info
+  maybe_commit_push_pr "$commit_message"
+  maybe_delete_zip "$zip_path"
+
+  ok "Done."
+}
+
+main "$@"
