@@ -210,64 +210,36 @@ Keep separate confirmations for:
 
 - creating a branch from `main`
 - committing/publishing all local changes
-- post-merge refresh
+- post-merge verification / refresh
 - any destructive or history-changing operation
 
 Do not auto-merge PRs by default.
 
-## Lesson: Prefer function-based shell scripts for maintainability
+## Lesson: Verify remote PR state instead of trusting manual confirmation
 
 ### Context
 
-While improving `apply-theme-zip.sh` and `publish-local-change.sh`, later fixes could be limited to individual functions instead of rewriting the entire script.
+After creating multiple PRs for helper script and theme updates, the user manually confirmed that PRs had been merged, but two PRs were still open.
 
-For example, the `apply-theme-zip.sh` refresh behavior could be improved by replacing only `maybe_refresh_default_branch_after_merge()`.
-
-### Lesson
-
-For non-trivial shell scripts, prefer small focused functions with clear names over one long procedural script.
-
-This makes future fixes safer because a change can often be isolated, reviewed, and tested at function level.
-
-### Future Rule
-
-When creating or extending project workflow scripts:
-
-- split major steps into named functions
-- keep each function focused on one responsibility
-- make risky operations explicit and easy to review
-- prefer replacing one function over rewriting the whole script
-- keep user-facing prompts close to the function that performs the action
-
-## Lesson: Balance automation confirmations with workflow purpose
-
-### Context
-
-`publish-local-change.sh` was created to handle small local changes without using a theme zip.
-
-The first version used separate confirmation prompts for commit, push, PR creation, merge confirmation, and main refresh.
-
-Too many prompts can make a helper script feel heavy and reduce the benefit of automation.
+The scripts treated the manual confirmation as enough to refresh local `main`.
 
 ### Lesson
 
-A workflow script should require confirmation at safety boundaries, not at every mechanical step.
+Manual confirmation expresses user intent, not remote repository fact.
 
-For small local-change publishing, committing, pushing, and creating a PR can be grouped under one explicit confirmation after showing the diff.
+Before refreshing or resetting the local default branch after a PR workflow, a script must verify the PR state with GitHub CLI or GitHub API.
 
-Manual PR review and merge should remain outside the script unless explicitly authorized.
-
-Destructive recovery actions, such as resetting local `main`, must always require a separate confirmation and backup branch.
+Only a verified `merged=true` result for the expected base branch should allow automatic default-branch refresh.
 
 ### Future Rule
 
-Use fewer confirmations for reversible or expected workflow steps.
+Post-merge refresh flows should:
 
-Keep separate confirmations for:
+- ask for a PR number or derive it from the current branch
+- call `gh pr view` or the GitHub API
+- require `merged == true`
+- require `baseRefName == DEFAULT_BRANCH`
+- skip refresh when verification fails
+- keep destructive reset behind a separate confirmation and backup branch
 
-- creating a branch from `main`
-- committing/publishing all local changes
-- post-merge refresh
-- any destructive or history-changing operation
-
-Do not auto-merge PRs by default.
+Do not use a plain yes/no prompt as the only source of truth for remote PR state.

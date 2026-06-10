@@ -1,3 +1,4 @@
+\
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -18,7 +19,7 @@ set -euo pipefail
 # - commit current local changes after one explicit publish confirmation
 # - push with upstream tracking
 # - create a GitHub PR with gh
-# - optionally refresh the local default branch after the user confirms the PR was merged
+# - optionally refresh the local default branch after gh verifies the PR was actually merged
 #
 # This script does NOT:
 # - merge PRs automatically
@@ -30,7 +31,7 @@ set -euo pipefail
 # Confirmation model:
 # - Confirm when creating a feature branch from main/master/default branch.
 # - Confirm once before commit + push + PR creation.
-# - Confirm after the user has manually merged the PR before refreshing the default branch.
+# - Confirm before post-merge verification / refresh.
 # - Confirm separately before backup + reset if local default branch diverged.
 #
 # Usage:
@@ -221,16 +222,71 @@ create_pr_if_possible() {
   warn "No merge was performed. Review and merge the PR manually in GitHub."
 }
 
+verify_merged_pr_for_default_branch() {
+  local pr_number pr_info state merged base_ref url
+
+  if ! command -v gh >/dev/null 2>&1; then
+    warn "GitHub CLI not found. Cannot verify PR merge status."
+    return 1
+  fi
+
+  if ! gh auth status >/dev/null 2>&1; then
+    warn "GitHub CLI is installed but not authenticated. Cannot verify PR merge status."
+    return 1
+  fi
+
+  read -r -p "Enter merged PR number to verify before refreshing '$DEFAULT_BRANCH' (empty to skip): " pr_number
+
+  if [[ -z "$pr_number" ]]; then
+    warn "Skipped default branch refresh because no PR number was provided."
+    return 1
+  fi
+
+  if ! [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+    warn "Invalid PR number: $pr_number"
+    return 1
+  fi
+
+  if ! pr_info="$(gh pr view "$pr_number" --json state,merged,baseRefName,url --jq '[.state, (.merged|tostring), .baseRefName, .url] | @tsv' 2>/dev/null)"; then
+    warn "Could not read PR #$pr_number with gh."
+    return 1
+  fi
+
+  IFS=$'\t' read -r state merged base_ref url <<< "$pr_info"
+
+  if [[ "$merged" != "true" ]]; then
+    warn "PR #$pr_number is not merged. State: $state. Skipping default branch refresh."
+    warn "PR URL: $url"
+    return 1
+  fi
+
+  if [[ "$base_ref" != "$DEFAULT_BRANCH" ]]; then
+    warn "PR #$pr_number is merged, but its base branch is '$base_ref', not '$DEFAULT_BRANCH'."
+    warn "Skipping default branch refresh."
+    warn "PR URL: $url"
+    return 1
+  fi
+
+  ok "Verified PR #$pr_number is merged into '$DEFAULT_BRANCH'."
+  info "PR URL: $url"
+  return 0
+}
+
 refresh_default_branch_after_merge() {
   local backup_branch
 
   printf "\n"
   info "Post-merge refresh check."
 
-  if ! confirm "Has the PR/branch been merged into '$DEFAULT_BRANCH' and should I switch back and refresh '$DEFAULT_BRANCH'?"; then
+  if ! confirm "Verify a merged PR and refresh '$DEFAULT_BRANCH'?"; then
     warn "Skipped default branch refresh."
     warn "After the PR is merged, run:"
     warn "  git switch $DEFAULT_BRANCH && git fetch origin $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
+    return
+  fi
+
+  if ! verify_merged_pr_for_default_branch; then
+    warn "Default branch refresh was not performed."
     return
   fi
 
