@@ -1,3 +1,4 @@
+\
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -19,7 +20,7 @@ export PAGER=cat
 # - Show incoming files, line counts, local line counts, git status, diff stat
 # - Optionally commit, push, and create PR
 # - Never merge by default
-# - After the user confirms the PR was merged, optionally switch back to the default branch and refresh it
+# - After the user requests a post-merge refresh, verify the PR is actually merged before refreshing the default branch
 #
 # Usage:
 #   bash scripts/apply-theme-zip.sh <zip-path-or-file-name> "Commit message"
@@ -42,8 +43,8 @@ export PAGER=cat
 # - The script can create a PR with gh, but it never merges.
 # - If a theme package requires a post-apply script, answer "no" to commit, run the post-apply
 #   script, review diff, then commit/push/PR manually.
-# - After deleting or keeping the local zip, the script can ask whether the PR has already
-#   been merged. If confirmed, it switches back to DEFAULT_BRANCH and pulls latest.
+# - After deleting or keeping the local zip, the script can ask whether to verify a merged PR.
+#   It only switches back to DEFAULT_BRANCH and refreshes after gh confirms merged=true.
 #
 # ============================================================
 
@@ -321,96 +322,116 @@ maybe_delete_zip() {
   fi
 }
 
-maybe_refresh_default_branch_after_merge() {
+verify_merged_pr_for_default_branch() {
+  local pr_number pr_info state merged base_ref url
 
+  if ! command -v gh >/dev/null 2>&1; then
+    warn "GitHub CLI not found. Cannot verify PR merge status."
+    return 1
+  fi
+
+  if ! gh auth status >/dev/null 2>&1; then
+    warn "GitHub CLI is installed but not authenticated. Cannot verify PR merge status."
+    return 1
+  fi
+
+  read -r -p "Enter merged PR number to verify before refreshing '$DEFAULT_BRANCH' (empty to skip): " pr_number
+
+  if [[ -z "$pr_number" ]]; then
+    warn "Skipped default branch refresh because no PR number was provided."
+    return 1
+  fi
+
+  if ! [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+    warn "Invalid PR number: $pr_number"
+    return 1
+  fi
+
+  if ! pr_info="$(gh pr view "$pr_number" --json state,merged,baseRefName,url --jq '[.state, (.merged|tostring), .baseRefName, .url] | @tsv' 2>/dev/null)"; then
+    warn "Could not read PR #$pr_number with gh."
+    return 1
+  fi
+
+  IFS=$'\t' read -r state merged base_ref url <<< "$pr_info"
+
+  if [[ "$merged" != "true" ]]; then
+    warn "PR #$pr_number is not merged. State: $state. Skipping default branch refresh."
+    warn "PR URL: $url"
+    return 1
+  fi
+
+  if [[ "$base_ref" != "$DEFAULT_BRANCH" ]]; then
+    warn "PR #$pr_number is merged, but its base branch is '$base_ref', not '$DEFAULT_BRANCH'."
+    warn "Skipping default branch refresh."
+    warn "PR URL: $url"
+    return 1
+  fi
+
+  ok "Verified PR #$pr_number is merged into '$DEFAULT_BRANCH'."
+  info "PR URL: $url"
+  return 0
+}
+
+maybe_refresh_default_branch_after_merge() {
   local backup_branch
 
   printf "\n"
-
   info "Post-merge refresh check."
 
-  if ! confirm "Has the PR/branch been merged into '$DEFAULT_BRANCH' and should I switch back and refresh '$DEFAULT_BRANCH'?"; then
-
+  if ! confirm "Verify a merged PR and refresh '$DEFAULT_BRANCH'?"; then
     warn "Skipped default branch refresh."
-
     warn "When the PR is merged, run:"
-
     warn "  git switch $DEFAULT_BRANCH && git fetch origin $DEFAULT_BRANCH && git pull --ff-only origin $DEFAULT_BRANCH"
-
     return
+  fi
 
+  if ! verify_merged_pr_for_default_branch; then
+    warn "Default branch refresh was not performed."
+    return
   fi
 
   if ! is_worktree_clean; then
-
     warn "Working tree is not clean. Cannot switch branches safely."
-
     git --no-pager status --short
-
     warn "Commit, stash, or reset changes, then refresh '$DEFAULT_BRANCH' manually."
-
     return
-
   fi
 
   info "Fetching latest '$DEFAULT_BRANCH' from origin..."
-
   git fetch origin "$DEFAULT_BRANCH"
 
   info "Switching to '$DEFAULT_BRANCH'..."
-
   git switch "$DEFAULT_BRANCH"
 
   if git merge-base --is-ancestor HEAD "origin/$DEFAULT_BRANCH"; then
-
     info "Refreshing '$DEFAULT_BRANCH' with fast-forward only..."
-
     git pull --ff-only origin "$DEFAULT_BRANCH"
-
     ok "Refreshed '$DEFAULT_BRANCH'."
-
   else
-
     warn "Local '$DEFAULT_BRANCH' cannot be fast-forwarded to 'origin/$DEFAULT_BRANCH'."
-
     warn "This can happen if a local direct-push commit was rejected, then the same change was merged through PR."
 
     backup_branch="backup/${DEFAULT_BRANCH}-before-reset-$(date +%Y%m%d-%H%M%S)"
 
     warn "A backup branch will be created before any reset:"
-
     warn "  $backup_branch"
 
     if confirm "Create backup branch and reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'?"; then
-
       git branch "$backup_branch"
-
       git reset --hard "origin/$DEFAULT_BRANCH"
-
       ok "Reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'."
-
       ok "Backup branch created: $backup_branch"
-
     else
-
       warn "Skipped reset. Local '$DEFAULT_BRANCH' may still be diverged."
-
       warn "Manual recovery:"
-
       warn "  git branch $backup_branch"
-
       warn "  git reset --hard origin/$DEFAULT_BRANCH"
-
       return
-
     fi
-
   fi
 
   ok "Current branch: $(git rev-parse --abbrev-ref HEAD)"
-
   git --no-pager status --short
-
 }
 
 main() {
