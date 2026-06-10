@@ -157,3 +157,117 @@ Choose the update method based on review safety:
 - multiple coordinated edits in one file: full-file replacement
 - multiple coordinated files: zip or full-file replacement bundle
 - mature files: always verify line counts and diff before commit
+
+## Lesson: Prefer function-based shell scripts for maintainability
+
+### Context
+
+While improving `apply-theme-zip.sh` and `publish-local-change.sh`, later fixes could be limited to individual functions instead of rewriting the entire script.
+
+For example, the `apply-theme-zip.sh` refresh behavior could be improved by replacing only `maybe_refresh_default_branch_after_merge()`.
+
+### Lesson
+
+For non-trivial shell scripts, prefer small focused functions with clear names over one long procedural script.
+
+This makes future fixes safer because a change can often be isolated, reviewed, and tested at function level.
+
+### Future Rule
+
+When creating or extending project workflow scripts:
+
+- split major steps into named functions
+- keep each function focused on one responsibility
+- make risky operations explicit and easy to review
+- prefer replacing one function over rewriting the whole script
+- keep user-facing prompts close to the function that performs the action
+
+## Lesson: Balance automation confirmations with workflow purpose
+
+### Context
+
+`publish-local-change.sh` was created to handle small local changes without using a theme zip.
+
+The first version used separate confirmation prompts for commit, push, PR creation, merge confirmation, and main refresh.
+
+Too many prompts can make a helper script feel heavy and reduce the benefit of automation.
+
+### Lesson
+
+A workflow script should require confirmation at safety boundaries, not at every mechanical step.
+
+For small local-change publishing, committing, pushing, and creating a PR can be grouped under one explicit confirmation after showing the diff.
+
+Manual PR review and merge should remain outside the script unless explicitly authorized.
+
+Destructive recovery actions, such as resetting local `main`, must always require a separate confirmation and backup branch.
+
+### Future Rule
+
+Use fewer confirmations for reversible or expected workflow steps.
+
+Keep separate confirmations for:
+
+- creating a branch from `main`
+- committing/publishing all local changes
+- post-merge refresh
+- any destructive or history-changing operation
+
+Do not auto-merge PRs by default.
+
+## Lesson: Prefer function-based shell scripts for maintainability
+
+### Context
+
+While improving `apply-theme-zip.sh` and `publish-local-change.sh`, later fixes could be limited to individual functions instead of rewriting the entire script.
+
+For example, the `apply-theme-zip.sh` refresh behavior could be improved by replacing only `maybe_refresh_default_branch_after_merge()`.
+
+### Lesson
+
+For non-trivial shell scripts, prefer small focused functions with clear names over one long procedural script.
+
+This makes future fixes safer because a change can often be isolated, reviewed, and tested at function level.
+
+### Future Rule
+
+When creating or extending project workflow scripts:
+
+- split major steps into named functions
+- keep each function focused on one responsibility
+- make risky operations explicit and easy to review
+- prefer replacing one function over rewriting the whole script
+- keep user-facing prompts close to the function that performs the action
+
+## Lesson: Balance automation confirmations with workflow purpose
+
+### Context
+
+`publish-local-change.sh` was created to handle small local changes without using a theme zip.
+
+The first version used separate confirmation prompts for commit, push, PR creation, merge confirmation, and main refresh.
+
+Too many prompts can make a helper script feel heavy and reduce the benefit of automation.
+
+### Lesson
+
+A workflow script should require confirmation at safety boundaries, not at every mechanical step.
+
+For small local-change publishing, committing, pushing, and creating a PR can be grouped under one explicit confirmation after showing the diff.
+
+Manual PR review and merge should remain outside the script unless explicitly authorized.
+
+Destructive recovery actions, such as resetting local `main`, must always require a separate confirmation and backup branch.
+
+### Future Rule
+
+Use fewer confirmations for reversible or expected workflow steps.
+
+Keep separate confirmations for:
+
+- creating a branch from `main`
+- committing/publishing all local changes
+- post-merge refresh
+- any destructive or history-changing operation
+
+Do not auto-merge PRs by default.
