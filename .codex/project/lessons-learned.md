@@ -243,3 +243,49 @@ Post-merge refresh flows should:
 - keep destructive reset behind a separate confirmation and backup branch
 
 Do not use a plain yes/no prompt as the only source of truth for remote PR state.
+
+
+## Lesson: PR workflow scripts should guide verification, not just ask yes/no
+
+### Context
+
+After adding PR merge verification, the first implementation still required a manually entered PR number and exited after one failed read.
+
+This was safe but not flexible enough:
+
+- users may type `#10`
+- users may paste a PR URL
+- users may mistype a PR number
+- the PR may be open because the user forgot to merge it
+- for very small PRs, the user may want to explicitly authorize the script to merge it
+
+### Lesson
+
+Post-PR workflow scripts should act as a safe PR state navigator.
+
+They should separate:
+
+```txt
+user intent
+```
+
+from:
+
+```txt
+remote repository fact
+```
+
+and should guide the user through safe next steps instead of exiting after one failed check.
+
+### Future Rule
+
+A post-PR refresh flow should:
+
+- first try to auto-detect the PR for the current branch
+- fall back to manual PR number / `#number` / PR URL input
+- allow a small number of retries
+- display PR title, state, base branch, merged status, mergeability, and URL
+- refresh the default branch only after verifying `merged=true` and `baseRefName == DEFAULT_BRANCH`
+- if the PR is open, offer to re-check, open the PR in browser, skip, or explicitly merge with strong confirmation
+- require a typed token such as `MERGE_PR_<number>` before any scripted merge
+- avoid deleting remote branches automatically unless separately confirmed
