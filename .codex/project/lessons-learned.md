@@ -92,6 +92,39 @@ Reusable downstream template content belongs in:
 kit/project-templates/lessons-learned.md
 ```
 
+## Lesson: Preserve mature workflow files during theme updates
+
+### Context
+
+Theme 9 initially generated an update package that accidentally replaced existing mature core skill files with short stubs.
+
+### Lesson
+
+When a theme is intended to lightly patch existing files, preserve the original content and insert only the required section.
+
+Large deletions or major line-count drops in existing files must be treated as high-risk destructive changes.
+
+### Future Rule
+
+Before applying or recommending a theme zip, compare line counts and flag large drops clearly for user review
+
+
+## Lesson: Prefer the simplest safe path
+
+### Context
+
+During Theme 9 recovery, bootstrapping a new apply workflow through a zip became more complex than directly replacing a single known script file.
+
+### Lesson
+
+If a manual operation is simpler, safer, and easier to audit than automation, prefer the manual operation.
+
+Automation should reduce risk and mental load, not add process complexity.
+
+### Future Rule
+
+For isolated single-file changes, consider direct replacement plus git diff review. Use theme zips for structured multi-file changes.
+
 ### Reuse guidance
 
 When updating memory in a template/foundation repository, first decide whether the update belongs to:
