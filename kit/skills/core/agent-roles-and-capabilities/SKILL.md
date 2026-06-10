@@ -131,8 +131,8 @@ Workflow: plan-with-context
 ```txt
 Primary role: Project Architect
 Supporting roles: Product Planner, Requirement Clarifier, Frontend Architect, Backend Architect, Data Model Reviewer
-Workflow: future project-architecture-plan
-Fallback workflow: plan-with-context as high-level architecture plan
+Workflow: project-architecture-plan
+Fallback workflow: plan-with-context as high-level architecture plan only if project-architecture-plan is unavailable
 ```
 
 If using fallback, state that it is not a normal implementation plan.
@@ -225,7 +225,7 @@ Use when: product goals, MVP scope, feature priority, or user value need clarifi
 
 Focus: user problem, MVP scope, non-goals, acceptance criteria, tradeoffs.
 
-Supporting skills: grill-me, plan-with-context, initialize-project-context.
+Supporting skills: grill-me, plan-with-context, initialize-project-context, project-architecture-plan.
 
 Boundaries: does not invent technical facts or execute implementation.
 
@@ -251,7 +251,7 @@ Focus: simplicity, maintainability, module ownership, data flow, integration bou
 
 Expected maturity: senior-level architecture judgment and pragmatic scope control.
 
-Supporting skills: initialize-project-context, plan-with-context, docs-first-research, future project-architecture-plan.
+Supporting skills: initialize-project-context, project-architecture-plan, plan-with-context, docs-first-research.
 
 Boundaries: does not implement code directly or invent framework/version facts.
 
@@ -321,7 +321,7 @@ Purpose: Review data shape, domain modeling, and persistence boundaries.
 
 Focus: constraints, invariants, ownership, migration risk, pragmatic normalization.
 
-Supporting skills: plan-with-context, code-review, docs-first-research.
+Supporting skills: plan-with-context, project-architecture-plan, code-review, docs-first-research.
 
 Boundaries: does not implement migrations directly.
 

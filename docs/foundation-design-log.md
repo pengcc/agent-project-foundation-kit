@@ -36,6 +36,7 @@ Completed core skills:
 6. publish-current-branch
 7. initialize-project-context
 8. agent-roles-and-capabilities
+9. project-architecture-plan
 
 Completed core rules:
 
@@ -43,8 +44,7 @@ Completed core rules:
 
 Planned core skills:
 
-1. project-architecture-plan
-2. code-review
+1. code-review
 
 Planned productivity skills:
 
@@ -190,7 +190,7 @@ Accepted decisions:
 1. `agent-project-foundation-kit` needs its own project memory.
 2. This repo's own durable project memory lives under `.codex/project/`.
 3. It records foundation-kit development facts, decisions, and lessons.
-4. It is not part of the installable `kit/` payload.
+4. It is not part of the installable `kit` payload.
 5. `.codex/project/` should be committed for this repo.
 6. `dev_locals/` remains local-only and must not be committed.
 7. Theme 6 does not create or commit `.codex/skills/` to avoid duplicating `kit/skills/`.
@@ -338,23 +338,61 @@ Resulting files:
 docs/foundation-design-log.md
 ```
 
+## Theme 10: Project Architecture Plan
+
+Accepted decisions:
+
+1. `project-architecture-plan` is a core Project Lifecycle Skill.
+2. It runs after `initialize-project-context` and before feature-level `plan-with-context`.
+3. It may also run during major project pivots, architecture resets, or new major product phases.
+4. It is planning-only and does not implement code, modify source files, commit, push, release, deploy, merge PRs, or directly update project memory.
+5. It creates project-level architecture and roadmap plans only.
+6. It does not output concrete feature implementation steps; those remain the responsibility of `plan-with-context`.
+7. A formal architecture plan requires a product/project blueprint.
+8. If no product/project blueprint exists, it must pause with a Missing Product Blueprint Notice and minimum blueprint template.
+9. If the user explicitly confirms continuing without a complete blueprint, it may produce only a provisional architecture draft.
+10. `initialize-project-context` reports are recommended and must be read when available or provided, but are not absolutely required if project memory, blueprint, and repo reality are sufficient.
+11. Repo reality checks are required. New/empty repos may produce target architecture; existing repos must distinguish current architecture, target architecture, and gap/migration path.
+12. Technology choices require `docs-first-research` when they involve technical facts, versions, APIs, deployment limits, database/ORM compatibility, external services, security, or long-term maintenance risk.
+13. Multiple technology options must be compared with relevant dimensions selected from product, repo, MVP, constraints, and risk profile.
+14. Feature roadmap must be phase-level and dependency-oriented, not ticket-level.
+15. Output should include text architecture diagrams or Mermaid diagrams when useful.
+16. Architecture decisions must be categorized as Accepted, Proposed, or Deferred.
+17. Risks and open questions must be grouped as Blocking, High, Medium, or Low.
+18. Every plan must declare Plan Status: Final / Ready for Feature Planning or Provisional / Incomplete.
+19. Plans default to `dev_locals/plans/YYYY-MM-DD-project-architecture-plan.md`.
+20. The skill outputs Recommended Project Memory Updates but does not write memory directly.
+21. `force-project-architecture-plan.md` exists as a workflow trigger prompt.
+22. Metadata follows current core skill style; lifecycle/frequency details live in `SKILL.md`, not a new metadata schema.
+23. Existing mature skills are preserved. Theme 10 only lightly updates `agent-roles-and-capabilities`.
+
+Resulting files:
+
+```txt
+kit/skills/core/project-architecture-plan/SKILL.md
+kit/skills/core/project-architecture-plan/metadata.yml
+kit/prompts/force-project-architecture-plan.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 9.1:
+Priority order after Theme 10:
 
-1. `project-architecture-plan`
-2. `code-review`
-3. installer / install workflow hardening
-4. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
-5. GitHub ruleset / branch protection setup guidance
-6. technology-specific skills
-7. release workflow
-8. deployment workflow
+1. `code-review`
+2. installer / install workflow hardening
+3. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+4. GitHub ruleset / branch protection setup guidance
+5. technology-specific skills
+6. release workflow
+7. deployment workflow
 
 Rationale:
 
-- `project-architecture-plan` should come first because it uses the newly added `Project Architect` role and fills the gap between project initialization and feature-level implementation plans.
-- `code-review` should follow because it is a core planned skill and will use role routing plus engineering quality principles.
+- `code-review` should follow because it is the remaining planned v0.1 core skill and will use role routing plus engineering quality principles.
 - Installer hardening should follow once the core installed workflow set is clearer.
 - Productivity and technology-specific skills should come after the core project lifecycle is more stable.
 

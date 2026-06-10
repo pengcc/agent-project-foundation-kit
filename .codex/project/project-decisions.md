@@ -97,7 +97,7 @@ Accepted
 
 ### Decision
 
-Use `publish-current-branch` for pushing the current completed branch, creating/updating PRs, and preparing merge or auto-merge when supported and authorized.
+Use `publish-current-branch` for pushing the current completed and validated branch, creating/updating PRs, and preparing merge or auto-merge when supported and authorized.
 
 It must not implement features, execute plans, release, deploy, bypass branch protection, or force push to main.
 
@@ -217,7 +217,6 @@ Accepted
 
 It must use `docs-first-research` when analysis depends on external technical facts, version recommendations, compatibility, deployment/GitHub Actions behavior, security/auth/database choices, or external constraints that may be written into project memory.
 
-
 ## Decision: Agent role routing is a core capability
 
 ### Status
@@ -267,3 +266,60 @@ Theme 9 role routing integration must preserve existing mature core skill conten
 Existing workflow skills may receive a short `Role Routing Integration` section, but their previously accepted workflow boundaries, steps, and output formats must remain intact.
 
 Large line-count drops or major deletions in existing skills must be treated as high-risk destructive changes.
+
+## Decision: Project architecture planning is a Project Lifecycle Skill
+
+### Status
+
+Accepted
+
+### Context
+
+After project initialization, a project needs an architecture and roadmap layer before individual feature-level planning.
+
+`initialize-project-context` and `project-architecture-plan` are reusable across new projects, but in one project they are normally used only during initialization, major project pivots, major architecture resets, or new major product phases.
+
+### Decision
+
+Create `project-architecture-plan` as a core Project Lifecycle Skill.
+
+It runs after `initialize-project-context` and before feature-level `plan-with-context`.
+
+It creates a project-level architecture and roadmap plan, including:
+
+- architecture overview
+- module and boundary map
+- data flow and state flow
+- integration flow
+- MVP scope and phase boundaries
+- feature roadmap
+- technology options and decisions
+- architecture decisions
+- risks and open questions
+- validation strategy
+- recommended next feature plans
+- recommended project memory updates
+
+It must not implement features, modify source code, create migrations, release, deploy, merge PRs, or directly update project memory.
+
+### Boundaries
+
+`project-architecture-plan` does not output feature implementation steps.
+
+Concrete feature implementation plans remain the responsibility of `plan-with-context`.
+
+Durable architecture facts and decisions become source of truth only after user confirmation and `update-project-memory`.
+
+### Required Inputs
+
+A formal Project Architecture Plan requires a product/project blueprint.
+
+If no product description, project blueprint, development plan, README product description, docs requirement file, or user-provided blueprint exists, the skill must pause and output a missing blueprint notice.
+
+It may create only a provisional architecture draft if the user explicitly confirms continuing without a complete blueprint.
+
+### Technical Decisions
+
+Technology choices require `docs-first-research` when they involve technical facts, versions, APIs, deployment limits, database/ORM compatibility, security constraints, external services, or long-term maintenance risk.
+
+Multiple technology options must be compared with relevant weighted dimensions and must be confirmed by the user before being recorded as architecture facts.

@@ -1,0 +1,5 @@
+name: project-architecture-plan
+version: 0.1.0
+category: core
+required: true
+description: Creates a project-level architecture and roadmap plan after initialization and before feature-level planning.
