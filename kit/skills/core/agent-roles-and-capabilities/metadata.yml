@@ -1,0 +1,5 @@
+name: agent-roles-and-capabilities
+version: 0.1.1
+category: core
+required: true
+description: Routes tasks to appropriate agent roles, capability boundaries, workflows, maturity expectations, and quality rules.

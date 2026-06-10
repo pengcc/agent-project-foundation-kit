@@ -1,5 +1,24 @@
 # Publish Current Branch Skill
 
+## Role Routing Integration
+
+If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
+
+Then output a concise Role Routing Header using this default routing:
+
+```txt
+Role Routing:
+- Primary role: Publish Manager
+- Supporting roles: none by default
+- Workflow: publish-current-branch
+- Maturity expectation: cautious delivery judgment
+- Technical specialist skill: not applicable
+- Quality rule: not applicable unless code changes are proposed
+```
+
+Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
+
+
 Use this skill to publish the current completed and validated branch into the GitHub PR workflow.
 
 This skill does not implement features and does not execute plans.
