@@ -1,0 +1,26 @@
+---
+name: code-review
+description: Review code changes, PR diffs, local diffs, commits, branches, or generated packages; supports Change Review and Plan Alignment Review with structured review reports.
+version: 0.1.0
+category: core
+---
+
+# Code Review
+
+Use this skill for review-only workflows before merge/apply or for staged plan-alignment review.
+
+Primary targets:
+- PR diff
+- current local diff
+- generated theme zip / package
+- specific commit
+- branch diff
+
+Modes:
+- Change Review
+- Plan Alignment Review
+
+Boundaries:
+- Does not implement
+- Does not approve, merge, apply, publish, release, or deploy
+- Does not directly update project memory

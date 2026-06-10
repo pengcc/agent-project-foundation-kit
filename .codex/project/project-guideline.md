@@ -25,6 +25,8 @@ Completed themes:
 - Theme 9: `agent-roles-and-capabilities`
 - Theme 9.1: project memory and roadmap alignment cleanup
 - Theme 10: `project-architecture-plan`
+- Theme 11: `code-review`
+
 
 Current canonical core skill names:
 
@@ -248,6 +250,8 @@ Completed:
 - Theme 9.1 project memory and roadmap alignment cleanup
 - `scripts/publish-local-change.sh`
 - Theme 10 `project-architecture-plan`
+- Theme 11 `code-review`
+
 
 In progress / next likely themes:
 
@@ -267,6 +271,6 @@ In progress / next likely themes:
 - `initialize-project-context` can identify capability areas and use `agent-roles-and-capabilities` when installed.
 - `agent-roles-and-capabilities` now defines generic role profiles and role routing, but technology-specific expert skills remain future work.
 - `project-architecture-plan` is a Project Lifecycle Skill and is normally used after initialization and before feature-level planning.
-- `code-review` is still planned and not yet implemented.
+- `code-review` is a core Review Workflow Skill with Change Review and Plan Alignment Review modes.
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
