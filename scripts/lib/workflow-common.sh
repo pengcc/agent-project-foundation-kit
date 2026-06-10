@@ -15,6 +15,7 @@ export GIT_PAGER="${GIT_PAGER:-cat}"
 export PAGER="${PAGER:-cat}"
 
 DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
+REPO_FULL_NAME="${REPO_FULL_NAME:-}"
 
 RED=$'\033[0;31m'
 GREEN=$'\033[0;32m'
@@ -54,6 +55,24 @@ current_branch() {
   git rev-parse --abbrev-ref HEAD
 }
 
+detect_repo_full_name() {
+  gh repo view --json nameWithOwner --jq '.nameWithOwner'
+}
+
+ensure_repo_full_name() {
+  if [[ -n "$REPO_FULL_NAME" ]]; then
+    return 0
+  fi
+
+  if ! REPO_FULL_NAME="$(detect_repo_full_name 2>/dev/null)"; then
+    warn "Could not determine GitHub repository name with gh."
+    warn "Set REPO_FULL_NAME=owner/repo and retry if PR lookup fails."
+    return 1
+  fi
+
+  export REPO_FULL_NAME
+}
+
 normalize_pr_input() {
   local input="$1"
 
@@ -84,36 +103,50 @@ ensure_gh_ready() {
     warn "GitHub CLI is installed but not authenticated. Cannot verify or merge PR."
     return 1
   fi
+
+  ensure_repo_full_name
 }
 
 read_pr_info() {
   local pr_ref="${1:-}"
 
+  # GitHub CLI `gh pr view --json` supports `mergedAt`, not `merged`.
+  # `mergedAt` is non-empty only after a PR has been merged.
   if [[ -n "$pr_ref" ]]; then
     gh pr view "$pr_ref" \
-      --json number,state,merged,baseRefName,url,title,mergeable \
-      --jq '[.number, .state, (.merged|tostring), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | @tsv'
+      --repo "$REPO_FULL_NAME" \
+      --json number,state,closed,mergedAt,baseRefName,url,title,mergeable \
+      --jq '[.number, .state, (.closed|tostring), (.mergedAt // ""), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | @tsv'
   else
     gh pr view \
-      --json number,state,merged,baseRefName,url,title,mergeable \
-      --jq '[.number, .state, (.merged|tostring), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | @tsv'
+      --repo "$REPO_FULL_NAME" \
+      --json number,state,closed,mergedAt,baseRefName,url,title,mergeable \
+      --jq '[.number, .state, (.closed|tostring), (.mergedAt // ""), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | @tsv'
   fi
 }
 
 show_pr_info() {
   local number="$1"
   local state="$2"
-  local merged="$3"
-  local base_ref="$4"
-  local url="$5"
-  local title="$6"
-  local mergeable="$7"
+  local closed="$3"
+  local merged_at="$4"
+  local base_ref="$5"
+  local url="$6"
+  local title="$7"
+  local mergeable="$8"
+  local merged="false"
+
+  if [[ -n "$merged_at" ]]; then
+    merged="true"
+  fi
 
   info "PR detected:"
   printf "  PR:        #%s\n" "$number"
   printf "  Title:     %s\n" "$title"
   printf "  State:     %s\n" "$state"
+  printf "  Closed:    %s\n" "$closed"
   printf "  Merged:    %s\n" "$merged"
+  printf "  Merged at: %s\n" "${merged_at:-N/A}"
   printf "  Base:      %s\n" "$base_ref"
   printf "  Mergeable: %s\n" "$mergeable"
   printf "  URL:       %s\n" "$url"
@@ -124,7 +157,7 @@ detect_current_branch_pr() {
 }
 
 choose_pr_with_retry() {
-  local attempt input normalized pr_info
+  local attempt input normalized pr_info gh_error
 
   for attempt in 1 2 3; do
     read -r -p "Enter PR number, #number, or PR URL to verify (empty to skip): " input
@@ -140,12 +173,21 @@ choose_pr_with_retry() {
       continue
     fi
 
-    if pr_info="$(read_pr_info "$normalized" 2>/dev/null)"; then
+    if pr_info="$(read_pr_info "$normalized" 2>/tmp/workflow-common-gh-error.$$)"; then
+      rm -f /tmp/workflow-common-gh-error.$$
       printf "%s" "$pr_info"
       return 0
     fi
 
-    warn "Could not read PR '$input' with gh. Try again, or press Enter to skip."
+    gh_error="$(cat /tmp/workflow-common-gh-error.$$ 2>/dev/null || true)"
+    rm -f /tmp/workflow-common-gh-error.$$
+
+    warn "Could not read PR '$input' with gh."
+    if [[ -n "$gh_error" ]]; then
+      warn "gh error:"
+      printf "%s\n" "$gh_error" >&2
+    fi
+    warn "Try again, or press Enter to skip."
   done
 
   warn "Maximum PR verification attempts reached."
@@ -153,12 +195,13 @@ choose_pr_with_retry() {
 }
 
 get_pr_for_post_pr_action() {
-  local pr_info
+  local pr_info gh_error
 
   if ! ensure_gh_ready; then
     return 1
   fi
 
+  info "Using repository: $REPO_FULL_NAME"
   info "Trying to detect PR for current branch..."
 
   if pr_info="$(detect_current_branch_pr 2>/dev/null)"; then
@@ -167,6 +210,12 @@ get_pr_for_post_pr_action() {
   fi
 
   warn "Could not auto-detect a PR for the current branch."
+
+  if ! gh_error="$(detect_current_branch_pr 2>&1 >/dev/null)"; then
+    warn "gh error:"
+    printf "%s\n" "$gh_error" >&2
+  fi
+
   choose_pr_with_retry
 }
 
@@ -230,7 +279,7 @@ merge_pr_with_strong_confirmation() {
 
   warn "You are about to merge PR #$number with GitHub CLI."
   warn "This script will run:"
-  warn "  gh pr merge $number --squash"
+  warn "  gh pr merge $number --repo $REPO_FULL_NAME --squash"
   warn "It will not delete the remote branch automatically."
 
   printf "Type %s%s%s to merge, or anything else to skip: " "$BOLD" "$expected_token" "$RESET"
@@ -241,17 +290,17 @@ merge_pr_with_strong_confirmation() {
     return 1
   fi
 
-  gh pr merge "$number" --squash
+  gh pr merge "$number" --repo "$REPO_FULL_NAME" --squash
   ok "gh merge command completed for PR #$number."
 }
 
 handle_verified_pr_and_refresh() {
   local pr_info="$1"
-  local number state merged base_ref url title mergeable refreshed_pr_info
+  local number state closed merged_at base_ref url title mergeable refreshed_pr_info gh_error
 
-  IFS=$'\t' read -r number state merged base_ref url title mergeable <<< "$pr_info"
+  IFS=$'\t' read -r number state closed merged_at base_ref url title mergeable <<< "$pr_info"
 
-  show_pr_info "$number" "$state" "$merged" "$base_ref" "$url" "$title" "$mergeable"
+  show_pr_info "$number" "$state" "$closed" "$merged_at" "$base_ref" "$url" "$title" "$mergeable"
 
   if [[ "$base_ref" != "$DEFAULT_BRANCH" ]]; then
     warn "PR #$number targets '$base_ref', not '$DEFAULT_BRANCH'."
@@ -259,7 +308,7 @@ handle_verified_pr_and_refresh() {
     return 1
   fi
 
-  if [[ "$merged" == "true" ]]; then
+  if [[ -n "$merged_at" ]]; then
     ok "Verified PR #$number is already merged into '$DEFAULT_BRANCH'."
     refresh_default_branch
     return $?
@@ -286,9 +335,13 @@ handle_verified_pr_and_refresh() {
         fi
 
         warn "Could not re-check PR #$number."
+        if ! gh_error="$(read_pr_info "$number" 2>&1 >/dev/null)"; then
+          warn "gh error:"
+          printf "%s\n" "$gh_error" >&2
+        fi
         ;;
       2)
-        if gh pr view "$number" --web >/dev/null 2>&1; then
+        if gh pr view "$number" --repo "$REPO_FULL_NAME" --web >/dev/null 2>&1; then
           ok "Opened PR #$number in browser."
         else
           warn "Could not open PR in browser. URL: $url"
@@ -302,6 +355,10 @@ handle_verified_pr_and_refresh() {
           fi
 
           warn "Could not verify PR #$number after gh merge."
+          if ! gh_error="$(read_pr_info "$number" 2>&1 >/dev/null)"; then
+            warn "gh error:"
+            printf "%s\n" "$gh_error" >&2
+          fi
           return 1
         fi
         ;;
