@@ -289,3 +289,30 @@ A post-PR refresh flow should:
 - if the PR is open, offer to re-check, open the PR in browser, skip, or explicitly merge with strong confirmation
 - require a typed token such as `MERGE_PR_<number>` before any scripted merge
 - avoid deleting remote branches automatically unless separately confirmed
+
+
+## Lesson: Verify CLI schemas before scripting against JSON fields
+
+### Context
+
+A helper script used `gh pr view --json merged`, assuming that `merged` was a valid GitHub CLI JSON field.
+
+The actual GitHub CLI field is `mergedAt`. The invalid field caused PR verification to fail even for successfully merged PRs.
+
+The first implementation also hid the real `gh` error output, making the failure harder to diagnose.
+
+### Lesson
+
+Do not assume CLI JSON schemas.
+
+Before scripting against CLI JSON output, verify available fields with official documentation, `--help`, or a direct command.
+
+External tool errors must be surfaced during workflow automation. Do not hide stderr unless the error is expected and a clearer replacement message is printed.
+
+### Future Rule
+
+When using `gh pr view --json`:
+- verify the requested fields first
+- use `mergedAt` to detect merged PRs
+- prefer explicit `--repo owner/repo` when the script already knows the repository
+- print useful `gh` errors when PR lookup fails
