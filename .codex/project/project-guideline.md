@@ -4,7 +4,7 @@
 
 `agent-project-foundation-kit` is a reusable foundation kit for initializing software projects with agent-ready project memory, skills, prompts, rules, and workflow constraints.
 
-The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, publishing boundaries, project initialization checks, role routing, engineering quality principles, and durable project memory.
+The goal is to make Codex / coding agents work with clear project context, bounded workflows, docs-first technical judgment, explicit planning/execution phases, publishing boundaries, project initialization checks, project architecture planning, role routing, engineering quality principles, and durable project memory.
 
 This repository develops the reusable foundation kit itself.
 
@@ -24,6 +24,7 @@ Completed themes:
 - Theme 8: `initialize-project-context`
 - Theme 9: `agent-roles-and-capabilities`
 - Theme 9.1: project memory and roadmap alignment cleanup
+- Theme 10: `project-architecture-plan`
 
 Current canonical core skill names:
 
@@ -35,6 +36,7 @@ Current canonical core skill names:
 - `publish-current-branch`
 - `initialize-project-context`
 - `agent-roles-and-capabilities`
+- `project-architecture-plan`
 
 Current canonical core rules:
 
@@ -42,7 +44,6 @@ Current canonical core rules:
 
 Planned core skill names:
 
-- `project-architecture-plan`
 - `code-review`
 
 Current canonical productivity skill names:
@@ -53,7 +54,6 @@ Current canonical productivity skill names:
 
 Future planned themes:
 
-- `project-architecture-plan`
 - `code-review`
 - installer / install workflow hardening
 - productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
@@ -105,10 +105,11 @@ dev_locals/
 
 ## 6. Scripts and Commands
 
-Current helper script:
+Current helper scripts:
 
 ```txt
 scripts/apply-theme-zip.sh
+scripts/publish-local-change.sh
 ```
 
 Theme zip files should normally be stored under:
@@ -117,7 +118,7 @@ Theme zip files should normally be stored under:
 dev_locals/theme-zips/
 ```
 
-The script supports configurable environment variables:
+The `apply-theme-zip.sh` script supports configurable environment variables:
 
 ```txt
 THEME_ZIP_DIR
@@ -140,6 +141,15 @@ Current `apply-theme-zip.sh` safety behavior:
 - shows `git status` and `git diff --stat`
 - can optionally commit, push, and create a PR
 - never merges by default
+- can refresh the default branch after a PR merge
+- handles diverged local default branch with backup + reset confirmation
+
+Current `publish-local-change.sh` purpose:
+
+- publish small local changes through feature branch + PR workflow
+- avoid unnecessary theme zip overhead for one/few-file changes
+- never auto-merge PRs
+- refresh the default branch after merge with backup + reset handling when needed
 
 ## 7. Environment Variables
 
@@ -151,6 +161,7 @@ DEFAULT_BRANCH
 THEME_BRANCH_PREFIX
 DESTRUCTIVE_DROP_PERCENT
 DESTRUCTIVE_DROP_LINES
+CHANGE_BRANCH_PREFIX
 ```
 
 ## 8. Architecture and Data Flow
@@ -198,7 +209,7 @@ The repo is developed theme by theme:
 1. Discuss theme decisions.
 2. Freeze accepted decisions.
 3. Choose the safest update method:
-   - single small edit: manual edit
+   - single small edit: manual edit or `publish-local-change.sh`
    - multiple coordinated edits in one file: full-file replacement
    - multiple coordinated files: zip or full-file replacement bundle
    - mature files: verify line counts and diff before commit
@@ -206,7 +217,7 @@ The repo is developed theme by theme:
 5. Put theme zip files under `dev_locals/theme-zips/` when using zip delivery.
 6. Apply with `scripts/apply-theme-zip.sh` when using zip delivery.
 7. Verify local diff, line counts, and stale references.
-8. Commit and push.
+8. Commit and push through feature branch + PR workflow.
 9. Update this repo's project memory when durable facts, decisions, or lessons change.
 
 ## 11. Deployment
@@ -215,7 +226,7 @@ No deployment workflow is currently defined.
 
 Publishing repository changes is separate from deployment.
 
-Push / PR / merge behavior belongs to `publish-current-branch`.
+Push / PR / merge behavior belongs to `publish-current-branch` or repo helper scripts.
 
 Release and deploy workflows are future work.
 
@@ -235,10 +246,11 @@ Completed:
 - `agent-roles-and-capabilities`
 - `engineering-quality-principles`
 - Theme 9.1 project memory and roadmap alignment cleanup
+- `scripts/publish-local-change.sh`
+- Theme 10 `project-architecture-plan`
 
 In progress / next likely themes:
 
-- `project-architecture-plan`
 - `code-review`
 - installer / install workflow hardening
 - productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
@@ -254,36 +266,7 @@ In progress / next likely themes:
 - `.codex/skills/` is not committed for this repo to avoid duplicating `kit/skills/`.
 - `initialize-project-context` can identify capability areas and use `agent-roles-and-capabilities` when installed.
 - `agent-roles-and-capabilities` now defines generic role profiles and role routing, but technology-specific expert skills remain future work.
-- `project-architecture-plan` and `code-review` are still planned and not yet implemented.
+- `project-architecture-plan` is a Project Lifecycle Skill and is normally used after initialization and before feature-level planning.
+- `code-review` is still planned and not yet implemented.
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
-
-## 14. Agent Notes
-
-When working on this repo:
-
-- Use `project-memory` as the entry point for repo context.
-- Use `initialize-project-context` after installing the kit into a new project or when first taking over an existing project.
-- Use `agent-roles-and-capabilities` for role routing and workflow boundary checks.
-- Use `plan-with-context` for new theme planning.
-- Use `execute-plan` for approved theme implementation.
-- Use `publish-current-branch` for push / PR / merge preparation.
-- Use `update-project-memory` when this repo's current facts, decisions, or lessons change.
-- Apply `engineering-quality-principles` to engineering, architecture, implementation, and review work.
-- Do not write foundation-kit development lessons into `kit/project-templates/lessons-learned.md`.
-
-## Theme 9 Note: Agent Roles and Engineering Quality
-
-Theme 9 adds `agent-roles-and-capabilities` as a core role-routing skill and `engineering-quality-principles` as a core rule.
-
-Existing workflow skills are only lightly patched with a short Role Routing Integration section.
-
-Important safety constraint: mature workflow skills must not be replaced with short stubs unless an explicit full rewrite is approved.
-
-## Theme 9.1 Note: Roadmap Alignment
-
-Theme 9.1 cleans up project memory and design-log status after Theme 9.
-
-It does not add new skills, rules, prompts, or installable kit content.
-
-It aligns completed themes, planned themes, current core skills, current rules, known risks, and next likely work so future tasks do not drift away from the project goal.
