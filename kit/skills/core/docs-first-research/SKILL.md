@@ -1,5 +1,24 @@
 # Docs-First Research Skill
 
+## Role Routing Integration
+
+If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
+
+Then output a concise Role Routing Header using this default routing:
+
+```txt
+Role Routing:
+- Primary role: Technical Researcher
+- Supporting roles: Framework Specialist, Security Reviewer, Tooling Reviewer, Database Engineer as needed
+- Workflow: docs-first-research
+- Maturity expectation: careful evidence-based judgment
+- Technical specialist skill: no technology-specific skill assumed; use official documentation and project sources for framework/API/version/config claims
+- Quality rule: engineering-quality-principles applies when research informs planning, architecture, implementation, or review
+```
+
+Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
+
+
 Use this skill when a task depends on technical facts, official API behavior, version-specific behavior, configuration rules, deployment behavior, testing tools, external services, or best practices.
 
 This skill prevents agents from relying only on model memory when official documentation or project files should be the source of truth.

@@ -1,5 +1,24 @@
 # Update Project Memory Skill
 
+## Role Routing Integration
+
+If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
+
+Then output a concise Role Routing Header using this default routing:
+
+```txt
+Role Routing:
+- Primary role: Project Memory Curator
+- Supporting roles: Documentation Writer
+- Workflow: update-project-memory
+- Maturity expectation: careful source-of-truth judgment
+- Technical specialist skill: not applicable unless recording technical facts; use docs-first-research for external technical claims
+- Quality rule: not directly applicable unless documenting engineering decisions
+```
+
+Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
+
+
 Use this skill to update durable project memory after project facts, decisions, or reusable lessons change.
 
 This skill updates one or more of:

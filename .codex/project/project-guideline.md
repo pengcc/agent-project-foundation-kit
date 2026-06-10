@@ -22,6 +22,7 @@ Completed themes:
 - Theme 6: this repository's own `.codex/project/` memory
 - Theme 7: `publish-current-branch`
 - Theme 8: `initialize-project-context`
+- Theme 9: `agent-roles-and-capabilities`
 
 Current canonical core skill names:
 
@@ -33,6 +34,9 @@ Current canonical core skill names:
 - `code-review`
 - `publish-current-branch`
 - `initialize-project-context`
+- `agent-roles-and-capabilities`
+- `engineering-quality-principles`
+- `agent-roles-and-capabilities`
 
 Current canonical productivity skill names:
 
@@ -42,7 +46,9 @@ Current canonical productivity skill names:
 
 Future planned skill/theme:
 
-- `agent-roles-and-capabilities`
+- `project-architecture-plan`
+- `code-review`
+- technology-specific skills
 
 ## 3. Non-Goals
 
@@ -180,6 +186,7 @@ Completed:
 - Foundation-kit repo self project memory under `.codex/project/`
 - `publish-current-branch`
 - `initialize-project-context`
+- `agent-roles-and-capabilities`
 
 In progress / next likely themes:
 
@@ -195,7 +202,8 @@ In progress / next likely themes:
 - Reusable templates under `kit/project-templates/` must stay generic.
 - `.codex/project/` belongs to this repo and must not be treated as installable payload.
 - `.codex/skills/` is not committed for this repo to avoid duplicating `kit/skills/`.
-- `initialize-project-context` can identify capability areas, but full role definitions belong to future `agent-roles-and-capabilities`.
+- `initialize-project-context`
+- `agent-roles-and-capabilities` can identify capability areas, but full role definitions belong to future `agent-roles-and-capabilities`.
 
 ## 14. Agent Notes
 
@@ -208,3 +216,12 @@ When working on this repo:
 - Use `publish-current-branch` for push / PR / merge preparation.
 - Use `update-project-memory` when this repo's current facts, decisions, or lessons change.
 - Do not write foundation-kit development lessons into `kit/project-templates/lessons-learned.md`.
+
+
+## Theme 9 Note: Agent Roles and Engineering Quality
+
+Theme 9 adds `agent-roles-and-capabilities` as a core role-routing skill and `engineering-quality-principles` as a core rule.
+
+Existing workflow skills are only lightly patched with a short Role Routing Integration section.
+
+Important safety constraint: mature workflow skills must not be replaced with short stubs unless an explicit full rewrite is approved.

@@ -1,5 +1,24 @@
 # Execute Plan Skill
 
+## Role Routing Integration
+
+If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
+
+Then output a concise Role Routing Header using this default routing:
+
+```txt
+Role Routing:
+- Primary role: Implementation Executor
+- Supporting roles: Frontend Engineer, Backend Engineer, Database Engineer, Test Engineer, Framework Specialist as needed
+- Workflow: execute-plan
+- Maturity expectation: pragmatic implementation; senior-level judgment for risky changes
+- Technical specialist skill: no technology-specific skill assumed; use repo facts and docs-first-research for framework/API/version/config claims
+- Quality rule: engineering-quality-principles applies to implementation work
+```
+
+Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
+
+
 Use this skill to execute an approved plan safely, in bounded steps, with validation.
 
 This is an execution workflow. It does not create a new plan.

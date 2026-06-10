@@ -216,3 +216,54 @@ Accepted
 `initialize-project-context` must prioritize repo-internal facts.
 
 It must use `docs-first-research` when analysis depends on external technical facts, version recommendations, compatibility, deployment/GitHub Actions behavior, security/auth/database choices, or external constraints that may be written into project memory.
+
+
+## Decision: Agent role routing is a core capability
+
+### Status
+
+Accepted
+
+### Context
+
+The user wants agents to behave more deliberately across different task types instead of using a single generic developer mode.
+
+### Decision
+
+Create `agent-roles-and-capabilities` as a core skill.
+
+It defines generic role categories, core role profiles, role/workflow combinations, task-to-role routing, expected maturity, and capability boundaries.
+
+It does not directly implement features and does not replace planning, execution, review, research, or publishing workflows.
+
+### Impact
+
+Core workflows can route tasks through explicit roles and output a concise Role Routing Header.
+
+## Decision: Engineering quality principles are a core rule
+
+### Status
+
+Accepted
+
+### Decision
+
+Create `kit/rules/engineering-quality-principles.md`.
+
+It defines cross-technology quality constraints such as KISS, DRY with no premature abstraction, single responsibility, clear naming, testability, early return, comments explaining why, style consistency, defensive programming, complexity control, avoiding magic values, small focused changes, and validation.
+
+It is a rule, not a standalone workflow skill.
+
+## Decision: Preserve existing workflow skill content during role routing integration
+
+### Status
+
+Accepted
+
+### Decision
+
+Theme 9 role routing integration must preserve existing mature core skill content.
+
+Existing workflow skills may receive a short `Role Routing Integration` section, but their previously accepted workflow boundaries, steps, and output formats must remain intact.
+
+Large line-count drops or major deletions in existing skills must be treated as high-risk destructive changes.

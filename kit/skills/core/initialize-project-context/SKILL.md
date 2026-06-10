@@ -1,5 +1,24 @@
 # Initialize Project Context Skill
 
+## Role Routing Integration
+
+If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
+
+Then output a concise Role Routing Header using this default routing:
+
+```txt
+Role Routing:
+- Primary role: Project Context Initializer
+- Supporting roles: Product Planner, Project Architect
+- Workflow: initialize-project-context
+- Maturity expectation: senior-level project understanding and cautious fact separation
+- Technical specialist skill: no technology-specific skill assumed; use repo facts and docs-first-research for framework/API/version/config claims
+- Quality rule: engineering-quality-principles applies when engineering judgment is involved
+```
+
+Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
+
+
 Use this skill to initialize project context after installing the foundation kit or when an existing project is first connected to agent workflows.
 
 This skill creates a clear project initialization analysis before feature planning begins. It does not implement features and does not execute plans.

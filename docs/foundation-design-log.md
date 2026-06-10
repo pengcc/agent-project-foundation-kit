@@ -22,6 +22,7 @@ Core Required:
 6. code-review
 7. publish-current-branch
 8. initialize-project-context
+9. agent-roles-and-capabilities
 
 Core Productivity:
 
@@ -178,3 +179,48 @@ docs/foundation-design-log.md
 - code-review
 - release workflow
 - deployment workflow
+
+
+## Theme 9: Agent Roles and Capabilities
+
+Accepted decisions:
+
+1. `agent-roles-and-capabilities` is an independent core skill for roles, capability boundaries, maturity expectations, and task-to-role routing.
+2. It does not directly execute feature implementation and does not replace planning, execution, review, research, or publishing workflows.
+3. Role titles do not default to `Senior`, but roles define expected maturity and apply senior-level engineering judgment for architecture, planning, review, security, data model, integration, deployment strategy, cross-system decisions, and high-risk implementation.
+4. Small bounded tasks remain pragmatic and should avoid overengineering.
+5. Specific technology experts such as Next.js, Vue, TanStack, NestJS, TypeScript, databases/ORMs, and integrations remain future technology-specific skills.
+6. If technology-specific skills are not installed, generic roles must rely on repo facts and `docs-first-research` for framework/API/version/config claims.
+7. Final generic role categories:
+   - Product / Context / Planning
+   - Architecture / System Design
+   - Frontend / Web Platform
+   - Backend / API / Integration
+   - Data / Persistence
+   - Quality / Review / Testing
+   - Security / Performance / Accessibility
+   - Tooling / Build / DevOps / Delivery
+   - Documentation / Memory / Handoff
+8. `Project Architect` is the core role for project architecture and feature roadmap / feature plan after initialization.
+9. A future `project-architecture-plan` workflow should implement overall architecture and roadmap planning.
+10. Until then, `plan-with-context` may be used as a high-level architecture plan fallback, but it must be marked as not a normal implementation plan.
+11. `engineering-quality-principles` is added as a core rule under `kit/rules/`.
+12. Existing workflow skills are lightly patched with a short Role Routing Integration section.
+13. Existing mature skill content must be preserved; large deletions require explicit review.
+
+Resulting files:
+
+```txt
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/agent-roles-and-capabilities/metadata.yml
+kit/rules/engineering-quality-principles.md
+kit/skills/core/initialize-project-context/SKILL.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/docs-first-research/SKILL.md
+kit/skills/core/update-project-memory/SKILL.md
+kit/skills/core/publish-current-branch/SKILL.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```

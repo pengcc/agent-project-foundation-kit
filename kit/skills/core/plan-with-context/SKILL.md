@@ -1,5 +1,24 @@
 # Plan With Context Skill
 
+## Role Routing Integration
+
+If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
+
+Then output a concise Role Routing Header using this default routing:
+
+```txt
+Role Routing:
+- Primary role: Project Planner
+- Supporting roles: Product Planner, Requirement Clarifier, Project Architect, domain roles as needed
+- Workflow: plan-with-context
+- Maturity expectation: senior-level planning judgment with pragmatic scope control
+- Technical specialist skill: no technology-specific skill assumed; use repo facts and docs-first-research for framework/API/version/config claims
+- Quality rule: engineering-quality-principles applies to architecture and implementation planning
+```
+
+Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
+
+
 Use this skill to create bounded, executable implementation plans based on real project context.
 
 This is a planning-only workflow. It does not implement changes.
