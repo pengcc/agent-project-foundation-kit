@@ -529,11 +529,47 @@ docs/foundation-design-log.md
 .codex/project/lessons-learned.md
 ```
 
+## Theme 14: Grill Me
+
+Accepted decisions:
+
+1. `grill-me` is implemented as a reusable clarification skill for unclear goals, requirements, scope, constraints, tradeoffs, and decision branches.
+
+2. `grill-me` is a dependency-style productivity skill. Other current and future workflows may route to it when ambiguity blocks safe progress.
+
+3. `grill-me` is not tightly coupled to the current skill list. Skills can be added, renamed, removed, or replaced later without changing the core clarification behavior.
+
+4. `grill-me` must inspect available project context before asking the user a question.
+
+5. It must not ask questions that can be answered from project memory, repo docs, code, config, tests, package files, or official / high-quality technical sources.
+
+6. It asks the smallest number of high-leverage questions needed to unblock the next workflow.
+
+7. It asks one question at a time by default. A tight group of related questions is allowed only when they belong to the same decision and answering them together reduces friction.
+
+8. Every question should include a recommended answer or recommended direction.
+
+9. `grill-me` is clarification-only. It must not implement code, execute plans, modify project files, update project memory directly, commit, push, create PRs, merge, release, or deploy.
+
+10. If clarification creates durable facts, decisions, or lessons, it recommends `update-project-memory`.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/grill-me/SKILL.md
+kit/skills/core/grill-me/metadata.yml
+kit/prompts/force-grill-me.md
+kit/rules/agent-operating-contract.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 13:
+Priority order after Theme 14:
 
-1. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+1. productivity skills completion: `handoff`, `write-a-skill`
 2. GitHub ruleset / branch protection setup guidance
 3. technology-specific skills
 4. release workflow
@@ -541,9 +577,10 @@ Priority order after Theme 13:
 
 Rationale:
 
-- `grill-me` should follow because Theme 13 now routes unclear goals, scope, requirements, constraints, and decision branches to `grill-me`, but the skill itself is not implemented yet.
-- `handoff` and `write-a-skill` should follow after `grill-me` because they complete the planned productivity skill set.
+- `handoff` and `write-a-skill` should follow because `grill-me` is now implemented and they complete the planned productivity skill set.
+- GitHub ruleset / branch protection setup guidance should follow soon because publishing workflows already exist, but repository protection setup is still only guidance/future work.
 - Technology-specific skills should come after the core project lifecycle and productivity workflows are stable.
+
 
 ## Future Ideas
 

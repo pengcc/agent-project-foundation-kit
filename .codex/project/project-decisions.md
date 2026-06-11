@@ -551,3 +551,41 @@ Mixed:
 ### Impact
 
 Future agents can preserve useful practices, not only avoid previous mistakes.
+
+## Decision: Grill-me is a dependency-style clarification skill
+
+### Status
+
+Accepted
+
+### Context
+
+Theme 13 routed unclear goals, requirements, constraints, scope, and decision branches to `grill-me`, but the skill itself was not yet implemented.
+
+The foundation kit will continue to add, rename, remove, or refine skills over time, so `grill-me` should not depend on a fixed list of current workflows.
+
+### Decision
+
+Implement `grill-me` as a reusable clarification dependency for current and future workflows.
+
+Other workflows may route to `grill-me` when ambiguity blocks safe progress.
+
+`grill-me` must:
+
+- inspect available project context before asking
+- avoid asking questions that repo context can answer
+- ask the smallest number of high-leverage questions needed
+- ask one question at a time by default
+- include a recommended answer or direction
+- resolve decision branches in dependency order
+- return to the appropriate next workflow after clarification
+
+`grill-me` must not implement code, execute plans, modify project files, update project memory directly, publish, merge, release, or deploy.
+
+### Impact
+
+Requirement clarification becomes an explicit reusable workflow rather than ad hoc questioning.
+
+Future skills can depend on `grill-me` without `grill-me` needing to know every future skill.
+
+Durable facts, decisions, or lessons discovered during clarification should be routed to `update-project-memory`.
