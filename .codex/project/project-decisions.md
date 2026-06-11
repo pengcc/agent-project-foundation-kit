@@ -482,3 +482,72 @@ Test artifacts must stay under:
 ```txt
 dev_locals/test-runs/install-foundation-kit/
 ```
+
+## Decision: First-run agent operating contract
+
+### Status
+
+Accepted
+
+### Context
+
+After the foundation kit is installed into a downstream project, the agent needs a clear first-run path.
+
+Without a first-run contract, agents may jump directly into feature planning, skip role routing, miss project memory, or fail to understand project boundaries.
+
+### Decision
+
+Use this first-run startup order:
+
+```txt
+AGENTS.md
+-> project-memory
+-> agent-roles-and-capabilities
+-> initialize-project-context
+-> routed follow-up skill
+```
+
+Keep `AGENTS.md` short and operational.
+
+Put detailed first-run, boundary, routing, concise output, evidence-first, and durable memory rules in:
+
+```txt
+kit/rules/agent-operating-contract.md
+```
+
+`grill-me` remains a planned productivity skill in Theme 13. Theme 13 only defines when it should be routed to.
+
+### Impact
+
+Downstream projects get a clearer agent startup contract after installation.
+
+`initialize-project-context` becomes explicitly role-routed and should run after `agent-roles-and-capabilities`.
+
+Durable memory updates are considered after meaningful planning, implementation, debugging, review, publishing, installation, or major discussion.
+
+## Decision: Lessons include Avoid, Keep, and Mixed patterns
+
+### Status
+
+Accepted
+
+### Decision
+
+Use `.codex/project/lessons-learned.md` for both mistakes and successful reusable patterns.
+
+Classify lessons as:
+
+```txt
+Avoid:
+  mistakes, risks, bad patterns, repeated failure modes
+
+Keep:
+  successful patterns, useful workflows, good validation strategies, stable engineering practices
+
+Mixed:
+  tradeoffs or patterns useful only in specific contexts
+```
+
+### Impact
+
+Future agents can preserve useful practices, not only avoid previous mistakes.

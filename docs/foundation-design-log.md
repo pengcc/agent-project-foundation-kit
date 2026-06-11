@@ -454,9 +454,83 @@ docs/foundation-design-log.md
 .codex/project/lessons-learned.md
 ```
 
+# Theme 13: First-run Agent Operating Contract
+
+Accepted decisions:
+
+1. Theme 13 defines the post-install first-run workflow for downstream projects.
+
+2. `AGENTS.md` stays short and operational.
+
+3. Detailed first-run rules live in `kit/rules/agent-operating-contract.md`.
+
+4. First-run startup order is:
+
+   - `AGENTS.md`
+
+   - `project-memory`
+
+   - `agent-roles-and-capabilities`
+
+   - `initialize-project-context`
+
+   - routed follow-up skill
+
+5. `agent-roles-and-capabilities` should be applied before `initialize-project-context` during first-run setup.
+
+6. `initialize-project-context` is a role-routed onboarding and gap-analysis workflow, not only a file scan.
+
+7. `grill-me` is not implemented in Theme 13. It is only referenced as the correct routing target when goals, scope, requirements, constraints, or decision branches remain unclear.
+
+8. Theme 13 adds a durable memory loop:
+
+   - current facts go to `.codex/project/project-guideline.md`
+
+   - long-term decisions go to `.codex/project/project-decisions.md`
+
+   - lessons and reusable patterns go to `.codex/project/lessons-learned.md`
+
+9. Lessons are categorized as Avoid, Keep, or Mixed.
+
+10. Theme 13 reinforces concise output: use the shortest format that preserves correctness, project terms, decisions, risks, validation status, and next actions.
+
+11. Theme 13 also exposed and fixed apply-theme zip workflow issues:
+
+    - `tmp_dir` trap referenced a local variable after `main` returned under `set -u`
+
+    - PR info parsing using TSV collapsed empty `mergedAt` fields and shifted PR fields
+
+Resulting files / changes:
+
+```txt
+
+kit/project-templates/AGENTS.md
+
+kit/rules/agent-operating-contract.md
+
+kit/project-templates/project-guideline.md
+
+kit/project-templates/lessons-learned.md
+
+kit/skills/core/initialize-project-context/SKILL.md
+
+kit/skills/core/update-project-memory/SKILL.md
+
+scripts/apply-theme-zip.sh
+
+scripts/lib/workflow-common.sh
+
+docs/foundation-design-log.md
+
+.codex/project/project-guideline.md
+
+.codex/project/project-decisions.md
+
+.codex/project/lessons-learned.md
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 12:
+Priority order after Theme 13:
 
 1. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
 2. GitHub ruleset / branch protection setup guidance

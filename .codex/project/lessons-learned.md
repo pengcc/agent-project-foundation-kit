@@ -384,3 +384,73 @@ When adding or materially changing workflow scripts, add or update local validat
 - backup-before-replace
 - expected failure behavior
 - project-local test artifact location
+
+## Lesson: Avoid TSV parsing for optional CLI fields
+
+### Context
+
+The post-PR refresh flow used `gh pr view --json ... --jq ... | @tsv` and parsed the result with Bash `IFS=$'\t' read ...`.
+
+When `mergedAt` was empty, Bash treated tabs as IFS whitespace and collapsed the empty field. That shifted later fields, causing the PR URL to be interpreted as the base branch.
+
+### Lesson
+
+Avoid TSV parsing in Bash when fields may be empty.
+
+Use a delimiter that is not IFS whitespace, such as ASCII unit separator, or use a safer structured parser.
+
+### Reuse guidance
+
+For future workflow scripts:
+
+- avoid `@tsv` when optional fields can be empty
+- avoid tab as an IFS delimiter for data that may contain empty fields
+- verify parsing behavior with open and merged PRs
+- surface CLI stderr when automation fails
+
+## Lesson: Shell traps should not depend on local variables after function return
+
+### Context
+
+`apply-theme-zip.sh` set an EXIT trap inside `main()` using local variable `tmp_dir`.
+
+The trap ran after `main()` returned. Under `set -u`, the local variable was no longer available, causing:
+
+```txt
+tmp_dir: unbound variable
+```
+
+### Lesson
+
+Do not rely on function-local variables inside EXIT traps that run after the function returns.
+
+Use a global cleanup variable plus a cleanup function, or ensure the trapped variable remains in scope.
+
+### Reuse guidance
+
+For future shell scripts:
+
+- use `cleanup()` functions for traps
+- store cleanup paths in script-level variables
+- guard cleanup variables with `${var:-}`
+- test script self-update cases separately when a script updates files it has already sourced or executed
+
+## Keep: Use smoke-test zips for workflow script verification
+
+### Context
+
+After fixing `apply-theme-zip.sh`, a small throwaway smoke-test zip was used to verify that the updated script could run the apply / skip commit / delete zip / skip PR refresh flow without repeating the previous cleanup error.
+
+### Pattern
+
+Use a tiny, low-risk zip package to validate workflow script behavior before applying a meaningful theme patch.
+
+### Why it worked
+
+It separated script validation from real repo content changes.
+
+It also made cleanup simple and reduced the chance that a script bug would damage mature files.
+
+### Reuse guidance
+
+When a workflow script changes, test it with a small disposable package before trusting it with a real theme zip.
