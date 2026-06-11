@@ -1,0 +1,11 @@
+name: grill-me
+description: Relentlessly clarify unclear goals, requirements, scope, constraints, and decision branches before planning or execution.
+category: core
+version: 0.1.0
+triggers:
+  - grill me
+  - unclear requirements
+  - requirement clarification
+  - clarify scope
+  - decision tree
+  - before planning

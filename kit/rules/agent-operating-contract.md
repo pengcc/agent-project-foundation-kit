@@ -50,7 +50,7 @@ Role and capability routing:
   agent-roles-and-capabilities
 
 Unclear goals / requirements / decision branches:
-  grill-me (planned productivity skill until installed)
+  grill-me
 
 External technical facts / framework behavior / community practice:
   docs-first-research
