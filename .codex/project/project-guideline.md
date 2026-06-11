@@ -27,6 +27,7 @@ Completed themes:
 - Theme 10: `project-architecture-plan`
 - Theme 11: `code-review`
 - Theme 12: install / update workflow hardening
+- Theme 13: first-run agent operating contract and durable memory loop
 
 Current canonical core skill names:
 
@@ -279,6 +280,10 @@ Completed:
 - Theme 12 install / update workflow hardening
 - `scripts/install-foundation-kit.sh`
 - `scripts/test-install-foundation-kit.sh`
+-  Theme 13 first-run agent operating contract
+- `kit/rules/agent-operating-contract.md`
+- first-run routing integration in `initialize-project-context` and `update-project-memory`
+- `apply-theme-zip.sh` post-PR / cleanup bug fixes
 
 In progress / next likely themes:
 
