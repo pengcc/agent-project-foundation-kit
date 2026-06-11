@@ -565,6 +565,46 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
+## Theme 15: Handoff
+
+Accepted decisions:
+
+1. `handoff` is implemented as a reusable productivity skill for compact cross-session or cross-agent continuation.
+
+2. `handoff` is adapted from an existing productivity skill pattern, but rewritten for this foundation kit instead of copied directly.
+
+3. Handoffs are local-only process artifacts, not durable project memory.
+
+4. Handoffs default to:
+
+```txt
+dev_locals/handoffs/YYYY-MM-DD-short-topic.md
+```
+
+5. Handoffs must not be committed.
+
+6. Handoffs should reference existing artifacts by path or URL instead of duplicating full plans, PRDs, ADRs, issues, commits, diffs, or memory files.
+
+7. Handoffs must include suggested next skills so a future agent can resume with correct workflow routing.
+
+8. Handoffs must redact secrets and unnecessary sensitive information.
+
+9. Durable facts, decisions, or lessons discovered while creating a handoff must be routed to `update-project-memory`.
+
+10. `agent-operating-contract.md` now routes cross-session / cross-agent continuation to `handoff`.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/handoff/SKILL.md
+kit/skills/core/handoff/metadata.yml
+kit/prompts/force-handoff.md
+kit/rules/agent-operating-contract.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```
+
 ## Current Recommended Next Themes
 
 Priority order after Theme 14:

@@ -589,3 +589,49 @@ Requirement clarification becomes an explicit reusable workflow rather than ad h
 Future skills can depend on `grill-me` without `grill-me` needing to know every future skill.
 
 Durable facts, decisions, or lessons discovered during clarification should be routed to `update-project-memory`.
+
+## Decision: Handoffs are local-only continuation artifacts
+
+### Status
+
+Accepted
+
+### Context
+
+Theme 15 implements `handoff` as a productivity skill for compact cross-session or cross-agent continuation.
+
+The external productivity handoff pattern suggests compacting a conversation so another agent can continue, but this foundation kit needs project-specific boundaries and storage conventions.
+
+### Decision
+
+Implement `handoff` as a reusable productivity skill that creates local continuation documents under:
+
+```txt
+dev_locals/handoffs/YYYY-MM-DD-short-topic.md
+```
+
+Handoff files are local-only process artifacts.
+
+They must not be committed and must not be treated as durable project memory.
+
+Handoffs should reference existing artifacts by path or URL instead of duplicating full plans, PRDs, ADRs, issues, commits, diffs, or memory files.
+
+Every handoff should include suggested next skills so the next agent can resume with correct workflow routing.
+
+Handoffs must redact secrets and unnecessary sensitive information.
+
+Durable facts, long-term decisions, or reusable lessons discovered while creating a handoff must be routed to `update-project-memory`.
+
+### Impact
+
+Future sessions and agents can continue work with less dependence on long chat history.
+
+The project keeps a clean boundary between:
+
+```txt
+dev_locals/handoffs/        -> local continuation artifacts
+.codex/project/             -> durable project memory
+docs/ and source files      -> project source-of-truth artifacts
+```
+
+The workflow avoids copying large existing artifacts into handoffs and keeps durable memory updates intentional.
