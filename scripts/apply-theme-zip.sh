@@ -1,4 +1,3 @@
-\
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -49,6 +48,13 @@ THEME_ZIP_DIR="${THEME_ZIP_DIR:-dev_locals/theme-zips}"
 THEME_BRANCH_PREFIX="${THEME_BRANCH_PREFIX:-theme}"
 DESTRUCTIVE_DROP_PERCENT="${DESTRUCTIVE_DROP_PERCENT:-30}"
 DESTRUCTIVE_DROP_LINES="${DESTRUCTIVE_DROP_LINES:-50}"
+APPLY_THEME_TMP_DIR=""
+
+cleanup_apply_theme_tmp_dir() {
+  if [[ -n "${APPLY_THEME_TMP_DIR:-}" && -d "$APPLY_THEME_TMP_DIR" ]]; then
+    rm -rf "$APPLY_THEME_TMP_DIR"
+  fi
+}
 
 line_count() {
   local file="$1"
@@ -304,7 +310,8 @@ main() {
   ensure_feature_branch "$zip_path"
 
   tmp_dir="$(mktemp -d)"
-  trap 'rm -rf "$tmp_dir"' EXIT
+  APPLY_THEME_TMP_DIR="$tmp_dir"
+  trap cleanup_apply_theme_tmp_dir EXIT
 
   show_zip_contents "$zip_path"
   extract_zip "$zip_path" "$tmp_dir"
