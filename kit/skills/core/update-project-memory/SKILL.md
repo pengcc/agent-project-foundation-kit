@@ -19,6 +19,34 @@ Role Routing:
 Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
 
 
+## Durable Memory Loop Integration
+
+Use this skill when the agent operating contract or another workflow determines that durable project knowledge was produced.
+
+After meaningful planning, implementation, debugging, review, publishing, installation, or major discussion, classify durable updates as:
+
+```txt
+Current facts -> .codex/project/project-guideline.md
+Long-term decisions -> .codex/project/project-decisions.md
+Lessons and reusable patterns -> .codex/project/lessons-learned.md
+```
+
+Lessons are not limited to mistakes. Classify lesson candidates as:
+
+```txt
+Avoid:
+  mistakes, risks, bad patterns, repeated failure modes
+
+Keep:
+  successful patterns, useful workflows, good validation strategies, stable engineering practices
+
+Mixed:
+  tradeoffs or patterns that are useful only in specific contexts
+```
+
+Do not silently write memory. Propose the update first, then wait for user confirmation unless the user has explicitly authorized the update workflow.
+
+
 Use this skill to update durable project memory after project facts, decisions, or reusable lessons change.
 
 This skill updates one or more of:
@@ -176,7 +204,7 @@ Record:
 
 Do not record every small implementation choice.
 
-### 3. Reusable mistakes go to lessons-learned.md
+### 3. Reusable lessons and patterns go to lessons-learned.md
 
 Update:
 
@@ -184,14 +212,15 @@ Update:
 .codex/project/lessons-learned.md
 ```
 
-when a debugging discovery, mistake, or risk has reuse value.
+when a debugging discovery, mistake, risk, successful pattern, or tradeoff has reuse value.
 
 Record:
 
 - Context
-- Problem
-- Root cause
-- Resolution
+- Lesson category: Avoid / Keep / Mixed
+- Problem, pattern, or tradeoff
+- Root cause or why it worked
+- Resolution or reuse conditions
 - Reuse guidance
 - Related files
 
