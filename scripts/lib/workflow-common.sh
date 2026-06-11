@@ -1,4 +1,3 @@
-\
 #!/usr/bin/env bash
 
 # Shared helpers for repository workflow scripts.
@@ -16,6 +15,7 @@ export PAGER="${PAGER:-cat}"
 
 DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
 REPO_FULL_NAME="${REPO_FULL_NAME:-}"
+PR_INFO_FIELD_SEP=$'\037'
 
 RED=$'\033[0;31m'
 GREEN=$'\033[0;32m'
@@ -109,20 +109,38 @@ ensure_gh_ready() {
 
 read_pr_info() {
   local pr_ref="${1:-}"
+  local jq_expr
 
-  # GitHub CLI `gh pr view --json` supports `mergedAt`, not `merged`.
-  # `mergedAt` is non-empty only after a PR has been merged.
+  # Use an ASCII unit separator instead of @tsv.
+  # Bash treats tabs as IFS whitespace and collapses empty fields, which shifted
+  # mergedAt/baseRefName/url when mergedAt was empty.
+  jq_expr='[.number, .state, (.closed|tostring), (.mergedAt // ""), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | map(tostring) | join("\u001f")'
+
   if [[ -n "$pr_ref" ]]; then
     gh pr view "$pr_ref" \
       --repo "$REPO_FULL_NAME" \
       --json number,state,closed,mergedAt,baseRefName,url,title,mergeable \
-      --jq '[.number, .state, (.closed|tostring), (.mergedAt // ""), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | @tsv'
+      --jq "$jq_expr"
   else
     gh pr view \
       --repo "$REPO_FULL_NAME" \
       --json number,state,closed,mergedAt,baseRefName,url,title,mergeable \
-      --jq '[.number, .state, (.closed|tostring), (.mergedAt // ""), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | @tsv'
+      --jq "$jq_expr"
   fi
+}
+
+parse_pr_info() {
+  local pr_info="$1"
+
+  IFS="$PR_INFO_FIELD_SEP" read -r \
+    PR_NUMBER \
+    PR_STATE \
+    PR_CLOSED \
+    PR_MERGED_AT \
+    PR_BASE_REF \
+    PR_URL \
+    PR_TITLE \
+    PR_MERGEABLE <<< "$pr_info"
 }
 
 show_pr_info() {
@@ -153,11 +171,16 @@ show_pr_info() {
 }
 
 detect_current_branch_pr() {
-  read_pr_info
+  local branch
+  branch="$(current_branch)"
+  gh pr view "$branch" \
+    --repo "$REPO_FULL_NAME" \
+    --json number,state,closed,mergedAt,baseRefName,url,title,mergeable \
+    --jq '[.number, .state, (.closed|tostring), (.mergedAt // ""), .baseRefName, .url, .title, (.mergeable // "UNKNOWN")] | map(tostring) | join("\u001f")'
 }
 
 choose_pr_with_retry() {
-  local attempt input normalized pr_info gh_error
+  local attempt input normalized pr_info gh_error gh_error_file
 
   for attempt in 1 2 3; do
     read -r -p "Enter PR number, #number, or PR URL to verify (empty to skip): " input
@@ -173,14 +196,16 @@ choose_pr_with_retry() {
       continue
     fi
 
-    if pr_info="$(read_pr_info "$normalized" 2>/tmp/workflow-common-gh-error.$$)"; then
-      rm -f /tmp/workflow-common-gh-error.$$
+    gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+
+    if pr_info="$(read_pr_info "$normalized" 2>"$gh_error_file")"; then
+      rm -f "$gh_error_file"
       printf "%s" "$pr_info"
       return 0
     fi
 
-    gh_error="$(cat /tmp/workflow-common-gh-error.$$ 2>/dev/null || true)"
-    rm -f /tmp/workflow-common-gh-error.$$
+    gh_error="$(cat "$gh_error_file" 2>/dev/null || true)"
+    rm -f "$gh_error_file"
 
     warn "Could not read PR '$input' with gh."
     if [[ -n "$gh_error" ]]; then
@@ -195,7 +220,7 @@ choose_pr_with_retry() {
 }
 
 get_pr_for_post_pr_action() {
-  local pr_info gh_error
+  local pr_info gh_error gh_error_file
 
   if ! ensure_gh_ready; then
     return 1
@@ -204,14 +229,19 @@ get_pr_for_post_pr_action() {
   info "Using repository: $REPO_FULL_NAME"
   info "Trying to detect PR for current branch..."
 
-  if pr_info="$(detect_current_branch_pr 2>/dev/null)"; then
+  gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+
+  if pr_info="$(detect_current_branch_pr 2>"$gh_error_file")"; then
+    rm -f "$gh_error_file"
     printf "%s" "$pr_info"
     return 0
   fi
 
-  warn "Could not auto-detect a PR for the current branch."
+  gh_error="$(cat "$gh_error_file" 2>/dev/null || true)"
+  rm -f "$gh_error_file"
 
-  if ! gh_error="$(detect_current_branch_pr 2>&1 >/dev/null)"; then
+  warn "Could not auto-detect a PR for the current branch."
+  if [[ -n "$gh_error" ]]; then
     warn "gh error:"
     printf "%s\n" "$gh_error" >&2
   fi
@@ -296,25 +326,26 @@ merge_pr_with_strong_confirmation() {
 
 handle_verified_pr_and_refresh() {
   local pr_info="$1"
-  local number state closed merged_at base_ref url title mergeable refreshed_pr_info gh_error
+  local refreshed_pr_info gh_error gh_error_file
+  local PR_NUMBER PR_STATE PR_CLOSED PR_MERGED_AT PR_BASE_REF PR_URL PR_TITLE PR_MERGEABLE
 
-  IFS=$'\t' read -r number state closed merged_at base_ref url title mergeable <<< "$pr_info"
+  parse_pr_info "$pr_info"
 
-  show_pr_info "$number" "$state" "$closed" "$merged_at" "$base_ref" "$url" "$title" "$mergeable"
+  show_pr_info "$PR_NUMBER" "$PR_STATE" "$PR_CLOSED" "$PR_MERGED_AT" "$PR_BASE_REF" "$PR_URL" "$PR_TITLE" "$PR_MERGEABLE"
 
-  if [[ "$base_ref" != "$DEFAULT_BRANCH" ]]; then
-    warn "PR #$number targets '$base_ref', not '$DEFAULT_BRANCH'."
+  if [[ "$PR_BASE_REF" != "$DEFAULT_BRANCH" ]]; then
+    warn "PR #$PR_NUMBER targets '$PR_BASE_REF', not '$DEFAULT_BRANCH'."
     warn "Skipping default branch refresh."
     return 1
   fi
 
-  if [[ -n "$merged_at" ]]; then
-    ok "Verified PR #$number is already merged into '$DEFAULT_BRANCH'."
+  if [[ -n "$PR_MERGED_AT" ]]; then
+    ok "Verified PR #$PR_NUMBER is already merged into '$DEFAULT_BRANCH'."
     refresh_default_branch
     return $?
   fi
 
-  warn "PR #$number is not merged yet."
+  warn "PR #$PR_NUMBER is not merged yet."
 
   while true; do
     printf "\n"
@@ -329,33 +360,45 @@ handle_verified_pr_and_refresh() {
 
     case "$choice" in
       1)
-        if refreshed_pr_info="$(read_pr_info "$number" 2>/dev/null)"; then
+        gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+
+        if refreshed_pr_info="$(read_pr_info "$PR_NUMBER" 2>"$gh_error_file")"; then
+          rm -f "$gh_error_file"
           handle_verified_pr_and_refresh "$refreshed_pr_info"
           return $?
         fi
 
-        warn "Could not re-check PR #$number."
-        if ! gh_error="$(read_pr_info "$number" 2>&1 >/dev/null)"; then
+        gh_error="$(cat "$gh_error_file" 2>/dev/null || true)"
+        rm -f "$gh_error_file"
+
+        warn "Could not re-check PR #$PR_NUMBER."
+        if [[ -n "$gh_error" ]]; then
           warn "gh error:"
           printf "%s\n" "$gh_error" >&2
         fi
         ;;
       2)
-        if gh pr view "$number" --repo "$REPO_FULL_NAME" --web >/dev/null 2>&1; then
-          ok "Opened PR #$number in browser."
+        if gh pr view "$PR_NUMBER" --repo "$REPO_FULL_NAME" --web >/dev/null 2>&1; then
+          ok "Opened PR #$PR_NUMBER in browser."
         else
-          warn "Could not open PR in browser. URL: $url"
+          warn "Could not open PR in browser. URL: $PR_URL"
         fi
         ;;
       3)
-        if merge_pr_with_strong_confirmation "$number" "$mergeable"; then
-          if refreshed_pr_info="$(read_pr_info "$number" 2>/dev/null)"; then
+        if merge_pr_with_strong_confirmation "$PR_NUMBER" "$PR_MERGEABLE"; then
+          gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+
+          if refreshed_pr_info="$(read_pr_info "$PR_NUMBER" 2>"$gh_error_file")"; then
+            rm -f "$gh_error_file"
             handle_verified_pr_and_refresh "$refreshed_pr_info"
             return $?
           fi
 
-          warn "Could not verify PR #$number after gh merge."
-          if ! gh_error="$(read_pr_info "$number" 2>&1 >/dev/null)"; then
+          gh_error="$(cat "$gh_error_file" 2>/dev/null || true)"
+          rm -f "$gh_error_file"
+
+          warn "Could not verify PR #$PR_NUMBER after gh merge."
+          if [[ -n "$gh_error" ]]; then
             warn "gh error:"
             printf "%s\n" "$gh_error" >&2
           fi
