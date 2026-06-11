@@ -20,6 +20,34 @@ It covers:
 
 For project-specific technology stack, package manager, runtime, scripts, testing, deployment, environment variables, and directory rules, always use `.codex/project/project-guideline.md` as the current source of truth.
 
+## First-Run Startup Order
+
+After installing the foundation kit or first adopting this project, use this order:
+
+```txt
+AGENTS.md
+-> project-memory
+-> agent-roles-and-capabilities
+-> initialize-project-context
+-> routed follow-up skill
+```
+
+`grill-me` is not the first startup step. Use it when goals, scope, requirements, constraints, or decision branches remain unclear after checking available project context.
+
+## Project Root Boundary
+
+The current project root is the default file-operation boundary.
+
+Do not read, write, delete, move, inspect, or generate files outside the project root unless the user explicitly approves the exact path and purpose.
+
+## Agent Operating Contract
+
+Detailed first-run, skill routing, concise output, durable memory, evidence-first research, and safety rules live in:
+
+```txt
+.codex/rules/agent-operating-contract.md
+```
+
 ## Workflow Declaration
 
 For explicit project workflows, start with a short workflow header:
@@ -47,6 +75,8 @@ Installed skills live under:
 Use the relevant skill before acting.
 
 Do not bypass the required workflow when a task clearly matches an installed skill.
+
+Use the skill routing map in `.codex/rules/agent-operating-contract.md` when the correct workflow is unclear.
 
 ## Planning Rules
 
@@ -98,13 +128,15 @@ Important long-term decisions belong in:
 .codex/project/project-decisions.md
 ```
 
-Reusable mistakes, debugging findings, and lessons belong in:
+Reusable mistakes, debugging findings, successful patterns, and lessons belong in:
 
 ```txt
 .codex/project/lessons-learned.md
 ```
 
 Major changes must trigger consideration of the `update-project-memory` workflow.
+
+After meaningful planning, implementation, debugging, review, publishing, installation, or major discussion, consider whether durable project memory needs an update. Lessons include mistakes to avoid and successful patterns to keep.
 
 ## Git and Publishing Rules
 

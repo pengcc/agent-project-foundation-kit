@@ -154,7 +154,31 @@ Examples:
 - Security or privacy concerns
 - Technical debt
 
-## 14. Agent Notes
+## 14. Shared Language / Project Terms
+
+Record project-specific terms that help agents communicate concisely and accurately.
+
+Examples:
+
+```txt
+<term>:
+<domain concept>:
+<project-specific abbreviation>:
+```
+
+## 15. Project Boundaries
+
+Record project-specific boundaries.
+
+Examples:
+
+```txt
+Project root:
+Allowed local-only paths:
+External paths allowed only with approval:
+```
+
+## 16. Agent Notes
 
 Add concise notes for future agents.
 
