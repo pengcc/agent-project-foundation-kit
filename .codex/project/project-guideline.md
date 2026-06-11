@@ -28,6 +28,7 @@ Completed themes:
 - Theme 11: `code-review`
 - Theme 12: install / update workflow hardening
 - Theme 13: first-run agent operating contract and durable memory loop
+- Theme 14: `grill-me`
 
 Current canonical core skill names:
 
@@ -55,7 +56,7 @@ Current canonical productivity skill names:
 
 Future planned themes:
 
-- productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+- productivity skills completion: `handoff`, `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
 - technology-specific skills
 - release workflow
@@ -283,10 +284,13 @@ Completed:
 - `kit/rules/agent-operating-contract.md`
 - first-run routing integration in `initialize-project-context` and `update-project-memory`
 - `apply-theme-zip.sh` post-PR / cleanup bug fixes
+- Theme 14 `grill-me`
+- `kit/skills/core/grill-me`
+- `kit/prompts/force-grill-me.md`
 
 In progress / next likely themes:
 
-- productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+- productivity skills completion: `handoff`, `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
 - technology-specific skills
 
