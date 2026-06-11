@@ -1,0 +1,11 @@
+name: handoff
+description: Compact current project/session context into a local handoff document so another session or agent can continue safely.
+category: core
+version: 0.1.0
+triggers:
+  - handoff
+  - create handoff
+  - continue next session
+  - context transfer
+  - compact conversation
+  - summarize for next agent
