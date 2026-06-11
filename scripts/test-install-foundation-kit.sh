@@ -278,26 +278,27 @@ test_target_symlink_escape_blocks() {
   ln -s "$outside" "$target/.codex/skills"
 
   if run_installer --target "$target" --apply > "$TEST_ROOT/symlink-escape.out" 2>&1; then
-    log_fail "Installer allowed target symlink escape"
+    log_fail "Installer allowed target directory symlink escape"
   fi
 
   assert_contains "$TEST_ROOT/symlink-escape.out" "outside allowed boundary"
 
-  log_pass "target symlink escape blocks"
+  log_pass "target directory symlink escape blocks"
 }
 
-test_target_file_symlink_blocks() {
-  local target outside_file
-  target="$(new_target file-symlink-escape)"
-  outside_file="$TEST_ROOT/outside-agent.md"
-  printf 'outside file\n' > "$outside_file"
-  ln -s "$outside_file" "$target/AGENTS.md"
+test_existing_target_file_symlink_blocks() {
+  local target outside
+  target="$(new_target file-symlink)"
+  outside="$TEST_ROOT/outside-file-target"
+  mkdir -p "$outside"
+  printf 'outside file\n' > "$outside/AGENTS.md"
+  ln -s "$outside/AGENTS.md" "$target/AGENTS.md"
 
-  if run_installer --target "$target" > "$TEST_ROOT/file-symlink-escape.out" 2>&1; then
+  if run_installer --target "$target" > "$TEST_ROOT/file-symlink.out" 2>&1; then
     log_fail "Installer allowed existing target file symlink"
   fi
 
-  assert_contains "$TEST_ROOT/file-symlink-escape.out" "Existing target path is a symlink"
+  assert_contains "$TEST_ROOT/file-symlink.out" "Refusing existing symlink target path"
 
   log_pass "existing target file symlink blocks"
 }
@@ -328,7 +329,7 @@ main() {
   test_missing_target_blocks
   test_target_equals_repo_root_blocks
   test_target_symlink_escape_blocks
-  test_target_file_symlink_blocks
+  test_existing_target_file_symlink_blocks
   test_artifacts_inside_repo
 
   printf '\n[PASS] All installer tests passed (%s checks).\n' "$PASS_COUNT"

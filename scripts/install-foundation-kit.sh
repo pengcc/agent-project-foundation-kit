@@ -83,7 +83,7 @@ canonical_existing_dir() {
   (cd "$path" && pwd -P)
 }
 
-canonical_existing_file_parent_path() {
+canonical_existing_file() {
   local path="$1"
 
   if [[ ! -f "$path" ]]; then
@@ -118,15 +118,14 @@ nearest_existing_parent() {
 
 resolve_repo_root() {
   REPO_ROOT="$(canonical_existing_dir "$SCRIPT_DIR/..")"
-  # Do not canonicalize kit here. Missing kit must be reported by check_source_kit,
-  # not by an early set -e exit from command substitution.
+  # Do not canonicalize KIT_ROOT here. Missing kit/ should be reported by check_source_kit
+  # with a clear [BLOCKED] message instead of failing silently under set -e.
   KIT_ROOT="$REPO_ROOT/kit"
 }
 
-resolve_target_arg() {
-  # Do not canonicalize target here. Missing target must be reported by check_target,
-  # not by an early set -e exit from command substitution.
-  TARGET_ROOT="$TARGET_ARG"
+resolve_target_root() {
+  # Do not call this until check_target has verified the target directory exists.
+  TARGET_ROOT="$(canonical_existing_dir "$TARGET_ARG")"
 }
 
 make_temp_files() {
@@ -192,13 +191,6 @@ validate_target_path_for_plan() {
   existing_parent="$(nearest_existing_parent "$target_path")"
   assert_inside_dir "$TARGET_ROOT" "$existing_parent" "target parent"
 
-  # Existing target symlink files are blocked so backup/replace cannot follow or overwrite
-  # paths outside the target root.
-  if [[ -L "$target_path" ]]; then
-    log_blocked "Existing target path is a symlink; refusing to operate on it: $target_path"
-    exit 1
-  fi
-
   # Dry-run / validation must be side-effect free.
   # Do not create target directories or files here.
   printf '%s\n' "$target_path"
@@ -213,11 +205,6 @@ prepare_target_path_for_write() {
   existing_parent="$(nearest_existing_parent "$target_path")"
   assert_inside_dir "$TARGET_ROOT" "$existing_parent" "target parent"
 
-  if [[ -L "$target_path" ]]; then
-    log_blocked "Existing target path is a symlink; refusing to operate on it: $target_path"
-    exit 1
-  fi
-
   # Directory creation is allowed only in apply/write mode.
   mkdir -p "$(dirname "$target_path")"
 
@@ -225,18 +212,22 @@ prepare_target_path_for_write() {
   final_parent="$(canonical_existing_dir "$(dirname "$target_path")")"
   assert_inside_dir "$TARGET_ROOT" "$final_parent" "target parent after mkdir"
 
+  if [[ -L "$target_path" ]]; then
+    log_blocked "Refusing to write through symlink target: $target_path"
+    exit 1
+  fi
+
   printf '%s/%s\n' "$final_parent" "$(basename "$target_path")"
 }
 
 check_source_kit() {
   if [[ ! -d "$KIT_ROOT" ]]; then
-    log_blocked "Install source not found: $REPO_ROOT/kit"
+    log_blocked "Install source not found: $KIT_ROOT"
     log_blocked "Run this script from the foundation-kit repository."
     exit 1
   fi
 
   KIT_ROOT="$(canonical_existing_dir "$KIT_ROOT")"
-  assert_inside_dir "$REPO_ROOT" "$KIT_ROOT" "source kit"
 
   local required=(
     "$KIT_ROOT/project-templates/AGENTS.md"
@@ -268,7 +259,7 @@ check_target() {
     exit 1
   fi
 
-  TARGET_ROOT="$(canonical_existing_dir "$TARGET_ARG")"
+  resolve_target_root
 
   if [[ "$TARGET_ROOT" == "$REPO_ROOT" ]]; then
     log_blocked "Refusing to install into the foundation-kit repository itself."
@@ -296,7 +287,7 @@ add_mapping() {
   assert_relative_path_safe "$dst" "manifest target"
 
   local src_real
-  src_real="$(canonical_existing_file_parent_path "$src")"
+  src_real="$(canonical_existing_file "$src")"
   assert_inside_dir "$KIT_ROOT" "$src_real" "source file"
 
   printf '%s\t%s\n' "$src_real" "$dst" >> "$MANIFEST_FILE"
@@ -338,7 +329,7 @@ build_install_manifest() {
 validate_manifest_boundaries() {
   while IFS=$'\t' read -r src dst; do
     local src_real
-    src_real="$(canonical_existing_file_parent_path "$src")"
+    src_real="$(canonical_existing_file "$src")"
     assert_inside_dir "$KIT_ROOT" "$src_real" "source file"
     assert_relative_path_safe "$dst" "target"
     validate_target_path_for_plan "$dst" >/dev/null
@@ -363,7 +354,14 @@ scan_target_conflicts() {
   while IFS=$'\t' read -r src dst; do
     local target_path="$TARGET_ROOT/$dst"
     if [[ -e "$target_path" || -L "$target_path" ]]; then
-      validate_target_path_for_plan "$dst" >/dev/null
+      if [[ -L "$target_path" ]]; then
+        log_blocked "Refusing existing symlink target path: $target_path"
+        exit 1
+      fi
+
+      local target_real_parent
+      target_real_parent="$(canonical_existing_dir "$(dirname "$target_path")")"
+      assert_inside_dir "$TARGET_ROOT" "$target_real_parent" "existing target parent"
 
       local risk
       risk="$(risk_for_target "$dst")"
@@ -474,7 +472,7 @@ backup_existing_file() {
   fi
 
   if [[ -L "$target_path" ]]; then
-    log_blocked "Existing target path is a symlink; refusing to backup or replace it: $target_path"
+    log_blocked "Refusing to backup symlink target path: $target_path"
     exit 1
   fi
 
@@ -495,7 +493,7 @@ install_file() {
   local dst="$2"
 
   local src_real
-  src_real="$(canonical_existing_file_parent_path "$src")"
+  src_real="$(canonical_existing_file "$src")"
   assert_inside_dir "$KIT_ROOT" "$src_real" "source file"
 
   local target_path
@@ -534,10 +532,9 @@ apply_install() {
 main() {
   parse_args "$@"
   resolve_repo_root
-  resolve_target_arg
-  make_temp_files
   check_source_kit
   check_target
+  make_temp_files
   check_git_status
   build_install_manifest
   validate_manifest_boundaries
