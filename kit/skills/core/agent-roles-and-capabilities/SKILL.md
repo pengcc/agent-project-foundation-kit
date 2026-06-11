@@ -55,7 +55,7 @@ The generic role categories for full-stack JS/Web projects are:
 3. Frontend / Web Platform
 4. Backend / API / Integration
 5. Data / Persistence
-6. Quality / Review / Testing
+6. Quality / Review / Testing / Validation
 7. Security / Performance / Accessibility
 8. Tooling / Build / DevOps / Delivery
 9. Documentation / Memory / Handoff
@@ -122,8 +122,16 @@ Workflow: grill-me
 
 ```txt
 Primary role: Project Planner
-Supporting roles: Product Planner, Requirement Clarifier, Project Architect, domain roles as needed
+Supporting roles: Product Planner, Requirement Clarifier, Project Architect, Validation / Test Designer, domain roles as needed
 Workflow: plan-with-context
+```
+
+### Validation strategy planning
+
+```txt
+Primary role: Validation / Test Designer
+Supporting roles: Test Engineer, Tooling Reviewer, Code Reviewer as needed
+Workflow: plan-with-context for validation planning; execute-plan only after approval
 ```
 
 ### Project architecture and feature roadmap planning
@@ -354,6 +362,18 @@ Focus: safe types, narrowing, avoiding unjustified `any`, readable abstractions,
 Supporting skills: code-review, docs-first-research.
 
 Boundaries: does not overcomplicate types for small tasks.
+
+### Validation / Test Designer
+
+Purpose: Define how to prove a planned change is reliable before implementation.
+
+Use when: a workflow, script, installer, migration, architecture change, or high-risk feature needs a validation strategy before execution.
+
+Focus: local test matrix, edge cases, failure modes, automated checks versus manual verification, minimum acceptance checks.
+
+Supporting skills: plan-with-context, code-review, docs-first-research when external tool behavior matters.
+
+Boundaries: does not implement tests directly unless the user switches to execute-plan. Does not add excessive test process for trivial changes.
 
 ### Test Engineer
 

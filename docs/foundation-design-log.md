@@ -53,7 +53,6 @@ Planned productivity skills:
 Future / optional:
 
 - technology-specific skills
-- installer / install workflow hardening
 - GitHub ruleset / branch protection setup guidance
 - release workflow
 - deployment workflow
@@ -414,16 +413,56 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
+## Theme 12: Install / Update Workflow Hardening
+
+Accepted decisions:
+
+1. Theme 12 primarily supports fresh installation into new or early-stage projects.
+2. Existing project support is limited to detecting existing files, showing clear risk analysis, and requiring careful user confirmation before replacement.
+3. Theme 12 does not migrate or optimize mature existing projects.
+4. Project-wide file operations must stay inside explicit project boundaries by default.
+5. The installer has one controlled source-to-target boundary exception.
+6. The installer may read only from the current foundation-kit repo's `kit/`.
+7. The installer may write only inside the explicit target project root.
+8. All installable content must come from `kit/`.
+9. `AGENTS.md` installs to the downstream project root.
+10. Project templates install under `.codex/project/`.
+11. `kit/skills/`, `kit/prompts/`, and `kit/rules/` install under `.codex/skills/`, `.codex/prompts/`, and `.codex/rules/`.
+12. The installer requires explicit `--target`.
+13. The target directory must already exist.
+14. The target must not equal the foundation-kit repo root.
+15. The installer defaults to dry-run.
+16. Actual writes require `--apply`.
+17. Existing files must not be automatically merged or silently overwritten.
+18. Existing files must be backed up before replacement under `.codex/backups/install-YYYYMMDD-HHMMSS/<original-path>`.
+19. The installer script itself is not installed into downstream projects.
+20. Theme 12 does not add a new installer skill or prompt.
+21. Theme 12 includes a local validation script for common installer failure modes.
+22. Installer tests must keep artifacts under `dev_locals/test-runs/install-foundation-kit/`.
+23. Installer tests must dynamically verify real `kit/` sample files instead of hard-coding nonexistent filenames.
+24. `agent-roles-and-capabilities` adds a lightweight Validation / Test Designer role to make validation strategy explicit.
+
+Resulting files:
+
+```txt
+scripts/install-foundation-kit.sh
+scripts/test-install-foundation-kit.sh
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
+```
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 11:
+Priority order after Theme 12:
 
-1. installer / install workflow hardening
-2. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
-3. GitHub ruleset / branch protection setup guidance
-4. technology-specific skills
-5. release workflow
-6. deployment workflow
+1. productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
+2. GitHub ruleset / branch protection setup guidance
+3. technology-specific skills
+4. release workflow
+5. deployment workflow
 
 Rationale:
 

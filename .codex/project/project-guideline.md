@@ -26,6 +26,7 @@ Completed themes:
 - Theme 9.1: project memory and roadmap alignment cleanup
 - Theme 10: `project-architecture-plan`
 - Theme 11: `code-review`
+- Theme 12: install / update workflow hardening
 
 Current canonical core skill names:
 
@@ -108,6 +109,8 @@ Current helper scripts:
 ```txt
 scripts/apply-theme-zip.sh
 scripts/publish-local-change.sh
+scripts/install-foundation-kit.sh
+scripts/test-install-foundation-kit.sh
 ```
 
 Theme zip files should normally be stored under:
@@ -148,6 +151,32 @@ Current `publish-local-change.sh` purpose:
 - avoid unnecessary theme zip overhead for one/few-file changes
 - never auto-merge PRs
 - refresh the default branch after merge with backup + reset handling when needed
+
+Current `install-foundation-kit.sh` purpose:
+
+- install the reusable `kit/` payload into a new or early-stage downstream project
+- use a controlled source-to-target boundary exception
+- read only from the current foundation-kit repo's `kit/`
+- write only inside the explicit target project root
+- require explicit `--target`
+- require the target directory to already exist
+- block target equal to the foundation-kit repo root
+- default to dry-run
+- require `--apply` before writing files
+- map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
+- map project templates to `.codex/project/`
+- map `kit/skills/`, `kit/prompts/`, and `kit/rules/` to `.codex/skills/`, `.codex/prompts/`, and `.codex/rules/`
+- validate source and target path boundaries before copying
+- warn when target files already exist
+- never auto-merge existing files
+- backup existing files before replacement under `.codex/backups/install-YYYYMMDD-HHMMSS/`
+- never install this repo's own `.codex/project/`, `dev_locals/`, `docs/`, or `scripts/`
+
+Current `test-install-foundation-kit.sh` purpose:
+
+- run local validation for installer behavior
+- keep test artifacts under `dev_locals/test-runs/install-foundation-kit/`
+- verify explicit target requirement, dry-run, fresh install, mapping correctness, conflict detection, no silent overwrite, backup-before-replace, missing-source blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
 
 ## 7. Environment Variables
 
@@ -247,10 +276,12 @@ Completed:
 - `scripts/publish-local-change.sh`
 - Theme 10 `project-architecture-plan`
 - Theme 11 `code-review`
+- Theme 12 install / update workflow hardening
+- `scripts/install-foundation-kit.sh`
+- `scripts/test-install-foundation-kit.sh`
 
 In progress / next likely themes:
 
-- installer / install workflow hardening
 - productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
 - technology-specific skills
@@ -266,5 +297,7 @@ In progress / next likely themes:
 - `agent-roles-and-capabilities` now defines generic role profiles and role routing, but technology-specific expert skills remain future work.
 - `project-architecture-plan` is a Project Lifecycle Skill and is normally used after initialization and before feature-level planning.
 - `code-review` is a core Review Workflow Skill with Change Review and Plan Alignment Review modes.
+- `install-foundation-kit.sh` is a repo distribution helper for fresh or early-stage downstream project installation and must install only from `kit/`.
+- Project-wide file operations must stay inside explicit project boundaries by default; the installer has a controlled exception only for copying from `repo_root/kit/` into an explicit `target_root/`.
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
