@@ -316,3 +316,71 @@ When using `gh pr view --json`:
 - use `mergedAt` to detect merged PRs
 - prefer explicit `--repo owner/repo` when the script already knows the repository
 - print useful `gh` errors when PR lookup fails
+
+## Lesson: File operations must stay inside explicit project boundaries
+
+### Context
+
+While designing the installer workflow, a local test script used a system temporary directory on macOS.
+
+That behavior was not appropriate for this project because the foundation kit should teach and enforce safe file-operation boundaries.
+
+### Lesson
+
+Agents, scripts, tests, installers, and workflow helpers should operate only inside their active project root by default.
+
+Temporary files, test runs, debug snapshots, and review artifacts should be written under project-local paths such as:
+
+```txt
+dev_locals/test-runs/
+dev_locals/debug-snapshots/
+dev_locals/research-notes/
+dev_locals/theme-zips/
+```
+
+Do not create files in system temp directories, user home directories, other projects, or arbitrary external paths by default.
+
+### Future Rule
+
+Any operation outside the active project root requires:
+
+1. exact path disclosure
+2. reason
+3. risk analysis
+4. cleanup or rollback plan
+5. user review and confirmation
+
+The installer is a controlled exception only for copying from `repo_root/kit/` into an explicit target project root, with both source and target boundary validation.
+
+## Lesson: Workflow scripts need local validation scripts
+
+### Context
+
+Several helper scripts for branch publishing, PR refresh, and GitHub CLI state checks only exposed mistakes during real usage.
+
+Examples included unsafe assumptions about remote PR state and an incorrect `gh pr view --json` field.
+
+Theme 12 turns that lesson into a concrete requirement for the new installer script.
+
+### Lesson
+
+Workflow and installer scripts should include local validation scripts for common failure modes.
+
+Manual review is still needed, but a script that changes project files should have automated local checks for its basic safety boundaries.
+
+Tests should not hard-code assumptions that are not guaranteed by current repo files. For example, installer tests should dynamically choose sample files from `kit/skills`, `kit/prompts`, and `kit/rules` instead of assuming a specific prompt filename exists.
+
+### Future Rule
+
+When adding or materially changing workflow scripts, add or update local validation scripts that cover:
+
+- dry-run behavior
+- apply behavior
+- argument parsing
+- expected source and target mapping
+- source and target boundary checks
+- conflict detection
+- no silent overwrite
+- backup-before-replace
+- expected failure behavior
+- project-local test artifact location

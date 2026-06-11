@@ -388,3 +388,97 @@ Mixed
 Only distilled and user-confirmed facts, decisions, or lessons may be promoted into `.codex/project/` through `update-project-memory`.
 
 `code-review` may output an advisory Merge / Apply Readiness verdict, but it does not approve, merge, apply, publish, release, deploy, modify code, or update memory.
+
+## Decision: Installer has a controlled source-to-target boundary exception
+
+### Status
+
+Accepted
+
+### Context
+
+The foundation kit needs a safe way to install the reusable `kit/` payload into downstream projects.
+
+The primary use case is a new or early-stage project. Mature existing projects may have legacy skills, project memory, architecture decisions, and technology choices that are too complex for a simple installer to reconcile.
+
+The project also needs a clear file-operation safety boundary. Agents and scripts should not freely operate outside the active project root. However, the installer has a real need to copy from this foundation-kit repo into one explicit downstream target project.
+
+### Decision
+
+Default project-wide rule:
+
+```txt
+Agents, scripts, tests, installers, workflow helpers, generated debug snapshots, test runs, backups, and review artifacts must operate inside their active project root by default.
+```
+
+Any exception must explain the path, reason, risk, cleanup or rollback, and wait for user approval.
+
+The installer has one controlled current exception:
+
+```txt
+source: current foundation-kit repo root / kit/
+target: explicit user-provided target project root
+```
+
+The installer may read only from:
+
+```txt
+repo_root/kit/
+```
+
+The installer may write only inside:
+
+```txt
+target_root/
+```
+
+The installer must not install from this repo's:
+
+```txt
+.codex/project/
+dev_locals/
+docs/
+scripts/
+```
+
+Use this install mapping:
+
+```txt
+kit/project-templates/AGENTS.md -> AGENTS.md
+kit/project-templates/project-guideline.md -> .codex/project/project-guideline.md
+kit/project-templates/project-decisions.md -> .codex/project/project-decisions.md
+kit/project-templates/lessons-learned.md -> .codex/project/lessons-learned.md
+kit/skills/ -> .codex/skills/
+kit/prompts/ -> .codex/prompts/
+kit/rules/ -> .codex/rules/
+```
+
+The installer requires an explicit `--target`.
+
+The target directory must already exist.
+
+The target must not equal the foundation-kit repo root.
+
+The installer defaults to dry-run. Writes require:
+
+```txt
+--apply
+```
+
+When target files already exist, the installer must show a clear conflict and risk analysis. It must not automatically merge or silently overwrite existing files.
+
+Before replacing an existing file, it must backup the original under:
+
+```txt
+.codex/backups/install-YYYYMMDD-HHMMSS/<original-path>
+```
+
+The installer script itself is not installed into downstream projects.
+
+Theme 12 also adds `scripts/test-install-foundation-kit.sh`. The installer is not complete unless local validation covers explicit target requirement, dry-run, fresh install, install mapping, conflict detection, no silent overwrite, backup-before-replace, missing kit source behavior, missing target behavior, target==repo-root blocking, and target boundary escape behavior.
+
+Test artifacts must stay under:
+
+```txt
+dev_locals/test-runs/install-foundation-kit/
+```
