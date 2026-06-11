@@ -27,7 +27,6 @@ Completed themes:
 - Theme 10: `project-architecture-plan`
 - Theme 11: `code-review`
 
-
 Current canonical core skill names:
 
 - `project-memory`
@@ -39,14 +38,12 @@ Current canonical core skill names:
 - `initialize-project-context`
 - `agent-roles-and-capabilities`
 - `project-architecture-plan`
+- `code-review`
 
 Current canonical core rules:
 
 - `engineering-quality-principles`
 
-Planned core skill names:
-
-- `code-review`
 
 Current canonical productivity skill names:
 
@@ -56,7 +53,6 @@ Current canonical productivity skill names:
 
 Future planned themes:
 
-- `code-review`
 - installer / install workflow hardening
 - productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
@@ -252,10 +248,8 @@ Completed:
 - Theme 10 `project-architecture-plan`
 - Theme 11 `code-review`
 
-
 In progress / next likely themes:
 
-- `code-review`
 - installer / install workflow hardening
 - productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
