@@ -67,6 +67,9 @@ Approved execution:
 Review / alignment / PR / diff:
   code-review
 
+Cross-session / cross-agent continuation:
+  handoff
+
 Durable memory update:
   update-project-memory
 
