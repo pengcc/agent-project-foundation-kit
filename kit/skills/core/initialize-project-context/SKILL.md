@@ -19,6 +19,29 @@ Role Routing:
 Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
 
 
+## First-Run Operating Contract Integration
+
+When this skill runs immediately after foundation-kit installation, first apply the installed agent operating contract if present:
+
+```txt
+.codex/rules/agent-operating-contract.md
+```
+
+For first-run usage, the expected startup order is:
+
+```txt
+AGENTS.md
+-> project-memory
+-> agent-roles-and-capabilities
+-> initialize-project-context
+-> routed follow-up skill
+```
+
+Initialization must therefore be role-routed, not only file-scanning. It should identify the best next workflow after initialization, such as `update-project-memory`, `grill-me`, `docs-first-research`, `project-architecture-plan`, or `plan-with-context`.
+
+If goals, scope, requirements, constraints, or decision branches remain unclear after reading available project context, recommend `grill-me` as the next workflow. If `grill-me` is not installed yet, state that it is a planned productivity skill instead of pretending it exists.
+
+
 Use this skill to initialize project context after installing the foundation kit or when an existing project is first connected to agent workflows.
 
 This skill creates a clear project initialization analysis before feature planning begins. It does not implement features and does not execute plans.
@@ -426,4 +449,3 @@ Possible next workflows:
 - `execute-plan`
 - `initialize-project-context` after user provides missing docs
 - `publish-current-branch`
-- future `agent-roles-and-capabilities`
