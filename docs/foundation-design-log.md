@@ -39,14 +39,10 @@ Completed core skills:
 9. project-architecture-plan
 10. code-review
 
-
 Completed core rules:
 
 1. engineering-quality-principles
 
-Planned core skills:
-
-1. code-review
 
 Planned productivity skills:
 
