@@ -541,9 +541,9 @@ Priority order after Theme 13:
 
 Rationale:
 
-- `code-review` should follow because it is the remaining planned v0.1 core skill and will use role routing plus engineering quality principles.
-- Installer hardening should follow once the core installed workflow set is clearer.
-- Productivity and technology-specific skills should come after the core project lifecycle is more stable.
+- `grill-me` should follow because Theme 13 now routes unclear goals, scope, requirements, constraints, and decision branches to `grill-me`, but the skill itself is not implemented yet.
+- `handoff` and `write-a-skill` should follow after `grill-me` because they complete the planned productivity skill set.
+- Technology-specific skills should come after the core project lifecycle and productivity workflows are stable.
 
 ## Future Ideas
 
