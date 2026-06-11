@@ -454,7 +454,7 @@ docs/foundation-design-log.md
 .codex/project/lessons-learned.md
 ```
 
-# Theme 13: First-run Agent Operating Contract
+## Theme 13: First-run Agent Operating Contract
 
 Accepted decisions:
 
@@ -527,6 +527,7 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 
 .codex/project/lessons-learned.md
+```
 
 ## Current Recommended Next Themes
 

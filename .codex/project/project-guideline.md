@@ -55,7 +55,6 @@ Current canonical productivity skill names:
 
 Future planned themes:
 
-- installer / install workflow hardening
 - productivity skills completion: `grill-me`, `handoff`, `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
 - technology-specific skills
@@ -280,7 +279,7 @@ Completed:
 - Theme 12 install / update workflow hardening
 - `scripts/install-foundation-kit.sh`
 - `scripts/test-install-foundation-kit.sh`
--  Theme 13 first-run agent operating contract
+- Theme 13 first-run agent operating contract
 - `kit/rules/agent-operating-contract.md`
 - first-run routing integration in `initialize-project-context` and `update-project-memory`
 - `apply-theme-zip.sh` post-PR / cleanup bug fixes
