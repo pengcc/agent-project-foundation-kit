@@ -704,11 +704,17 @@ The script must:
 
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
 - treat typed `SMALL_SAFE` as the only pre-commit pre-approval and clearly report skipped gates
-- prompt for a non-empty commit message when the command argument is omitted
+- inspect local, branch, and PR state before requesting publish inputs
+- prompt for a non-empty commit message only when uncommitted changes require a commit
+- use the latest commit subject for the PR title when only unpushed commits need publishing
+- list repository-level open PRs and require acknowledgement without treating their existence as an automatic block
+- update an existing current-branch PR instead of creating a duplicate
 - always publish through a feature branch and PR, never by direct default-branch push
 - show the complete staged, unstaged, and untracked change scope before commit
 - record the fixed `SMALL_SAFE_PREAPPROVED` validation statement without prompting in small-safe mode
-- capture user-provided validation before push for normal and significant modes
+- require structured validation codes for normal and significant modes; significant updates cannot use `NOT_RUN`
+- treat no required checks as merge-eligible, pending checks as auto-merge eligible, and failing checks as merge-blocking
+- preserve GitHub CLI stderr and block merge when required-check verification itself fails
 - require typed manual-review approval before squash auto-merge or immediate squash merge
 - exit after enabling auto-merge without polling or refreshing the default branch
 - refresh the default branch only after a verified merge and explicit approval
