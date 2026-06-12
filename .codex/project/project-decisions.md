@@ -704,9 +704,11 @@ The script must:
 
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
 - treat typed `SMALL_SAFE` as the only pre-commit pre-approval and clearly report skipped gates
+- prompt for a non-empty commit message when the command argument is omitted
 - always publish through a feature branch and PR, never by direct default-branch push
 - show the complete staged, unstaged, and untracked change scope before commit
-- capture validation before push and record it in the PR
+- record the fixed `SMALL_SAFE_PREAPPROVED` validation statement without prompting in small-safe mode
+- capture user-provided validation before push for normal and significant modes
 - require typed manual-review approval before squash auto-merge or immediate squash merge
 - exit after enabling auto-merge without polling or refreshing the default branch
 - refresh the default branch only after a verified merge and explicit approval

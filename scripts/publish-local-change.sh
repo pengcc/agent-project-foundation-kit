@@ -9,6 +9,7 @@ source "$SCRIPT_DIR/lib/workflow-common.sh"
 # This is a repo development helper, not the installable publish-current-branch skill.
 #
 # Usage:
+#   bash scripts/publish-local-change.sh
 #   bash scripts/publish-local-change.sh "Commit message"
 #
 # Optional environment variables:
@@ -19,6 +20,21 @@ CHANGE_BRANCH_PREFIX="${CHANGE_BRANCH_PREFIX:-change}"
 PUBLISH_CLASSIFICATION=""
 VALIDATION_STATEMENT=""
 PUBLISH_PR_FIELD_SEP=$'\037'
+
+resolve_commit_message() {
+  local message="${1:-}"
+
+  if [[ -z "${message//[[:space:]]/}" ]]; then
+    prompt "Enter commit message: "
+    read -r message
+  fi
+
+  if [[ -z "${message//[[:space:]]/}" ]]; then
+    die "Commit message must not be empty."
+  fi
+
+  printf "%s" "$message"
+}
 
 safe_branch_name_from_message() {
   local message="$1"
@@ -189,6 +205,12 @@ commit_changes_if_needed() {
 }
 
 capture_validation_statement() {
+  if [[ "$PUBLISH_CLASSIFICATION" == "SMALL_SAFE" ]]; then
+    VALIDATION_STATEMENT="SMALL_SAFE_PREAPPROVED - validation prompt skipped by explicit small-safe pre-approval."
+    skipped "Local/manual validation prompt skipped because the user typed SMALL_SAFE."
+    return
+  fi
+
   step "Record local/manual validation."
   prompt "Describe the validation completed (required, one line): "
   read -r VALIDATION_STATEMENT
@@ -471,11 +493,8 @@ choose_pr_mode() {
 }
 
 main() {
-  if [[ $# -lt 1 || -z "${1//[[:space:]]/}" ]]; then
-    die "Usage: bash scripts/publish-local-change.sh \"Commit message\""
-  fi
-
-  local commit_message="$1"
+  local commit_message
+  commit_message="$(resolve_commit_message "${1:-}")"
 
   require_command git
   ensure_git_repo

@@ -166,8 +166,10 @@ Current `publish-local-change.sh` purpose:
 - avoid unnecessary theme zip overhead for one/few-file changes
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
 - treat typed `SMALL_SAFE` classification as the sole pre-commit pre-approval
+- prompt for a commit message when the command argument is omitted
 - show staged, unstaged, untracked, and final staged change summaries
-- record local/manual validation in the PR body or an existing-PR comment
+- skip the validation prompt for `SMALL_SAFE` and record its pre-approved validation statement
+- require local/manual validation input for `NORMAL` and strict typed validation confirmation for `SIGNIFICANT`
 - offer PR-only, squash auto-merge, or immediate squash merge modes
 - require typed manual-review approval before any scripted merge mode
 - never push directly to the default branch
