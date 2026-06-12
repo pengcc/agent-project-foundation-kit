@@ -171,8 +171,9 @@ Current `publish-local-change.sh` purpose:
 - offer PR-only, squash auto-merge, or immediate squash merge modes
 - require typed manual-review approval before any scripted merge mode
 - never push directly to the default branch
+- exit after enabling auto-merge without polling or refreshing the default branch
 - refresh the default branch only after a verified merge and explicit approval
-- preserve backup + reset handling when a local default branch diverged
+- create a backup branch and require `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
 Current `test-publish-local-change.sh` purpose:
 

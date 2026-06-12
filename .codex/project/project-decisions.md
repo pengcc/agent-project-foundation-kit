@@ -708,7 +708,9 @@ The script must:
 - show the complete staged, unstaged, and untracked change scope before commit
 - capture validation before push and record it in the PR
 - require typed manual-review approval before squash auto-merge or immediate squash merge
+- exit after enabling auto-merge without polling or refreshing the default branch
 - refresh the default branch only after a verified merge and explicit approval
+- create a backup branch and require typed `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
 Use a private dependency-free `package.json` for short local commands. Use `publish:local`,
 not `publish`, and do not add dependencies or a lockfile.

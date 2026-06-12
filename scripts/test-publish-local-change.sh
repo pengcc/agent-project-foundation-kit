@@ -150,9 +150,14 @@ case "${1:-}" in
     touch "$state/pushed"
     ;;
   fetch|pull|branch|reset)
+    if [[ "${1:-}" == "branch" ]]; then
+      printf '%s\n' "${2:-}" > "$state/backup-branch"
+    elif [[ "${1:-}" == "reset" ]]; then
+      touch "$state/reset"
+    fi
     ;;
   merge-base)
-    exit 0
+    [[ ! -f "$state/diverged" ]]
     ;;
   *)
     printf 'Unsupported fake git command: %s\n' "$*" >&2
@@ -284,7 +289,10 @@ test_normal_auto_merge() {
 
   assert_contains "$case_root/state/commands.log" "gh pr merge 42 --repo owner/repo --auto --squash --match-head-commit"
   assert_contains "$output" "Enabled squash auto-merge"
+  assert_contains "$output" "Exiting without polling for merge completion"
   assert_not_contains "$case_root/state/commands.log" "git switch main"
+  assert_not_contains "$case_root/state/commands.log" "git fetch origin main"
+  assert_not_contains "$case_root/state/commands.log" "git pull --ff-only origin main"
 
   log_pass "normal mode supports reviewed squash auto-merge without premature main refresh"
 }
@@ -302,6 +310,41 @@ test_significant_immediate_merge_and_refresh() {
   assert_contains "$case_root/state/commands.log" "git pull --ff-only origin main"
 
   log_pass "significant mode requires typed approvals and refreshes only after verified merge"
+}
+
+test_diverged_main_requires_typed_reset() {
+  local case_root output
+  case_root="$(new_case diverged-reset)"
+  output="$case_root/output.log"
+  touch "$case_root/state/diverged"
+
+  run_case "$case_root" $'NORMAL\ny\ny\nValidated reset recovery\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\ny\nRESET_MAIN_TO_ORIGIN\n' "$output"
+
+  assert_contains "$output" "Backup branch created:"
+  assert_contains "$case_root/state/commands.log" "git branch backup/main-before-reset-"
+  assert_contains "$case_root/state/commands.log" "git reset --hard origin/main"
+  [[ -f "$case_root/state/reset" ]] || log_fail "Expected typed reset approval to run git reset"
+
+  log_pass "diverged main creates a backup and requires RESET_MAIN_TO_ORIGIN before hard reset"
+}
+
+test_diverged_main_wrong_token_preserves_backup() {
+  local case_root output
+  case_root="$(new_case diverged-reset-blocked)"
+  output="$case_root/output.log"
+  touch "$case_root/state/diverged"
+
+  if run_case "$case_root" $'NORMAL\ny\ny\nValidated reset refusal\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\ny\nWRONG_TOKEN\n' "$output"; then
+    log_fail "Wrong reset token unexpectedly completed the refresh flow"
+  fi
+
+  assert_contains "$output" "Skipped reset. Local 'main' may still be diverged."
+  assert_contains "$output" "Backup branch preserved:"
+  assert_contains "$case_root/state/commands.log" "git branch backup/main-before-reset-"
+  assert_not_contains "$case_root/state/commands.log" "git reset --hard origin/main"
+  [[ ! -f "$case_root/state/reset" ]] || log_fail "Wrong reset token unexpectedly ran git reset"
+
+  log_pass "wrong reset token blocks hard reset and preserves the backup branch"
 }
 
 test_significant_plan_token_blocks() {
@@ -438,6 +481,8 @@ main() {
   test_small_safe_preapproval
   test_normal_auto_merge
   test_significant_immediate_merge_and_refresh
+  test_diverged_main_requires_typed_reset
+  test_diverged_main_wrong_token_preserves_backup
   test_significant_plan_token_blocks
   test_existing_pr_gets_publish_record
   test_pending_checks_require_auto_merge

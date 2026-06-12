@@ -27,3 +27,4 @@ relying on changed `gh` behavior, use a disposable low-risk branch and verify:
 2. Required-check reporting for passing, pending, and failing checks.
 3. Squash auto-merge and immediate squash merge confirmation wording.
 4. Default-branch refresh only after GitHub reports the PR as merged.
+5. Diverged-main recovery creates a backup branch and requires `RESET_MAIN_TO_ORIGIN`.

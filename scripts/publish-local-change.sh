@@ -425,7 +425,7 @@ run_merge_flow() {
       --squash \
       --match-head-commit "$head_sha"
     success "Enabled squash auto-merge for PR #$PUBLISH_PR_NUMBER."
-    info "Local '$DEFAULT_BRANCH' was not refreshed because merge completion is not yet verified."
+    info "Exiting without polling for merge completion or refreshing local '$DEFAULT_BRANCH'."
     return
   fi
 

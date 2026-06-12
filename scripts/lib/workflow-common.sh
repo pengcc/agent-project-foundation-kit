@@ -330,15 +330,18 @@ refresh_default_branch() {
     warn "A backup branch will be created before any reset:"
     warn "  $backup_branch"
 
-    if confirm "Create backup branch and reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'?"; then
-      git branch "$backup_branch"
+    git branch "$backup_branch"
+    ok "Backup branch created: $backup_branch"
+
+    if confirm_typed \
+      "Reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'? The backup branch above will be preserved." \
+      "RESET_MAIN_TO_ORIGIN"; then
       git reset --hard "origin/$DEFAULT_BRANCH"
       ok "Reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'."
-      ok "Backup branch created: $backup_branch"
     else
       warn "Skipped reset. Local '$DEFAULT_BRANCH' may still be diverged."
+      warn "Backup branch preserved: $backup_branch"
       warn "Manual recovery:"
-      warn "  git branch $backup_branch"
       warn "  git reset --hard origin/$DEFAULT_BRANCH"
       return 1
     fi
