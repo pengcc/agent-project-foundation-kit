@@ -689,3 +689,31 @@ write-a-skill
 Future capability growth can add new skills using a consistent project-specific authoring workflow.
 
 The next recommended theme area can move from productivity skill completion to GitHub ruleset / branch protection setup guidance.
+
+## Decision: Local publish automation uses classified feature-branch and PR flows
+
+### Status
+
+Accepted
+
+### Decision
+
+Theme 16.1 hardens `scripts/publish-local-change.sh` as a repository-local development helper.
+
+The script must:
+
+- classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
+- treat typed `SMALL_SAFE` as the only pre-commit pre-approval and clearly report skipped gates
+- always publish through a feature branch and PR, never by direct default-branch push
+- show the complete staged, unstaged, and untracked change scope before commit
+- capture validation before push and record it in the PR
+- require typed manual-review approval before squash auto-merge or immediate squash merge
+- exit after enabling auto-merge without polling or refreshing the default branch
+- refresh the default branch only after a verified merge and explicit approval
+- create a backup branch and require typed `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
+
+Use a private dependency-free `package.json` for short local commands. Use `publish:local`,
+not `publish`, and do not add dependencies or a lockfile.
+
+This decision does not redesign the installable `publish-current-branch` skill or GitHub
+ruleset / branch protection guidance.

@@ -309,7 +309,7 @@ main() {
 
   ensure_feature_branch "$zip_path"
 
-  tmp_dir="$(mktemp -d)"
+  tmp_dir="$(make_workflow_temp_dir "apply-theme")"
   APPLY_THEME_TMP_DIR="$tmp_dir"
   trap cleanup_apply_theme_tmp_dir EXIT
 

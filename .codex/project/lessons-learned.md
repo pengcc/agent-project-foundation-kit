@@ -454,3 +454,20 @@ It also made cleanup simple and reduced the chance that a script bug would damag
 ### Reuse guidance
 
 When a workflow script changes, test it with a small disposable package before trusting it with a real theme zip.
+
+## Keep: Test Git and GitHub workflows with deterministic fake CLIs
+
+### Context
+
+Theme 16.1 needed coverage for branch creation, staging, pushing, PR creation, merge modes,
+typed confirmations, and post-merge refresh without changing a real remote repository.
+
+### Pattern
+
+Use project-local fixtures with fake `git` and `gh` executables that record commands and
+return controlled repository and PR states.
+
+### Reuse guidance
+
+Use deterministic fake CLIs for automated safety-path coverage, then keep a short disposable
+manual smoke checklist for behavior that depends on the real GitHub CLI and repository settings.

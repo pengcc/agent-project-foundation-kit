@@ -17,24 +17,54 @@ DEFAULT_BRANCH="${DEFAULT_BRANCH:-main}"
 REPO_FULL_NAME="${REPO_FULL_NAME:-}"
 PR_INFO_FIELD_SEP=$'\037'
 
-RED=$'\033[0;31m'
-GREEN=$'\033[0;32m'
-YELLOW=$'\033[0;33m'
-BLUE=$'\033[0;34m'
-BOLD=$'\033[1m'
-RESET=$'\033[0m'
+if [[ -t 2 && -z "${NO_COLOR:-}" ]]; then
+  RED=$'\033[0;31m'
+  GREEN=$'\033[0;32m'
+  YELLOW=$'\033[0;33m'
+  BLUE=$'\033[0;34m'
+  CYAN=$'\033[0;36m'
+  MAGENTA=$'\033[0;35m'
+  BOLD=$'\033[1m'
+  RESET=$'\033[0m'
+else
+  RED=""
+  GREEN=""
+  YELLOW=""
+  BLUE=""
+  CYAN=""
+  MAGENTA=""
+  BOLD=""
+  RESET=""
+fi
 
 info() { printf "%s[INFO]%s %s\n" "$BLUE" "$RESET" "$*" >&2; }
-ok() { printf "%s[OK]%s %s\n" "$GREEN" "$RESET" "$*" >&2; }
+success() { printf "%s[SUCCESS]%s %s\n" "$GREEN" "$RESET" "$*" >&2; }
+ok() { success "$@"; }
 warn() { printf "%s[WARNING]%s %s\n" "$YELLOW" "$RESET" "$*" >&2; }
-danger() { printf "%s[DANGER]%s %s\n" "$RED" "$RESET" "$*" >&2; }
+error() { printf "%s[ERROR]%s %s\n" "$RED" "$RESET" "$*" >&2; }
+danger() { printf "%s[DANGER]%s %s\n" "$RED$BOLD" "$RESET" "$*" >&2; }
+step() { printf "%s[STEP]%s %s\n" "$CYAN$BOLD" "$RESET" "$*" >&2; }
+prompt() { printf "%s[PROMPT]%s %s" "$MAGENTA$BOLD" "$RESET" "$*" >&2; }
+skipped() { printf "%s[SKIPPED]%s %s\n" "$YELLOW" "$RESET" "$*" >&2; }
 die() { danger "$*"; exit 1; }
 
 confirm() {
   local prompt="$1"
   local answer
-  read -r -p "$prompt [y/N] " answer
+  printf "%s[PROMPT]%s %s [y/N] " "$MAGENTA$BOLD" "$RESET" "$prompt" >&2
+  read -r answer
   [[ "$answer" == "y" || "$answer" == "Y" ]]
+}
+
+confirm_typed() {
+  local message="$1"
+  local expected="$2"
+  local answer
+
+  printf "%s[PROMPT]%s %s\n" "$MAGENTA$BOLD" "$RESET" "$message" >&2
+  printf "Type %s%s%s to continue: " "$BOLD" "$expected" "$RESET" >&2
+  read -r answer
+  [[ "$answer" == "$expected" ]]
 }
 
 require_command() {
@@ -53,6 +83,28 @@ is_worktree_clean() {
 
 current_branch() {
   git rev-parse --abbrev-ref HEAD
+}
+
+workflow_temp_root() {
+  local repo_root
+  repo_root="$(git rev-parse --show-toplevel)"
+  printf "%s/dev_locals/workflow-tmp" "$repo_root"
+}
+
+make_workflow_temp_file() {
+  local prefix="${1:-workflow}"
+  local root
+  root="$(workflow_temp_root)"
+  mkdir -p "$root"
+  mktemp "$root/${prefix}.XXXXXX"
+}
+
+make_workflow_temp_dir() {
+  local prefix="${1:-workflow}"
+  local root
+  root="$(workflow_temp_root)"
+  mkdir -p "$root"
+  mktemp -d "$root/${prefix}.XXXXXX"
 }
 
 detect_repo_full_name() {
@@ -196,7 +248,7 @@ choose_pr_with_retry() {
       continue
     fi
 
-    gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+    gh_error_file="$(make_workflow_temp_file "workflow-common-gh-error")"
 
     if pr_info="$(read_pr_info "$normalized" 2>"$gh_error_file")"; then
       rm -f "$gh_error_file"
@@ -229,7 +281,7 @@ get_pr_for_post_pr_action() {
   info "Using repository: $REPO_FULL_NAME"
   info "Trying to detect PR for current branch..."
 
-  gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+  gh_error_file="$(make_workflow_temp_file "workflow-common-gh-error")"
 
   if pr_info="$(detect_current_branch_pr 2>"$gh_error_file")"; then
     rm -f "$gh_error_file"
@@ -278,15 +330,18 @@ refresh_default_branch() {
     warn "A backup branch will be created before any reset:"
     warn "  $backup_branch"
 
-    if confirm "Create backup branch and reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'?"; then
-      git branch "$backup_branch"
+    git branch "$backup_branch"
+    ok "Backup branch created: $backup_branch"
+
+    if confirm_typed \
+      "Reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'? The backup branch above will be preserved." \
+      "RESET_MAIN_TO_ORIGIN"; then
       git reset --hard "origin/$DEFAULT_BRANCH"
       ok "Reset local '$DEFAULT_BRANCH' to 'origin/$DEFAULT_BRANCH'."
-      ok "Backup branch created: $backup_branch"
     else
       warn "Skipped reset. Local '$DEFAULT_BRANCH' may still be diverged."
+      warn "Backup branch preserved: $backup_branch"
       warn "Manual recovery:"
-      warn "  git branch $backup_branch"
       warn "  git reset --hard origin/$DEFAULT_BRANCH"
       return 1
     fi
@@ -360,7 +415,7 @@ handle_verified_pr_and_refresh() {
 
     case "$choice" in
       1)
-        gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+        gh_error_file="$(make_workflow_temp_file "workflow-common-gh-error")"
 
         if refreshed_pr_info="$(read_pr_info "$PR_NUMBER" 2>"$gh_error_file")"; then
           rm -f "$gh_error_file"
@@ -386,7 +441,7 @@ handle_verified_pr_and_refresh() {
         ;;
       3)
         if merge_pr_with_strong_confirmation "$PR_NUMBER" "$PR_MERGEABLE"; then
-          gh_error_file="$(mktemp "${TMPDIR:-/tmp}/workflow-common-gh-error.XXXXXX")"
+          gh_error_file="$(make_workflow_temp_file "workflow-common-gh-error")"
 
           if refreshed_pr_info="$(read_pr_info "$PR_NUMBER" 2>"$gh_error_file")"; then
             rm -f "$gh_error_file"
