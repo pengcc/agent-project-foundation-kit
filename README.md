@@ -7,6 +7,7 @@ Source repository for the Codex Project Foundation Kit.
 This repository uses a private, dependency-free `package.json` as a short command façade:
 
 ```bash
+pnpm publish:local
 pnpm publish:local "Commit message"
 pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
@@ -17,6 +18,7 @@ pnpm check
 `publish:local` always uses a feature branch and pull request. It never pushes directly to
 `main`. The workflow records update classification and validation in the PR, then offers
 PR-only, squash auto-merge, or immediate squash merge modes with explicit review gates.
+When the commit message argument is omitted, the command prompts for it interactively.
 
 ## Publish Smoke Test
 

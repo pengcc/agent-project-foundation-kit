@@ -261,15 +261,75 @@ run_case() {
     bash "$PUBLISHER" "Test Theme 16.1 change" > "$output" 2>&1
 }
 
+run_case_without_message() {
+  local case_root="$1"
+  local input="$2"
+  local output="$3"
+
+  printf '%s' "$input" | env \
+    PATH="$TEST_ROOT/fake-bin:$PATH" \
+    NO_COLOR=1 \
+    PUBLISH_TEST_STATE="$case_root/state" \
+    PUBLISH_TEST_REPO="$case_root/repo" \
+    bash "$PUBLISHER" > "$output" 2>&1
+}
+
+test_prompted_commit_message() {
+  local case_root output
+  case_root="$(new_case prompted-message)"
+  output="$case_root/output.log"
+
+  run_case_without_message "$case_root" $'Prompted commit message\nSMALL_SAFE\n1\n' "$output"
+
+  assert_contains "$output" "Enter commit message:"
+  assert_contains "$case_root/state/commands.log" "git commit -m Prompted commit message"
+  assert_contains "$case_root/state/commands.log" "gh pr create"
+
+  log_pass "omitted commit message prompts and uses the entered message"
+}
+
+test_empty_prompted_commit_message_blocks() {
+  local case_root output
+  case_root="$(new_case empty-prompted-message)"
+  output="$case_root/output.log"
+
+  if run_case_without_message "$case_root" $'   \n' "$output"; then
+    log_fail "Whitespace-only prompted commit message unexpectedly succeeded"
+  fi
+
+  assert_contains "$output" "Commit message must not be empty."
+  assert_not_contains "$case_root/state/commands.log" "git commit"
+  assert_not_contains "$case_root/state/commands.log" "git push"
+  assert_not_contains "$case_root/state/commands.log" "gh pr"
+
+  log_pass "empty or whitespace-only prompted commit message is rejected"
+}
+
+test_quoted_commit_message_argument() {
+  local case_root output
+  case_root="$(new_case quoted-message)"
+  output="$case_root/output.log"
+
+  run_case "$case_root" $'SMALL_SAFE\n1\n' "$output"
+
+  assert_not_contains "$output" "Enter commit message:"
+  assert_contains "$case_root/state/commands.log" "git commit -m Test Theme 16.1 change"
+
+  log_pass "existing quoted commit message argument remains supported"
+}
+
 test_small_safe_preapproval() {
   local case_root output
   case_root="$(new_case small-safe)"
   output="$case_root/output.log"
 
-  run_case "$case_root" $'SMALL_SAFE\nValidated shell behavior locally\n1\n' "$output"
+  run_case "$case_root" $'SMALL_SAFE\n1\n' "$output"
 
   assert_contains "$output" "SMALL_SAFE accepted as explicit pre-approval."
   assert_contains "$output" "Manual pre-commit gates skipped"
+  assert_contains "$output" "validation prompt skipped because the user typed SMALL_SAFE"
+  assert_not_contains "$output" "Describe the validation completed"
+  assert_contains "$case_root/state/commands.log" "SMALL_SAFE_PREAPPROVED - validation prompt skipped by explicit small-safe pre-approval."
   assert_contains "$case_root/state/commands.log" "git switch -c change/"
   assert_contains "$case_root/state/commands.log" "git add -A"
   assert_contains "$case_root/state/commands.log" "git push -u origin change/"
@@ -479,6 +539,9 @@ main() {
   log_pass "publish workflow shell syntax is valid"
 
   test_small_safe_preapproval
+  test_prompted_commit_message
+  test_empty_prompted_commit_message_blocks
+  test_quoted_commit_message_argument
   test_normal_auto_merge
   test_significant_immediate_merge_and_refresh
   test_diverged_main_requires_typed_reset
