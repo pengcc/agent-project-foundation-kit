@@ -30,6 +30,7 @@ Completed themes:
 - Theme 13: first-run agent operating contract and durable memory loop
 - Theme 14: `grill-me`
 - Theme 15: `handoff`
+- Theme 16: `write-a-skill`
 
 Current canonical core skill names:
 
@@ -57,7 +58,6 @@ Current canonical productivity skill names:
 
 Future planned themes:
 
-- productivity skills completion: `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
 - technology-specific skills
 - release workflow
@@ -291,13 +291,17 @@ Completed:
 - Theme 15 `handoff`
     - `kit/skills/core/handoff`
     - `kit/prompts/force-handoff.md`
+- Theme 16 `write-a-skill`
+    - `kit/skills/core/write-a-skill`
+    - `kit/prompts/force-write-a-skill.md`
 
 
 In progress / next likely themes:
 
-- productivity skills completion: `write-a-skill`
 - GitHub ruleset / branch protection setup guidance
 - technology-specific skills
+- release workflow
+- deployment workflow
 
 ## 13. Known Constraints and Risks
 
