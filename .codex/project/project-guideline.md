@@ -32,6 +32,7 @@ Completed themes:
 - Theme 15: `handoff`
 - Theme 16: `write-a-skill`
 - Theme 16.1: local publish workflow entrypoint and safety hardening
+- Theme 16.3: downstream AGENTS template operating contract
 
 Current canonical core skill names:
 
@@ -105,6 +106,8 @@ dev_locals/
 `.codex/project/` is durable project memory for this repository itself and is not part of the installable `kit/` payload.
 
 `dev_locals/` is local-only and contains plans, handoffs, scratch notes, research notes, initialization reports, and theme zip files.
+
+The downstream `AGENTS.md` template defines generic role routing, working style, feature-branch publishing boundaries, final-report classification, and durable project-memory behavior using installed `.codex/` content.
 
 ## 6. Scripts and Commands
 

@@ -40,6 +40,14 @@ The current project root is the default file-operation boundary.
 
 Do not read, write, delete, move, inspect, or generate files outside the project root unless the user explicitly approves the exact path and purpose.
 
+## Working Style
+
+Work professionally, efficiently, and concisely.
+
+For meaningful changes, explain the reason, relevant tradeoffs, expected impact or risk, and validation.
+
+Prefer small, reviewable, reversible changes. Do not silently perform meaningful or risky actions.
+
 ## Agent Operating Contract
 
 Detailed first-run, skill routing, concise output, durable memory, evidence-first research, and safety rules live in:
@@ -48,28 +56,32 @@ Detailed first-run, skill routing, concise output, durable memory, evidence-firs
 .codex/rules/agent-operating-contract.md
 ```
 
-## Workflow Declaration
+## Required Role Routing
 
-For explicit project workflows, start with a short workflow header:
+For every meaningful task, state:
 
 ```txt
-Workflow:
-- Role:
-- Skill:
-- Context:
-- Mode:
+Role Routing:
+- Workflow:
+- Primary role:
+- Supporting roles:
+- Scope:
+- Stop conditions:
 ```
 
 Keep the header concise and truthful.
 
-If required context is missing, state it as `missing`.
+When switching workflow or mode, restate the role routing.
 
-## Skills Location
+## Installed Foundation Content
 
-Installed skills live under:
+Use the installed project content under:
 
 ```txt
 .codex/skills/
+.codex/rules/
+.codex/prompts/
+.codex/project/
 ```
 
 Use the relevant skill before acting.
@@ -134,11 +146,17 @@ Reusable mistakes, debugging findings, successful patterns, and lessons belong i
 .codex/project/lessons-learned.md
 ```
 
-Major changes must trigger consideration of the `update-project-memory` workflow.
+Update project memory only for durable current facts, important long-term decisions, and reusable lessons.
 
-After meaningful planning, implementation, debugging, review, publishing, installation, or major discussion, consider whether durable project memory needs an update. Lessons include mistakes to avoid and successful patterns to keep.
+Do not record routine implementation details, temporary status, logs, or unverified assumptions.
+
+After meaningful planning, implementation, debugging, review, publishing, installation, or major discussion, consider whether the `update-project-memory` workflow is needed.
 
 ## Git and Publishing Rules
+
+Before editing for new work, start from an up-to-date default branch and create a feature branch unless the user explicitly approves a different workflow.
+
+Do not push directly to the default branch.
 
 Local commits may be part of an approved `execute-plan` workflow if the approved plan explicitly includes a commit step or the user explicitly requested commit.
 
@@ -146,9 +164,26 @@ Do not treat a local commit as a remote publish.
 
 Push, pull request, merge, release, and publish actions require explicit user intent.
 
-Use `publish-current-branch` for push / PR / merge workflows.
+When work is complete and validated, use `publish-current-branch` for push / PR / merge workflows.
 
 Do not release or deploy unless a separate workflow or explicit user instruction covers it.
+
+## Final Report Requirements
+
+Every implementation final report must classify the update as one of:
+
+- `small safe update`
+- `normal update`
+- `significant / high-impact update`
+
+The report must include:
+
+- changed files
+- reason for the change
+- impact / risk
+- validation performed
+- project memory or documentation updates
+- whether commit, push, pull request, merge, or other external actions were performed
 
 ## Scope and Safety Rules
 
