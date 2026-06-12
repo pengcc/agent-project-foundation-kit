@@ -653,9 +653,31 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
+## Theme 16.3: Downstream AGENTS Template Operating Contract
+
+Accepted decisions:
+
+1. The downstream `AGENTS.md` template defines generic operating behavior and does not include instructions specific to developing this repository.
+2. Meaningful tasks declare workflow, primary role, supporting roles, scope, and stop conditions. Workflow or mode switches restate the routing.
+3. Work starts from an up-to-date default branch and uses a feature branch unless the user explicitly approves another workflow. Direct pushes to the default branch are prohibited.
+4. Completed and validated branches use the installed `publish-current-branch` workflow.
+5. Implementation final reports classify update risk and report changed files, reason, impact, validation, memory or documentation updates, and external actions.
+6. Installed project memory records only durable facts, decisions, and reusable lessons.
+7. The template refers to installed `.codex/skills/`, `.codex/rules/`, `.codex/prompts/`, and `.codex/project/` content.
+8. This theme does not redesign publishing, define GitHub protection policy, modify skills, or change installation scripts.
+
+Resulting files / changes:
+
+```txt
+kit/project-templates/AGENTS.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 16:
+Priority order after Theme 16.3:
 
 1. GitHub ruleset / branch protection setup guidance
 2. technology-specific skills

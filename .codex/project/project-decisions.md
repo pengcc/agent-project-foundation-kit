@@ -719,3 +719,35 @@ not `publish`, and do not add dependencies or a lockfile.
 
 This decision does not redesign the installable `publish-current-branch` skill or GitHub
 ruleset / branch protection guidance.
+
+## Decision: Downstream AGENTS defines a generic operating contract
+
+### Status
+
+Accepted
+
+### Context
+
+The repository root AGENTS file and the downstream AGENTS template serve different audiences.
+Downstream projects need the reusable operating behavior without foundation-kit development
+instructions.
+
+### Decision
+
+The downstream AGENTS template must:
+
+- require concise role routing for meaningful tasks and workflow or mode switches
+- require professional, reviewable, and reversible working practices
+- start new work from an up-to-date default branch and use a feature branch unless the user approves another workflow
+- prohibit direct pushes to the default branch
+- route completed and validated publishing through the installed `publish-current-branch` workflow
+- classify implementation final reports by update risk and report changes, reason, impact, validation, memory or documentation updates, and external actions
+- update installed project memory only for durable facts, decisions, and reusable lessons
+
+The template references installed `.codex/` skills, rules, prompts, and project memory. It does
+not include this repository's development paths, local commands, or GitHub protection policy.
+
+### Impact
+
+Downstream projects receive a consistent operating contract while detailed procedures remain
+owned by their installed skills and rules.
