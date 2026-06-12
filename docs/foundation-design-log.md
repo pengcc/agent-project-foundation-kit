@@ -605,21 +605,71 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
+## Theme 16: Write a Skill
+
+Accepted decisions:
+
+1. `write-a-skill` is implemented as a reusable productivity skill for creating or refining reusable agent skills.
+
+2. `write-a-skill` completes the currently planned v0.1 productivity skill set together with `grill-me` and `handoff`.
+
+3. `write-a-skill` is adapted from an existing productivity skill pattern, but rewritten for this foundation kit instead of copied directly.
+
+4. The skill is responsible for skill authoring conventions, not for normal feature planning, execution, review, handoff, research, publishing, release, deploy, or project memory updates.
+
+5. New skills should have clear triggers, boundaries, required context checks, output expectations, and project memory follow-up guidance.
+
+6. Required installable skill files are:
+
+```txt
+kit/skills/core/<skill-name>/SKILL.md
+kit/skills/core/<skill-name>/metadata.yml
+```
+
+7. Optional support files may include:
+
+```txt
+kit/prompts/force-<skill-name>.md
+kit/skills/core/<skill-name>/REFERENCE.md
+kit/skills/core/<skill-name>/EXAMPLES.md
+kit/skills/core/<skill-name>/scripts/
+```
+
+8. External skills may be used as references, but agents must inspect, extract patterns, and rewrite for this project. They must not copy external skills wholesale.
+
+9. Scripts inside skills are allowed only when they are deterministic, repeatable, useful for validation or automation, and can be tested safely.
+
+10. `agent-operating-contract.md` now routes skill creation / skill refinement to `write-a-skill`.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/write-a-skill/SKILL.md
+kit/skills/core/write-a-skill/metadata.yml
+kit/prompts/force-write-a-skill.md
+kit/rules/agent-operating-contract.md
+docs/foundation-design-log.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+```
+`
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 15:
+Priority order after Theme 16:
 
-1. productivity skills completion: `write-a-skill`
-2. GitHub ruleset / branch protection setup guidance
-3. technology-specific skills
-4. release workflow
-5. deployment workflow
+1. GitHub ruleset / branch protection setup guidance
+2. technology-specific skills
+3. release workflow
+4. deployment workflow
 
 Rationale:
 
-- `write-a-skill` should follow because `grill-me` and `handoff` are now implemented and `write-a-skill` is the remaining planned productivity skill.
-- GitHub ruleset / branch protection setup guidance should follow soon because publishing workflows already exist, but repository protection setup is still only guidance/future work.
+- The planned productivity skill set is now complete: `grill-me`, `handoff`, and `write-a-skill` are implemented.
+- GitHub ruleset / branch protection setup guidance should follow because publishing workflows already exist, but repository protection setup is still only guidance/future work.
 - Technology-specific skills should come after the core project lifecycle and productivity workflows are stable.
+- Release and deployment workflows should remain after repository protection and skill-authoring conventions are stable.
+
 
 
 ## Future Ideas

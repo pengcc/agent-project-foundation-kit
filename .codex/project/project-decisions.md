@@ -635,3 +635,57 @@ docs/ and source files      -> project source-of-truth artifacts
 ```
 
 The workflow avoids copying large existing artifacts into handoffs and keeps durable memory updates intentional.
+
+## Decision: Skill authoring uses `write-a-skill` and project-specific rewrite rules
+
+### Status
+
+Accepted
+
+### Context
+
+Theme 16 implements `write-a-skill` as the final currently planned productivity skill.
+
+The foundation kit needs a consistent way to create or refine future skills without duplicating external skill text, mixing workflow boundaries, or silently changing project memory.
+
+### Decision
+
+Use `write-a-skill` as the routing workflow for creating or refining reusable agent skills.
+
+New installable core skills should normally include:
+
+```txt
+kit/skills/core/<skill-name>/SKILL.md
+kit/skills/core/<skill-name>/metadata.yml
+```
+
+Optional support files may include:
+
+```txt
+kit/prompts/force-<skill-name>.md
+kit/skills/core/<skill-name>/REFERENCE.md
+kit/skills/core/<skill-name>/EXAMPLES.md
+kit/skills/core/<skill-name>/scripts/
+```
+
+Skill authoring must define clear triggers, boundaries, required context checks, output expectations, validation expectations, and project memory follow-up guidance.
+
+External skills may be used as references, but agents must inspect, extract useful patterns, and rewrite for this project. They must not copy external skills wholesale.
+
+Scripts inside skills should be added only when deterministic, repeatable, useful for automation or validation, and safe to test.
+
+`write-a-skill` does not replace `plan-with-context`, `execute-plan`, `code-review`, `handoff`, `docs-first-research`, `publish-current-branch`, or `update-project-memory`.
+
+### Impact
+
+The planned productivity skill set is now complete:
+
+```txt
+grill-me
+handoff
+write-a-skill
+```
+
+Future capability growth can add new skills using a consistent project-specific authoring workflow.
+
+The next recommended theme area can move from productivity skill completion to GitHub ruleset / branch protection setup guidance.
