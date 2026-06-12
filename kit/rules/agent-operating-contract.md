@@ -70,6 +70,9 @@ Review / alignment / PR / diff:
 Cross-session / cross-agent continuation:
   handoff
 
+Skill creation / skill refinement:
+  write-a-skill
+
 Durable memory update:
   update-project-memory
 
