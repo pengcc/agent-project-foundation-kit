@@ -607,9 +607,9 @@ docs/foundation-design-log.md
 
 ## Current Recommended Next Themes
 
-Priority order after Theme 14:
+Priority order after Theme 15:
 
-1. productivity skills completion: `handoff`, `write-a-skill`
+1. productivity skills completion: `write-a-skill`
 2. GitHub ruleset / branch protection setup guidance
 3. technology-specific skills
 4. release workflow
@@ -617,7 +617,7 @@ Priority order after Theme 14:
 
 Rationale:
 
-- `handoff` and `write-a-skill` should follow because `grill-me` is now implemented and they complete the planned productivity skill set.
+- `write-a-skill` should follow because `grill-me` and `handoff` are now implemented and `write-a-skill` is the remaining planned productivity skill.
 - GitHub ruleset / branch protection setup guidance should follow soon because publishing workflows already exist, but repository protection setup is still only guidance/future work.
 - Technology-specific skills should come after the core project lifecycle and productivity workflows are stable.
 
