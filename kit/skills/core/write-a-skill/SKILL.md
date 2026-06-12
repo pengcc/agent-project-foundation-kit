@@ -1,0 +1,341 @@
+# Write a Skill
+
+Use this skill to create or refine reusable agent skills for this foundation kit.
+
+This is a productivity workflow for skill authoring. It does not replace planning, execution, review, handoff, research, publishing, or project memory workflows.
+
+## Role Routing Integration
+
+If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
+
+Then output a concise Role Routing Header using this default routing:
+
+```txt
+Role Routing:
+- Primary role: Skill Author
+- Supporting roles: Documentation Writer, Project Memory Curator, Tooling Reviewer, Requirement Clarifier as needed
+- Workflow: write-a-skill
+- Maturity expectation: concise, composable skill design with strong trigger and boundary discipline
+- Technical specialist skill: no technology-specific skill assumed; use docs-first-research for external technical claims
+- Quality rule: engineering-quality-principles applies when a skill affects engineering workflows, scripts, validation, review, or execution
+```
+
+Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
+
+## Purpose
+
+`write-a-skill` helps turn repeated work, reusable workflows, or external skill patterns into project-ready skills.
+
+It should help define:
+
+- when the skill should trigger
+- what the skill does
+- what the skill must not do
+- what context it must inspect
+- what output it should produce
+- what project memory follow-up may be needed
+- what metadata and prompt support it needs
+- whether references, examples, or scripts are justified
+
+## When to Use
+
+Use this skill when:
+
+- the user asks to create a new skill
+- the user asks to refine an existing skill
+- a repeated workflow should become reusable
+- a future capability needs clear trigger and boundary documentation
+- a skill needs metadata, prompt, reference files, examples, or scripts
+- a skill should be adapted from an external reference into this foundation kit
+- an agent needs to evaluate whether a proposed skill should exist
+
+## When Not to Use
+
+Do not use this skill when:
+
+- a normal feature or theme plan is needed
+- direct execution of an approved plan is needed
+- code review is needed
+- a handoff is needed
+- project memory needs to be updated
+- external technical facts need to be verified first
+- requirements are unclear and should be clarified with `grill-me`
+- the task is about writing general documentation rather than reusable skill behavior
+
+Use the matching workflow instead.
+
+## Workflow Boundary
+
+This workflow must not:
+
+- implement unrelated project changes
+- execute feature plans
+- silently update project memory
+- commit changes
+- push changes
+- create or update pull requests
+- merge pull requests
+- release or deploy
+- copy external skills wholesale
+- invent unavailable tools or capabilities
+- mix planning, execution, review, and publishing boundaries into one skill
+
+## Required Context Check
+
+Before writing or modifying a skill, inspect relevant context as available:
+
+```txt
+AGENTS.md
+kit/rules/agent-operating-contract.md
+kit/rules/engineering-quality-principles.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
+existing related skills under kit/skills/core/
+existing prompts under kit/prompts/
+docs/foundation-design-log.md
+previous related plans under dev_locals/plans/
+```
+
+If adapting from external material, inspect the external reference and rewrite it for this project instead of copying it.
+
+If the skill depends on external technical facts, APIs, frameworks, versions, security guidance, or provider behavior, use `docs-first-research`.
+
+## Requirement Gathering
+
+Before drafting a new skill, resolve:
+
+```txt
+- What task or domain does this skill cover?
+- What triggers should activate it?
+- What should the skill explicitly not do?
+- What workflow boundary does it belong to?
+- What inputs does it need?
+- What output format should it produce?
+- Does it need project memory integration?
+- Does it need docs-first-research?
+- Does it need deterministic scripts?
+- Does it need examples or references?
+```
+
+If any answer blocks safe skill design, route to `grill-me`.
+
+Ask the smallest useful set of questions. Provide a recommended answer for each blocking question.
+
+## Skill Design Rules
+
+Skills should be:
+
+```txt
+small
+composable
+trigger-clear
+boundary-clear
+truthful
+project-aware
+validation-aware
+easy to route
+easy to review
+```
+
+Avoid:
+
+```txt
+giant all-purpose skills
+vague descriptions
+hidden destructive actions
+silent project memory updates
+copied external skills
+unverified technical facts
+mixing planning, execution, review, and publishing boundaries in one skill
+```
+
+Prefer narrowly useful skills over broad assistant personas.
+
+## Skill File Structure
+
+Required files for an installable core skill:
+
+```txt
+kit/skills/core/<skill-name>/SKILL.md
+kit/skills/core/<skill-name>/metadata.yml
+```
+
+Optional support files:
+
+```txt
+kit/prompts/force-<skill-name>.md
+kit/skills/core/<skill-name>/REFERENCE.md
+kit/skills/core/<skill-name>/EXAMPLES.md
+kit/skills/core/<skill-name>/scripts/
+```
+
+Rules:
+
+- `SKILL.md` holds core runtime instructions.
+- `metadata.yml` supports routing and discovery.
+- `force-<skill-name>.md` triggers the skill without duplicating all runtime instructions.
+- Reference files hold rarely used details.
+- Examples should be concrete and project-relevant.
+- Scripts should be deterministic and validated.
+
+## Metadata Rules
+
+Metadata should include:
+
+```yaml
+name:
+description:
+category:
+version:
+triggers:
+```
+
+Description rules:
+
+- state what the skill does
+- state when to use it
+- include trigger language
+- avoid vague descriptions
+- avoid claiming unavailable capabilities
+- avoid long implementation detail
+
+Trigger rules:
+
+- use user-facing phrases
+- include common synonyms
+- avoid overly broad generic triggers
+- keep the trigger list short enough to review
+
+## Prompt Rules
+
+`force-<skill-name>.md` should:
+
+- explicitly name the skill
+- state the workflow objective
+- state key boundaries
+- avoid duplicating full `SKILL.md` content
+- be concise
+
+A force prompt is not a full skill.
+
+## Progressive Disclosure Rules
+
+Keep `SKILL.md` concise enough for frequent use.
+
+Split into additional files when:
+
+- content becomes too long
+- advanced details are rarely needed
+- examples are numerous
+- scripts need usage documentation
+- external reference summaries are too large
+
+Do not split just for structure if it makes the skill harder to use.
+
+## Script Rules
+
+Add scripts only when:
+
+- the operation is deterministic
+- the same code would otherwise be generated repeatedly
+- validation benefits from automation
+- error handling must be explicit
+- the script can be tested safely
+
+Do not add scripts just because a task could be automated.
+
+Scripts must follow project safety conventions and stay inside project boundaries unless explicitly approved.
+
+Scripts that affect files should document:
+
+```txt
+purpose
+inputs
+outputs
+dry-run behavior if available
+rollback or cleanup
+validation command
+```
+
+## External Reference Rules
+
+When adapting external skills:
+
+- inspect the external reference
+- extract patterns
+- rewrite for this project
+- do not copy wholesale
+- preserve this project's operating contract and memory boundaries
+- cite or mention the external reference in the plan or design log when relevant
+- keep final runtime instructions auditable inside this repo
+
+If license or provenance is unclear, do not copy content verbatim.
+
+## Review Checklist
+
+Before finalizing a skill, check:
+
+```txt
+- Is the trigger clear?
+- Is the boundary clear?
+- Is the workflow relationship clear?
+- Does it avoid pretending future skills exist?
+- Does it say when not to use the skill?
+- Does it avoid silent memory updates?
+- Does it avoid destructive actions?
+- Are metadata triggers accurate?
+- Is a force prompt needed?
+- Are examples or references justified?
+- Are scripts justified, deterministic, and validated?
+- Does it preserve project root boundaries?
+- Does it route durable facts, decisions, or lessons to update-project-memory?
+```
+
+## Output Format
+
+For a skill authoring plan or draft, use:
+
+```txt
+Workflow:
+- Role: Skill Author
+- Skill: write-a-skill
+- Context:
+- Mode:
+
+Skill name:
+Purpose:
+Trigger summary:
+Boundary summary:
+Files to create/update:
+External references checked:
+Open questions:
+Recommended structure:
+Validation:
+Project memory update needed:
+```
+
+For a completed skill package summary, use:
+
+```txt
+Skill package:
+Files:
+Key boundaries:
+Validation:
+Recommended next workflow:
+Project memory update needed:
+```
+
+## Project Memory Follow-Up
+
+If a new or refined skill creates durable project facts, long-term decisions, or reusable lessons, recommend `update-project-memory`.
+
+Classify memory targets:
+
+```txt
+Current facts -> .codex/project/project-guideline.md
+Long-term decisions -> .codex/project/project-decisions.md
+Lessons and reusable patterns -> .codex/project/lessons-learned.md
+```
+
+Do not silently update memory.

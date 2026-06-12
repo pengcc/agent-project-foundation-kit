@@ -1,0 +1,11 @@
+name: write-a-skill
+description: Create or refine reusable agent skills with clear triggers, boundaries, structure, metadata, prompts, references, and validation expectations. Use when designing a new skill, adapting an external skill, or turning a repeated workflow into a skill.
+category: core
+version: 0.1.0
+triggers:
+  - write a skill
+  - create skill
+  - refine skill
+  - skill authoring
+  - adapt skill
+  - new agent skill
