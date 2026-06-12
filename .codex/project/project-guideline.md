@@ -169,10 +169,15 @@ Current `publish-local-change.sh` purpose:
 - avoid unnecessary theme zip overhead for one/few-file changes
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
 - treat typed `SMALL_SAFE` classification as the sole pre-commit pre-approval
-- prompt for a commit message when the command argument is omitted
+- inspect branch freshness, repository open PRs, current-branch PR state, uncommitted changes, and unpushed commits before prompting
+- prompt for a commit message only when uncommitted changes need a commit
+- use the latest commit subject as the PR title when publishing existing unpushed commits
+- list repository-level open PRs and require acknowledgement without blocking solely because they exist
+- update an existing current-branch PR instead of creating a duplicate
 - show staged, unstaged, untracked, and final staged change summaries
 - skip the validation prompt for `SMALL_SAFE` and record its pre-approved validation statement
-- require local/manual validation input for `NORMAL` and strict typed validation confirmation for `SIGNIFICANT`
+- use structured validation codes for `NORMAL` and `SIGNIFICANT`, with `NOT_RUN` allowed only for `NORMAL`
+- distinguish no required checks, pending checks, failing checks, and GitHub CLI errors before merge
 - offer PR-only, squash auto-merge, or immediate squash merge modes
 - require typed manual-review approval before any scripted merge mode
 - never push directly to the default branch
@@ -185,7 +190,7 @@ Current `test-publish-local-change.sh` purpose:
 - run deterministic local validation for publish workflow behavior
 - use project-local fixtures with fake `git` and `gh` commands
 - avoid real pushes, PR creation, merges, and network access
-- cover small-safe pre-approval, normal auto-merge, significant typed gates, existing PR updates, and verified post-merge refresh
+- cover state-aware prompting, repository/current-branch PR handling, validation selection, required-check states, GitHub CLI errors, merge modes, and verified post-merge refresh
 
 Current `install-foundation-kit.sh` purpose:
 

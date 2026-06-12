@@ -20,6 +20,9 @@ CHANGE_BRANCH_PREFIX="${CHANGE_BRANCH_PREFIX:-change}"
 PUBLISH_CLASSIFICATION=""
 VALIDATION_STATEMENT=""
 PUBLISH_PR_FIELD_SEP=$'\037'
+CURRENT_BRANCH_PR_EXISTS=0
+HAS_UNCOMMITTED_CHANGES=0
+HAS_UNPUSHED_COMMITS=0
 
 resolve_commit_message() {
   local message="${1:-}"
@@ -76,6 +79,28 @@ branch_has_unpushed_commits() {
   fi
 
   [[ -n "$(git log --oneline "$upstream..$branch" 2>/dev/null)" ]]
+}
+
+latest_commit_subject() {
+  git log -1 --format=%s
+}
+
+inspect_default_branch_freshness() {
+  step "Inspect default branch freshness."
+
+  if ! git fetch origin "$DEFAULT_BRANCH"; then
+    die "Could not fetch 'origin/$DEFAULT_BRANCH'."
+  fi
+
+  if git merge-base --is-ancestor "origin/$DEFAULT_BRANCH" HEAD; then
+    success "Current HEAD includes the latest 'origin/$DEFAULT_BRANCH'."
+    return
+  fi
+
+  warn "Current HEAD does not include the latest 'origin/$DEFAULT_BRANCH'."
+  if ! confirm "Continue publishing from the current branch state?"; then
+    die "Stopped because the current branch is not based on the latest default branch."
+  fi
 }
 
 classification_label() {
@@ -143,6 +168,138 @@ show_final_staged_summary() {
   show_section_or_skipped "Staged diff stat:" git --no-pager diff --cached --stat
 }
 
+list_repository_open_prs() {
+  gh pr list \
+    --repo "$REPO_FULL_NAME" \
+    --state open \
+    --limit 100 \
+    --json number,title,headRefName,baseRefName,url \
+    --jq '.[] | "#\(.number) | \(.title) | \(.headRefName) -> \(.baseRefName) | \(.url)"'
+}
+
+detect_current_branch_open_pr_number() {
+  local branch
+  branch="$(current_branch)"
+
+  gh pr list \
+    --repo "$REPO_FULL_NAME" \
+    --state open \
+    --head "$branch" \
+    --limit 1 \
+    --json number \
+    --jq '.[0].number // empty'
+}
+
+refresh_current_branch_pr_state() {
+  local current_pr_number pr_info
+
+  CURRENT_BRANCH_PR_EXISTS=0
+  if ! current_pr_number="$(detect_current_branch_open_pr_number)"; then
+    return 1
+  fi
+
+  if [[ -z "$current_pr_number" ]]; then
+    return 0
+  fi
+
+  if ! pr_info="$(read_publish_pr_info "$current_pr_number")"; then
+    return 1
+  fi
+
+  parse_publish_pr_info "$pr_info"
+  CURRENT_BRANCH_PR_EXISTS=1
+}
+
+confirm_github_preflight_uncertainty() {
+  if ! confirm "Continue after reviewing this GitHub preflight warning?"; then
+    die "Stopped during GitHub preflight."
+  fi
+}
+
+inspect_github_pr_state() {
+  local open_prs gh_error gh_error_file
+
+  step "Inspect repository pull request state."
+
+  if ! command -v gh >/dev/null 2>&1; then
+    warn "GitHub CLI is unavailable; repository and current-branch PR state could not be checked."
+    confirm_github_preflight_uncertainty
+    return
+  fi
+
+  if ! gh auth status >/dev/null 2>&1; then
+    warn "GitHub CLI is not authenticated; repository and current-branch PR state could not be checked."
+    confirm_github_preflight_uncertainty
+    return
+  fi
+
+  if ! ensure_repo_full_name; then
+    warn "GitHub repository identity could not be determined."
+    confirm_github_preflight_uncertainty
+    return
+  fi
+
+  info "GitHub repository: $REPO_FULL_NAME"
+  gh_error_file="$(make_workflow_temp_file "publish-open-prs-error")"
+
+  if ! open_prs="$(list_repository_open_prs 2>"$gh_error_file")"; then
+    gh_error="$(cat "$gh_error_file" 2>/dev/null || true)"
+    rm -f "$gh_error_file"
+    warn "Could not list repository-level open pull requests."
+    if [[ -n "$gh_error" ]]; then
+      printf "%s\n" "$gh_error" >&2
+    fi
+    confirm_github_preflight_uncertainty
+  else
+    rm -f "$gh_error_file"
+    if [[ -n "$open_prs" ]]; then
+      warn "Open pull requests already exist in this repository:"
+      printf "%s\n" "$open_prs"
+      warn "Confirm whether any listed PR is prerequisite work that should be merged first."
+      if ! confirm "Continue after reviewing the open pull requests?"; then
+        die "Stopped after repository-level pull request review."
+      fi
+    else
+      info "No repository-level open pull requests detected."
+    fi
+  fi
+
+  if ! refresh_current_branch_pr_state; then
+    warn "Could not inspect the current branch for an existing pull request."
+    confirm_github_preflight_uncertainty
+  elif [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" ]]; then
+    warn "Current branch already has an open pull request."
+    show_publish_pr_info
+  else
+    info "No open pull request detected for current branch '$(current_branch)'."
+  fi
+}
+
+inspect_publish_state() {
+  step "Inspect local publish state."
+  info "Current branch: $(current_branch)"
+
+  if has_uncommitted_changes; then
+    HAS_UNCOMMITTED_CHANGES=1
+    info "Uncommitted changes: yes"
+  else
+    info "Uncommitted changes: no"
+  fi
+
+  if branch_has_unpushed_commits; then
+    HAS_UNPUSHED_COMMITS=1
+    info "Unpushed commits: yes"
+  else
+    info "Unpushed commits: no"
+  fi
+
+  if [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" ]]; then
+    info "Current-branch open PR: #$PUBLISH_PR_NUMBER"
+  else
+    info "Current-branch open PR: none detected"
+  fi
+}
+
 ensure_feature_branch() {
   local commit_message="$1"
   local branch target_branch
@@ -178,10 +335,8 @@ confirm_plan_consistency() {
       fi
       ;;
     SIGNIFICANT)
-      danger "High-impact updates require typed plan consistency confirmation."
-      if ! confirm_typed \
-        "Confirm that the staged changes match the reviewed plan and intended scope." \
-        "CHANGES_MATCH_APPROVED_PLAN"; then
+      danger "High-impact updates require explicit plan consistency confirmation."
+      if ! confirm "Do the staged changes match the reviewed plan and intended scope?"; then
         die "Stopped because high-impact plan consistency was not confirmed."
       fi
       ;;
@@ -205,27 +360,49 @@ commit_changes_if_needed() {
 }
 
 capture_validation_statement() {
+  local validation_code
+
   if [[ "$PUBLISH_CLASSIFICATION" == "SMALL_SAFE" ]]; then
     VALIDATION_STATEMENT="SMALL_SAFE_PREAPPROVED - validation prompt skipped by explicit small-safe pre-approval."
     skipped "Local/manual validation prompt skipped because the user typed SMALL_SAFE."
     return
   fi
 
-  step "Record local/manual validation."
-  prompt "Describe the validation completed (required, one line): "
-  read -r VALIDATION_STATEMENT
-
-  if [[ -z "${VALIDATION_STATEMENT//[[:space:]]/}" ]]; then
-    die "A non-empty validation statement is required before push or PR creation."
+  step "Select validation performed."
+  printf "  DOC_REVIEWED     Documentation/text-only change reviewed manually\n"
+  printf "  CHECK_PASSED     Automated checks passed\n"
+  printf "  MANUAL_REVIEWED  Full manual review completed\n"
+  printf "  MANUAL_TESTED    Manual smoke/runtime test completed\n"
+  if [[ "$PUBLISH_CLASSIFICATION" == "NORMAL" ]]; then
+    printf "  NOT_RUN          Validation not run or not applicable\n"
   fi
+  prompt "Type a validation code: "
+  read -r validation_code
 
   if [[ "$PUBLISH_CLASSIFICATION" == "SIGNIFICANT" ]]; then
-    if ! confirm_typed \
-      "Confirm that the recorded validation is complete for this high-impact update." \
-      "VALIDATION_CONFIRMED"; then
-      die "Stopped because high-impact validation was not confirmed."
-    fi
+    case "$validation_code" in
+      CHECK_PASSED|MANUAL_REVIEWED|MANUAL_TESTED) ;;
+      *)
+        die "SIGNIFICANT updates require CHECK_PASSED, MANUAL_REVIEWED, or MANUAL_TESTED."
+        ;;
+    esac
+  else
+    case "$validation_code" in
+      DOC_REVIEWED|CHECK_PASSED|MANUAL_REVIEWED|MANUAL_TESTED|NOT_RUN) ;;
+      *) die "Invalid validation code for NORMAL update." ;;
+    esac
   fi
+
+  case "$validation_code" in
+    DOC_REVIEWED) VALIDATION_STATEMENT="DOC_REVIEWED - documentation/text-only change reviewed manually." ;;
+    CHECK_PASSED) VALIDATION_STATEMENT="CHECK_PASSED - automated checks passed." ;;
+    MANUAL_REVIEWED) VALIDATION_STATEMENT="MANUAL_REVIEWED - full manual review completed." ;;
+    MANUAL_TESTED) VALIDATION_STATEMENT="MANUAL_TESTED - manual smoke/runtime test completed." ;;
+    NOT_RUN)
+      VALIDATION_STATEMENT="NOT_RUN - validation not run / not applicable."
+      warn "NORMAL update is continuing without validation."
+      ;;
+  esac
 
   success "Validation statement recorded."
 }
@@ -275,11 +452,11 @@ publish_record_body() {
 read_publish_pr_info() {
   local pr_ref="$1"
   local jq_expr
-  jq_expr='[.number, .url, .state, .baseRefName, .headRefName, (.isDraft|tostring), (.mergeable // "UNKNOWN"), (.mergeStateStatus // "UNKNOWN"), .headRefOid, (.mergedAt // ""), (.reviewDecision // "")] | map(tostring) | join("\u001f")'
+  jq_expr='[.number, .url, .state, .baseRefName, .headRefName, (.isDraft|tostring), (.mergeable // "UNKNOWN"), (.mergeStateStatus // "UNKNOWN"), .headRefOid, (.mergedAt // ""), (.reviewDecision // ""), .title] | map(tostring) | join("\u001f")'
 
   gh pr view "$pr_ref" \
     --repo "$REPO_FULL_NAME" \
-    --json number,url,state,baseRefName,headRefName,isDraft,mergeable,mergeStateStatus,headRefOid,mergedAt,reviewDecision \
+    --json number,url,state,baseRefName,headRefName,isDraft,mergeable,mergeStateStatus,headRefOid,mergedAt,reviewDecision,title \
     --jq "$jq_expr"
 }
 
@@ -297,11 +474,13 @@ parse_publish_pr_info() {
     PUBLISH_PR_MERGE_STATE \
     PUBLISH_PR_HEAD_OID \
     PUBLISH_PR_MERGED_AT \
-    PUBLISH_PR_REVIEW_DECISION <<< "$pr_info"
+    PUBLISH_PR_REVIEW_DECISION \
+    PUBLISH_PR_TITLE <<< "$pr_info"
 }
 
 show_publish_pr_info() {
   info "PR #$PUBLISH_PR_NUMBER: $PUBLISH_PR_URL"
+  printf "  Title: %s\n" "$PUBLISH_PR_TITLE"
   printf "  State: %s | Base: %s | Head: %s | Draft: %s\n" \
     "$PUBLISH_PR_STATE" "$PUBLISH_PR_BASE" "$PUBLISH_PR_HEAD" "$PUBLISH_PR_DRAFT"
   printf "  Mergeable: %s | Merge state: %s | Review: %s\n" \
@@ -317,7 +496,12 @@ create_or_update_pr() {
 
   step "Create or update the pull request."
 
-  if pr_info="$(read_publish_pr_info "$branch" 2>/dev/null)"; then
+  if ! refresh_current_branch_pr_state; then
+    die "Could not verify whether the current branch already has an open PR. Refusing to create a possible duplicate."
+  fi
+
+  if [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" ]]; then
+    pr_info="$(read_publish_pr_info "$PUBLISH_PR_NUMBER")"
     parse_publish_pr_info "$pr_info"
     if [[ "$PUBLISH_PR_STATE" != "OPEN" ]]; then
       die "Existing PR #$PUBLISH_PR_NUMBER is '$PUBLISH_PR_STATE', not OPEN."
@@ -343,7 +527,9 @@ create_or_update_pr() {
 check_pr_merge_readiness() {
   local mode="$1"
   local expected_head="$2"
-  local check_summary check_status
+  local check_summary check_status check_error check_output_file check_error_file normalized_summary
+  local check_state check_bucket has_pending=0
+  local -a check_states=()
 
   if [[ "$PUBLISH_PR_STATE" != "OPEN" ]]; then
     die "PR #$PUBLISH_PR_NUMBER is not open."
@@ -367,28 +553,71 @@ check_pr_merge_readiness() {
     die "GitHub has not resolved PR merge readiness. Re-check later or use PR-only mode."
   fi
 
-  if check_summary="$(gh pr checks "$PUBLISH_PR_NUMBER" \
+  check_output_file="$(make_workflow_temp_file "publish-checks-output")"
+  check_error_file="$(make_workflow_temp_file "publish-checks-error")"
+
+  set +e
+  gh pr checks "$PUBLISH_PR_NUMBER" \
     --repo "$REPO_FULL_NAME" \
     --required \
-    --json bucket \
-    --jq '[.[].bucket] | unique | join(",")' 2>/dev/null)"; then
+    --json bucket,state \
+    --jq '[.[] | "\(.bucket)|\(.state)"] | unique | join(",")' >"$check_output_file" 2>"$check_error_file"
+  check_status=$?
+  set -e
+
+  check_summary="$(cat "$check_output_file" 2>/dev/null || true)"
+  check_error="$(cat "$check_error_file" 2>/dev/null || true)"
+  rm -f "$check_output_file" "$check_error_file"
+  normalized_summary="$(printf "%s" "$check_summary" | tr '[:upper:]' '[:lower:]')"
+
+  if [[ "$(printf "%s" "$check_error" | tr '[:upper:]' '[:lower:]')" == *"no required checks reported"* ]]; then
+    check_summary=""
+    normalized_summary=""
     check_status=0
-  else
-    check_status=$?
+  elif [[ "$check_status" != "0" && -z "$normalized_summary" ]]; then
+    error "Could not verify required checks with GitHub CLI."
+    if [[ -n "$check_error" ]]; then
+      printf "%s\n" "$check_error" >&2
+    fi
+    return 1
   fi
 
   info "Required check state: ${check_summary:-none reported}"
 
-  if [[ "$check_status" != "0" && "$check_status" != "1" && "$check_status" != "8" ]]; then
-    die "Could not verify required checks with GitHub CLI."
+  if [[ -n "$normalized_summary" ]]; then
+    IFS=',' read -r -a check_states <<< "$normalized_summary"
+    for check_state in "${check_states[@]}"; do
+      check_state="${check_state//[[:space:]]/}"
+      check_bucket="${check_state%%|*}"
+      case "$check_bucket" in
+        pass)
+          ;;
+        pending)
+          has_pending=1
+          ;;
+        fail|cancel|skipping)
+          die "Required checks are failing: $check_summary"
+          ;;
+        *)
+          die "Unknown required check state: $check_summary"
+          ;;
+      esac
+    done
   fi
 
-  if [[ "$check_summary" == *"fail"* || "$check_summary" == *"cancel"* || "$check_status" == "1" ]]; then
-    die "Required checks are failing or cancelled."
+  if [[ "$check_status" != "0" && "$has_pending" == "0" ]]; then
+    error "Could not verify required checks with GitHub CLI."
+    if [[ -n "$check_error" ]]; then
+      printf "%s\n" "$check_error" >&2
+    fi
+    return 1
   fi
 
-  if [[ "$mode" == "immediate" && ( "$check_summary" == *"pending"* || "$check_status" == "8" ) ]]; then
-    die "Required checks are pending. Use auto-merge or PR-only mode."
+  if [[ "$has_pending" == "1" ]]; then
+    if [[ "$mode" == "immediate" ]]; then
+      die "Required checks are pending. Use auto-merge or PR-only mode."
+    fi
+    warn "Required checks are pending; auto-merge may wait for them to complete."
   fi
 
   if [[ "$mode" == "immediate" && "$PUBLISH_PR_MERGE_STATE" == "BLOCKED" ]]; then
@@ -493,19 +722,36 @@ choose_pr_mode() {
 }
 
 main() {
-  local commit_message
-  commit_message="$(resolve_commit_message "${1:-}")"
+  local commit_message=""
 
   require_command git
   ensure_git_repo
   ensure_not_detached_head
   ensure_origin_exists
-  classify_update
-  show_change_summary
+  info "Current branch: $(current_branch)"
+  inspect_default_branch_freshness
+  inspect_github_pr_state
+  inspect_publish_state
 
-  if ! has_uncommitted_changes && ! branch_has_unpushed_commits; then
-    success "No local changes or unpushed commits detected. Nothing to publish."
+  if [[ "$HAS_UNCOMMITTED_CHANGES" == "0" && "$HAS_UNPUSHED_COMMITS" == "0" && "$CURRENT_BRANCH_PR_EXISTS" == "0" ]]; then
+    success "No uncommitted changes, unpushed commits, or current-branch PR detected. Nothing to publish."
     return
+  fi
+
+  if [[ "$HAS_UNCOMMITTED_CHANGES" == "1" ]]; then
+    commit_message="$(resolve_commit_message "${1:-}")"
+  elif [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" && -n "${PUBLISH_PR_TITLE:-}" ]]; then
+    commit_message="$PUBLISH_PR_TITLE"
+    info "Using existing PR title: $commit_message"
+  else
+    commit_message="$(latest_commit_subject)"
+    info "Using latest commit subject as PR title: $commit_message"
+  fi
+
+  classify_update
+
+  if [[ "$HAS_UNCOMMITTED_CHANGES" == "1" ]]; then
+    show_change_summary
   fi
 
   ensure_feature_branch "$commit_message"

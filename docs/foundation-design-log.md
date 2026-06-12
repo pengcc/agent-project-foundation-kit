@@ -653,6 +653,29 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
+## Theme 16.1 Follow-up: State-Aware Local Publish Workflow
+
+Accepted decisions:
+
+1. Publish startup inspects default-branch freshness, repository open PRs, current-branch PR state, uncommitted changes, and unpushed commits before requesting a commit message.
+2. Commit messages are requested only for uncommitted changes. Existing unpushed commits use the latest commit subject as the PR title.
+3. Repository-level open PRs are listed for prerequisite review and require acknowledgement, but do not automatically block publishing.
+4. Existing current-branch PRs receive a publish record and continue through the selected completion flow without duplicate PR creation.
+5. Validation uses classification-aware codes. `SMALL_SAFE` remains pre-approved, `NORMAL` may use `NOT_RUN` with a warning, and `SIGNIFICANT` requires a positive validation code.
+6. Required-check handling separates no checks, passing, pending, failing, and GitHub CLI errors. CLI errors preserve stderr and block merge.
+7. Typed confirmations remain on externally visible or destructive boundaries such as squash merge and hard reset.
+
+Resulting files / changes:
+
+```txt
+scripts/publish-local-change.sh
+scripts/test-publish-local-change.sh
+README.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 16.3: Downstream AGENTS Template Operating Contract
 
 Accepted decisions:
