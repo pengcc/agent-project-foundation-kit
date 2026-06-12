@@ -652,7 +652,6 @@ docs/foundation-design-log.md
 .codex/project/project-guideline.md
 .codex/project/project-decisions.md
 ```
-`
 
 ## Current Recommended Next Themes
 
