@@ -1,0 +1,12 @@
+{
+  "name": "agent-project-foundation-kit",
+  "private": true,
+  "packageManager": "pnpm@10.26.2",
+  "scripts": {
+    "publish:local": "bash scripts/publish-local-change.sh",
+    "apply-theme": "bash scripts/apply-theme-zip.sh",
+    "test:install": "bash scripts/test-install-foundation-kit.sh",
+    "test:publish": "bash scripts/test-publish-local-change.sh",
+    "check": "bash -n scripts/*.sh scripts/lib/*.sh && bash scripts/test-install-foundation-kit.sh && bash scripts/test-publish-local-change.sh && git diff --check"
+  }
+}

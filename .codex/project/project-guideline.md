@@ -31,6 +31,7 @@ Completed themes:
 - Theme 14: `grill-me`
 - Theme 15: `handoff`
 - Theme 16: `write-a-skill`
+- Theme 16.1: local publish workflow entrypoint and safety hardening
 
 Current canonical core skill names:
 
@@ -81,6 +82,7 @@ Current known tooling:
 - `ripgrep` recommended for migration/reference checks
 - Git / GitHub for version control
 - GitHub CLI expected for PR publishing workflows when available
+- pnpm 10.26.2 as a dependency-free local command façade
 
 ## 5. Directory Structure
 
@@ -113,6 +115,17 @@ scripts/apply-theme-zip.sh
 scripts/publish-local-change.sh
 scripts/install-foundation-kit.sh
 scripts/test-install-foundation-kit.sh
+scripts/test-publish-local-change.sh
+```
+
+Short command entrypoints:
+
+```txt
+pnpm publish:local
+pnpm apply-theme
+pnpm test:install
+pnpm test:publish
+pnpm check
 ```
 
 Theme zip files should normally be stored under:
@@ -149,10 +162,24 @@ Current `apply-theme-zip.sh` safety behavior:
 
 Current `publish-local-change.sh` purpose:
 
-- publish small local changes through feature branch + PR workflow
+- publish local changes through a feature branch + PR workflow
 - avoid unnecessary theme zip overhead for one/few-file changes
-- never auto-merge PRs
-- refresh the default branch after merge with backup + reset handling when needed
+- classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
+- treat typed `SMALL_SAFE` classification as the sole pre-commit pre-approval
+- show staged, unstaged, untracked, and final staged change summaries
+- record local/manual validation in the PR body or an existing-PR comment
+- offer PR-only, squash auto-merge, or immediate squash merge modes
+- require typed manual-review approval before any scripted merge mode
+- never push directly to the default branch
+- refresh the default branch only after a verified merge and explicit approval
+- preserve backup + reset handling when a local default branch diverged
+
+Current `test-publish-local-change.sh` purpose:
+
+- run deterministic local validation for publish workflow behavior
+- use project-local fixtures with fake `git` and `gh` commands
+- avoid real pushes, PR creation, merges, and network access
+- cover small-safe pre-approval, normal auto-merge, significant typed gates, existing PR updates, and verified post-merge refresh
 
 Current `install-foundation-kit.sh` purpose:
 
@@ -230,6 +257,7 @@ Current validation is mostly file/content based:
 - Check diff stats before commit
 - Verify remote raw GitHub file line counts after push when needed
 - Prefer PR review for high-risk or multi-file theme updates
+- Run `pnpm check` for shell syntax, installer tests, publish workflow tests, and whitespace validation
 
 ## 10. Development Workflow
 
@@ -294,6 +322,11 @@ Completed:
 - Theme 16 `write-a-skill`
     - `kit/skills/core/write-a-skill`
     - `kit/prompts/force-write-a-skill.md`
+- Theme 16.1 local publish workflow entrypoint and safety hardening
+    - private dependency-free `package.json` command façade
+    - hardened `scripts/publish-local-change.sh`
+    - project-local workflow temporary files
+    - deterministic `scripts/test-publish-local-change.sh`
 
 
 In progress / next likely themes:
