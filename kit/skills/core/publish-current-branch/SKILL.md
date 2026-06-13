@@ -282,6 +282,9 @@ PR title and body should be based on:
 - Approved plan or execution summary if available
 - Project conventions from project memory
 
+Before publishing, state the recommended update type, commit message, and PR title. Treat these as
+recommendations: the user may override them before commit or PR creation.
+
 Do not invent release notes or deployment claims.
 
 If there is not enough context for a good PR body, create a concise factual PR body and state what was checked.
@@ -317,6 +320,9 @@ When publishing finishes or pauses, output:
 ```txt
 Publish Summary:
 - Branch:
+- Recommended update type:
+- Recommended commit message:
+- Recommended PR title:
 - Remote:
 - Working tree:
 - Local commit:

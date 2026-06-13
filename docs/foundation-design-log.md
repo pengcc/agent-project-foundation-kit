@@ -53,7 +53,6 @@ Planned productivity skills:
 Future / optional:
 
 - technology-specific skills
-- GitHub ruleset / branch protection setup guidance
 - release workflow
 - deployment workflow
 - teach
@@ -665,6 +664,15 @@ Accepted decisions:
 6. Required-check handling separates no checks, passing, pending, failing, and GitHub CLI errors. CLI errors preserve stderr and block merge.
 7. Typed confirmations remain on externally visible or destructive boundaries such as squash merge and hard reset.
 
+Stabilization decisions:
+
+1. Complete staged, commit, and PR scope is displayed and confirmed before update classification.
+2. Update type selection uses numbered Small safe / Normal / Significant choices with stable internal codes and invalid-input re-prompting.
+3. Publish context shows recommended update type, commit message, and PR title while allowing overrides.
+4. `SMALL_SAFE` can skip structured validation and manual PR review only after scope confirmation.
+5. Clean feature branches recover PRs that merged after a polling timeout and refresh only after verified `mergedAt` and default-branch base.
+6. New meaningful work pauses when an unrelated non-default branch has unfinished changes, commits, or a PR.
+
 Resulting files / changes:
 
 ```txt
@@ -698,21 +706,41 @@ docs/foundation-design-log.md
 .codex/project/project-decisions.md
 ```
 
+## Theme 17: Reusable GitHub Repository Settings
+
+Accepted decisions:
+
+1. Reusable ruleset, General settings payload, and application checklist artifacts live under `kit/github-settings/`.
+2. The installer copies the complete package to `.codex/github-settings/` and never applies GitHub settings.
+3. The required General settings payload changes only squash merge and auto-merge enablement.
+4. Approvals, status checks, merge queue, bypass actors, and other hardening remain project-specific.
+5. Documentation covers UI/API application, verification, rollback, and plan or repository-visibility availability constraints.
+6. Installer tests compare the complete GitHub settings directory.
+
+Resulting files / changes:
+
+```txt
+kit/github-settings/
+scripts/install-foundation-kit.sh
+scripts/test-install-foundation-kit.sh
+README.md
+.codex/project/
+docs/foundation-design-log.md
+```
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 16.3:
+Priority order after Theme 17 stabilization:
 
-1. GitHub ruleset / branch protection setup guidance
-2. technology-specific skills
-3. release workflow
-4. deployment workflow
+1. technology-specific skills
+2. release workflow
+3. deployment workflow
 
 Rationale:
 
 - The planned productivity skill set is now complete: `grill-me`, `handoff`, and `write-a-skill` are implemented.
-- GitHub ruleset / branch protection setup guidance should follow because publishing workflows already exist, but repository protection setup is still only guidance/future work.
 - Technology-specific skills should come after the core project lifecycle and productivity workflows are stable.
-- Release and deployment workflows should remain after repository protection and skill-authoring conventions are stable.
+- Release and deployment workflows should remain after skill-authoring and repository workflow conventions are stable.
 
 
 
@@ -726,7 +754,6 @@ Rationale:
 - optional technology-specific skills
 - support for agent directories beyond `.codex/`
 - optional teach workflow for learning-oriented projects
-- GitHub ruleset / branch protection setup checklist
 - release workflow
 - deployment workflow
 - deliberate reusable lesson/rule distillation from `.codex/project/lessons-learned.md` into `kit/`

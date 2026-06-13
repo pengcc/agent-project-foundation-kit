@@ -196,7 +196,8 @@ Too many prompts can make a helper script feel heavy and reduce the benefit of a
 
 A workflow script should require confirmation at safety boundaries, not at every mechanical step.
 
-For small local-change publishing, committing, pushing, and creating a PR can be grouped under one explicit confirmation after showing the diff.
+For small local-change publishing, committing, pushing, and creating a PR can be grouped under one
+explicit confirmation after showing the complete staged, commit, or PR scope.
 
 Manual PR review and merge should remain outside the script unless explicitly authorized.
 
@@ -213,9 +214,14 @@ Keep separate confirmations for:
 - post-merge verification / refresh
 - any destructive or history-changing operation
 
-Do not auto-merge PRs by default. A narrowly classified `SMALL_SAFE` path may use the typed
-classification as explicit authorization, but it must still merge through a PR, preserve GitHub
-rule enforcement, verify the remote merged state, and refresh the default branch only afterward.
+Do not auto-merge PRs by default. A narrowly classified `SMALL_SAFE` path may use classification as
+explicit authorization only after complete scope visibility and confirmation. It must still merge
+through a PR, preserve GitHub rule enforcement, verify the remote merged state, and refresh the
+default branch only afterward.
+
+Remote automation can complete after a local polling timeout. A rerun must inspect the existing PR
+before declaring there is nothing to publish, and may refresh only after verifying `mergedAt` and
+the expected default-branch base.
 
 ## Lesson: Verify remote PR state instead of trusting manual confirmation
 

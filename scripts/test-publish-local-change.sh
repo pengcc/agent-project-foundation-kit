@@ -59,6 +59,18 @@ assert_not_contains() {
   fi
 }
 
+assert_order() {
+  local path="$1"
+  local first="$2"
+  local second="$3"
+  local first_line second_line
+
+  first_line="$(grep -nF -- "$first" "$path" | head -n 1 | cut -d: -f1)"
+  second_line="$(grep -nF -- "$second" "$path" | head -n 1 | cut -d: -f1)"
+  [[ -n "$first_line" && -n "$second_line" && "$first_line" -lt "$second_line" ]] ||
+    log_fail "Expected '$first' before '$second' in $path"
+}
+
 create_fake_commands() {
   local bin_dir="$TEST_ROOT/fake-bin"
   mkdir -p "$bin_dir"
@@ -191,9 +203,11 @@ case "${1:-} ${2:-}" in
   "pr list")
     if [[ "$*" == *"--head"* ]]; then
       if [[ -f "$state/pr-exists" ]]; then
-        printf '42\n'
+        if [[ "$*" != *"--state open"* || ! -f "$state/merged" ]]; then
+          printf '42\n'
+        fi
       fi
-    elif [[ -f "$state/repo-open-prs" || -f "$state/pr-exists" ]]; then
+    elif [[ -f "$state/repo-open-prs" || ( -f "$state/pr-exists" && ! -f "$state/merged" ) ]]; then
       printf '#42 | Existing work | prerequisite-branch -> main | https://example.test/pr/42\n'
     fi
     ;;
@@ -223,6 +237,7 @@ case "${1:-} ${2:-}" in
       "$state_name" "$base" "$branch" "$draft" "$mergeable" "$merge_state" "$head_oid" "$merged_at"
     ;;
   "pr create")
+    rm -f "$state/merged"
     touch "$state/pr-exists"
     printf 'https://example.test/pr/42\n'
     ;;
@@ -361,7 +376,7 @@ test_prompted_commit_message() {
   case_root="$(new_case prompted-message)"
   output="$case_root/output.log"
 
-  run_case_without_message "$case_root" $'Prompted commit message\nSMALL_SAFE\n1\n' "$output"
+  run_case_without_message "$case_root" $'Prompted commit message\ny\n1\n' "$output"
 
   assert_contains "$output" "Enter commit message:"
   assert_contains "$case_root/state/commands.log" "git commit -m Prompted commit message"
@@ -393,7 +408,7 @@ test_quoted_commit_message_argument() {
   case_root="$(new_case quoted-message)"
   output="$case_root/output.log"
 
-  run_case "$case_root" $'SMALL_SAFE\n1\n' "$output"
+  run_case "$case_root" $'y\n1\n' "$output"
 
   assert_not_contains "$output" "Enter commit message:"
   assert_contains "$case_root/state/commands.log" "git commit -m Test Theme 16.1 change"
@@ -406,18 +421,19 @@ test_small_safe_preapproval() {
   case_root="$(new_case small-safe)"
   output="$case_root/output.log"
 
-  run_case "$case_root" $'SMALL_SAFE\n' "$output"
+  run_case "$case_root" $'y\n1\n' "$output"
 
-  assert_contains "$output" "SMALL_SAFE accepted as explicit pre-approval."
-  assert_contains "$output" "Manual pre-commit gates skipped"
-  assert_contains "$output" "validation prompt skipped because the user typed SMALL_SAFE"
+  assert_contains "$output" "Small safe accepted as explicit post-scope authorization."
+  assert_contains "$output" "Does the complete scope shown above match the intended plan and task boundary?"
+  assert_contains "$output" "Staged diff:"
+  assert_contains "$output" "validation prompt skipped because Small safe was authorized after scope confirmation"
   assert_contains "$output" "Skipping PR completion mode selection because SMALL_SAFE was pre-approved."
   assert_contains "$output" "Manual PR review approval skipped because SMALL_SAFE was pre-approved."
   assert_contains "$output" "Verified PR #42 merged into 'main'."
   assert_not_contains "$output" "Choose the PR completion mode."
   assert_not_contains "$output" "I HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE"
   assert_not_contains "$output" "Describe the validation completed"
-  assert_contains "$case_root/state/commands.log" "SMALL_SAFE_PREAPPROVED - validation prompt skipped by explicit small-safe pre-approval."
+  assert_contains "$case_root/state/commands.log" "SMALL_SAFE_SCOPE_CONFIRMED - complete scope confirmed; validation prompt skipped by Small safe authorization."
   assert_contains "$case_root/state/commands.log" "git switch -c change/"
   assert_contains "$case_root/state/commands.log" "git add -A"
   assert_contains "$case_root/state/commands.log" "git push -u origin change/"
@@ -427,8 +443,11 @@ test_small_safe_preapproval() {
   assert_contains "$case_root/state/commands.log" "git switch main"
   assert_contains "$case_root/state/commands.log" "git pull --ff-only origin main"
   assert_not_contains "$case_root/state/commands.log" "git push -u origin main"
+  assert_order "$output" "Final staged commit contents after 'git add -A'." "Does the complete scope shown above match"
+  assert_order "$output" "Does the complete scope shown above match" "Classify update risk."
+  assert_order "$output" "Classify update risk." "Complete SMALL_SAFE publish automatically."
 
-  log_pass "SMALL_SAFE pre-approval auto-merges through PR and refreshes main after verification"
+  log_pass "SMALL_SAFE authorization follows complete scope confirmation and refreshes after merge"
 }
 
 test_normal_auto_merge() {
@@ -436,7 +455,7 @@ test_normal_auto_merge() {
   case_root="$(new_case normal-auto)"
   output="$case_root/output.log"
 
-  run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n2\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\n' "$output"
+  run_case "$case_root" $'y\n2\ny\nCHECK_PASSED\n2\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\n' "$output"
 
   assert_contains "$case_root/state/commands.log" "gh pr merge 42 --repo owner/repo --auto --squash --match-head-commit"
   assert_contains "$output" "Enabled squash auto-merge"
@@ -447,12 +466,48 @@ test_normal_auto_merge() {
   log_pass "normal mode supports reviewed squash auto-merge without premature main refresh"
 }
 
+test_update_type_reprompts_after_invalid_input() {
+  local case_root output
+  case_root="$(new_case update-type-invalid)"
+  output="$case_root/output.log"
+
+  run_case "$case_root" $'y\nz\n2\ny\nCHECK_PASSED\n1\n' "$output"
+
+  assert_contains "$output" "Invalid input. Please choose 1, 2, or 3."
+  assert_contains "$output" "Classification: Normal"
+  assert_contains "$output" "Recommended update type: Normal"
+  assert_contains "$output" "Recommended commit message: Test Theme 16.1 change"
+  assert_contains "$output" "Recommended PR title: Test Theme 16.1 change"
+
+  log_pass "numbered update type selection re-prompts and shows publish recommendations"
+}
+
+test_pr_title_override() {
+  local case_root output
+  case_root="$(new_case pr-title-override)"
+  output="$case_root/output.log"
+
+  printf '%s' $'y\n2\ny\nCHECK_PASSED\n1\n' | env \
+    PATH="$TEST_ROOT/fake-bin:$PATH" \
+    NO_COLOR=1 \
+    SMALL_SAFE_MERGE_POLL_ATTEMPTS=2 \
+    SMALL_SAFE_MERGE_POLL_INTERVAL_SECONDS=0 \
+    PUBLISH_TEST_STATE="$case_root/state" \
+    PUBLISH_TEST_REPO="$case_root/repo" \
+    bash "$PUBLISHER" "Commit message" "Custom PR title" > "$output" 2>&1
+
+  assert_contains "$output" "Recommended PR title: Custom PR title"
+  assert_contains "$case_root/state/commands.log" "--title Custom PR title"
+
+  log_pass "second command argument overrides the recommended PR title"
+}
+
 test_significant_immediate_merge_and_refresh() {
   local case_root output
   case_root="$(new_case significant-immediate)"
   output="$case_root/output.log"
 
-  run_case "$case_root" $'SIGNIFICANT\ny\ny\nMANUAL_TESTED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\nI APPROVE HIGH IMPACT MERGE\ny\n' "$output"
+  run_case "$case_root" $'y\n3\ny\nMANUAL_TESTED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\nI APPROVE HIGH IMPACT MERGE\ny\n' "$output"
 
   assert_contains "$case_root/state/commands.log" "gh pr merge 42 --repo owner/repo --squash --match-head-commit"
   assert_contains "$case_root/state/commands.log" "git fetch origin main"
@@ -468,7 +523,7 @@ test_diverged_main_requires_typed_reset() {
   output="$case_root/output.log"
   touch "$case_root/state/diverged"
 
-  run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\ny\nRESET_MAIN_TO_ORIGIN\n' "$output"
+  run_case "$case_root" $'y\ny\n2\ny\nCHECK_PASSED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\ny\nRESET_MAIN_TO_ORIGIN\n' "$output"
 
   assert_contains "$output" "Backup branch created:"
   assert_contains "$case_root/state/commands.log" "git branch backup/main-before-reset-"
@@ -484,7 +539,7 @@ test_diverged_main_wrong_token_preserves_backup() {
   output="$case_root/output.log"
   touch "$case_root/state/diverged"
 
-  if run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\ny\nWRONG_TOKEN\n' "$output"; then
+  if run_case "$case_root" $'y\ny\n2\ny\nCHECK_PASSED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\ny\nWRONG_TOKEN\n' "$output"; then
     log_fail "Wrong reset token unexpectedly completed the refresh flow"
   fi
 
@@ -502,15 +557,15 @@ test_significant_plan_confirmation_blocks() {
   case_root="$(new_case significant-block)"
   output="$case_root/output.log"
 
-  if run_case "$case_root" $'SIGNIFICANT\ny\nn\n' "$output"; then
-    log_fail "Significant workflow succeeded without plan confirmation"
+  if run_case "$case_root" $'n\n' "$output"; then
+    log_fail "Workflow succeeded without scope confirmation"
   fi
 
-  assert_contains "$output" "high-impact plan consistency was not confirmed"
+  assert_contains "$output" "scope consistency was not confirmed"
   assert_not_contains "$case_root/state/commands.log" "git commit"
   assert_not_contains "$case_root/state/commands.log" "git push"
 
-  log_pass "significant mode blocks before commit when plan confirmation fails"
+  log_pass "scope confirmation blocks before classification and commit"
 }
 
 test_existing_pr_gets_publish_record() {
@@ -520,33 +575,69 @@ test_existing_pr_gets_publish_record() {
   touch "$case_root/state/pr-exists"
   printf 'existing-feature\n' > "$case_root/state/branch"
 
-  run_case "$case_root" $'y\nNORMAL\ny\nCHECK_PASSED\n1\n' "$output"
+  run_case "$case_root" $'y\ny\n2\nCHECK_PASSED\n1\n' "$output"
 
   assert_contains "$case_root/state/commands.log" "gh pr comment 42"
   assert_not_contains "$case_root/state/commands.log" "gh pr create"
-  assert_contains "$output" "Current branch already has an open pull request."
+  assert_contains "$output" "Current branch already has a pull request."
   assert_contains "$output" "Title: Existing PR title"
   assert_contains "$output" "Updated existing PR #42 with the publish record."
 
   log_pass "existing PR receives a validation/classification publish record"
 }
 
-test_clean_existing_pr_continues_without_commit_or_push() {
+test_clean_existing_open_pr_offers_safe_options() {
   local case_root output
   case_root="$(new_case clean-existing-pr)"
   output="$case_root/output.log"
-  touch "$case_root/state/clean" "$case_root/state/no-unpushed" "$case_root/state/pr-exists"
+  touch "$case_root/state/clean" "$case_root/state/pr-exists"
   printf 'existing-feature\n' > "$case_root/state/branch"
 
-  run_case_without_message "$case_root" $'y\nNORMAL\ny\nCHECK_PASSED\n1\n' "$output"
+  run_case_without_message "$case_root" $'y\n3\n' "$output"
 
   assert_not_contains "$output" "Enter commit message:"
-  assert_contains "$output" "Using existing PR title: Existing PR title"
-  assert_contains "$case_root/state/commands.log" "gh pr comment 42"
+  assert_contains "$output" "PR #42 is still open and there are no local changes or unpushed commits."
+  assert_contains "$output" "1) Re-check PR state"
+  assert_contains "$output" "2) Open PR in browser"
+  assert_contains "$output" "3) Exit"
+  assert_not_contains "$case_root/state/commands.log" "gh pr comment 42"
   assert_not_contains "$case_root/state/commands.log" "git commit"
   assert_not_contains "$case_root/state/commands.log" "git push -u"
 
-  log_pass "clean branch with an existing PR continues without commit or push"
+  log_pass "clean branch with an open PR offers re-check, browser, and exit options"
+}
+
+test_late_merged_pr_refreshes_only_after_verification() {
+  local case_root output
+  case_root="$(new_case late-merged-pr)"
+  output="$case_root/output.log"
+  touch "$case_root/state/clean" "$case_root/state/pr-exists" "$case_root/state/merged"
+  printf 'existing-feature\n' > "$case_root/state/branch"
+
+  run_case_without_message "$case_root" $'y\n' "$output"
+
+  assert_contains "$output" "PR #42 is verified merged into 'main'."
+  assert_contains "$case_root/state/commands.log" "git fetch origin main"
+  assert_contains "$case_root/state/commands.log" "git switch main"
+  assert_contains "$case_root/state/commands.log" "git pull --ff-only origin main"
+
+  log_pass "late merged PR recovery refreshes only after mergedAt and default-branch verification"
+}
+
+test_prior_merged_pr_does_not_block_new_local_work() {
+  local case_root output
+  case_root="$(new_case prior-merged-new-work)"
+  output="$case_root/output.log"
+  touch "$case_root/state/pr-exists" "$case_root/state/merged"
+  printf 'existing-feature\n' > "$case_root/state/branch"
+
+  run_case "$case_root" $'y\n2\nCHECK_PASSED\n1\n' "$output"
+
+  assert_contains "$output" "Ignoring prior MERGED PR #42 because new local work is pending."
+  assert_contains "$case_root/state/commands.log" "gh pr create"
+  assert_not_contains "$case_root/state/commands.log" "gh pr comment 42"
+
+  log_pass "prior merged PR does not block a new PR for new local work"
 }
 
 test_pending_checks_require_auto_merge() {
@@ -555,7 +646,7 @@ test_pending_checks_require_auto_merge() {
   output="$case_root/output.log"
   touch "$case_root/state/check-pending"
 
-  if run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n3\n' "$output"; then
+  if run_case "$case_root" $'y\n2\ny\nCHECK_PASSED\n3\n' "$output"; then
     log_fail "Immediate merge succeeded while required checks were pending"
   fi
 
@@ -581,7 +672,7 @@ test_merge_state_guards() {
       unknown-merge) expected="has not resolved PR merge readiness" ;;
     esac
 
-    if run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n2\n' "$output"; then
+    if run_case "$case_root" $'y\n2\ny\nCHECK_PASSED\n2\n' "$output"; then
       log_fail "Merge flow succeeded for guarded condition: $condition"
     fi
 
@@ -617,10 +708,13 @@ test_unpushed_commit_skips_commit_message_prompt() {
   touch "$case_root/state/clean"
   printf 'existing-feature\n' > "$case_root/state/branch"
 
-  run_case_without_message "$case_root" $'NORMAL\ny\nCHECK_PASSED\n1\n' "$output"
+  run_case_without_message "$case_root" $'y\n2\nCHECK_PASSED\n1\n' "$output"
 
   assert_not_contains "$output" "Enter commit message:"
   assert_contains "$output" "Using latest commit subject as PR title: Existing unpushed commit"
+  assert_contains "$output" "Commits to publish:"
+  assert_contains "$output" "Diff stat:"
+  assert_contains "$output" "Diff:"
   assert_not_contains "$case_root/state/commands.log" "git commit"
   assert_contains "$case_root/state/commands.log" "gh pr create"
   assert_contains "$case_root/state/commands.log" "--title Existing unpushed commit"
@@ -634,7 +728,7 @@ test_repository_open_pr_warning_requires_confirmation() {
   output="$case_root/output.log"
   touch "$case_root/state/repo-open-prs"
 
-  run_case "$case_root" $'y\nSMALL_SAFE\n1\n' "$output"
+  run_case "$case_root" $'y\ny\n1\n' "$output"
 
   assert_contains "$output" "Open pull requests already exist in this repository:"
   assert_contains "$output" "#42 | Existing work | prerequisite-branch -> main | https://example.test/pr/42"
@@ -666,7 +760,7 @@ test_normal_validation_choice() {
   case_root="$(new_case normal-validation)"
   output="$case_root/output.log"
 
-  run_case "$case_root" $'NORMAL\ny\ny\nDOC_REVIEWED\n1\n' "$output"
+  run_case "$case_root" $'y\n2\ny\nDOC_REVIEWED\n1\n' "$output"
 
   assert_contains "$output" "Type a validation code:"
   assert_contains "$case_root/state/commands.log" "DOC_REVIEWED - documentation/text-only change reviewed manually."
@@ -679,7 +773,7 @@ test_significant_rejects_not_run() {
   case_root="$(new_case significant-not-run)"
   output="$case_root/output.log"
 
-  if run_case "$case_root" $'SIGNIFICANT\ny\ny\nNOT_RUN\n' "$output"; then
+  if run_case "$case_root" $'y\n3\ny\nNOT_RUN\n' "$output"; then
     log_fail "Significant workflow unexpectedly accepted NOT_RUN"
   fi
 
@@ -695,7 +789,7 @@ test_no_required_checks_allows_immediate_merge() {
   output="$case_root/output.log"
   touch "$case_root/state/no-checks"
 
-  run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\nn\n' "$output"
+  run_case "$case_root" $'y\n2\ny\nCHECK_PASSED\n3\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\nn\n' "$output"
 
   assert_contains "$output" "Required check state: none reported"
   assert_contains "$case_root/state/commands.log" "gh pr merge 42 --repo owner/repo --squash"
@@ -709,7 +803,7 @@ test_pending_checks_allow_auto_merge() {
   output="$case_root/output.log"
   touch "$case_root/state/check-pending"
 
-  run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n2\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\n' "$output"
+  run_case "$case_root" $'y\n2\ny\nCHECK_PASSED\n2\nI HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE\n' "$output"
 
   assert_contains "$output" "auto-merge may wait for them to complete"
   assert_contains "$case_root/state/commands.log" "gh pr merge 42 --repo owner/repo --auto --squash"
@@ -723,7 +817,7 @@ test_failing_checks_block_merge() {
   output="$case_root/output.log"
   touch "$case_root/state/check-fail"
 
-  if run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n2\n' "$output"; then
+  if run_case "$case_root" $'y\n2\ny\nCHECK_PASSED\n2\n' "$output"; then
     log_fail "Merge workflow unexpectedly continued with failing required checks"
   fi
 
@@ -739,7 +833,7 @@ test_gh_check_error_prints_stderr_and_blocks_merge() {
   output="$case_root/output.log"
   touch "$case_root/state/check-error"
 
-  if run_case "$case_root" $'NORMAL\ny\ny\nCHECK_PASSED\n3\n' "$output"; then
+  if run_case "$case_root" $'y\n2\ny\nCHECK_PASSED\n3\n' "$output"; then
     log_fail "Merge workflow unexpectedly continued after gh checks error"
   fi
 
@@ -758,7 +852,7 @@ test_auto_merge_setting_error_prints_stderr() {
   output="$case_root/output.log"
   touch "$case_root/state/merge-error"
 
-  if run_case "$case_root" $'SMALL_SAFE\n' "$output"; then
+  if run_case "$case_root" $'y\n1\n' "$output"; then
     log_fail "Auto-merge unexpectedly succeeded after GitHub rejected the setting"
   fi
 
@@ -780,7 +874,7 @@ test_small_safe_auto_merge_timeout_is_explicit() {
   output="$case_root/output.log"
   touch "$case_root/state/auto-merge-stays-open"
 
-  if run_case "$case_root" $'SMALL_SAFE\n' "$output"; then
+  if run_case "$case_root" $'y\n1\n' "$output"; then
     log_fail "SMALL_SAFE workflow unexpectedly succeeded before GitHub reported the merge"
   fi
 
@@ -840,12 +934,16 @@ main() {
   test_empty_prompted_commit_message_blocks
   test_quoted_commit_message_argument
   test_normal_auto_merge
+  test_update_type_reprompts_after_invalid_input
+  test_pr_title_override
   test_significant_immediate_merge_and_refresh
   test_diverged_main_requires_typed_reset
   test_diverged_main_wrong_token_preserves_backup
   test_significant_plan_confirmation_blocks
   test_existing_pr_gets_publish_record
-  test_clean_existing_pr_continues_without_commit_or_push
+  test_clean_existing_open_pr_offers_safe_options
+  test_late_merged_pr_refreshes_only_after_verification
+  test_prior_merged_pr_does_not_block_new_local_work
   test_unpushed_commit_skips_commit_message_prompt
   test_repository_open_pr_warning_requires_confirmation
   test_unauthenticated_gh_requires_confirmation

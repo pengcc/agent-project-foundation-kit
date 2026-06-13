@@ -169,18 +169,22 @@ Current `publish-local-change.sh` purpose:
 - publish local changes through a feature branch + PR workflow
 - avoid unnecessary theme zip overhead for one/few-file changes
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
-- treat typed `SMALL_SAFE` classification as the sole pre-commit pre-approval
+- display and confirm the complete relevant scope before update classification
+- use a numbered Small safe / Normal / Significant selection while preserving stable internal codes
+- treat `SMALL_SAFE` selection as merge authorization only after scope confirmation
 - inspect branch freshness, repository open PRs, current-branch PR state, uncommitted changes, and unpushed commits before prompting
 - prompt for a commit message only when uncommitted changes need a commit
 - use the latest commit subject as the PR title when publishing existing unpushed commits
+- show recommended update type, commit message, and PR title while allowing overrides
 - list repository-level open PRs and require acknowledgement without blocking solely because they exist
 - update an existing current-branch PR instead of creating a duplicate
-- show staged, unstaged, untracked, and final staged change summaries
-- skip the validation prompt for `SMALL_SAFE` and record its pre-approved validation statement
+- show final staged scope for uncommitted changes and commit/diff scope for unpushed commits
+- recover clean current-branch PRs that merged after a polling timeout and refresh only after verifying `mergedAt` and the default-branch base
+- skip the validation prompt for `SMALL_SAFE` and record its scope-confirmed authorization statement
 - use structured validation codes for `NORMAL` and `SIGNIFICANT`, with `NOT_RUN` allowed only for `NORMAL`
 - distinguish no required checks, pending checks, failing checks, and GitHub CLI errors before merge
 - automatically enable squash auto-merge for `SMALL_SAFE`, verify the remote merge, and refresh local `main`
-- skip the PR completion mode and manual-review token for `SMALL_SAFE` because its classification is the explicit pre-approval
+- skip the PR completion mode and manual-review token for `SMALL_SAFE` because its post-scope classification is explicit authorization
 - offer PR-only, squash auto-merge, or immediate squash merge modes for `NORMAL` and `SIGNIFICANT`
 - require typed manual-review approval before scripted merge modes for `NORMAL` and `SIGNIFICANT`
 - never push directly to the default branch
@@ -193,7 +197,7 @@ Current `test-publish-local-change.sh` purpose:
 - run deterministic local validation for publish workflow behavior
 - use project-local fixtures with fake `git` and `gh` commands
 - avoid real pushes, PR creation, merges, and network access
-- cover state-aware prompting, repository/current-branch PR handling, validation selection, required-check states, GitHub CLI errors, merge modes, and verified post-merge refresh
+- cover scope-confirmation ordering, numbered classification, recommendations, repository/current-branch PR handling, late-merge recovery, required-check states, GitHub CLI errors, merge modes, and verified post-merge refresh
 
 Current `install-foundation-kit.sh` purpose:
 
@@ -219,6 +223,7 @@ Current `test-install-foundation-kit.sh` purpose:
 
 - run local validation for installer behavior
 - keep test artifacts under `dev_locals/test-runs/install-foundation-kit/`
+- verify explicit target requirement, dry-run, fresh install, complete mapping correctness, conflict detection, no silent overwrite, backup-before-replace, missing-source blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
 
 Current `kit/github-settings/` purpose:
 
@@ -226,7 +231,7 @@ Current `kit/github-settings/` purpose:
 - provide a minimal General settings REST payload enabling squash merge and auto-merge
 - provide a checklist for UI/API application, verification, optional hardening, and rollback
 - install into downstream projects under `.codex/github-settings/`
-- verify explicit target requirement, dry-run, fresh install, mapping correctness, conflict detection, no silent overwrite, backup-before-replace, missing-source blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
+- remain copied-only artifacts; the installer does not apply repository settings
 
 ## 7. Environment Variables
 
@@ -351,6 +356,7 @@ Completed:
 - Theme 17 reusable GitHub repository settings
     - `kit/github-settings/`
     - installer mapping to `.codex/github-settings/`
+    - publish authorization, late-merge recovery, documentation, and complete mapping stabilization
 
 
 In progress / next likely themes:

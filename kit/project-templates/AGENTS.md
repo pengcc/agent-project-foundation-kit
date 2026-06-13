@@ -154,7 +154,19 @@ After meaningful planning, implementation, debugging, review, publishing, instal
 
 ## Git and Publishing Rules
 
-Before editing for new work, start from an up-to-date default branch and create a feature branch unless the user explicitly approves a different workflow.
+Before editing for new work, check:
+
+- current branch
+- uncommitted changes
+- unpushed commits
+- current-branch open pull request
+- repository-level open pull requests
+
+If a non-default branch has unfinished work, pause before starting an unrelated task. Report the
+pending work and ask whether to finish, merge, or switch branches. Do not mix tasks without
+explicit user approval.
+
+Start new work from an up-to-date default branch and create a feature branch unless the user explicitly approves a different workflow.
 
 Do not push directly to the default branch.
 
@@ -178,6 +190,9 @@ Every implementation final report must classify the update as one of:
 
 The report must include:
 
+- recommended update type
+- recommended commit message
+- recommended PR title
 - changed files
 - reason for the change
 - impact / risk
