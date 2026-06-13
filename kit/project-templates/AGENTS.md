@@ -102,6 +102,15 @@ Plans are process documents.
 
 They are not continuously maintained after execution and must not be treated as the current project source of truth.
 
+If Plan Mode or the active tool environment blocks file writes, do not claim that a plan was
+saved. State that writing is blocked, show the exact intended path, and provide the complete plan
+content or a clear save action. Tell the user to save it manually or switch to a write-capable
+mode and ask the agent to save it.
+
+Plan creation is not execution approval. The default next step is to review, revise, or save the
+plan. Execution requires explicit user approval after review, even if the UI or tool offers an
+execution action automatically.
+
 If a plan produces durable project changes, summarize the resulting facts, decisions, or lessons into the project memory files under `.codex/project/` using `update-project-memory`.
 
 ## Handoff Rules

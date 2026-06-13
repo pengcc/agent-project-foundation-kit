@@ -499,3 +499,24 @@ source-repository commands as thin wrappers that delegate to that implementation
 - test both direct execution and source-wrapper delegation
 - copy complete script trees through the installer
 - do not silently modify downstream package-manager configuration
+
+## Avoid: Claiming a plan was saved when writes were blocked
+
+### Context
+
+A planning response can render a complete plan while Plan Mode or the active tool environment
+prevents the expected write under `dev_locals/plans/`.
+
+### Lesson
+
+Rendered plan content is not evidence that a plan file exists. Claiming persistence without a
+successful write can mislead later workflows, especially `execute-plan`, into depending on a
+nonexistent artifact.
+
+### Reuse guidance
+
+- report blocked file writing explicitly
+- show the exact intended plan path
+- provide the complete plan content or a clear save-later action
+- verify persistence before reporting a saved path
+- keep review and explicit execution approval as separate workflow steps

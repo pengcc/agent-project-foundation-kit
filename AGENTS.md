@@ -54,6 +54,18 @@ Use the relevant kit source skills as workflow guidance. Commonly relevant skill
 - `handoff`
 - `update-project-memory`
 
+## Planning and Execution Boundary
+
+Multi-step plans normally belong under `dev_locals/plans/`.
+
+If Plan Mode or the active tool environment blocks file writes, do not claim that a plan was
+saved. State that writing is blocked, show the exact intended path, provide the complete plan
+content or a clear save action, and tell the user to save it manually or switch to a write-capable
+mode and ask the agent to save it.
+
+Plan creation is not execution approval. After producing a plan, default to review, revision, or
+saving the plan. Execute it only after the user explicitly approves execution.
+
 ## Basic Branch Workflow
 
 Before editing files:
