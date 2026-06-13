@@ -51,9 +51,19 @@ die() { danger "$*"; exit 1; }
 confirm() {
   local prompt="$1"
   local answer
-  printf "%s[PROMPT]%s %s [y/N] " "$MAGENTA$BOLD" "$RESET" "$prompt" >&2
-  read -r answer
-  [[ "$answer" == "y" || "$answer" == "Y" ]]
+
+  while true; do
+    printf "%s[PROMPT]%s %s [y/N] " "$MAGENTA$BOLD" "$RESET" "$prompt" >&2
+    if ! read -r answer; then
+      return 1
+    fi
+
+    case "$answer" in
+      y|Y|yes|YES) return 0 ;;
+      ""|n|N|no|NO) return 1 ;;
+      *) warn "Invalid input. Please type y or n." ;;
+    esac
+  done
 }
 
 confirm_typed() {

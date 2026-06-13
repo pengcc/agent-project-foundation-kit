@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 PUBLISHER="$REPO_ROOT/scripts/publish-local-change.sh"
+WORKFLOW_COMMON="$REPO_ROOT/scripts/lib/workflow-common.sh"
 TEST_ROOT=""
 PASS_COUNT=0
 
@@ -296,6 +297,52 @@ run_case_without_message() {
     PUBLISH_TEST_STATE="$case_root/state" \
     PUBLISH_TEST_REPO="$case_root/repo" \
     bash "$PUBLISHER" > "$output" 2>&1
+}
+
+run_confirm_case() {
+  local input="$1"
+  local output="$2"
+
+  printf '%s' "$input" | env NO_COLOR=1 bash -c '
+    source "$1"
+    confirm "Test confirmation?"
+  ' _ "$WORKFLOW_COMMON" > "$output" 2>&1
+}
+
+test_confirm_accepts_supported_answers() {
+  local answer output
+  output="$TEST_ROOT/confirm-supported.log"
+
+  for answer in y Y yes YES; do
+    if ! run_confirm_case "$answer"$'\n' "$output"; then
+      log_fail "Supported yes answer was rejected: $answer"
+    fi
+  done
+
+  for answer in n N no NO ""; do
+    if run_confirm_case "$answer"$'\n' "$output"; then
+      log_fail "Supported no answer was accepted: ${answer:-<empty>}"
+    fi
+  done
+
+  log_pass "shared confirm accepts all supported yes/no values and default-no empty input"
+}
+
+test_confirm_reprompts_after_invalid_input() {
+  local output
+  output="$TEST_ROOT/confirm-invalid.log"
+
+  if ! run_confirm_case $'z\nyes\n' "$output"; then
+    log_fail "Valid yes answer after invalid input was rejected"
+  fi
+  assert_contains "$output" "Invalid input. Please type y or n."
+
+  if run_confirm_case $'z\nno\n' "$output"; then
+    log_fail "Valid no answer after invalid input was accepted"
+  fi
+  assert_contains "$output" "Invalid input. Please type y or n."
+
+  log_pass "shared confirm warns and re-prompts after invalid input"
 }
 
 test_prompted_commit_message() {
@@ -725,6 +772,8 @@ main() {
   bash -n "$PUBLISHER" "$REPO_ROOT/scripts/lib/workflow-common.sh"
   log_pass "publish workflow shell syntax is valid"
 
+  test_confirm_accepts_supported_answers
+  test_confirm_reprompts_after_invalid_input
   test_small_safe_preapproval
   test_prompted_commit_message
   test_empty_prompted_commit_message_blocks
