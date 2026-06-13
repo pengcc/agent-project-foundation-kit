@@ -762,6 +762,49 @@ package.json
 docs/foundation-design-log.md
 ```
 
+## Theme 17.3: Node Publish CLI Migration
+
+Accepted decisions:
+
+1. Add a Node.js 24+ ESM publish CLI with structured command execution and JSON-based GitHub CLI
+   parsing.
+2. Keep reusable command, Git, GitHub, error, and output modules under `kit/scripts/shared/`.
+3. Keep publish-only prompts and orchestration under `kit/scripts/publish-changes/` until another
+   workflow demonstrates reuse.
+4. Store classification behavior in `kit/config/publish-changes-policy.yml` with strict schema
+   validation and conservative built-in defaults.
+5. Permit source-repository YAML loading through a package-managed dependency, but never require
+   an uninstalled downstream package; missing YAML support activates built-in defaults.
+6. Install `kit/config/` to `.codex/config/` and continue installing the complete scripts tree.
+7. Keep `pnpm publish:local` on the Bash fallback during Theme 17.3. Cutover requires passing
+   Vitest parity, existing Bash publish tests, installer tests, and manual CLI output review.
+8. Allow default-branch refresh only after GitHub verifies a merge into the configured default
+   branch, independent of classification. Divergence requires backup plus typed reset approval.
+9. Treat external policy as configuration rather than authorization; immutable validation and
+   review gates remain enforced in code.
+10. For uncommitted work, stage only the observed path set, display the exact upstream-relative
+    publish scope including prior unpushed commits, and verify the confirmed index tree again
+    before commit.
+
+Resulting files / changes:
+
+```txt
+.mise.toml
+package.json
+pnpm-lock.yaml
+kit/config/
+kit/scripts/publish-changes.mjs
+kit/scripts/publish-changes/
+kit/scripts/shared/
+tests/publish-changes/
+scripts/install-foundation-kit.sh
+scripts/test-install-foundation-kit.sh
+kit/skills/core/publish-current-branch/SKILL.md
+README.md
+.codex/project/
+docs/foundation-design-log.md
+```
+
 ## Maintenance Update: Plan Mode Persistence and Execution Boundary
 
 Accepted decisions:

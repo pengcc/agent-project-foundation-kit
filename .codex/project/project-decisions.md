@@ -830,6 +830,46 @@ Downstream projects receive the mature state-aware publish workflow directly. Fu
 fixes can be made once in the installable implementation and validated through both wrapper and
 direct-execution tests.
 
+## Decision: Theme 17.3 introduces Node publish mechanics without immediate default cutover
+
+### Status
+
+Accepted
+
+### Decision
+
+Theme 17.3 adds a Node.js 24+ ESM publish CLI under `kit/scripts/publish-changes.mjs`, with
+publish-specific modules under `kit/scripts/publish-changes/` and only broadly reusable command,
+Git, GitHub, error, and output modules under `kit/scripts/shared/`.
+
+The source repository may use package-managed `yaml` for policy loading. Downstream direct Node
+execution must not require an uninstalled package: when YAML support is unavailable, the CLI
+warns, ignores the external policy file, and uses built-in conservative defaults.
+
+The installer maps `kit/config/` to `.codex/config/` and continues copying the complete scripts
+tree. The Bash implementation and `pnpm publish:local` remain the active fallback until the
+Vitest parity suite, existing Bash publish tests, installer tests, and manual CLI output review
+all pass.
+
+Default-branch refresh is based on verified merge state rather than update classification. It may
+run only after GitHub reports a merge into the configured default branch. Diverged local default
+branches require a backup and typed approval before reset.
+
+External YAML policy is configuration, not authorization. It may enable configured merge modes,
+but it cannot remove immutable validation, manual-review, typed-confirmation, or `NOT_RUN`
+restrictions for higher-risk classifications.
+
+For uncommitted changes, the Node workflow fingerprints tracked and untracked state, stages only
+the observed path set, shows the exact upstream-relative publish scope including prior unpushed
+commits, obtains scope confirmation, and verifies that the index tree is unchanged immediately
+before commit. Worktree or index drift aborts publishing and requires a new confirmation cycle.
+
+### Impact
+
+The migration can be reviewed and exercised without forcing an early wrapper cutover. The module
+boundaries support future workflow reuse while keeping publish-only prompts local to the publish
+workflow.
+
 ## Decision: Planning persistence must be truthful and execution remains separately approved
 
 ### Status

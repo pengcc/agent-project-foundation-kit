@@ -1,0 +1,33 @@
+version: 1
+
+classifications:
+  small_safe:
+    allow_auto_merge: true
+    allow_immediate_merge: false
+    require_validation: false
+    allow_not_run: false
+    require_manual_review: false
+    require_typed_confirmation: false
+    poll_after_auto_merge: true
+    refresh_default_branch_after_verified_merge: true
+
+  normal:
+    allow_auto_merge: false
+    allow_immediate_merge: false
+    require_validation: true
+    allow_not_run: true
+    require_manual_review: true
+    require_typed_confirmation: true
+    poll_after_auto_merge: true
+    refresh_default_branch_after_verified_merge: true
+
+  significant:
+    allow_auto_merge: false
+    allow_immediate_merge: false
+    require_validation: true
+    allow_not_run: false
+    require_manual_review: true
+    require_typed_confirmation: true
+    poll_after_auto_merge: true
+    refresh_default_branch_after_verified_merge: true
+

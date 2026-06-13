@@ -90,7 +90,7 @@ If new implementation work is needed, stop and recommend `execute-plan`.
 
 ## Mechanical Executor
 
-When `.codex/scripts/publish-changes.sh` exists, use it as the preferred mechanical executor:
+During Theme 17.3, use `.codex/scripts/publish-changes.sh` as the preferred mechanical executor:
 
 ```bash
 bash .codex/scripts/publish-changes.sh
@@ -108,6 +108,18 @@ command sequence. Users may also run the same command directly.
 
 The installer copies the script into `.codex/scripts/`; it does not add or modify a downstream
 `package.json`. Projects may add their own short command alias if desired.
+
+The installer also includes the Node.js 24+ migration candidate:
+
+```bash
+node .codex/scripts/publish-changes.mjs
+node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
+```
+
+Do not treat installation of the Node candidate as a default cutover. Keep the Bash fallback until
+the Vitest parity suite, existing Bash publish tests, installer tests, and manual review of CLI
+output all pass. If downstream `yaml` support is absent, the Node CLI must warn and use built-in
+conservative policy defaults rather than depending on an uninstalled package.
 
 If the installed script is unavailable, use the manual workflow in this skill as the fallback.
 Do not weaken any confirmation, branch, check, review, merge, or refresh boundary in the fallback.

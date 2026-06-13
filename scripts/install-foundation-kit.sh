@@ -237,6 +237,8 @@ check_source_kit() {
     "$KIT_ROOT/skills"
     "$KIT_ROOT/prompts"
     "$KIT_ROOT/rules"
+    "$KIT_ROOT/config"
+    "$KIT_ROOT/scripts"
   )
 
   local missing=0
@@ -324,6 +326,7 @@ build_install_manifest() {
   add_tree_mappings "$KIT_ROOT/skills" ".codex/skills"
   add_tree_mappings "$KIT_ROOT/prompts" ".codex/prompts"
   add_tree_mappings "$KIT_ROOT/rules" ".codex/rules"
+  add_tree_mappings "$KIT_ROOT/config" ".codex/config"
   add_tree_mappings "$KIT_ROOT/github-settings" ".codex/github-settings"
   add_tree_mappings "$KIT_ROOT/scripts" ".codex/scripts"
 }
@@ -341,7 +344,7 @@ validate_manifest_boundaries() {
 risk_for_target() {
   local dst="$1"
   case "$dst" in
-    AGENTS.md|.codex/project/*|.codex/skills/*|.codex/prompts/*|.codex/rules/*|.codex/github-settings/*|.codex/scripts/*)
+    AGENTS.md|.codex/project/*|.codex/skills/*|.codex/prompts/*|.codex/rules/*|.codex/config/*|.codex/github-settings/*|.codex/scripts/*)
       printf 'DANGER'
       ;;
     *)
