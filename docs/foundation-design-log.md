@@ -728,9 +728,43 @@ README.md
 docs/foundation-design-log.md
 ```
 
+## Theme 17.1: Installable Publish Workflow Scripts
+
+Accepted decisions:
+
+1. `kit/scripts/publish-changes.sh` is the canonical downstream-neutral publish implementation.
+2. `kit/scripts/lib/workflow-common.sh` is the canonical shared Bash helper, including standard
+   default-no confirmation handling with invalid-input re-prompting.
+3. Source-repository wrappers delegate to the kit implementation so `pnpm publish:local` and
+   `apply-theme-zip.sh` keep their existing compatibility without duplicate helper logic.
+4. The installer copies the complete `kit/scripts/` tree to `.codex/scripts/` and treats existing
+   targets as dangerous conflicts.
+5. The installer does not create or modify downstream `package.json`; direct Bash invocation is
+   the documented default and a package-manager alias is optional project configuration.
+6. `publish-current-branch` owns strategy and authorization. Agents prefer the installed script
+   for mechanics and retain the manual workflow only as a fallback.
+7. Deterministic tests cover source-wrapper delegation, direct installable execution, complete
+   installer mapping, confirmation re-prompting, and the existing fake-CLI publish behavior.
+
+Resulting files / changes:
+
+```txt
+kit/scripts/
+kit/skills/core/publish-current-branch/SKILL.md
+scripts/publish-local-change.sh
+scripts/lib/workflow-common.sh
+scripts/install-foundation-kit.sh
+scripts/test-install-foundation-kit.sh
+scripts/test-publish-local-change.sh
+README.md
+package.json
+.codex/project/
+docs/foundation-design-log.md
+```
+
 ## Current Recommended Next Themes
 
-Priority order after Theme 17 stabilization:
+Priority order after Theme 17.1 stabilization:
 
 1. technology-specific skills
 2. release workflow

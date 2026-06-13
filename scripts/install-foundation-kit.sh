@@ -325,6 +325,7 @@ build_install_manifest() {
   add_tree_mappings "$KIT_ROOT/prompts" ".codex/prompts"
   add_tree_mappings "$KIT_ROOT/rules" ".codex/rules"
   add_tree_mappings "$KIT_ROOT/github-settings" ".codex/github-settings"
+  add_tree_mappings "$KIT_ROOT/scripts" ".codex/scripts"
 }
 
 validate_manifest_boundaries() {
@@ -340,7 +341,7 @@ validate_manifest_boundaries() {
 risk_for_target() {
   local dst="$1"
   case "$dst" in
-    AGENTS.md|.codex/project/*|.codex/skills/*|.codex/prompts/*|.codex/rules/*|.codex/github-settings/*)
+    AGENTS.md|.codex/project/*|.codex/skills/*|.codex/prompts/*|.codex/rules/*|.codex/github-settings/*|.codex/scripts/*)
       printf 'DANGER'
       ;;
     *)

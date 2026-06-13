@@ -479,3 +479,23 @@ return controlled repository and PR states.
 
 Use deterministic fake CLIs for automated safety-path coverage, then keep a short disposable
 manual smoke checklist for behavior that depends on the real GitHub CLI and repository settings.
+
+## Keep: Put reusable workflow mechanics in the installable payload
+
+### Context
+
+The mature publish workflow originally lived only in the foundation-kit source repository. Keeping
+a separate downstream implementation would create immediate behavior drift.
+
+### Pattern
+
+Use one canonical implementation under `kit/scripts/`, install it under `.codex/scripts/`, and keep
+source-repository commands as thin wrappers that delegate to that implementation.
+
+### Reuse guidance
+
+- keep workflow strategy and authorization in skills
+- keep repeatable Git and GitHub mechanics in installable scripts
+- test both direct execution and source-wrapper delegation
+- copy complete script trees through the installer
+- do not silently modify downstream package-manager configuration

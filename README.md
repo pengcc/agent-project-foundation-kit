@@ -16,7 +16,10 @@ pnpm test:publish
 pnpm check
 ```
 
-`publish:local` always uses a feature branch and pull request. It never pushes directly to
+`publish:local` is a source-repository compatibility command. Its thin wrapper delegates to the
+same installable implementation shipped in `kit/scripts/publish-changes.sh`.
+
+The publish workflow always uses a feature branch and pull request. It never pushes directly to
 `main`. At startup it checks default-branch freshness, lists repository-level open PRs, detects
 the current-branch PR, and inspects uncommitted changes and unpushed commits.
 
@@ -50,15 +53,42 @@ Configure the repository before using the automatic `SMALL_SAFE` path:
 The script never bypasses repository rules. It reports GitHub CLI stderr and does not refresh
 local `main` until GitHub confirms that the pull request was merged.
 
+## Installed Publish Command
+
+The installer copies the reusable publish implementation and helper to:
+
+```txt
+.codex/scripts/publish-changes.sh
+.codex/scripts/lib/workflow-common.sh
+```
+
+Run it directly from a downstream project:
+
+```bash
+bash .codex/scripts/publish-changes.sh
+bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
+```
+
+The installer does not create or modify a downstream `package.json`. A project that wants a short
+command may add its own optional alias:
+
+```json
+{
+  "scripts": {
+    "publish:local": "bash .codex/scripts/publish-changes.sh"
+  }
+}
+```
+
 Reusable settings for downstream repositories are provided under:
 
 ```txt
 kit/github-settings/
 ```
 
-The installer maps them to `.codex/github-settings/`. The package contains an importable
-default-branch ruleset, a minimal General settings REST payload, and an apply/verification
-checklist.
+The installer maps them to `.codex/github-settings/` as copied-only artifacts; it does not apply
+repository settings. The package contains an importable default-branch ruleset, a minimal General
+settings REST payload, and an apply/verification checklist.
 
 ## Publish Smoke Test
 

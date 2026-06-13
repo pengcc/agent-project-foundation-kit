@@ -153,6 +153,10 @@ test_apply_fresh_install() {
   assert_dir_exists "$target/.codex/prompts"
   assert_dir_exists "$target/.codex/rules"
   assert_dir_exists "$target/.codex/github-settings"
+  assert_dir_exists "$target/.codex/scripts"
+  assert_file_exists "$target/.codex/scripts/publish-changes.sh"
+  assert_file_exists "$target/.codex/scripts/lib/workflow-common.sh"
+  assert_file_not_exists "$target/package.json"
 
   log_pass "--apply fresh install creates expected structure"
 }
@@ -167,25 +171,30 @@ test_install_mapping_dynamic_samples() {
   assert_same_file "$REPO_ROOT/kit/project-templates/project-decisions.md" "$target/.codex/project/project-decisions.md"
   assert_same_file "$REPO_ROOT/kit/project-templates/lessons-learned.md" "$target/.codex/project/lessons-learned.md"
 
-  local skill_file prompt_file rule_file
+  local skill_file prompt_file rule_file script_file
   skill_file="$(pick_first_file "$REPO_ROOT/kit/skills")"
   prompt_file="$(pick_first_file "$REPO_ROOT/kit/prompts")"
   rule_file="$(pick_first_file "$REPO_ROOT/kit/rules")"
+  script_file="$(pick_first_file "$REPO_ROOT/kit/scripts")"
 
-  local skill_rel prompt_rel rule_rel
+  local skill_rel prompt_rel rule_rel script_rel
   skill_rel="$(relative_to "$REPO_ROOT/kit/skills" "$skill_file")"
   prompt_rel="$(relative_to "$REPO_ROOT/kit/prompts" "$prompt_file")"
   rule_rel="$(relative_to "$REPO_ROOT/kit/rules" "$rule_file")"
+  script_rel="$(relative_to "$REPO_ROOT/kit/scripts" "$script_file")"
 
   assert_same_file "$skill_file" "$target/.codex/skills/$skill_rel"
   assert_same_file "$prompt_file" "$target/.codex/prompts/$prompt_rel"
   assert_same_file "$rule_file" "$target/.codex/rules/$rule_rel"
+  assert_same_file "$script_file" "$target/.codex/scripts/$script_rel"
   assert_same_tree "$REPO_ROOT/kit/github-settings" "$target/.codex/github-settings"
+  assert_same_tree "$REPO_ROOT/kit/scripts" "$target/.codex/scripts"
 
   assert_file_not_exists "$target/scripts/install-foundation-kit.sh"
   assert_file_not_exists "$target/dev_locals"
+  assert_file_not_exists "$target/package.json"
 
-  log_pass "install mapping verifies real kit samples, the complete GitHub settings tree, and exclusions"
+  log_pass "install mapping verifies real kit samples, complete settings/scripts trees, and exclusions"
 }
 
 test_conflict_detection() {
@@ -201,6 +210,22 @@ test_conflict_detection() {
   grep -q -- "existing agent instructions" "$target/AGENTS.md" || log_fail "Dry-run changed existing AGENTS.md"
 
   log_pass "existing file is detected as conflict without changing it"
+}
+
+test_installed_script_conflict_is_dangerous() {
+  local target
+  target="$(new_target script-conflict)"
+  mkdir -p "$target/.codex/scripts"
+  printf 'existing publish script\n' > "$target/.codex/scripts/publish-changes.sh"
+
+  run_installer --target "$target" > "$TEST_ROOT/script-conflict.out"
+
+  assert_contains "$TEST_ROOT/script-conflict.out" "Target file: .codex/scripts/publish-changes.sh"
+  assert_contains "$TEST_ROOT/script-conflict.out" "DANGER"
+  grep -q -- "existing publish script" "$target/.codex/scripts/publish-changes.sh" ||
+    log_fail "Dry-run changed existing publish script"
+
+  log_pass "existing installed workflow script is treated as a dangerous conflict"
 }
 
 test_apply_conflict_does_not_silently_overwrite() {
@@ -332,6 +357,7 @@ main() {
   test_apply_fresh_install
   test_install_mapping_dynamic_samples
   test_conflict_detection
+  test_installed_script_conflict_is_dangerous
   test_apply_conflict_does_not_silently_overwrite
   test_backup_and_replace
   test_missing_kit_source_blocks

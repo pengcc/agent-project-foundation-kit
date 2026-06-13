@@ -34,6 +34,7 @@ Completed themes:
 - Theme 16.1: local publish workflow entrypoint and safety hardening
 - Theme 16.3: downstream AGENTS template operating contract
 - Theme 17: reusable GitHub repository settings package
+- Theme 17.1: installable publish workflow scripts
 
 Current canonical core skill names:
 
@@ -79,6 +80,7 @@ Current known tooling:
 
 - Markdown for skills, templates, rules, prompts, and design logs
 - Shell scripts under `scripts/`
+- Installable shell scripts under `kit/scripts/`
 - Zip-based theme delivery during development
 - `ripgrep` recommended for migration/reference checks
 - Git / GitHub for version control
@@ -96,6 +98,7 @@ kit/skills/
 kit/prompts/
 kit/rules/
 kit/github-settings/
+kit/scripts/
 docs/
 scripts/
 .codex/project/
@@ -120,6 +123,13 @@ scripts/publish-local-change.sh
 scripts/install-foundation-kit.sh
 scripts/test-install-foundation-kit.sh
 scripts/test-publish-local-change.sh
+```
+
+Installable workflow scripts:
+
+```txt
+kit/scripts/publish-changes.sh
+kit/scripts/lib/workflow-common.sh
 ```
 
 Short command entrypoints:
@@ -164,8 +174,11 @@ Current `apply-theme-zip.sh` safety behavior:
 - can refresh the default branch after a PR merge
 - handles diverged local default branch with backup + reset confirmation
 
-Current `publish-local-change.sh` purpose:
+Current publish workflow architecture:
 
+- keep `kit/scripts/publish-changes.sh` as the canonical, downstream-neutral implementation
+- keep `kit/scripts/lib/workflow-common.sh` as the canonical shared helper
+- keep `scripts/publish-local-change.sh` and `scripts/lib/workflow-common.sh` as thin source-repository compatibility wrappers
 - publish local changes through a feature branch + PR workflow
 - avoid unnecessary theme zip overhead for one/few-file changes
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
@@ -212,12 +225,13 @@ Current `install-foundation-kit.sh` purpose:
 - require `--apply` before writing files
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
 - map project templates to `.codex/project/`
-- map `kit/skills/`, `kit/prompts/`, `kit/rules/`, and `kit/github-settings/` to their matching `.codex/` directories
+- map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/github-settings/`, and `kit/scripts/` to their matching `.codex/` directories
 - validate source and target path boundaries before copying
 - warn when target files already exist
 - never auto-merge existing files
 - backup existing files before replacement under `.codex/backups/install-YYYYMMDD-HHMMSS/`
-- never install this repo's own `.codex/project/`, `dev_locals/`, `docs/`, or `scripts/`
+- never install this repo's own `.codex/project/`, `dev_locals/`, `docs/`, or source-repository `scripts/`
+- never create or modify a downstream `package.json`
 
 Current `test-install-foundation-kit.sh` purpose:
 
@@ -232,6 +246,13 @@ Current `kit/github-settings/` purpose:
 - provide a checklist for UI/API application, verification, optional hardening, and rollback
 - install into downstream projects under `.codex/github-settings/`
 - remain copied-only artifacts; the installer does not apply repository settings
+
+Current `kit/scripts/` purpose:
+
+- provide installable mechanical workflow executors for downstream projects
+- install under `.codex/scripts/`
+- preserve Bash + Git + GitHub CLI as the current runtime contract
+- let skills own workflow strategy and authorization while scripts own repeatable mechanics
 
 ## 7. Environment Variables
 
@@ -357,6 +378,12 @@ Completed:
     - `kit/github-settings/`
     - installer mapping to `.codex/github-settings/`
     - publish authorization, late-merge recovery, documentation, and complete mapping stabilization
+- Theme 17.1 installable publish workflow scripts
+    - canonical `kit/scripts/publish-changes.sh`
+    - canonical `kit/scripts/lib/workflow-common.sh`
+    - source-repository compatibility wrappers
+    - installer mapping to `.codex/scripts/`
+    - deterministic wrapper, direct implementation, and complete-copy tests
 
 
 In progress / next likely themes:
