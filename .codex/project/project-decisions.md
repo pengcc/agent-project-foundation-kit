@@ -829,3 +829,30 @@ This source repository dogfoods the same implementation through thin compatibili
 Downstream projects receive the mature state-aware publish workflow directly. Future behavior
 fixes can be made once in the installable implementation and validated through both wrapper and
 direct-execution tests.
+
+## Decision: Planning persistence must be truthful and execution remains separately approved
+
+### Status
+
+Accepted
+
+### Context
+
+Planning workflows normally persist multi-step plans under `dev_locals/plans/`, but Plan Mode or
+the active tool environment may prevent filesystem writes. A rendered plan can also be mistaken
+for execution approval when the UI offers an execution action.
+
+### Decision
+
+When plan persistence is blocked, planning workflows must not claim that the plan was saved. They
+must state that writing is blocked, show the exact intended path, and provide the complete plan
+content or a clear action for manually saving it or saving it later in a write-capable mode.
+
+Creating a plan does not approve execution. The default next step is review, revision, or saving
+the plan. Implementation requires explicit user approval after review, regardless of UI or tool
+execution affordances.
+
+### Impact
+
+Agents no longer depend on nonexistent plan files or imply that planning automatically advances
+into implementation. The same boundary applies in this source repository and downstream projects.

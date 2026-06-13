@@ -762,6 +762,34 @@ package.json
 docs/foundation-design-log.md
 ```
 
+## Maintenance Update: Plan Mode Persistence and Execution Boundary
+
+Accepted decisions:
+
+1. Multi-step planning workflows continue to use `dev_locals/plans/` for local plan persistence.
+2. If Plan Mode or the active tool environment blocks writes, agents must not report the plan as
+   saved.
+3. A blocked persistence report includes the exact intended path and the complete plan content or
+   a clear manual/save-later action.
+4. Plan creation is not execution approval.
+5. The default post-plan action is review, revision, or saving the plan.
+6. Execution requires explicit user approval after review, even when the UI or tool offers an
+   execution action.
+7. The source-repository and downstream AGENTS contracts use the same boundary.
+
+Resulting files / changes:
+
+```txt
+AGENTS.md
+kit/project-templates/AGENTS.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/project-architecture-plan/SKILL.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
+docs/foundation-design-log.md
+```
+
 ## Current Recommended Next Themes
 
 Priority order after Theme 17.1 stabilization:

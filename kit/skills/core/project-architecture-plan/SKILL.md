@@ -413,6 +413,17 @@ Plans are not continuously maintained after execution.
 
 Durable results belong in project memory and must be updated through `update-project-memory`.
 
+If Plan Mode or the active tool environment prevents writing:
+
+- do not claim that the architecture plan was saved
+- state clearly that file writing is blocked
+- show the exact intended `dev_locals/plans/` path
+- provide the complete plan content in the response, or a clear next action that preserves it
+- tell the user to save it manually or switch out of Plan Mode / approve a write-capable mode and
+  ask the agent to save it
+
+Do not silently continue as if the plan file exists.
+
 ## Saved Plan Structure
 
 Saved Project Architecture Plans must use this structure:
@@ -487,6 +498,11 @@ Do not write unconfirmed assumptions as facts.
 
 Creating a Project Architecture Plan is not execution approval.
 
-After producing a plan, wait for user approval before starting any feature-level plan or implementation.
+After producing a plan, default to review, revision, and saving if persistence was blocked. Do not
+automatically ask or nudge the user to begin feature planning or implementation.
+
+Feature planning and implementation require explicit user approval after review. If the UI or
+tool automatically offers execution, the agent's own output must still state that execution has
+not been approved.
 
 The next feature/theme should use `plan-with-context`.

@@ -111,6 +111,11 @@ dev_locals/
 
 `dev_locals/` is local-only and contains plans, handoffs, scratch notes, research notes, initialization reports, and theme zip files.
 
+Planning workflows save multi-step plans under `dev_locals/plans/` when writes are available. If
+Plan Mode or the active tool environment blocks writes, they must report the blocked write, show
+the exact intended path, and provide the plan content or a clear manual/save-later action. Plan
+creation defaults to review and never authorizes execution.
+
 The downstream `AGENTS.md` template defines generic role routing, working style, feature-branch publishing boundaries, final-report classification, and durable project-memory behavior using installed `.codex/` content.
 
 ## 6. Scripts and Commands

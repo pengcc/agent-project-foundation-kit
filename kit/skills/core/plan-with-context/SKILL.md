@@ -143,6 +143,17 @@ Plans are not continuously maintained after execution.
 
 Durable results belong in project memory and must be updated through `update-project-memory`.
 
+If Plan Mode or the active tool environment prevents writing:
+
+- do not claim that the plan was saved
+- state clearly that file writing is blocked
+- show the exact intended `dev_locals/plans/` path
+- provide the complete plan content in the response, or a clear next action that preserves it
+- tell the user to save it manually or switch out of Plan Mode / approve a write-capable mode and
+  ask the agent to save it
+
+Do not silently continue as if the plan file exists.
+
 ## Review Report Integration
 
 When planning from a `code-review` report:
@@ -203,10 +214,21 @@ Suggested next workflow: update-project-memory after execution.
 
 Creating a plan is not execution approval.
 
-After producing a plan, wait for user approval before running `execute-plan`.
+After producing a plan, the default next step is review:
+
+- review the plan
+- revise the plan
+- save the plan if persistence was blocked
+- explicitly approve execution later
+
+Do not automatically ask or nudge the user to execute the plan as the default next action.
 
 Do not implement the plan unless the user explicitly approves execution.
 
+If the UI or tool automatically offers execution, the agent's own output must still state that
+execution has not been approved.
+
 ## Output Expectations
 
-When responding, include workflow header, plan status, saved path if saved, recommendation, blocking questions if any, execution status, and next workflow.
+When responding, include workflow header, plan status, saved path only if it was actually saved,
+recommendation, blocking questions if any, execution status, and a review-oriented next action.
