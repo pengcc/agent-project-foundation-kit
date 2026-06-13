@@ -715,9 +715,12 @@ The script must:
 - require structured validation codes for normal and significant modes; significant updates cannot use `NOT_RUN`
 - treat no required checks as merge-eligible, pending checks as auto-merge eligible, and failing checks as merge-blocking
 - preserve GitHub CLI stderr and block merge when required-check verification itself fails
-- require typed manual-review approval before squash auto-merge or immediate squash merge
-- exit after enabling auto-merge without polling or refreshing the default branch
-- refresh the default branch only after a verified merge and explicit approval
+- automatically enable squash auto-merge for `SMALL_SAFE` after its typed classification
+- skip the PR completion mode and manual-review token for `SMALL_SAFE`
+- poll GitHub for bounded merge verification and refresh local `main` only after `mergedAt` is confirmed for `SMALL_SAFE`
+- require typed manual-review approval before squash auto-merge or immediate squash merge for `NORMAL` and `SIGNIFICANT`
+- exit after enabling auto-merge without polling or refreshing the default branch for `NORMAL` and `SIGNIFICANT`
+- refresh the default branch only after a verified merge and explicit approval outside the `SMALL_SAFE` automatic path
 - create a backup branch and require typed `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
 Use a private dependency-free `package.json` for short local commands. Use `publish:local`,
@@ -757,3 +760,43 @@ not include this repository's development paths, local commands, or GitHub prote
 
 Downstream projects receive a consistent operating contract while detailed procedures remain
 owned by their installed skills and rules.
+
+## Decision: GitHub repository settings ship as reusable kit artifacts
+
+### Status
+
+Accepted
+
+### Decision
+
+Store reusable GitHub setup artifacts under:
+
+```txt
+kit/github-settings/
+```
+
+Install them into downstream projects under:
+
+```txt
+.codex/github-settings/
+```
+
+Use separate mechanisms for the two GitHub settings surfaces:
+
+- rulesets use an importable JSON file that can be applied through the GitHub UI or rulesets REST API
+- General repository settings use a minimal repository REST API payload plus a human checklist
+
+The required General settings payload must change only settings required by the kit workflow:
+
+```txt
+allow_squash_merge = true
+allow_auto_merge = true
+```
+
+Optional project policies such as required approvals, required status checks, merge queue,
+automatic branch deletion, and bypass actors remain explicit project-specific decisions.
+
+### Impact
+
+New projects can reuse the repository protection baseline without copying settings manually.
+The installer includes the artifacts but does not apply externally visible GitHub settings.

@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 PUBLISHER="$REPO_ROOT/scripts/publish-local-change.sh"
+WORKFLOW_COMMON="$REPO_ROOT/scripts/lib/workflow-common.sh"
 TEST_ROOT=""
 PASS_COUNT=0
 
@@ -233,7 +234,7 @@ case "${1:-} ${2:-}" in
       exit 1
     fi
     if [[ -f "$state/no-checks" ]]; then
-      printf "no required checks reported on the 'main' branch\n" >&2
+      printf "no checks reported on the 'test-branch' branch\n" >&2
       exit 1
     fi
     if [[ -f "$state/check-pending" ]]; then
@@ -247,8 +248,15 @@ case "${1:-} ${2:-}" in
     printf 'pass|SUCCESS\n'
     ;;
   "pr merge")
+    if [[ -f "$state/merge-error" ]]; then
+      printf 'GraphQL: Pull request auto merge is not allowed for this repository\n' >&2
+      exit 1
+    fi
     if [[ "$*" == *"--auto"* ]]; then
       touch "$state/auto-merge"
+      if [[ ! -f "$state/auto-merge-stays-open" ]]; then
+        touch "$state/merged"
+      fi
     else
       touch "$state/merged"
     fi
@@ -280,6 +288,8 @@ run_case() {
   printf '%s' "$input" | env \
     PATH="$TEST_ROOT/fake-bin:$PATH" \
     NO_COLOR=1 \
+    SMALL_SAFE_MERGE_POLL_ATTEMPTS=2 \
+    SMALL_SAFE_MERGE_POLL_INTERVAL_SECONDS=0 \
     PUBLISH_TEST_STATE="$case_root/state" \
     PUBLISH_TEST_REPO="$case_root/repo" \
     bash "$PUBLISHER" "Test Theme 16.1 change" > "$output" 2>&1
@@ -293,9 +303,57 @@ run_case_without_message() {
   printf '%s' "$input" | env \
     PATH="$TEST_ROOT/fake-bin:$PATH" \
     NO_COLOR=1 \
+    SMALL_SAFE_MERGE_POLL_ATTEMPTS=2 \
+    SMALL_SAFE_MERGE_POLL_INTERVAL_SECONDS=0 \
     PUBLISH_TEST_STATE="$case_root/state" \
     PUBLISH_TEST_REPO="$case_root/repo" \
     bash "$PUBLISHER" > "$output" 2>&1
+}
+
+run_confirm_case() {
+  local input="$1"
+  local output="$2"
+
+  printf '%s' "$input" | env NO_COLOR=1 bash -c '
+    source "$1"
+    confirm "Test confirmation?"
+  ' _ "$WORKFLOW_COMMON" > "$output" 2>&1
+}
+
+test_confirm_accepts_supported_answers() {
+  local answer output
+  output="$TEST_ROOT/confirm-supported.log"
+
+  for answer in y Y yes YES; do
+    if ! run_confirm_case "$answer"$'\n' "$output"; then
+      log_fail "Supported yes answer was rejected: $answer"
+    fi
+  done
+
+  for answer in n N no NO ""; do
+    if run_confirm_case "$answer"$'\n' "$output"; then
+      log_fail "Supported no answer was accepted: ${answer:-<empty>}"
+    fi
+  done
+
+  log_pass "shared confirm accepts all supported yes/no values and default-no empty input"
+}
+
+test_confirm_reprompts_after_invalid_input() {
+  local output
+  output="$TEST_ROOT/confirm-invalid.log"
+
+  if ! run_confirm_case $'z\nyes\n' "$output"; then
+    log_fail "Valid yes answer after invalid input was rejected"
+  fi
+  assert_contains "$output" "Invalid input. Please type y or n."
+
+  if run_confirm_case $'z\nno\n' "$output"; then
+    log_fail "Valid no answer after invalid input was accepted"
+  fi
+  assert_contains "$output" "Invalid input. Please type y or n."
+
+  log_pass "shared confirm warns and re-prompts after invalid input"
 }
 
 test_prompted_commit_message() {
@@ -348,21 +406,29 @@ test_small_safe_preapproval() {
   case_root="$(new_case small-safe)"
   output="$case_root/output.log"
 
-  run_case "$case_root" $'SMALL_SAFE\n1\n' "$output"
+  run_case "$case_root" $'SMALL_SAFE\n' "$output"
 
   assert_contains "$output" "SMALL_SAFE accepted as explicit pre-approval."
   assert_contains "$output" "Manual pre-commit gates skipped"
   assert_contains "$output" "validation prompt skipped because the user typed SMALL_SAFE"
+  assert_contains "$output" "Skipping PR completion mode selection because SMALL_SAFE was pre-approved."
+  assert_contains "$output" "Manual PR review approval skipped because SMALL_SAFE was pre-approved."
+  assert_contains "$output" "Verified PR #42 merged into 'main'."
+  assert_not_contains "$output" "Choose the PR completion mode."
+  assert_not_contains "$output" "I HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE"
   assert_not_contains "$output" "Describe the validation completed"
   assert_contains "$case_root/state/commands.log" "SMALL_SAFE_PREAPPROVED - validation prompt skipped by explicit small-safe pre-approval."
   assert_contains "$case_root/state/commands.log" "git switch -c change/"
   assert_contains "$case_root/state/commands.log" "git add -A"
   assert_contains "$case_root/state/commands.log" "git push -u origin change/"
   assert_contains "$case_root/state/commands.log" "gh pr create"
+  assert_contains "$case_root/state/commands.log" "gh pr merge 42 --repo owner/repo --auto --squash --match-head-commit"
+  assert_contains "$case_root/state/commands.log" "git fetch origin main"
+  assert_contains "$case_root/state/commands.log" "git switch main"
+  assert_contains "$case_root/state/commands.log" "git pull --ff-only origin main"
   assert_not_contains "$case_root/state/commands.log" "git push -u origin main"
-  assert_not_contains "$case_root/state/commands.log" "gh pr merge"
 
-  log_pass "SMALL_SAFE is one typed pre-approval and still publishes through feature branch + PR"
+  log_pass "SMALL_SAFE pre-approval auto-merges through PR and refreshes main after verification"
 }
 
 test_normal_auto_merge() {
@@ -677,11 +743,53 @@ test_gh_check_error_prints_stderr_and_blocks_merge() {
     log_fail "Merge workflow unexpectedly continued after gh checks error"
   fi
 
-  assert_contains "$output" "[ERROR] Could not verify required checks with GitHub CLI."
+  assert_contains "$output" "[ERROR] GitHub CLI could not verify required checks for PR #42 (exit code 1)."
+  assert_contains "$output" "[ERROR] Command: gh pr checks 42 --repo owner/repo --required"
+  assert_contains "$output" "[ERROR] GitHub CLI error:"
   assert_contains "$output" "HTTP 403: Resource not accessible by integration"
   assert_not_contains "$case_root/state/commands.log" "gh pr merge"
 
   log_pass "GitHub CLI check errors preserve stderr and block merge"
+}
+
+test_auto_merge_setting_error_prints_stderr() {
+  local case_root output
+  case_root="$(new_case auto-merge-setting-error)"
+  output="$case_root/output.log"
+  touch "$case_root/state/merge-error"
+
+  if run_case "$case_root" $'SMALL_SAFE\n' "$output"; then
+    log_fail "Auto-merge unexpectedly succeeded after GitHub rejected the setting"
+  fi
+
+  assert_contains "$output" "[ERROR] GitHub rejected squash auto-merge for PR #42 (exit code 1)."
+  assert_contains "$output" "[ERROR] Command: gh pr merge 42 --repo owner/repo --auto --squash --match-head-commit test-head-sha"
+  assert_contains "$output" "[ERROR] GitHub CLI error:"
+  assert_contains "$output" "GraphQL: Pull request auto merge is not allowed for this repository"
+  assert_contains "$output" "[ERROR] Repository auto-merge is disabled."
+  assert_contains "$output" "Settings > General > Pull Requests > Allow auto-merge"
+  assert_not_contains "$output" "Choose the PR completion mode."
+  assert_not_contains "$output" "Enabled squash auto-merge"
+
+  log_pass "SMALL_SAFE preserves GitHub auto-merge setting errors and identifies the rejected mode"
+}
+
+test_small_safe_auto_merge_timeout_is_explicit() {
+  local case_root output
+  case_root="$(new_case small-safe-auto-timeout)"
+  output="$case_root/output.log"
+  touch "$case_root/state/auto-merge-stays-open"
+
+  if run_case "$case_root" $'SMALL_SAFE\n' "$output"; then
+    log_fail "SMALL_SAFE workflow unexpectedly succeeded before GitHub reported the merge"
+  fi
+
+  assert_contains "$output" "Auto-merge was enabled, but PR #42 was not merged after 2 checks."
+  assert_contains "$output" "Resolve pending checks, review threads, or repository rules"
+  assert_not_contains "$case_root/state/commands.log" "git switch main"
+  assert_not_contains "$case_root/state/commands.log" "git pull --ff-only origin main"
+
+  log_pass "SMALL_SAFE reports an explicit timeout and does not refresh main before verified merge"
 }
 
 test_artifacts_inside_repo() {
@@ -725,6 +833,8 @@ main() {
   bash -n "$PUBLISHER" "$REPO_ROOT/scripts/lib/workflow-common.sh"
   log_pass "publish workflow shell syntax is valid"
 
+  test_confirm_accepts_supported_answers
+  test_confirm_reprompts_after_invalid_input
   test_small_safe_preapproval
   test_prompted_commit_message
   test_empty_prompted_commit_message_blocks
@@ -746,6 +856,8 @@ main() {
   test_pending_checks_allow_auto_merge
   test_failing_checks_block_merge
   test_gh_check_error_prints_stderr_and_blocks_merge
+  test_auto_merge_setting_error_prints_stderr
+  test_small_safe_auto_merge_timeout_is_explicit
   test_merge_state_guards
   test_no_changes_is_noop
   test_artifacts_inside_repo

@@ -33,6 +33,7 @@ Completed themes:
 - Theme 16: `write-a-skill`
 - Theme 16.1: local publish workflow entrypoint and safety hardening
 - Theme 16.3: downstream AGENTS template operating contract
+- Theme 17: reusable GitHub repository settings package
 
 Current canonical core skill names:
 
@@ -60,7 +61,6 @@ Current canonical productivity skill names:
 
 Future planned themes:
 
-- GitHub ruleset / branch protection setup guidance
 - technology-specific skills
 - release workflow
 - deployment workflow
@@ -95,6 +95,7 @@ kit/project-templates/
 kit/skills/
 kit/prompts/
 kit/rules/
+kit/github-settings/
 docs/
 scripts/
 .codex/project/
@@ -178,11 +179,13 @@ Current `publish-local-change.sh` purpose:
 - skip the validation prompt for `SMALL_SAFE` and record its pre-approved validation statement
 - use structured validation codes for `NORMAL` and `SIGNIFICANT`, with `NOT_RUN` allowed only for `NORMAL`
 - distinguish no required checks, pending checks, failing checks, and GitHub CLI errors before merge
-- offer PR-only, squash auto-merge, or immediate squash merge modes
-- require typed manual-review approval before any scripted merge mode
+- automatically enable squash auto-merge for `SMALL_SAFE`, verify the remote merge, and refresh local `main`
+- skip the PR completion mode and manual-review token for `SMALL_SAFE` because its classification is the explicit pre-approval
+- offer PR-only, squash auto-merge, or immediate squash merge modes for `NORMAL` and `SIGNIFICANT`
+- require typed manual-review approval before scripted merge modes for `NORMAL` and `SIGNIFICANT`
 - never push directly to the default branch
-- exit after enabling auto-merge without polling or refreshing the default branch
-- refresh the default branch only after a verified merge and explicit approval
+- exit after enabling auto-merge without polling for `NORMAL` and `SIGNIFICANT`
+- refresh the default branch only after a verified merge; require explicit refresh approval outside the `SMALL_SAFE` automatic path
 - create a backup branch and require `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
 Current `test-publish-local-change.sh` purpose:
@@ -205,7 +208,7 @@ Current `install-foundation-kit.sh` purpose:
 - require `--apply` before writing files
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
 - map project templates to `.codex/project/`
-- map `kit/skills/`, `kit/prompts/`, and `kit/rules/` to `.codex/skills/`, `.codex/prompts/`, and `.codex/rules/`
+- map `kit/skills/`, `kit/prompts/`, `kit/rules/`, and `kit/github-settings/` to their matching `.codex/` directories
 - validate source and target path boundaries before copying
 - warn when target files already exist
 - never auto-merge existing files
@@ -216,6 +219,13 @@ Current `test-install-foundation-kit.sh` purpose:
 
 - run local validation for installer behavior
 - keep test artifacts under `dev_locals/test-runs/install-foundation-kit/`
+
+Current `kit/github-settings/` purpose:
+
+- provide a reusable default-branch ruleset JSON for GitHub UI or REST API import
+- provide a minimal General settings REST payload enabling squash merge and auto-merge
+- provide a checklist for UI/API application, verification, optional hardening, and rollback
+- install into downstream projects under `.codex/github-settings/`
 - verify explicit target requirement, dry-run, fresh install, mapping correctness, conflict detection, no silent overwrite, backup-before-replace, missing-source blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
 
 ## 7. Environment Variables
@@ -338,11 +348,13 @@ Completed:
     - hardened `scripts/publish-local-change.sh`
     - project-local workflow temporary files
     - deterministic `scripts/test-publish-local-change.sh`
+- Theme 17 reusable GitHub repository settings
+    - `kit/github-settings/`
+    - installer mapping to `.codex/github-settings/`
 
 
 In progress / next likely themes:
 
-- GitHub ruleset / branch protection setup guidance
 - technology-specific skills
 - release workflow
 - deployment workflow

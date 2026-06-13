@@ -524,10 +524,27 @@ create_or_update_pr() {
   show_publish_pr_info
 }
 
+report_github_cli_failure() {
+  local context="$1"
+  local status="$2"
+  local command="$3"
+  local details="$4"
+
+  error "$context (exit code $status)."
+  error "Command: $command"
+  if [[ -n "$details" ]]; then
+    error "GitHub CLI error:"
+    printf "%s\n" "$details" >&2
+  else
+    error "GitHub CLI returned no error details."
+  fi
+}
+
 check_pr_merge_readiness() {
   local mode="$1"
   local expected_head="$2"
-  local check_summary check_status check_error check_output_file check_error_file normalized_summary
+  local check_summary check_status check_error check_output_file check_error_file
+  local normalized_summary normalized_error
   local check_state check_bucket has_pending=0
   local -a check_states=()
 
@@ -569,16 +586,19 @@ check_pr_merge_readiness() {
   check_error="$(cat "$check_error_file" 2>/dev/null || true)"
   rm -f "$check_output_file" "$check_error_file"
   normalized_summary="$(printf "%s" "$check_summary" | tr '[:upper:]' '[:lower:]')"
+  normalized_error="$(printf "%s" "$check_error" | tr '[:upper:]' '[:lower:]')"
 
-  if [[ "$(printf "%s" "$check_error" | tr '[:upper:]' '[:lower:]')" == *"no required checks reported"* ]]; then
+  if [[ "$normalized_error" == *"no required checks reported"* ||
+        "$normalized_error" == *"no checks reported on the "* ]]; then
     check_summary=""
     normalized_summary=""
     check_status=0
   elif [[ "$check_status" != "0" && -z "$normalized_summary" ]]; then
-    error "Could not verify required checks with GitHub CLI."
-    if [[ -n "$check_error" ]]; then
-      printf "%s\n" "$check_error" >&2
-    fi
+    report_github_cli_failure \
+      "GitHub CLI could not verify required checks for PR #$PUBLISH_PR_NUMBER" \
+      "$check_status" \
+      "gh pr checks $PUBLISH_PR_NUMBER --repo $REPO_FULL_NAME --required" \
+      "$check_error"
     return 1
   fi
 
@@ -606,10 +626,11 @@ check_pr_merge_readiness() {
   fi
 
   if [[ "$check_status" != "0" && "$has_pending" == "0" ]]; then
-    error "Could not verify required checks with GitHub CLI."
-    if [[ -n "$check_error" ]]; then
-      printf "%s\n" "$check_error" >&2
-    fi
+    report_github_cli_failure \
+      "GitHub CLI could not verify required checks for PR #$PUBLISH_PR_NUMBER" \
+      "$check_status" \
+      "gh pr checks $PUBLISH_PR_NUMBER --repo $REPO_FULL_NAME --required" \
+      "$check_error"
     return 1
   fi
 
@@ -622,6 +643,58 @@ check_pr_merge_readiness() {
 
   if [[ "$mode" == "immediate" && "$PUBLISH_PR_MERGE_STATE" == "BLOCKED" ]]; then
     die "PR merge state is BLOCKED. Use auto-merge or PR-only mode."
+  fi
+}
+
+run_pr_merge_command() {
+  local mode="$1"
+  local head_sha="$2"
+  local merge_command merge_error merge_error_file merge_status mode_label normalized_merge_error
+  local -a merge_args
+
+  if [[ "$mode" == "auto" ]]; then
+    merge_args=(
+      "$PUBLISH_PR_NUMBER"
+      --repo "$REPO_FULL_NAME"
+      --auto
+      --squash
+      --match-head-commit "$head_sha"
+    )
+    mode_label="squash auto-merge"
+    merge_command="gh pr merge $PUBLISH_PR_NUMBER --repo $REPO_FULL_NAME --auto --squash --match-head-commit $head_sha"
+  else
+    merge_args=(
+      "$PUBLISH_PR_NUMBER"
+      --repo "$REPO_FULL_NAME"
+      --squash
+      --match-head-commit "$head_sha"
+    )
+    mode_label="immediate squash merge"
+    merge_command="gh pr merge $PUBLISH_PR_NUMBER --repo $REPO_FULL_NAME --squash --match-head-commit $head_sha"
+  fi
+
+  merge_error_file="$(make_workflow_temp_file "publish-merge-error")"
+
+  set +e
+  gh pr merge "${merge_args[@]}" 2>"$merge_error_file"
+  merge_status=$?
+  set -e
+
+  merge_error="$(cat "$merge_error_file" 2>/dev/null || true)"
+  rm -f "$merge_error_file"
+
+  if [[ "$merge_status" != "0" ]]; then
+    normalized_merge_error="$(printf "%s" "$merge_error" | tr '[:upper:]' '[:lower:]')"
+    report_github_cli_failure \
+      "GitHub rejected $mode_label for PR #$PUBLISH_PR_NUMBER" \
+      "$merge_status" \
+      "$merge_command" \
+      "$merge_error"
+    if [[ "$normalized_merge_error" == *"auto merge is not allowed"* ]]; then
+      error "Repository auto-merge is disabled."
+      error "Enable: GitHub repository Settings > General > Pull Requests > Allow auto-merge."
+    fi
+    return 1
   fi
 }
 
@@ -658,6 +731,56 @@ refresh_after_verified_merge() {
   fi
 }
 
+wait_for_small_safe_merge() {
+  local attempts="${SMALL_SAFE_MERGE_POLL_ATTEMPTS:-12}"
+  local interval_seconds="${SMALL_SAFE_MERGE_POLL_INTERVAL_SECONDS:-5}"
+  local attempt refreshed_info read_error read_error_file read_status
+
+  for ((attempt = 1; attempt <= attempts; attempt++)); do
+    read_error_file="$(make_workflow_temp_file "publish-merge-status-error")"
+
+    set +e
+    refreshed_info="$(read_publish_pr_info "$PUBLISH_PR_NUMBER" 2>"$read_error_file")"
+    read_status=$?
+    set -e
+
+    read_error="$(cat "$read_error_file" 2>/dev/null || true)"
+    rm -f "$read_error_file"
+
+    if [[ "$read_status" != "0" ]]; then
+      report_github_cli_failure \
+        "GitHub CLI could not verify auto-merge completion for PR #$PUBLISH_PR_NUMBER" \
+        "$read_status" \
+        "gh pr view $PUBLISH_PR_NUMBER --repo $REPO_FULL_NAME" \
+        "$read_error"
+      return 1
+    fi
+
+    parse_publish_pr_info "$refreshed_info"
+
+    if [[ -n "$PUBLISH_PR_MERGED_AT" && "$PUBLISH_PR_BASE" == "$DEFAULT_BRANCH" ]]; then
+      success "Verified PR #$PUBLISH_PR_NUMBER merged into '$DEFAULT_BRANCH'."
+      return
+    fi
+
+    if [[ "$PUBLISH_PR_STATE" != "OPEN" ]]; then
+      error "PR #$PUBLISH_PR_NUMBER is '$PUBLISH_PR_STATE' without a verified merge into '$DEFAULT_BRANCH'."
+      error "PR: $PUBLISH_PR_URL"
+      return 1
+    fi
+
+    if ((attempt < attempts)); then
+      info "Waiting for GitHub to complete auto-merge for PR #$PUBLISH_PR_NUMBER ($attempt/$attempts)."
+      sleep "$interval_seconds"
+    fi
+  done
+
+  error "Auto-merge was enabled, but PR #$PUBLISH_PR_NUMBER was not merged after $attempts checks."
+  error "PR state: $PUBLISH_PR_STATE | Merge state: $PUBLISH_PR_MERGE_STATE | URL: $PUBLISH_PR_URL"
+  error "Resolve pending checks, review threads, or repository rules, then re-run the publish workflow."
+  return 1
+}
+
 run_merge_flow() {
   local mode="$1"
   local head_sha fresh_info
@@ -667,23 +790,28 @@ run_merge_flow() {
   parse_publish_pr_info "$fresh_info"
   show_publish_pr_info
   check_pr_merge_readiness "$mode" "$head_sha"
-  confirm_manual_pr_review
+
+  if [[ "$PUBLISH_CLASSIFICATION" == "SMALL_SAFE" ]]; then
+    skipped "Manual PR review approval skipped because SMALL_SAFE was pre-approved."
+  else
+    confirm_manual_pr_review
+  fi
 
   if [[ "$mode" == "auto" ]]; then
-    gh pr merge "$PUBLISH_PR_NUMBER" \
-      --repo "$REPO_FULL_NAME" \
-      --auto \
-      --squash \
-      --match-head-commit "$head_sha"
+    run_pr_merge_command "$mode" "$head_sha"
     success "Enabled squash auto-merge for PR #$PUBLISH_PR_NUMBER."
+
+    if [[ "$PUBLISH_CLASSIFICATION" == "SMALL_SAFE" ]]; then
+      wait_for_small_safe_merge
+      refresh_default_branch
+      return
+    fi
+
     info "Exiting without polling for merge completion or refreshing local '$DEFAULT_BRANCH'."
     return
   fi
 
-  gh pr merge "$PUBLISH_PR_NUMBER" \
-    --repo "$REPO_FULL_NAME" \
-    --squash \
-    --match-head-commit "$head_sha"
+  run_pr_merge_command "$mode" "$head_sha"
   success "Squash merge command completed for PR #$PUBLISH_PR_NUMBER."
   refresh_after_verified_merge
 }
@@ -719,6 +847,17 @@ choose_pr_mode() {
       die "Invalid PR mode: $choice"
       ;;
   esac
+}
+
+complete_pr_workflow() {
+  if [[ "$PUBLISH_CLASSIFICATION" == "SMALL_SAFE" ]]; then
+    step "Complete SMALL_SAFE publish automatically."
+    info "Skipping PR completion mode selection because SMALL_SAFE was pre-approved."
+    run_merge_flow "auto"
+    return
+  fi
+
+  choose_pr_mode
 }
 
 main() {
@@ -760,7 +899,7 @@ main() {
   ensure_gh_publish_ready
   push_branch
   create_or_update_pr "$commit_message"
-  choose_pr_mode
+  complete_pr_workflow
 
   success "Local publish workflow complete."
 }

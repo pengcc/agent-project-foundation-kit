@@ -145,6 +145,7 @@ test_apply_fresh_install() {
   assert_dir_exists "$target/.codex/skills"
   assert_dir_exists "$target/.codex/prompts"
   assert_dir_exists "$target/.codex/rules"
+  assert_dir_exists "$target/.codex/github-settings"
 
   log_pass "--apply fresh install creates expected structure"
 }
@@ -159,19 +160,22 @@ test_install_mapping_dynamic_samples() {
   assert_same_file "$REPO_ROOT/kit/project-templates/project-decisions.md" "$target/.codex/project/project-decisions.md"
   assert_same_file "$REPO_ROOT/kit/project-templates/lessons-learned.md" "$target/.codex/project/lessons-learned.md"
 
-  local skill_file prompt_file rule_file
+  local skill_file prompt_file rule_file github_settings_file
   skill_file="$(pick_first_file "$REPO_ROOT/kit/skills")"
   prompt_file="$(pick_first_file "$REPO_ROOT/kit/prompts")"
   rule_file="$(pick_first_file "$REPO_ROOT/kit/rules")"
+  github_settings_file="$(pick_first_file "$REPO_ROOT/kit/github-settings")"
 
-  local skill_rel prompt_rel rule_rel
+  local skill_rel prompt_rel rule_rel github_settings_rel
   skill_rel="$(relative_to "$REPO_ROOT/kit/skills" "$skill_file")"
   prompt_rel="$(relative_to "$REPO_ROOT/kit/prompts" "$prompt_file")"
   rule_rel="$(relative_to "$REPO_ROOT/kit/rules" "$rule_file")"
+  github_settings_rel="$(relative_to "$REPO_ROOT/kit/github-settings" "$github_settings_file")"
 
   assert_same_file "$skill_file" "$target/.codex/skills/$skill_rel"
   assert_same_file "$prompt_file" "$target/.codex/prompts/$prompt_rel"
   assert_same_file "$rule_file" "$target/.codex/rules/$rule_rel"
+  assert_same_file "$github_settings_file" "$target/.codex/github-settings/$github_settings_rel"
 
   assert_file_not_exists "$target/scripts/install-foundation-kit.sh"
   assert_file_not_exists "$target/dev_locals"

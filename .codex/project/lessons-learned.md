@@ -213,7 +213,9 @@ Keep separate confirmations for:
 - post-merge verification / refresh
 - any destructive or history-changing operation
 
-Do not auto-merge PRs by default.
+Do not auto-merge PRs by default. A narrowly classified `SMALL_SAFE` path may use the typed
+classification as explicit authorization, but it must still merge through a PR, preserve GitHub
+rule enforcement, verify the remote merged state, and refresh the default branch only afterward.
 
 ## Lesson: Verify remote PR state instead of trusting manual confirmation
 
