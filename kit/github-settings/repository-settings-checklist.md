@@ -2,12 +2,19 @@
 
 Use this checklist after creating a GitHub repository and installing the foundation kit.
 
+The installer copies these files and does not apply GitHub settings. Applying settings is a
+separate, externally visible administrator action.
+
 ## Prerequisites
 
 - [ ] The repository has a default branch.
 - [ ] `gh auth status` succeeds.
 - [ ] The authenticated account has repository administration permission.
 - [ ] You reviewed the ruleset and General settings payload before applying them.
+
+GitHub ruleset availability and behavior can vary by account, organization policy, repository
+visibility, and plan. Confirm that rulesets are available for the target repository before relying
+on this package.
 
 ## 1. Apply General Pull Request Settings
 

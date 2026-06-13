@@ -16,5 +16,7 @@ Install location in downstream projects:
 .codex/github-settings/
 ```
 
+The installer copies these files and does not apply GitHub settings.
+
 Review the checklist before applying settings. Applying repository settings is externally
 visible and requires repository administration permission.

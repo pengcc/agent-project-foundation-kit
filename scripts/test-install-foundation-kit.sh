@@ -79,6 +79,13 @@ assert_same_file() {
   cmp -s "$expected" "$actual" || log_fail "Files differ: expected=$expected actual=$actual"
 }
 
+assert_same_tree() {
+  local expected="$1"
+  local actual="$2"
+  diff -qr "$expected" "$actual" >/dev/null ||
+    log_fail "Directory trees differ: expected=$expected actual=$actual"
+}
+
 assert_contains() {
   local path="$1"
   local pattern="$2"
@@ -160,27 +167,25 @@ test_install_mapping_dynamic_samples() {
   assert_same_file "$REPO_ROOT/kit/project-templates/project-decisions.md" "$target/.codex/project/project-decisions.md"
   assert_same_file "$REPO_ROOT/kit/project-templates/lessons-learned.md" "$target/.codex/project/lessons-learned.md"
 
-  local skill_file prompt_file rule_file github_settings_file
+  local skill_file prompt_file rule_file
   skill_file="$(pick_first_file "$REPO_ROOT/kit/skills")"
   prompt_file="$(pick_first_file "$REPO_ROOT/kit/prompts")"
   rule_file="$(pick_first_file "$REPO_ROOT/kit/rules")"
-  github_settings_file="$(pick_first_file "$REPO_ROOT/kit/github-settings")"
 
-  local skill_rel prompt_rel rule_rel github_settings_rel
+  local skill_rel prompt_rel rule_rel
   skill_rel="$(relative_to "$REPO_ROOT/kit/skills" "$skill_file")"
   prompt_rel="$(relative_to "$REPO_ROOT/kit/prompts" "$prompt_file")"
   rule_rel="$(relative_to "$REPO_ROOT/kit/rules" "$rule_file")"
-  github_settings_rel="$(relative_to "$REPO_ROOT/kit/github-settings" "$github_settings_file")"
 
   assert_same_file "$skill_file" "$target/.codex/skills/$skill_rel"
   assert_same_file "$prompt_file" "$target/.codex/prompts/$prompt_rel"
   assert_same_file "$rule_file" "$target/.codex/rules/$rule_rel"
-  assert_same_file "$github_settings_file" "$target/.codex/github-settings/$github_settings_rel"
+  assert_same_tree "$REPO_ROOT/kit/github-settings" "$target/.codex/github-settings"
 
   assert_file_not_exists "$target/scripts/install-foundation-kit.sh"
   assert_file_not_exists "$target/dev_locals"
 
-  log_pass "install mapping dynamically verifies real kit samples and excludes scripts/dev_locals"
+  log_pass "install mapping verifies real kit samples, the complete GitHub settings tree, and exclusions"
 }
 
 test_conflict_detection() {

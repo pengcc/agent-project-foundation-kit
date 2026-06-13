@@ -9,6 +9,7 @@ This repository uses a private, dependency-free `package.json` as a short comman
 ```bash
 pnpm publish:local
 pnpm publish:local "Commit message"
+pnpm publish:local "Commit message" "PR title"
 pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
 pnpm test:publish
@@ -19,12 +20,20 @@ pnpm check
 `main`. At startup it checks default-branch freshness, lists repository-level open PRs, detects
 the current-branch PR, and inspects uncommitted changes and unpushed commits.
 
-The command asks for a commit message only when uncommitted changes need a commit. If the
-branch already has unpushed commits, it uses the latest commit subject as the default PR title.
-Validation is recorded with structured codes based on update classification. The workflow then
-automatically squash-merges `SMALL_SAFE` updates after the typed classification, verifies the
-remote merge, and refreshes local `main`. `NORMAL` and `SIGNIFICANT` updates continue to offer
-PR-only, squash auto-merge, or immediate squash merge modes with explicit review gates.
+The command asks for a commit message only when uncommitted changes need a commit. If the branch
+already has unpushed commits, it uses the latest commit subject as the default PR title. A second
+argument can override the PR title.
+
+Before update classification, the workflow stages uncommitted changes, displays the complete
+relevant scope, and requires scope confirmation. It then shows recommended update type, commit
+message, and PR title, followed by a numbered Small safe / Normal / Significant selection.
+Validation is recorded with structured codes based on update classification. `SMALL_SAFE`
+automatically enables squash auto-merge only after scope confirmation, verifies the remote merge,
+and refreshes local `main`. `NORMAL` and `SIGNIFICANT` continue to offer PR-only, squash
+auto-merge, or immediate squash merge modes with explicit review gates.
+
+If a previously timed-out PR merges later, rerunning from its clean feature branch detects the
+verified merge and offers a safe refresh of local `main`.
 
 ### GitHub Settings for SMALL_SAFE Auto-Merge
 

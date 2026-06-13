@@ -58,9 +58,13 @@ Use the relevant kit source skills as workflow guidance. Commonly relevant skill
 
 Before editing files:
 
-1. Start from an up-to-date `main`.
-2. Create a new feature branch.
-3. Make updates on the feature branch.
+1. Check the current branch, uncommitted changes, unpushed commits, the current-branch PR, and
+   repository-level open PRs.
+2. If a non-default branch has unfinished work, stop before starting an unrelated task and ask
+   whether to finish, merge, or switch branches.
+3. Start new work from an up-to-date `main`.
+4. Create a new feature branch.
+5. Make updates on the feature branch.
 
 Do not work directly on `main` except for reading or explicitly approved maintenance.
 
@@ -82,6 +86,9 @@ Every implementation final report must classify the update as one of:
 
 The final report must include:
 
+- recommended update type
+- recommended commit message
+- recommended PR title
 - files changed
 - why the change was made
 - impact / risk level

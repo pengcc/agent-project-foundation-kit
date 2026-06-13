@@ -11,6 +11,7 @@ source "$SCRIPT_DIR/lib/workflow-common.sh"
 # Usage:
 #   bash scripts/publish-local-change.sh
 #   bash scripts/publish-local-change.sh "Commit message"
+#   bash scripts/publish-local-change.sh "Commit message" "PR title"
 #
 # Optional environment variables:
 #   DEFAULT_BRANCH=main
@@ -71,14 +72,23 @@ branch_has_unpushed_commits() {
   local branch upstream
   branch="$(current_branch)"
 
-  if ! upstream="$(git rev-parse --abbrev-ref --symbolic-full-name "${branch}@{upstream}" 2>/dev/null)"; then
-    upstream="origin/$DEFAULT_BRANCH"
-    if ! git rev-parse --verify "$upstream" >/dev/null 2>&1; then
-      return 0
-    fi
-  fi
+  upstream="$(publish_comparison_ref)"
 
   [[ -n "$(git log --oneline "$upstream..$branch" 2>/dev/null)" ]]
+}
+
+publish_comparison_ref() {
+  local branch upstream
+  branch="$(current_branch)"
+
+  if upstream="$(git rev-parse --abbrev-ref --symbolic-full-name "${branch}@{upstream}" 2>/dev/null)"; then
+    printf "%s" "$upstream"
+    return
+  fi
+
+  upstream="origin/$DEFAULT_BRANCH"
+  git rev-parse --verify "$upstream" >/dev/null 2>&1 || return 1
+  printf "%s" "$upstream"
 }
 
 latest_commit_subject() {
@@ -105,10 +115,10 @@ inspect_default_branch_freshness() {
 
 classification_label() {
   case "$PUBLISH_CLASSIFICATION" in
-    SMALL_SAFE) printf "small safe update" ;;
-    NORMAL) printf "normal update" ;;
-    SIGNIFICANT) printf "significant / high-impact update" ;;
-    *) printf "unknown" ;;
+    SMALL_SAFE) printf "Small safe" ;;
+    NORMAL) printf "Normal" ;;
+    SIGNIFICANT) printf "Significant" ;;
+    *) printf "Unknown" ;;
   esac
 }
 
@@ -116,23 +126,26 @@ classify_update() {
   local answer
 
   step "Classify update risk."
-  printf "  SMALL_SAFE  Small, well-understood, low-impact update\n"
-  printf "  NORMAL      Normal theme or maintenance update\n"
-  printf "  SIGNIFICANT Significant or high-impact update\n"
-  prompt "Type SMALL_SAFE, NORMAL, or SIGNIFICANT: "
-  read -r answer
+  printf "  1) Small safe\n"
+  printf "  2) Normal\n"
+  printf "  3) Significant\n"
 
-  case "$answer" in
-    SMALL_SAFE|NORMAL|SIGNIFICANT)
-      PUBLISH_CLASSIFICATION="$answer"
-      ;;
-    *)
-      die "Invalid classification. Use SMALL_SAFE, NORMAL, or SIGNIFICANT."
-      ;;
-  esac
+  while true; do
+    prompt "Choose update type [1-3] (recommended: 2, Normal): "
+    if ! read -r answer; then
+      die "Update type selection is required."
+    fi
+
+    case "$answer" in
+      1|SMALL_SAFE) PUBLISH_CLASSIFICATION="SMALL_SAFE"; break ;;
+      2|NORMAL|"") PUBLISH_CLASSIFICATION="NORMAL"; break ;;
+      3|SIGNIFICANT) PUBLISH_CLASSIFICATION="SIGNIFICANT"; break ;;
+      *) warn "Invalid input. Please choose 1, 2, or 3." ;;
+    esac
+  done
 
   if [[ "$PUBLISH_CLASSIFICATION" == "SMALL_SAFE" ]]; then
-    success "SMALL_SAFE accepted as explicit pre-approval."
+    success "Small safe accepted as explicit post-scope authorization."
     warn "This enables the automatic safe publish path through a feature branch and PR."
     warn "It never permits a direct push to '$DEFAULT_BRANCH'."
   else
@@ -166,6 +179,34 @@ show_final_staged_summary() {
   step "Final staged commit contents after 'git add -A'."
   show_section_or_skipped "Staged files:" git --no-pager diff --cached --name-status
   show_section_or_skipped "Staged diff stat:" git --no-pager diff --cached --stat
+  show_section_or_skipped "Staged diff:" git --no-pager diff --cached
+}
+
+show_unpushed_commit_summary() {
+  local comparison_ref
+  comparison_ref="$(publish_comparison_ref)"
+
+  step "Review existing unpushed commits."
+  info "Comparison base: $comparison_ref"
+  show_section_or_skipped "Commits to publish:" git --no-pager log --oneline "$comparison_ref..HEAD"
+  show_section_or_skipped "Changed files:" git --no-pager diff --name-status "$comparison_ref...HEAD"
+  show_section_or_skipped "Diff stat:" git --no-pager diff --stat "$comparison_ref...HEAD"
+  show_section_or_skipped "Diff:" git --no-pager diff "$comparison_ref...HEAD"
+}
+
+show_publish_recommendations() {
+  local commit_message="$1"
+  local pr_title="$2"
+
+  step "Recommended publish context."
+  info "Recommended update type: Normal"
+  if [[ "$HAS_UNCOMMITTED_CHANGES" == "1" ]]; then
+    info "Recommended commit message: $commit_message"
+  else
+    info "Recommended commit message: no new commit needed"
+  fi
+  info "Recommended PR title: $pr_title"
+  info "Override the commit message with the first command argument and PR title with the second."
 }
 
 list_repository_open_prs() {
@@ -175,6 +216,19 @@ list_repository_open_prs() {
     --limit 100 \
     --json number,title,headRefName,baseRefName,url \
     --jq '.[] | "#\(.number) | \(.title) | \(.headRefName) -> \(.baseRefName) | \(.url)"'
+}
+
+detect_current_branch_pr_number() {
+  local branch
+  branch="$(current_branch)"
+
+  gh pr list \
+    --repo "$REPO_FULL_NAME" \
+    --state all \
+    --head "$branch" \
+    --limit 1 \
+    --json number \
+    --jq '.[0].number // empty'
 }
 
 detect_current_branch_open_pr_number() {
@@ -191,6 +245,26 @@ detect_current_branch_open_pr_number() {
 }
 
 refresh_current_branch_pr_state() {
+  local current_pr_number pr_info
+
+  CURRENT_BRANCH_PR_EXISTS=0
+  if ! current_pr_number="$(detect_current_branch_pr_number)"; then
+    return 1
+  fi
+
+  if [[ -z "$current_pr_number" ]]; then
+    return 0
+  fi
+
+  if ! pr_info="$(read_publish_pr_info "$current_pr_number")"; then
+    return 1
+  fi
+
+  parse_publish_pr_info "$pr_info"
+  CURRENT_BRANCH_PR_EXISTS=1
+}
+
+refresh_current_branch_open_pr_state() {
   local current_pr_number pr_info
 
   CURRENT_BRANCH_PR_EXISTS=0
@@ -268,7 +342,7 @@ inspect_github_pr_state() {
     warn "Could not inspect the current branch for an existing pull request."
     confirm_github_preflight_uncertainty
   elif [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" ]]; then
-    warn "Current branch already has an open pull request."
+    warn "Current branch already has a pull request."
     show_publish_pr_info
   else
     info "No open pull request detected for current branch '$(current_branch)'."
@@ -286,17 +360,27 @@ inspect_publish_state() {
     info "Uncommitted changes: no"
   fi
 
-  if branch_has_unpushed_commits; then
+  if [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" &&
+        "$PUBLISH_PR_HEAD_OID" == "$(git rev-parse HEAD)" ]]; then
+    info "Unpushed commits: no (local HEAD matches PR head)"
+  elif branch_has_unpushed_commits; then
     HAS_UNPUSHED_COMMITS=1
     info "Unpushed commits: yes"
   else
     info "Unpushed commits: no"
   fi
 
+  if [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" &&
+        "$PUBLISH_PR_STATE" != "OPEN" &&
+        ( "$HAS_UNCOMMITTED_CHANGES" == "1" || "$HAS_UNPUSHED_COMMITS" == "1" ) ]]; then
+    info "Ignoring prior $PUBLISH_PR_STATE PR #$PUBLISH_PR_NUMBER because new local work is pending."
+    CURRENT_BRANCH_PR_EXISTS=0
+  fi
+
   if [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" ]]; then
-    info "Current-branch open PR: #$PUBLISH_PR_NUMBER"
+    info "Current-branch PR: #$PUBLISH_PR_NUMBER ($PUBLISH_PR_STATE)"
   else
-    info "Current-branch open PR: none detected"
+    info "Current-branch PR: none detected"
   fi
 }
 
@@ -324,23 +408,30 @@ ensure_feature_branch() {
   success "Switched to feature branch '$target_branch'."
 }
 
-confirm_plan_consistency() {
-  case "$PUBLISH_CLASSIFICATION" in
-    SMALL_SAFE)
-      skipped "Manual pre-commit gates skipped because the update was pre-approved as SMALL_SAFE."
-      ;;
-    NORMAL)
-      if ! confirm "Do the staged changes match the intended plan and scope?"; then
-        die "Stopped because plan consistency was not confirmed."
-      fi
-      ;;
-    SIGNIFICANT)
-      danger "High-impact updates require explicit plan consistency confirmation."
-      if ! confirm "Do the staged changes match the reviewed plan and intended scope?"; then
-        die "Stopped because high-impact plan consistency was not confirmed."
-      fi
-      ;;
-  esac
+confirm_scope_consistency() {
+  if ! confirm "Does the complete scope shown above match the intended plan and task boundary?"; then
+    die "Stopped because scope consistency was not confirmed."
+  fi
+}
+
+prepare_and_confirm_publish_scope() {
+  if [[ "$HAS_UNCOMMITTED_CHANGES" == "1" ]]; then
+    show_change_summary
+    git add -A
+    show_final_staged_summary
+  fi
+
+  if [[ "$HAS_UNPUSHED_COMMITS" == "1" ]]; then
+    show_unpushed_commit_summary
+  fi
+
+  if [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" ]]; then
+    step "Review current-branch PR context."
+    show_publish_pr_info
+    info "Review URL: $PUBLISH_PR_URL"
+  fi
+
+  confirm_scope_consistency
 }
 
 commit_changes_if_needed() {
@@ -348,13 +439,9 @@ commit_changes_if_needed() {
 
   if ! has_uncommitted_changes; then
     info "No uncommitted changes; publishing existing local commits."
-    confirm_plan_consistency
     return
   fi
 
-  git add -A
-  show_final_staged_summary
-  confirm_plan_consistency
   git commit -m "$commit_message"
   success "Committed all staged, unstaged, and untracked changes."
 }
@@ -363,8 +450,8 @@ capture_validation_statement() {
   local validation_code
 
   if [[ "$PUBLISH_CLASSIFICATION" == "SMALL_SAFE" ]]; then
-    VALIDATION_STATEMENT="SMALL_SAFE_PREAPPROVED - validation prompt skipped by explicit small-safe pre-approval."
-    skipped "Local/manual validation prompt skipped because the user typed SMALL_SAFE."
+    VALIDATION_STATEMENT="SMALL_SAFE_SCOPE_CONFIRMED - complete scope confirmed; validation prompt skipped by Small safe authorization."
+    skipped "Local/manual validation prompt skipped because Small safe was authorized after scope confirmation."
     return
   fi
 
@@ -488,7 +575,7 @@ show_publish_pr_info() {
 }
 
 create_or_update_pr() {
-  local commit_message="$1"
+  local pr_title="$1"
   local branch head_sha body pr_info
   branch="$(current_branch)"
   head_sha="$(git rev-parse HEAD)"
@@ -496,7 +583,7 @@ create_or_update_pr() {
 
   step "Create or update the pull request."
 
-  if ! refresh_current_branch_pr_state; then
+  if ! refresh_current_branch_open_pr_state; then
     die "Could not verify whether the current branch already has an open PR. Refusing to create a possible duplicate."
   fi
 
@@ -514,7 +601,7 @@ create_or_update_pr() {
       --repo "$REPO_FULL_NAME" \
       --base "$DEFAULT_BRANCH" \
       --head "$branch" \
-      --title "$commit_message" \
+      --title "$pr_title" \
       --body "$body" >/dev/null
     success "Created pull request for '$branch'."
   fi
@@ -522,6 +609,64 @@ create_or_update_pr() {
   pr_info="$(read_publish_pr_info "$branch")"
   parse_publish_pr_info "$pr_info"
   show_publish_pr_info
+}
+
+handle_clean_existing_pr() {
+  local choice refreshed_info
+
+  if [[ -n "$PUBLISH_PR_MERGED_AT" && "$PUBLISH_PR_BASE" == "$DEFAULT_BRANCH" ]]; then
+    success "PR #$PUBLISH_PR_NUMBER is verified merged into '$DEFAULT_BRANCH'."
+    if confirm "Switch to and refresh '$DEFAULT_BRANCH' now?"; then
+      refresh_default_branch
+    else
+      skipped "Default branch refresh was not approved."
+    fi
+    return
+  fi
+
+  if [[ "$PUBLISH_PR_STATE" != "OPEN" ]]; then
+    warn "PR #$PUBLISH_PR_NUMBER is '$PUBLISH_PR_STATE' without a verified merge into '$DEFAULT_BRANCH'."
+    info "PR: $PUBLISH_PR_URL"
+    return
+  fi
+
+  while true; do
+    warn "PR #$PUBLISH_PR_NUMBER is still open and there are no local changes or unpushed commits."
+    info "PR: $PUBLISH_PR_URL"
+    printf "  1) Re-check PR state\n"
+    printf "  2) Open PR in browser\n"
+    printf "  3) Exit\n"
+    prompt "Choose [1-3]: "
+    if ! read -r choice; then
+      return
+    fi
+
+    case "$choice" in
+      1)
+        refreshed_info="$(read_publish_pr_info "$PUBLISH_PR_NUMBER")"
+        parse_publish_pr_info "$refreshed_info"
+        if [[ -n "$PUBLISH_PR_MERGED_AT" && "$PUBLISH_PR_BASE" == "$DEFAULT_BRANCH" ]]; then
+          success "PR #$PUBLISH_PR_NUMBER is verified merged into '$DEFAULT_BRANCH'."
+          if confirm "Switch to and refresh '$DEFAULT_BRANCH' now?"; then
+            refresh_default_branch
+          else
+            skipped "Default branch refresh was not approved."
+          fi
+          return
+        fi
+        ;;
+      2)
+        gh pr view "$PUBLISH_PR_NUMBER" --repo "$REPO_FULL_NAME" --web
+        ;;
+      3|"")
+        info "Leaving PR #$PUBLISH_PR_NUMBER open without changing local '$DEFAULT_BRANCH'."
+        return
+        ;;
+      *)
+        warn "Invalid input. Please choose 1, 2, or 3."
+        ;;
+    esac
+  done
 }
 
 report_github_cli_failure() {
@@ -861,7 +1006,7 @@ complete_pr_workflow() {
 }
 
 main() {
-  local commit_message=""
+  local commit_message="" pr_title=""
 
   require_command git
   ensure_git_repo
@@ -877,6 +1022,11 @@ main() {
     return
   fi
 
+  if [[ "$HAS_UNCOMMITTED_CHANGES" == "0" && "$HAS_UNPUSHED_COMMITS" == "0" && "$CURRENT_BRANCH_PR_EXISTS" == "1" ]]; then
+    handle_clean_existing_pr
+    return
+  fi
+
   if [[ "$HAS_UNCOMMITTED_CHANGES" == "1" ]]; then
     commit_message="$(resolve_commit_message "${1:-}")"
   elif [[ "$CURRENT_BRANCH_PR_EXISTS" == "1" && -n "${PUBLISH_PR_TITLE:-}" ]]; then
@@ -887,18 +1037,17 @@ main() {
     info "Using latest commit subject as PR title: $commit_message"
   fi
 
+  pr_title="${2:-$commit_message}"
+  prepare_and_confirm_publish_scope
+  show_publish_recommendations "$commit_message" "$pr_title"
   classify_update
-
-  if [[ "$HAS_UNCOMMITTED_CHANGES" == "1" ]]; then
-    show_change_summary
-  fi
 
   ensure_feature_branch "$commit_message"
   commit_changes_if_needed "$commit_message"
   capture_validation_statement
   ensure_gh_publish_ready
   push_branch
-  create_or_update_pr "$commit_message"
+  create_or_update_pr "$pr_title"
   complete_pr_workflow
 
   success "Local publish workflow complete."

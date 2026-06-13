@@ -688,8 +688,6 @@ write-a-skill
 
 Future capability growth can add new skills using a consistent project-specific authoring workflow.
 
-The next recommended theme area can move from productivity skill completion to GitHub ruleset / branch protection setup guidance.
-
 ## Decision: Local publish automation uses classified feature-branch and PR flows
 
 ### Status
@@ -703,21 +701,25 @@ Theme 16.1 hardens `scripts/publish-local-change.sh` as a repository-local devel
 The script must:
 
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
-- treat typed `SMALL_SAFE` as the only pre-commit pre-approval and clearly report skipped gates
+- use a numbered Small safe / Normal / Significant selection with invalid-input re-prompting
+- preserve stable internal classification codes while using concise user-facing labels
 - inspect local, branch, and PR state before requesting publish inputs
 - prompt for a non-empty commit message only when uncommitted changes require a commit
 - use the latest commit subject for the PR title when only unpushed commits need publishing
+- show recommended update type, commit message, and PR title while allowing explicit overrides
 - list repository-level open PRs and require acknowledgement without treating their existence as an automatic block
 - update an existing current-branch PR instead of creating a duplicate
 - always publish through a feature branch and PR, never by direct default-branch push
-- show the complete staged, unstaged, and untracked change scope before commit
-- record the fixed `SMALL_SAFE_PREAPPROVED` validation statement without prompting in small-safe mode
+- show and confirm the complete relevant scope before classification can authorize publishing
+- show final staged scope for uncommitted changes and commit/diff scope for existing unpushed commits
+- record the fixed `SMALL_SAFE_SCOPE_CONFIRMED` validation statement without prompting in small-safe mode
 - require structured validation codes for normal and significant modes; significant updates cannot use `NOT_RUN`
 - treat no required checks as merge-eligible, pending checks as auto-merge eligible, and failing checks as merge-blocking
 - preserve GitHub CLI stderr and block merge when required-check verification itself fails
-- automatically enable squash auto-merge for `SMALL_SAFE` after its typed classification
+- automatically enable squash auto-merge for `SMALL_SAFE` only after complete scope confirmation
 - skip the PR completion mode and manual-review token for `SMALL_SAFE`
 - poll GitHub for bounded merge verification and refresh local `main` only after `mergedAt` is confirmed for `SMALL_SAFE`
+- recover a clean current-branch PR that merges after polling timeout, while requiring verified `mergedAt` and default-branch base before refresh
 - require typed manual-review approval before squash auto-merge or immediate squash merge for `NORMAL` and `SIGNIFICANT`
 - exit after enabling auto-merge without polling or refreshing the default branch for `NORMAL` and `SIGNIFICANT`
 - refresh the default branch only after a verified merge and explicit approval outside the `SMALL_SAFE` automatic path
@@ -726,8 +728,8 @@ The script must:
 Use a private dependency-free `package.json` for short local commands. Use `publish:local`,
 not `publish`, and do not add dependencies or a lockfile.
 
-This decision does not redesign the installable `publish-current-branch` skill or GitHub
-ruleset / branch protection guidance.
+Task-start guidance must also inspect current branch work and pause before mixing an unrelated task
+into a non-default branch with uncommitted changes, unpushed commits, or an open PR.
 
 ## Decision: Downstream AGENTS defines a generic operating contract
 

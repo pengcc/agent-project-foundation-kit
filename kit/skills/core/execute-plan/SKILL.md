@@ -190,6 +190,9 @@ Execution Summary:
 - Plan:
 - Execution mode:
 - Completed:
+- Recommended update type:
+- Recommended commit message:
+- Recommended PR title:
 - Changed files:
 - Validation:
 - Commit:
