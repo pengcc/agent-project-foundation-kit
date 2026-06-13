@@ -802,3 +802,30 @@ automatic branch deletion, and bypass actors remain explicit project-specific de
 
 New projects can reuse the repository protection baseline without copying settings manually.
 The installer includes the artifacts but does not apply externally visible GitHub settings.
+
+## Decision: Publish strategy and mechanics use separate installable layers
+
+### Status
+
+Accepted
+
+### Decision
+
+Theme 17.1 makes `kit/scripts/publish-changes.sh` the canonical mechanical publish implementation
+and `kit/scripts/lib/workflow-common.sh` its shared helper.
+
+The installer copies the complete `kit/scripts/` tree to `.codex/scripts/`. It does not create or
+modify a downstream `package.json`.
+
+The `publish-current-branch` skill owns strategy, role routing, scope, authorization, and final
+reporting. Agents prefer the installed script for Git and GitHub mechanics and use the skill's
+manual procedure only when the script is unavailable.
+
+This source repository dogfoods the same implementation through thin compatibility wrappers under
+`scripts/`, preserving `pnpm publish:local` without maintaining a second publish implementation.
+
+### Impact
+
+Downstream projects receive the mature state-aware publish workflow directly. Future behavior
+fixes can be made once in the installable implementation and validated through both wrapper and
+direct-execution tests.

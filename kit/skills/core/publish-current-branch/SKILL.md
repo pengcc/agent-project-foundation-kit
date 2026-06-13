@@ -88,6 +88,30 @@ release/deploy = future workflow, not v0.1 publish-current-branch
 
 If new implementation work is needed, stop and recommend `execute-plan`.
 
+## Mechanical Executor
+
+When `.codex/scripts/publish-changes.sh` exists, use it as the preferred mechanical executor:
+
+```bash
+bash .codex/scripts/publish-changes.sh
+bash .codex/scripts/publish-changes.sh "Commit message"
+bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
+```
+
+The skill remains responsible for publish judgment, role routing, scope, authorization, and final
+reporting. The script owns repeatable Git and GitHub mechanics, including state-aware startup,
+feature-branch creation, commit-message prompting when needed, PR creation or update, classified
+merge handling, required-check inspection, and verified default-branch refresh.
+
+Agents should prefer invoking the installed script instead of reproducing its Git and GitHub
+command sequence. Users may also run the same command directly.
+
+The installer copies the script into `.codex/scripts/`; it does not add or modify a downstream
+`package.json`. Projects may add their own short command alias if desired.
+
+If the installed script is unavailable, use the manual workflow in this skill as the fallback.
+Do not weaken any confirmation, branch, check, review, merge, or refresh boundary in the fallback.
+
 ## Supported Triggers
 
 The short command is enough:
@@ -139,9 +163,9 @@ Out of scope:
 - implementation changes
 
 Stop conditions:
-- current branch is main/master
-- dirty working tree
-- no local commit
+- direct publishing from main/master without feature-branch creation
+- uncommitted scope that has not been displayed and explicitly confirmed
+- no uncommitted changes or local commits to publish
 - missing remote origin
 - missing GitHub auth
 - GitHub repo or PR state unclear
@@ -178,11 +202,14 @@ main
 master
 ```
 
-pause by default.
+do not push it directly.
 
 Do not push directly to main/master.
 
-v0.1 `publish-current-branch` assumes:
+The installed publish script may start on the default branch when local changes need publishing.
+It must create a feature branch before committing or pushing.
+
+The manual fallback assumes:
 
 ```txt
 feature branch -> push -> PR -> merge
@@ -194,11 +221,14 @@ Prefer recommending a feature branch and PR workflow.
 
 ## Working Tree Boundary
 
-If the working tree is dirty, pause.
+When the installed publish script is available, a dirty working tree is allowed only as the
+explicit scope being published. The script must stage and display the complete scope, require
+scope confirmation, create or use a feature branch, and prompt for a commit message only when a
+new commit is needed.
 
-Do not silently include uncommitted changes in publishing.
+Do not silently include uncommitted changes.
 
-Report:
+When using the manual fallback, pause on a dirty working tree and report:
 
 ```txt
 Publish paused.
@@ -206,7 +236,8 @@ Reason: working tree is not clean.
 Suggested workflow: execute-plan
 ```
 
-If there are no local commits to publish, pause and report that there is nothing to publish.
+If there are neither uncommitted changes nor local commits to publish, pause and report that there
+is nothing to publish.
 
 ## GitHub Repo Settings Boundary
 
@@ -258,6 +289,11 @@ Never bypass branch protection, checks, reviews, or rulesets.
 ## Merge Policy
 
 Default behavior does not immediately merge.
+
+The installed script's `SMALL_SAFE` selection is an exception only after it displays the complete
+scope and the user confirms that scope. That selection authorizes its bounded squash auto-merge
+and verified default-branch refresh flow. `NORMAL` and `SIGNIFICANT` keep their explicit completion
+mode and typed review boundaries.
 
 Allowed default actions:
 

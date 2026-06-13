@@ -7,6 +7,6 @@
     "apply-theme": "bash scripts/apply-theme-zip.sh",
     "test:install": "bash scripts/test-install-foundation-kit.sh",
     "test:publish": "bash scripts/test-publish-local-change.sh",
-    "check": "bash -n scripts/*.sh scripts/lib/*.sh && bash scripts/test-install-foundation-kit.sh && bash scripts/test-publish-local-change.sh && git diff --check"
+    "check": "bash -n scripts/*.sh scripts/lib/*.sh kit/scripts/*.sh kit/scripts/lib/*.sh && bash scripts/test-install-foundation-kit.sh && bash scripts/test-publish-local-change.sh && git diff --check"
   }
 }
