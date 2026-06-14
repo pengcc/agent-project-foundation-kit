@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { parseCliOptions } from '../../kit/scripts/publish-changes/cli-options.mjs';
 import {
   DEFAULT_POLICY,
@@ -34,6 +35,10 @@ import {
   confirmWithRetry,
 } from '../../kit/scripts/publish-changes/prompts.mjs';
 
+const packageJson = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+);
+
 describe('CLI options', () => {
   it('requires the declared Node 24 runtime', () => {
     expect(() => assertSupportedRuntime('22.21.1')).toThrow('Node.js 24 or newer is required');
@@ -62,6 +67,38 @@ describe('CLI options', () => {
 
   it('rejects shell-style unknown options', () => {
     expect(() => parseCliOptions(['--execute=rm -rf /'])).toThrow('Unknown option');
+  });
+
+  it('recognizes help without requiring publish arguments', () => {
+    expect(parseCliOptions(['--help'])).toMatchObject({
+      commitMessage: '',
+      prTitle: '',
+      help: true,
+    });
+  });
+});
+
+describe('source repository package scripts', () => {
+  it('uses Node as the default publish command and retains explicit aliases', () => {
+    expect(packageJson.scripts['publish:local']).toBe(
+      'node kit/scripts/publish-changes.mjs',
+    );
+    expect(packageJson.scripts['publish:node']).toBe(
+      'node kit/scripts/publish-changes.mjs',
+    );
+    expect(packageJson.scripts['publish:bash']).toBe(
+      'bash scripts/publish-local-change.sh',
+    );
+  });
+
+  it('keeps Node, Bash, installer, shell syntax, and whitespace checks in validation', () => {
+    expect(packageJson.scripts['test:publish']).toBe(
+      'pnpm test:publish:node && pnpm test:publish:bash',
+    );
+    expect(packageJson.scripts.check).toContain('bash -n scripts/*.sh');
+    expect(packageJson.scripts.check).toContain('pnpm test:publish');
+    expect(packageJson.scripts.check).toContain('pnpm test:install');
+    expect(packageJson.scripts.check).toContain('git diff --check');
   });
 });
 

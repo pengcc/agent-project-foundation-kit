@@ -13,14 +13,14 @@ export const OUTPUT_LEVELS = [
 const ansiRgb = (red, green, blue) => `38;2;${red};${green};${blue}`;
 
 const LEVEL_STYLES = {
-  STEP: { color: "94", fullLine: true },
-  INFO: { color: "96", fullLine: false },
+  STEP: { color: "96", fullLine: true },
+  INFO: { color: "94", fullLine: false },
   WARNING: { color: ansiRgb(243, 156, 18), fullLine: true },
   ERROR: { color: "91", fullLine: true },
   DANGER: { color: "91", fullLine: true },
   PROMPT: { color: "95", fullLine: true },
   SUCCESS: { color: "32", fullLine: false },
-  SKIPPED: { color: ansiRgb(155, 125, 126), fullLine: true },
+  SKIPPED: { color: ansiRgb(221, 151, 108), fullLine: true },
   DEBUG: { color: "90", fullLine: false },
 };
 

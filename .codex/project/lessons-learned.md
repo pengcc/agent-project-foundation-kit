@@ -525,19 +525,23 @@ nonexistent artifact.
 
 ### Context
 
-Theme 17.3 adds a modular Node.js publish CLI while the existing Bash implementation remains a
-known fallback.
+Theme 17.3 added a modular Node.js publish CLI, Theme 17.4 validated representative real usage,
+and Theme 17.5 moved the source-repository default to Node while retaining Bash as a known
+fallback.
 
 ### Lesson
 
 Installing a replacement implementation is not sufficient evidence for switching the primary
 command. Runtime packaging, parity tests, installer behavior, legacy regression coverage, and
-human-readable CLI output all need independent validation.
+human-readable CLI output all need independent validation. The default cutover and eventual
+fallback removal should also remain separate decisions.
 
 ### Reuse guidance
 
 - keep migration candidates callable through an explicit secondary command
 - retain the current fallback until automated parity and manual output review are complete
+- retain a tested explicit fallback after default cutover until removal is separately approved
+- keep both implementations in the aggregate validation command during the overlap period
 - do not make installed scripts depend on packages the installer does not provide
 - use built-in conservative defaults when optional policy parsers are unavailable
 - base post-merge recovery on verified repository state, not update classification

@@ -820,6 +820,34 @@ Status:
 The smoke results validate the candidate without treating test completion as implicit cutover
 authorization.
 
+## Theme 17.5: Node Publish Default Cutover
+
+Accepted decisions:
+
+1. `pnpm publish:local` now runs the Node.js 24+ ESM publish CLI.
+2. `pnpm publish:node` remains an explicit alias for the Node CLI.
+3. `pnpm publish:bash` retains the Bash source-repository wrapper as an immediate rollback path.
+4. The Bash implementation and its tests remain supported until removal is deliberately approved
+   in a later theme.
+5. `pnpm check` continues validating Node publish tests, Bash publish tests, installer behavior,
+   remaining shell syntax, and whitespace.
+6. The installer continues copying both implementations without creating or modifying downstream
+   `package.json`.
+7. Downstream projects may invoke the installed Node CLI directly when Node 24+ is available or
+   use the installed Bash script as a fallback.
+
+Resulting files / changes:
+
+```txt
+package.json
+kit/scripts/shared/output.mjs
+tests/publish-changes/core.test.mjs
+README.md
+kit/skills/core/publish-current-branch/SKILL.md
+.codex/project/
+docs/foundation-design-log.md
+```
+
 ## Maintenance Update: Plan Mode Persistence and Execution Boundary
 
 Accepted decisions:
@@ -852,12 +880,11 @@ docs/foundation-design-log.md
 
 This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.
 
-Priority order after Theme 17.4 smoke-test stabilization:
+Priority order after Theme 17.5 Node publish default cutover:
 
-1. Theme 17.5 Node publish default-cutover decision
-2. technology-specific skills
-3. release workflow
-4. deployment workflow
+1. technology-specific skills
+2. release workflow
+3. deployment workflow
 
 Rationale:
 

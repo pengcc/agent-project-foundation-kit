@@ -37,6 +37,7 @@ Completed themes:
 - Theme 17.1: installable publish workflow scripts
 - Theme 17.3: Node publish CLI migration candidate and safety correction
 - Theme 17.4: Node publish CLI smoke-test validation and usability stabilization
+- Theme 17.5: Node publish default cutover with supported Bash fallback
 
 Current canonical core skill names:
 
@@ -87,7 +88,7 @@ Current known tooling:
 - `ripgrep` recommended for migration/reference checks
 - Git / GitHub for version control
 - GitHub CLI expected for PR publishing workflows when available
-- Node.js 24+ for the Node publish candidate
+- Node.js 24+ for the default source-repository publish workflow
 - pnpm 10.26.2 for local commands and dependency management
 - Vitest for Node publish tests
 - `yaml` for source-repository policy loading, with built-in downstream fallback
@@ -153,8 +154,10 @@ Short command entrypoints:
 ```txt
 pnpm publish:local
 pnpm publish:node
+pnpm publish:bash
 pnpm apply-theme
 pnpm test
+pnpm test:node
 pnpm test:install
 pnpm test:publish
 pnpm check
@@ -194,9 +197,10 @@ Current `apply-theme-zip.sh` safety behavior:
 
 Current publish workflow architecture:
 
-- `pnpm publish:local` and `.codex/scripts/publish-changes.sh` remain the active Bash fallback
+- `pnpm publish:local` and `pnpm publish:node` run `kit/scripts/publish-changes.mjs`
+- `pnpm publish:bash` and `.codex/scripts/publish-changes.sh` remain the supported Bash fallback
 - the following legacy interaction details describe that Bash fallback
-- keep `kit/scripts/publish-changes.sh` as the canonical, downstream-neutral implementation
+- keep `kit/scripts/publish-changes.sh` as the downstream-neutral Bash implementation
 - keep `kit/scripts/lib/workflow-common.sh` as the canonical shared helper
 - keep `scripts/publish-local-change.sh` and `scripts/lib/workflow-common.sh` as thin source-repository compatibility wrappers
 - publish local changes through a feature branch + PR workflow
@@ -225,7 +229,7 @@ Current publish workflow architecture:
 - refresh the default branch only after a verified merge; require explicit refresh approval outside the `SMALL_SAFE` automatic path
 - create a backup branch and require `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
-Current Node publish candidate behavior:
+Current Node publish default behavior:
 
 - require Node.js 24+
 - keep reusable command, Git, GitHub, error, and output modules under `kit/scripts/shared/`
@@ -243,8 +247,10 @@ Current Node publish candidate behavior:
   the interaction flow smooth after minor message/UX correction
 - manual scope-drift testing passed: changes introduced after scope collection were detected and
   publishing aborted before commit, push, or PR actions
-- retain Bash as the `pnpm publish:local` default; Node cutover remains a separate Theme 17.5
-  decision rather than an automatic result of Theme 17.4 smoke testing
+- use Node as the source-repository `pnpm publish:local` default while retaining `pnpm publish:node`
+  as an explicit alias and `pnpm publish:bash` as the rollback path
+- keep Node Vitest coverage, Bash publish tests, installer tests, remaining shell syntax checks,
+  and whitespace checks in `pnpm check`
 
 Current `test-publish-local-change.sh` purpose:
 
@@ -293,9 +299,9 @@ Current `kit/scripts/` purpose:
 
 - provide installable mechanical workflow executors for downstream projects
 - install under `.codex/scripts/`
-- keep Bash + Git + GitHub CLI as the active fallback during the Theme 17.3 cutover
-- provide a Node.js 24+ ESM publish candidate with modular Git, GitHub, output, prompt, policy,
+- provide a Node.js 24+ ESM publish default with modular Git, GitHub, output, prompt, policy,
   state, action, and final-report boundaries
+- keep Bash + Git + GitHub CLI as a supported fallback until a later deliberate removal decision
 - install publish policy under `.codex/config/`
 - fall back to built-in conservative policy when downstream YAML support is unavailable
 - let skills own workflow strategy and authorization while scripts own repeatable mechanics
@@ -438,7 +444,13 @@ Completed:
     - Vitest publish safety coverage
     - installer mapping to `.codex/config/` and complete Node script paths
     - exact upstream-relative publish-scope confirmation and immutable policy safety gates
-    - Bash remains the primary fallback pending manual Node 24/GitHub smoke review
+    - Bash remained the primary fallback pending manual Node 24/GitHub smoke review
+- Theme 17.4 Node publish CLI smoke-test stabilization
+    - representative real publish paths and deliberate scope-drift protection validated manually
+- Theme 17.5 Node publish default cutover
+    - `pnpm publish:local` and `pnpm publish:node` use the Node CLI
+    - `pnpm publish:bash` retains the supported Bash fallback
+    - `pnpm check` validates both implementations, installer behavior, shell syntax, and whitespace
 
 
 In progress / next likely themes:
