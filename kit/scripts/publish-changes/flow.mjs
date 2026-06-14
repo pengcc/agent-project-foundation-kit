@@ -83,7 +83,7 @@ export async function runPublishFlow({
   if (state.repositoryOpenPrs.length) {
     output.warning(
       `Repository open PRs: ${state.repositoryOpenPrs
-        .map((pr) => `#${pr.number} ${pr.title}`)
+        .map((pr) => `#${pr.number} ${pr.title} ${pr.url}`)
         .join('; ')}`,
     );
     if (!(await prompts.confirm('Continue after reviewing repository open pull requests?'))) {
@@ -253,7 +253,7 @@ export async function runPublishFlow({
   let mode =
     classification === 'small_safe' && classificationPolicy.allow_auto_merge
       ? 'auto'
-      : await chooseCompletionMode(prompts, classificationPolicy);
+      : await chooseCompletionMode(prompts, classification, classificationPolicy, output);
   let refreshStatus = 'not requested';
 
   if (mode !== 'pr_only') {

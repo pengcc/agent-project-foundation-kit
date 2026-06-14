@@ -497,11 +497,20 @@ describe('publish flow classification gates', () => {
     ]);
   });
 
-  it('acknowledges repository PRs and reuses an existing current-branch PR', async () => {
+  it('continues after the user reviews an unrelated open pull request', async () => {
     const harness = createHarness({ classification: 'normal' });
     harness.gh.listPullRequests = async (_repo, args) => {
-      if (!args.includes('--head')) return [{ number: 3, title: 'Other work' }];
-      return [{ number: 12 }];
+      if (!args.includes('--head')) {
+        return [
+          {
+            number: 3,
+            title: 'Other work',
+            url: 'https://example.test/pr/3',
+            headRefName: 'feature/other',
+          },
+        ];
+      }
+      return [];
     };
 
     await runPublishFlow({
@@ -518,6 +527,111 @@ describe('publish flow classification gates', () => {
     expect(harness.promptEvents).toContain(
       'confirm:Continue after reviewing repository open pull requests?',
     );
+    expect(harness.output.messages).toContainEqual([
+      'WARNING',
+      'Repository open PRs: #3 Other work https://example.test/pr/3',
+    ]);
+    expect(harness.calls).toContain('create-pr');
+  });
+
+  it('cancels safely when the user declines an unrelated open pull request warning', async () => {
+    const harness = createHarness({ classification: 'normal' });
+    harness.gh.listPullRequests = async (_repo, args) =>
+      args.includes('--head')
+        ? []
+        : [
+            {
+              number: 3,
+              title: 'Other work',
+              url: 'https://example.test/pr/3',
+              headRefName: 'feature/other',
+            },
+          ];
+    harness.prompts.confirm = async (message) => {
+      harness.promptEvents.push(`confirm:${message}`);
+      return !message.includes('Continue after reviewing repository open pull requests');
+    };
+
+    await expect(
+      runPublishFlow({
+        ...harness,
+        policy: structuredClone(DEFAULT_POLICY),
+        options: {
+          commitMessage: 'Decline unrelated PR',
+          prTitle: 'Decline unrelated PR',
+          showDiff: false,
+        },
+        env: {},
+      }),
+    ).rejects.toThrow('Stopped after repository pull request review');
+    expect(harness.calls.some((call) => call.startsWith('add:'))).toBe(false);
+    expect(harness.calls.some((call) => call.startsWith('push:'))).toBe(false);
+  });
+
+  it('routes a clean current-branch open PR to recovery without unrelated PR warning', async () => {
+    const harness = createHarness({
+      classification: 'normal',
+      hasUncommitted: false,
+      hasUnpushed: false,
+    });
+    harness.gh.listPullRequests = async (_repo, args) =>
+      args.includes('--head')
+        ? []
+        : [
+            {
+              number: 12,
+              title: 'Current work',
+              url: 'https://example.test/pr/12',
+              headRefName: 'feature/publish',
+            },
+          ];
+
+    const result = await runPublishFlow({
+      ...harness,
+      policy: structuredClone(DEFAULT_POLICY),
+      options: { commitMessage: '', prTitle: '', showDiff: false },
+      env: {},
+    });
+
+    expect(result.status).toBe('open-pr');
+    expect(harness.output.messages).toContainEqual([
+      'INFO',
+      'PR #12 remains open: https://example.test/pr/12',
+    ]);
+    expect(harness.promptEvents).not.toContain(
+      'confirm:Continue after reviewing repository open pull requests?',
+    );
+    expect(harness.calls).not.toContain('create-pr');
+  });
+
+  it('continues an existing current-branch PR without creating a duplicate', async () => {
+    const harness = createHarness({ classification: 'normal' });
+    harness.gh.listPullRequests = async (_repo, args) =>
+      args.includes('--head')
+        ? [{ number: 12 }]
+        : [
+            {
+              number: 12,
+              title: 'Current work',
+              url: 'https://example.test/pr/12',
+              headRefName: 'feature/publish',
+            },
+          ];
+
+    await runPublishFlow({
+      ...harness,
+      policy: structuredClone(DEFAULT_POLICY),
+      options: {
+        commitMessage: 'Continue current PR',
+        prTitle: 'Continue current PR',
+        showDiff: false,
+      },
+      env: {},
+    });
+
+    expect(harness.promptEvents).not.toContain(
+      'confirm:Continue after reviewing repository open pull requests?',
+    );
     expect(harness.calls).toContain('comment-pr:12');
     expect(harness.calls).not.toContain('create-pr');
   });
@@ -529,7 +643,16 @@ describe('publish flow classification gates', () => {
       hasUnpushed: false,
     });
     harness.gh.listPullRequests = async (_repo, args) =>
-      args.includes('--head') ? [{ number: 12 }] : [];
+      args.includes('--head')
+        ? [{ number: 12 }]
+        : [
+            {
+              number: 12,
+              title: 'Merged work',
+              url: 'https://example.test/pr/12',
+              headRefName: 'feature/publish',
+            },
+          ];
     harness.gh.viewPullRequest = async () => ({
       number: 12,
       url: 'https://example.test/pr/12',
@@ -549,6 +672,10 @@ describe('publish flow classification gates', () => {
 
     expect(result.status).toBe('recovered');
     expect(harness.calls).toEqual(['fetch', 'fetch', 'switch-main', 'pull-main']);
+    expect(harness.promptEvents).not.toContain(
+      'confirm:Continue after reviewing repository open pull requests?',
+    );
+    expect(harness.calls).not.toContain('create-pr');
   });
 
   it('never pushes the default branch directly', async () => {

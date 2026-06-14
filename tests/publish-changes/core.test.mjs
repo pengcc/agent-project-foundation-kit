@@ -22,12 +22,17 @@ import {
 } from '../../kit/scripts/publish-changes/actions.mjs';
 import { createCommandRunner } from '../../kit/scripts/shared/command-runner.mjs';
 import { createGhClient } from '../../kit/scripts/shared/gh-client.mjs';
+import { createOutput } from '../../kit/scripts/shared/output.mjs';
 import { assertSupportedRuntime } from '../../kit/scripts/publish-changes.mjs';
 import {
   captureWorktreeSnapshot,
   parsePorcelainZ,
 } from '../../kit/scripts/publish-changes/state.mjs';
-import { chooseValidation } from '../../kit/scripts/publish-changes/prompts.mjs';
+import {
+  chooseCompletionMode,
+  chooseValidation,
+  confirmWithRetry,
+} from '../../kit/scripts/publish-changes/prompts.mjs';
 
 describe('CLI options', () => {
   it('requires the declared Node 24 runtime', () => {
@@ -57,6 +62,174 @@ describe('CLI options', () => {
 
   it('rejects shell-style unknown options', () => {
     expect(() => parseCliOptions(['--execute=rm -rf /'])).toThrow('Unknown option');
+  });
+});
+
+describe('interactive prompts and output', () => {
+  it.each([
+    ['y', true],
+    ['Y', true],
+    ['yes', true],
+    ['YES', true],
+    ['n', false],
+    ['N', false],
+    ['no', false],
+    ['NO', false],
+    ['', false],
+  ])('accepts confirmation response %j', async (answer, expected) => {
+    await expect(
+      confirmWithRetry({
+        ask: async () => answer,
+        warning: vi.fn(),
+        message: 'Continue?',
+      }),
+    ).resolves.toBe(expected);
+  });
+
+  it('warns and retries after an invalid confirmation response', async () => {
+    const ask = vi.fn().mockResolvedValueOnce('z').mockResolvedValueOnce('YES');
+    const warning = vi.fn();
+    await expect(confirmWithRetry({ ask, warning, message: 'Continue?' })).resolves.toBe(true);
+    expect(ask).toHaveBeenCalledTimes(2);
+    expect(warning).toHaveBeenCalledWith(expect.stringContaining('Invalid response "z"'));
+  });
+
+  it('cancels after two invalid confirmation responses', async () => {
+    const ask = vi.fn().mockResolvedValueOnce('z').mockResolvedValueOnce('maybe');
+    await expect(
+      confirmWithRetry({ ask, warning: vi.fn(), message: 'Continue?' }),
+    ).rejects.toMatchObject({
+      type: 'USER_CANCELLED',
+      message: expect.stringContaining('2 invalid confirmation responses'),
+    });
+  });
+
+  it('uses full-line semantic color and label-only informational color', () => {
+    const tty = { isTTY: true, write: vi.fn() };
+    const plain = { isTTY: false, write: vi.fn() };
+    const colored = createOutput({ stdout: tty, stderr: tty, env: {}, verbose: true });
+    colored.step('Colored step');
+    colored.info('Colored info');
+    colored.warning('Colored warning');
+    colored.error('Colored error');
+    colored.danger('Colored danger');
+    colored.prompt('Colored prompt');
+    colored.success('Colored success');
+    colored.skipped('Colored skipped');
+    colored.debug('Colored debug');
+    createOutput({ stdout: plain, stderr: plain, env: {} }).success('Plain success');
+
+    expect(tty.write.mock.calls[0][0]).toBe(
+      '\u001B[1;96m[STEP]\u001B[22m Colored step\u001B[0m\n',
+    );
+    expect(tty.write.mock.calls[1][0]).toBe(
+      '\u001B[1;94m[INFO]\u001B[0m Colored info\n',
+    );
+    expect(tty.write.mock.calls[2][0]).toBe(
+      '\u001B[1;38;2;243;156;18m[WARNING]\u001B[22m Colored warning\u001B[0m\n',
+    );
+    expect(tty.write.mock.calls[3][0]).toBe(
+      '\u001B[1;91m[ERROR]\u001B[22m Colored error\u001B[0m\n',
+    );
+    expect(tty.write.mock.calls[4][0]).toBe(
+      '\u001B[1;91m[DANGER]\u001B[22m Colored danger\u001B[0m\n',
+    );
+    expect(tty.write.mock.calls[5][0]).toBe(
+      '\u001B[1;95m[PROMPT]\u001B[22m Colored prompt\u001B[0m\n',
+    );
+    expect(tty.write.mock.calls[6][0]).toBe(
+      '\u001B[1;32m[SUCCESS]\u001B[0m Colored success\n',
+    );
+    expect(tty.write.mock.calls[7][0]).toBe(
+      '\u001B[1;38;2;221;151;108m[SKIPPED]\u001B[22m Colored skipped\u001B[0m\n',
+    );
+    expect(tty.write.mock.calls[8][0]).toBe(
+      '\u001B[1;90m[DEBUG]\u001B[0m Colored debug\n',
+    );
+    expect(plain.write).toHaveBeenCalledWith('[SUCCESS] Plain success\n');
+    expect(tty.write.mock.calls[0][0]).toContain('[STEP]\u001B[22m Colored step');
+    expect(tty.write.mock.calls[0][0]).not.toContain('\u001B[1;96mColored step');
+  });
+
+  it('uses distinct styles for STEP/INFO and WARNING/SKIPPED', () => {
+    const tty = { isTTY: true, write: vi.fn() };
+    const output = createOutput({ stdout: tty, stderr: tty, env: {}, verbose: true });
+    output.step('Step');
+    output.info('Info');
+    output.warning('Warning');
+    output.skipped('Skipped');
+    output.debug('Debug');
+
+    const [step, info, warning, skipped, debug] = tty.write.mock.calls.map(([text]) => text);
+    expect(step).toContain('\u001B[1;96m[STEP]');
+    expect(info).toContain('\u001B[1;94m[INFO]');
+    expect(warning).toContain('\u001B[1;38;2;243;156;18m[WARNING]');
+    expect(skipped).toContain('\u001B[1;38;2;221;151;108m[SKIPPED]');
+    expect(debug).toContain('\u001B[1;90m[DEBUG]');
+    expect(warning).not.toContain('38;2;221;151;108');
+    expect(skipped).not.toContain('38;2;243;156;18');
+  });
+
+  it('disables every ANSI style when NO_COLOR is set', () => {
+    const tty = { isTTY: true, write: vi.fn() };
+    const output = createOutput({
+      stdout: tty,
+      stderr: tty,
+      env: { NO_COLOR: '1' },
+      verbose: true,
+    });
+    for (const level of [
+      'step',
+      'info',
+      'warning',
+      'error',
+      'danger',
+      'prompt',
+      'success',
+      'skipped',
+      'debug',
+    ]) {
+      output[level](`${level} message`);
+    }
+    const rendered = tty.write.mock.calls.map(([text]) => text).join('');
+    expect(rendered).not.toContain('\u001B[');
+    expect(rendered).toContain('[WARNING] warning message');
+    expect(rendered).toContain('[DEBUG] debug message');
+  });
+
+  it('shows PR-only and auto-merge when Normal policy allows auto-merge', async () => {
+    const prompts = { ask: vi.fn().mockResolvedValue('2') };
+    const output = { info: vi.fn() };
+    await expect(
+      chooseCompletionMode(
+        prompts,
+        'normal',
+        { allow_auto_merge: true, allow_immediate_merge: false },
+        output,
+      ),
+    ).resolves.toBe('auto');
+    expect(prompts.ask).toHaveBeenCalledWith(
+      expect.stringContaining('1) PR only  2) Enable auto-merge with squash'),
+    );
+  });
+
+  it('explains policy-disabled completion modes and rejects unavailable selection clearly', async () => {
+    const prompts = { ask: vi.fn().mockResolvedValue('2') };
+    const output = { info: vi.fn() };
+    await expect(
+      chooseCompletionMode(
+        prompts,
+        'significant',
+        { allow_auto_merge: false, allow_immediate_merge: false },
+        output,
+      ),
+    ).rejects.toThrow('Auto-merge disabled by policy for SIGNIFICANT');
+    expect(output.info).toHaveBeenCalledWith(
+      'Auto-merge disabled by policy for SIGNIFICANT.',
+    );
+    expect(output.info).toHaveBeenCalledWith(
+      'Immediate merge disabled by policy for SIGNIFICANT.',
+    );
   });
 });
 

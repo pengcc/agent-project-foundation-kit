@@ -2,18 +2,48 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { PublishError } from '../shared/errors.mjs';
 
-export function createPrompts({ inputStream = input, outputStream = output } = {}) {
+const YES = new Set(['y', 'yes']);
+const NO = new Set(['', 'n', 'no']);
+
+export async function confirmWithRetry({
+  ask,
+  warning,
+  message,
+  maxInvalidAttempts = 2,
+}) {
+  let invalidAttempts = 0;
+  while (invalidAttempts < maxInvalidAttempts) {
+    const answer = (await ask(`${message} [y/N] `)).trim().toLowerCase();
+    if (YES.has(answer)) return true;
+    if (NO.has(answer)) return false;
+    invalidAttempts += 1;
+    warning(
+      `Invalid response "${answer}". Enter y/yes or n/no; empty input defaults to no.`,
+    );
+  }
+  throw new PublishError(
+    'USER_CANCELLED',
+    `Cancelled after ${maxInvalidAttempts} invalid confirmation responses.`,
+  );
+}
+
+export function createPrompts({
+  inputStream = input,
+  outputStream = output,
+  formatPrompt = (message) => `[PROMPT] ${message}`,
+  warning = (message) => outputStream.write(`[WARNING] ${message}\n`),
+} = {}) {
   const readline = createInterface({ input: inputStream, output: outputStream });
+  const question = (message) => readline.question(formatPrompt(message));
   return {
     async ask(message) {
-      return (await readline.question(`[PROMPT] ${message}`)).trim();
+      return (await question(message)).trim();
     },
     async confirm(message) {
-      const answer = (await readline.question(`[PROMPT] ${message} [y/N] `)).trim().toLowerCase();
-      return ['y', 'yes'].includes(answer);
+      return confirmWithRetry({ ask: question, warning, message });
     },
     async typed(message, expected) {
-      const answer = await readline.question(`[PROMPT] ${message}\nType ${expected} to continue: `);
+      const answer = await question(`${message}\nType ${expected} to continue: `);
       return answer.trim() === expected;
     },
     close() {
@@ -57,13 +87,30 @@ export async function chooseValidation(prompts, classification, classificationPo
   return answer;
 }
 
-export async function chooseCompletionMode(prompts, classificationPolicy) {
+export async function chooseCompletionMode(
+  prompts,
+  classification,
+  classificationPolicy,
+  output,
+) {
+  const label = classification.toUpperCase();
   const choices = ['1) PR only'];
   if (classificationPolicy.allow_auto_merge) choices.push('2) Enable auto-merge with squash');
+  else output?.info(`Auto-merge disabled by policy for ${label}.`);
   if (classificationPolicy.allow_immediate_merge) choices.push('3) Merge immediately with squash');
+  else output?.info(`Immediate merge disabled by policy for ${label}.`);
   const answer = await prompts.ask(`Choose completion mode: ${choices.join('  ')} `);
   if (answer === '' || answer === '1') return 'pr_only';
   if (answer === '2' && classificationPolicy.allow_auto_merge) return 'auto';
   if (answer === '3' && classificationPolicy.allow_immediate_merge) return 'immediate';
-  throw new PublishError('POLICY_BLOCKED', 'Selected completion mode is not allowed by policy.');
+  if (answer === '2') {
+    throw new PublishError('POLICY_BLOCKED', `Auto-merge disabled by policy for ${label}.`);
+  }
+  if (answer === '3') {
+    throw new PublishError('POLICY_BLOCKED', `Immediate merge disabled by policy for ${label}.`);
+  }
+  throw new PublishError(
+    'USER_CANCELLED',
+    `Invalid completion mode "${answer || '<empty>'}".`,
+  );
 }

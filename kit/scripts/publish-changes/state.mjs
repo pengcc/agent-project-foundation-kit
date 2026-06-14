@@ -114,7 +114,14 @@ export async function detectPublishState({
         '--limit',
         '1',
       ]);
-      if (branchPrs[0]) currentBranchPr = await gh.viewPullRequest(repo, branchPrs[0].number);
+      const currentBranchMatch =
+        branchPrs[0] || repositoryOpenPrs.find((pr) => pr.headRefName === branch);
+      if (currentBranchMatch) {
+        currentBranchPr = await gh.viewPullRequest(repo, currentBranchMatch.number);
+      }
+      repositoryOpenPrs = repositoryOpenPrs.filter(
+        (pr) => pr.number !== currentBranchPr?.number,
+      );
     } else {
       output?.warning('GitHub CLI is unavailable or unauthenticated; PR preflight is incomplete.');
     }

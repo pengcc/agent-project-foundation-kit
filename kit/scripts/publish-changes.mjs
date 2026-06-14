@@ -33,7 +33,10 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   const output = createOutput({ verbose: options.verbose });
-  const prompts = createPrompts();
+  const prompts = createPrompts({
+    formatPrompt: (message) => output.format('PROMPT', message),
+    warning: output.warning,
+  });
   const commandRunner = createCommandRunner();
   const git = createGitClient(commandRunner, process.cwd());
   const gh = createGhClient(commandRunner, process.cwd());
@@ -52,7 +55,7 @@ export async function main(argv = process.argv.slice(2)) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
     const type = error instanceof PublishError ? error.type : 'UNEXPECTED_ERROR';
-    process.stderr.write(`[ERROR] ${type}: ${error.message}\n`);
+    createOutput().error(`${type}: ${error.message}`);
     process.exitCode = 1;
   });
 }
