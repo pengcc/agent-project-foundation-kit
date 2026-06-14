@@ -11,15 +11,16 @@ pnpm publish:local
 pnpm publish:local "Commit message"
 pnpm publish:local "Commit message" "PR title"
 pnpm publish:node "Commit message" "PR title"
+pnpm publish:bash "Commit message" "PR title"
 pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
 pnpm test:publish
 pnpm check
 ```
 
-`publish:local` remains the Bash compatibility command during Theme 17.3. `publish:node` runs the
-Node.js 24+ ESM migration candidate. Do not switch the default command until the Vitest parity
-suite, existing Bash publish tests, installer tests, and manual CLI output review all pass.
+`publish:local` and `publish:node` run the Node.js 24+ ESM publish CLI. `publish:bash` retains the
+Bash implementation as an explicit fallback. `pnpm check` validates both publish paths, installer
+behavior, and remaining shell syntax.
 
 Both publish implementations use a feature branch and pull request. They never push directly to
 `main`. At startup they check default-branch freshness, list repository-level open PRs, detect the
@@ -29,7 +30,7 @@ The command asks for a commit message only when uncommitted changes need a commi
 already has unpushed commits, it uses the latest commit subject as the default PR title. A second
 argument can override the PR title.
 
-The Bash fallback retains its established scope-first interaction. The Node candidate displays a
+The Bash fallback retains its established scope-first interaction. The Node default displays a
 concise preliminary scope and recommendations, asks for the update type, verifies the worktree has
 not changed, stages only the observed path set, displays the exact upstream-relative publish scope
 including prior unpushed commits, and then requires scope confirmation. It verifies the confirmed
@@ -67,28 +68,35 @@ The installer copies the reusable publish implementation and helper to:
 .codex/scripts/publish-changes/
 .codex/scripts/shared/
 .codex/config/publish-changes-policy.yml
+.codex/config/publish-cli-theme.json
 .codex/scripts/lib/workflow-common.sh
 ```
 
-The Bash implementation remains the documented fallback during Theme 17.3:
-
-```bash
-bash .codex/scripts/publish-changes.sh
-bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
-```
-
-The Node candidate can be inspected with Node.js 24 or newer:
+Use the installed Node CLI directly when Node.js 24 or newer is available:
 
 ```bash
 node .codex/scripts/publish-changes.mjs --help
 node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
 ```
 
+The installed Bash implementation remains a supported fallback:
+
+```bash
+bash .codex/scripts/publish-changes.sh
+bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
+```
+
 The source repository uses package-managed `yaml` for policy loading. The installer does not
 create or modify a downstream `package.json`; if `yaml` is unavailable downstream, the Node CLI
-ignores the external YAML file, warns clearly, and uses built-in conservative defaults. A future
-primary cutover must retain that self-contained behavior or provide an explicit runtime packaging
-strategy.
+ignores the external YAML file, warns clearly, and uses built-in conservative defaults.
+
+`kit/config/publish-cli-theme.json` is the source of truth for publish CLI level colors and
+label-only versus full-line rendering. Installed projects receive the same file at
+`.codex/config/publish-cli-theme.json`. Theme styles support ANSI color strings such as `"96"` and
+RGB arrays such as `[243, 156, 18]`; hex strings are not supported. Every `[LEVEL]` label is always
+bold, so label bold is intentionally not configurable. Missing or invalid theme config produces a
+warning and activates matching built-in defaults. Documentation should reference the config
+rather than duplicating its complete color table.
 
 A project that wants a short Bash fallback alias may add its own optional configuration:
 

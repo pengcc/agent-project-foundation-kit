@@ -1,34 +1,17 @@
-export const OUTPUT_LEVELS = [
-  "STEP",
-  "INFO",
-  "WARNING",
-  "ERROR",
-  "DANGER",
-  "PROMPT",
-  "SUCCESS",
-  "SKIPPED",
-  "DEBUG",
-];
+import {
+  ansiColor,
+  DEFAULT_OUTPUT_THEME,
+  OUTPUT_LEVELS,
+} from './output-theme.mjs';
 
-const ansiRgb = (red, green, blue) => `38;2;${red};${green};${blue}`;
-
-const LEVEL_STYLES = {
-  STEP: { color: "94", fullLine: true },
-  INFO: { color: "96", fullLine: false },
-  WARNING: { color: ansiRgb(243, 156, 18), fullLine: true },
-  ERROR: { color: "91", fullLine: true },
-  DANGER: { color: "91", fullLine: true },
-  PROMPT: { color: "95", fullLine: true },
-  SUCCESS: { color: "32", fullLine: false },
-  SKIPPED: { color: ansiRgb(155, 125, 126), fullLine: true },
-  DEBUG: { color: "90", fullLine: false },
-};
+export { OUTPUT_LEVELS } from './output-theme.mjs';
 
 export function createOutput({
   stdout = process.stdout,
   stderr = process.stderr,
   verbose = false,
   env = process.env,
+  theme = DEFAULT_OUTPUT_THEME,
 } = {}) {
   const streamFor = (level) =>
     ["ERROR", "DANGER", "WARNING"].includes(level) ? stderr : stdout;
@@ -36,8 +19,9 @@ export function createOutput({
     const label = `[${level}]`;
     if (!stream.isTTY || env.NO_COLOR !== undefined)
       return `${label} ${message}`;
-    const style = LEVEL_STYLES[level] || { color: "0", fullLine: false };
-    const coloredLabel = `\u001B[1;${style.color}m${label}`;
+    const style = theme.levels[level];
+    const color = ansiColor(style.color);
+    const coloredLabel = `\u001B[1;${color}m${label}`;
     if (style.fullLine) {
       return `${coloredLabel}\u001B[22m ${message}\u001B[0m`;
     }

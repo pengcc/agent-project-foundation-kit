@@ -893,6 +893,62 @@ Theme 17.4 can close as smoke-test stabilization without silently turning valida
 cutover approval. The Bash path remains available while Theme 17.5 makes the default-entrypoint
 decision explicitly.
 
+## Decision: Theme 17.5 makes Node the source-repository publish default
+
+### Status
+
+Accepted
+
+### Decision
+
+`pnpm publish:local` and the explicit `pnpm publish:node` alias run the Node.js 24+ ESM publish
+CLI. `pnpm publish:bash` retains `scripts/publish-local-change.sh` as the supported operational
+fallback.
+
+The Bash implementation is not removed. Node Vitest coverage, existing Bash publish tests,
+installer tests, remaining shell syntax checks, and whitespace validation stay in `pnpm check`
+until Bash is deliberately removed in a later theme.
+
+The installer continues copying both implementations without creating or modifying a downstream
+`package.json`. Downstream projects may run the installed Node CLI directly when runtime
+requirements are met or use the installed Bash script as a fallback.
+
+### Impact
+
+The source repository defaults to the smoke-tested Node workflow while retaining a tested,
+immediate rollback path. Removing Bash or changing downstream package-manager configuration
+requires a separate decision.
+
+## Decision: Publish CLI theme config controls color and line coverage only
+
+### Status
+
+Accepted
+
+### Decision
+
+`kit/config/publish-cli-theme.json` is the source-repository source of truth for publish CLI output
+styles and is installed as `.codex/config/publish-cli-theme.json`.
+
+Each required level configures only `color` and `fullLine`. Colors may be ANSI color strings or
+RGB arrays containing exactly three integers from 0 to 255. Hex strings and `boldLabel` are not
+supported.
+
+All `[LEVEL]` labels are bold by fixed rendering policy. For `fullLine: true`, the label and
+message share the configured color while only the label is bold. For `fullLine: false`, only the
+label is colored. Missing or invalid config warns and falls back to built-in defaults that match
+the canonical file.
+
+The canonical values preserve the tested color behavior from `main`. Future generic output
+refactors must not reset that behavior. Documentation should link to the config instead of
+maintaining duplicate complete color tables.
+
+### Impact
+
+Publish output can be themed without making safety-oriented emphasis configurable or adding a
+runtime dependency. Source and installed behavior remain aligned through the existing complete
+`kit/config/` installer mapping.
+
 ## Decision: Planning persistence must be truthful and execution remains separately approved
 
 ### Status

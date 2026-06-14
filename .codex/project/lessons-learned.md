@@ -525,19 +525,23 @@ nonexistent artifact.
 
 ### Context
 
-Theme 17.3 adds a modular Node.js publish CLI while the existing Bash implementation remains a
-known fallback.
+Theme 17.3 added a modular Node.js publish CLI, Theme 17.4 validated representative real usage,
+and Theme 17.5 moved the source-repository default to Node while retaining Bash as a known
+fallback.
 
 ### Lesson
 
 Installing a replacement implementation is not sufficient evidence for switching the primary
 command. Runtime packaging, parity tests, installer behavior, legacy regression coverage, and
-human-readable CLI output all need independent validation.
+human-readable CLI output all need independent validation. The default cutover and eventual
+fallback removal should also remain separate decisions.
 
 ### Reuse guidance
 
 - keep migration candidates callable through an explicit secondary command
 - retain the current fallback until automated parity and manual output review are complete
+- retain a tested explicit fallback after default cutover until removal is separately approved
+- keep both implementations in the aggregate validation command during the overlap period
 - do not make installed scripts depend on packages the installer does not provide
 - use built-in conservative defaults when optional policy parsers are unavailable
 - base post-merge recovery on verified repository state, not update classification
@@ -566,3 +570,24 @@ that a stale scope confirmation cannot silently include later edits.
 - verify the command aborts before commit, push, PR creation, or merge
 - treat a successful smoke run as validation evidence, not automatic approval to replace the
   existing default workflow
+
+## Keep: Separate output invariants from theme choices
+
+### Context
+
+The publish CLI supports configurable level colors and label-only versus full-line rendering, but
+all level labels need consistent emphasis across themes.
+
+### Lesson
+
+Theme config should contain only genuine presentation choices. Bold level labels are an output
+invariant, not a per-level preference, so exposing `boldLabel` would create unnecessary states and
+allow themes to weaken a stable usability rule.
+
+### Reuse guidance
+
+- keep fixed semantic or accessibility behavior in rendering code
+- keep theme schemas limited to intentional variation points
+- validate external config strictly and fall back to matching built-in defaults
+- preserve tested visual behavior when extracting hard-coded values into config
+- keep the canonical table in one machine-readable source instead of duplicating it across docs

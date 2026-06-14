@@ -6,6 +6,7 @@ import { createCommandRunner } from './shared/command-runner.mjs';
 import { createGitClient } from './shared/git-client.mjs';
 import { createGhClient } from './shared/gh-client.mjs';
 import { createOutput } from './shared/output.mjs';
+import { loadOutputTheme } from './shared/output-theme.mjs';
 import { PublishError } from './shared/errors.mjs';
 import { parseCliOptions, usage } from './publish-changes/cli-options.mjs';
 import { loadPolicy } from './publish-changes/policy.mjs';
@@ -32,7 +33,13 @@ export async function main(argv = process.argv.slice(2)) {
     return;
   }
 
-  const output = createOutput({ verbose: options.verbose });
+  const themePath = resolve(scriptDir, '..', 'config', 'publish-cli-theme.json');
+  const { theme, source: themeSource, warning: themeWarning } = await loadOutputTheme({
+    path: themePath,
+  });
+  const output = createOutput({ verbose: options.verbose, theme });
+  if (themeWarning) output.warning(themeWarning);
+  output.debug(`Theme source: ${themeSource}`);
   const prompts = createPrompts({
     formatPrompt: (message) => output.format('PROMPT', message),
     warning: output.warning,
