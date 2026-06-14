@@ -24,6 +24,12 @@ import {
 import { createCommandRunner } from '../../kit/scripts/shared/command-runner.mjs';
 import { createGhClient } from '../../kit/scripts/shared/gh-client.mjs';
 import { createOutput } from '../../kit/scripts/shared/output.mjs';
+import {
+  DEFAULT_OUTPUT_THEME,
+  loadOutputTheme,
+  OUTPUT_LEVELS,
+  validateOutputTheme,
+} from '../../kit/scripts/shared/output-theme.mjs';
 import { assertSupportedRuntime } from '../../kit/scripts/publish-changes.mjs';
 import {
   captureWorktreeSnapshot,
@@ -37,6 +43,9 @@ import {
 
 const packageJson = JSON.parse(
   readFileSync(new URL('../../package.json', import.meta.url), 'utf8'),
+);
+const canonicalOutputTheme = JSON.parse(
+  readFileSync(new URL('../../kit/config/publish-cli-theme.json', import.meta.url), 'utf8'),
 );
 
 describe('CLI options', () => {
@@ -157,10 +166,10 @@ describe('interactive prompts and output', () => {
     createOutput({ stdout: plain, stderr: plain, env: {} }).success('Plain success');
 
     expect(tty.write.mock.calls[0][0]).toBe(
-      '\u001B[1;96m[STEP]\u001B[22m Colored step\u001B[0m\n',
+      '\u001B[1;94m[STEP]\u001B[22m Colored step\u001B[0m\n',
     );
     expect(tty.write.mock.calls[1][0]).toBe(
-      '\u001B[1;94m[INFO]\u001B[0m Colored info\n',
+      '\u001B[1;96m[INFO]\u001B[0m Colored info\n',
     );
     expect(tty.write.mock.calls[2][0]).toBe(
       '\u001B[1;38;2;243;156;18m[WARNING]\u001B[22m Colored warning\u001B[0m\n',
@@ -185,7 +194,7 @@ describe('interactive prompts and output', () => {
     );
     expect(plain.write).toHaveBeenCalledWith('[SUCCESS] Plain success\n');
     expect(tty.write.mock.calls[0][0]).toContain('[STEP]\u001B[22m Colored step');
-    expect(tty.write.mock.calls[0][0]).not.toContain('\u001B[1;96mColored step');
+    expect(tty.write.mock.calls[0][0]).not.toContain('\u001B[1;94mColored step');
   });
 
   it('uses distinct styles for STEP/INFO and WARNING/SKIPPED', () => {
@@ -198,8 +207,8 @@ describe('interactive prompts and output', () => {
     output.debug('Debug');
 
     const [step, info, warning, skipped, debug] = tty.write.mock.calls.map(([text]) => text);
-    expect(step).toContain('\u001B[1;96m[STEP]');
-    expect(info).toContain('\u001B[1;94m[INFO]');
+    expect(step).toContain('\u001B[1;94m[STEP]');
+    expect(info).toContain('\u001B[1;96m[INFO]');
     expect(warning).toContain('\u001B[1;38;2;243;156;18m[WARNING]');
     expect(skipped).toContain('\u001B[1;38;2;221;151;108m[SKIPPED]');
     expect(debug).toContain('\u001B[1;90m[DEBUG]');
@@ -267,6 +276,95 @@ describe('interactive prompts and output', () => {
     expect(output.info).toHaveBeenCalledWith(
       'Immediate merge disabled by policy for SIGNIFICANT.',
     );
+  });
+});
+
+describe('output theme config', () => {
+  it('loads the canonical config with every required level and no boldLabel option', async () => {
+    const result = await loadOutputTheme({
+      path: new URL('../../kit/config/publish-cli-theme.json', import.meta.url),
+    });
+    expect(result.warning).toBe('');
+    expect(result.theme).toEqual(canonicalOutputTheme);
+    expect(Object.keys(result.theme.levels)).toEqual(OUTPUT_LEVELS);
+    for (const style of Object.values(result.theme.levels)) {
+      expect(style).toEqual({
+        color: style.color,
+        fullLine: style.fullLine,
+      });
+      expect(style).not.toHaveProperty('boldLabel');
+    }
+  });
+
+  it('accepts ANSI color strings and valid RGB arrays', () => {
+    const theme = structuredClone(DEFAULT_OUTPUT_THEME);
+    theme.levels.STEP.color = '1;94';
+    theme.levels.WARNING.color = [0, 128, 255];
+    expect(validateOutputTheme(theme)).toBe(theme);
+  });
+
+  it.each([
+    [[255, 0], 'RGB array'],
+    [[256, 0, 0], 'RGB array'],
+    [[1.5, 0, 0], 'RGB array'],
+    ['#F39C12', 'ANSI color string'],
+  ])('rejects unsupported color value %j', (color, message) => {
+    const theme = structuredClone(DEFAULT_OUTPUT_THEME);
+    theme.levels.WARNING.color = color;
+    expect(() => validateOutputTheme(theme)).toThrow(message);
+  });
+
+  it('rejects boldLabel because label bold is a fixed rendering rule', () => {
+    const theme = structuredClone(DEFAULT_OUTPUT_THEME);
+    theme.levels.INFO.boldLabel = false;
+    expect(() => validateOutputTheme(theme)).toThrow('Unknown INFO theme key(s): boldLabel');
+  });
+
+  it('warns and falls back to canonical built-in defaults for invalid config', async () => {
+    const result = await loadOutputTheme({
+      path: '/invalid-theme.json',
+      readFileImpl: async () => '{"version":1,"levels":{}}',
+    });
+    expect(result.source).toBe('built-in-invalid');
+    expect(result.warning).toContain('using built-in defaults');
+    expect(result.theme).toEqual(DEFAULT_OUTPUT_THEME);
+  });
+
+  it('warns and falls back to canonical built-in defaults for missing config', async () => {
+    const error = Object.assign(new Error('missing'), { code: 'ENOENT' });
+    const result = await loadOutputTheme({
+      path: '/missing-theme.json',
+      readFileImpl: async () => {
+        throw error;
+      },
+    });
+    expect(result.source).toBe('built-in-missing');
+    expect(result.warning).toContain('Theme config not found');
+    expect(result.theme).toEqual(DEFAULT_OUTPUT_THEME);
+  });
+
+  it('renders every label bold without leaking bold into message text', () => {
+    const tty = { isTTY: true, write: vi.fn() };
+    const output = createOutput({
+      stdout: tty,
+      stderr: tty,
+      env: {},
+      verbose: true,
+      theme: canonicalOutputTheme,
+    });
+
+    for (const level of OUTPUT_LEVELS) output.write(level, `${level} message`);
+
+    for (const [index, level] of OUTPUT_LEVELS.entries()) {
+      const rendered = tty.write.mock.calls[index][0];
+      expect(rendered).toContain(`m[${level}]`);
+      expect(rendered.slice(0, rendered.indexOf(`[${level}]`))).toContain('[1;');
+      if (canonicalOutputTheme.levels[level].fullLine) {
+        expect(rendered).toContain(`m[${level}]\u001B[22m ${level} message\u001B[0m`);
+      } else {
+        expect(rendered).toContain(`m[${level}]\u001B[0m ${level} message`);
+      }
+    }
   });
 });
 

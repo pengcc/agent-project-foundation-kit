@@ -570,3 +570,24 @@ that a stale scope confirmation cannot silently include later edits.
 - verify the command aborts before commit, push, PR creation, or merge
 - treat a successful smoke run as validation evidence, not automatic approval to replace the
   existing default workflow
+
+## Keep: Separate output invariants from theme choices
+
+### Context
+
+The publish CLI supports configurable level colors and label-only versus full-line rendering, but
+all level labels need consistent emphasis across themes.
+
+### Lesson
+
+Theme config should contain only genuine presentation choices. Bold level labels are an output
+invariant, not a per-level preference, so exposing `boldLabel` would create unnecessary states and
+allow themes to weaken a stable usability rule.
+
+### Reuse guidance
+
+- keep fixed semantic or accessibility behavior in rendering code
+- keep theme schemas limited to intentional variation points
+- validate external config strictly and fall back to matching built-in defaults
+- preserve tested visual behavior when extracting hard-coded values into config
+- keep the canonical table in one machine-readable source instead of duplicating it across docs

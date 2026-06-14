@@ -123,6 +123,10 @@ Both implementations remain covered by source-repository validation. If downstre
 is absent, the Node CLI must warn and use built-in conservative policy defaults rather than
 depending on an uninstalled package.
 
+The Node CLI loads output styles from `.codex/config/publish-cli-theme.json`. Level entries support
+ANSI color strings or RGB arrays plus `fullLine`; all `[LEVEL]` labels remain bold by fixed
+rendering policy. Missing or invalid theme config warns and uses matching built-in defaults.
+
 If both installed scripts are unavailable, use the manual workflow in this skill as the fallback.
 Do not weaken any confirmation, branch, check, review, merge, or refresh boundary in either
 fallback.

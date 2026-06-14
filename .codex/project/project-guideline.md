@@ -147,6 +147,7 @@ kit/scripts/publish-changes.mjs
 kit/scripts/publish-changes/
 kit/scripts/shared/
 kit/config/publish-changes-policy.yml
+kit/config/publish-cli-theme.json
 ```
 
 Short command entrypoints:
@@ -251,6 +252,12 @@ Current Node publish default behavior:
   as an explicit alias and `pnpm publish:bash` as the rollback path
 - keep Node Vitest coverage, Bash publish tests, installer tests, remaining shell syntax checks,
   and whitespace checks in `pnpm check`
+- load publish output styles from `kit/config/publish-cli-theme.json` in the source repository and
+  `.codex/config/publish-cli-theme.json` after installation
+- accept only ANSI color strings or three-integer RGB arrays plus `fullLine` in theme level styles
+- render every `[LEVEL]` label bold as a fixed rule; label bold is not theme-configurable
+- warn and use matching built-in defaults when the theme config is missing or invalid
+- keep the complete color table in the JSON source of truth rather than duplicating it in docs
 
 Current `test-publish-local-change.sh` purpose:
 
@@ -303,7 +310,9 @@ Current `kit/scripts/` purpose:
   state, action, and final-report boundaries
 - keep Bash + Git + GitHub CLI as a supported fallback until a later deliberate removal decision
 - install publish policy under `.codex/config/`
+- install publish CLI theme config under `.codex/config/`
 - fall back to built-in conservative policy when downstream YAML support is unavailable
+- fall back to built-in canonical output styles when publish theme config is missing or invalid
 - let skills own workflow strategy and authorization while scripts own repeatable mechanics
 
 ## 7. Environment Variables

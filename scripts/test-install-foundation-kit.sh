@@ -159,6 +159,7 @@ test_apply_fresh_install() {
   assert_file_exists "$target/.codex/scripts/publish-changes.mjs"
   assert_file_exists "$target/.codex/scripts/lib/workflow-common.sh"
   assert_file_exists "$target/.codex/config/publish-changes-policy.yml"
+  assert_file_exists "$target/.codex/config/publish-cli-theme.json"
   assert_file_not_exists "$target/package.json"
 
   log_pass "--apply fresh install creates expected structure"

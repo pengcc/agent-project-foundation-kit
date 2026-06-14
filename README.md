@@ -68,6 +68,7 @@ The installer copies the reusable publish implementation and helper to:
 .codex/scripts/publish-changes/
 .codex/scripts/shared/
 .codex/config/publish-changes-policy.yml
+.codex/config/publish-cli-theme.json
 .codex/scripts/lib/workflow-common.sh
 ```
 
@@ -88,6 +89,14 @@ bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
 The source repository uses package-managed `yaml` for policy loading. The installer does not
 create or modify a downstream `package.json`; if `yaml` is unavailable downstream, the Node CLI
 ignores the external YAML file, warns clearly, and uses built-in conservative defaults.
+
+`kit/config/publish-cli-theme.json` is the source of truth for publish CLI level colors and
+label-only versus full-line rendering. Installed projects receive the same file at
+`.codex/config/publish-cli-theme.json`. Theme styles support ANSI color strings such as `"96"` and
+RGB arrays such as `[243, 156, 18]`; hex strings are not supported. Every `[LEVEL]` label is always
+bold, so label bold is intentionally not configurable. Missing or invalid theme config produces a
+warning and activates matching built-in defaults. Documentation should reference the config
+rather than duplicating its complete color table.
 
 A project that wants a short Bash fallback alias may add its own optional configuration:
 

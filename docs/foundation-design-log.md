@@ -848,6 +848,23 @@ kit/skills/core/publish-current-branch/SKILL.md
 docs/foundation-design-log.md
 ```
 
+### Publish CLI Theme Configuration Follow-Up
+
+Accepted decisions:
+
+1. `kit/config/publish-cli-theme.json` is the canonical source for publish CLI level colors and
+   label-only versus full-line rendering.
+2. Installed projects receive the same config at `.codex/config/publish-cli-theme.json`.
+3. Level entries contain only `color` and `fullLine`; `boldLabel` is intentionally unsupported.
+4. ANSI color strings and RGB arrays of three integers from 0 to 255 are supported. Hex strings
+   are not supported.
+5. Every level label remains bold by fixed rendering policy. Full-line styles color label and
+   message without leaking bold into the message; label-only styles reset before message text.
+6. Missing or invalid config warns and falls back to built-in defaults matching the canonical
+   file.
+7. The canonical config preserves the tested `main` behavior. Documentation references the config
+   instead of maintaining another complete color table.
+
 ## Maintenance Update: Plan Mode Persistence and Execution Boundary
 
 Accepted decisions:
