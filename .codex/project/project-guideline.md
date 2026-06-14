@@ -35,6 +35,7 @@ Completed themes:
 - Theme 16.3: downstream AGENTS template operating contract
 - Theme 17: reusable GitHub repository settings package
 - Theme 17.1: installable publish workflow scripts
+- Theme 17.3: Node publish CLI migration candidate and safety correction
 
 Current canonical core skill names:
 
@@ -80,12 +81,15 @@ Current known tooling:
 
 - Markdown for skills, templates, rules, prompts, and design logs
 - Shell scripts under `scripts/`
-- Installable shell scripts under `kit/scripts/`
+- Installable Bash and Node ESM scripts under `kit/scripts/`
 - Zip-based theme delivery during development
 - `ripgrep` recommended for migration/reference checks
 - Git / GitHub for version control
 - GitHub CLI expected for PR publishing workflows when available
-- pnpm 10.26.2 as a dependency-free local command façade
+- Node.js 24+ for the Node publish candidate
+- pnpm 10.26.2 for local commands and dependency management
+- Vitest for Node publish tests
+- `yaml` for source-repository policy loading, with built-in downstream fallback
 
 ## 5. Directory Structure
 
@@ -97,8 +101,10 @@ kit/project-templates/
 kit/skills/
 kit/prompts/
 kit/rules/
+kit/config/
 kit/github-settings/
 kit/scripts/
+tests/publish-changes/
 docs/
 scripts/
 .codex/project/
@@ -135,13 +141,19 @@ Installable workflow scripts:
 ```txt
 kit/scripts/publish-changes.sh
 kit/scripts/lib/workflow-common.sh
+kit/scripts/publish-changes.mjs
+kit/scripts/publish-changes/
+kit/scripts/shared/
+kit/config/publish-changes-policy.yml
 ```
 
 Short command entrypoints:
 
 ```txt
 pnpm publish:local
+pnpm publish:node
 pnpm apply-theme
+pnpm test
 pnpm test:install
 pnpm test:publish
 pnpm check
@@ -181,6 +193,8 @@ Current `apply-theme-zip.sh` safety behavior:
 
 Current publish workflow architecture:
 
+- `pnpm publish:local` and `.codex/scripts/publish-changes.sh` remain the active Bash fallback
+- the following legacy interaction details describe that Bash fallback
 - keep `kit/scripts/publish-changes.sh` as the canonical, downstream-neutral implementation
 - keep `kit/scripts/lib/workflow-common.sh` as the canonical shared helper
 - keep `scripts/publish-local-change.sh` and `scripts/lib/workflow-common.sh` as thin source-repository compatibility wrappers
@@ -210,6 +224,23 @@ Current publish workflow architecture:
 - refresh the default branch only after a verified merge; require explicit refresh approval outside the `SMALL_SAFE` automatic path
 - create a backup branch and require `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
+Current Node publish candidate behavior:
+
+- require Node.js 24+
+- keep reusable command, Git, GitHub, error, and output modules under `kit/scripts/shared/`
+- keep publish-only orchestration, prompts, policy, state, actions, and validation modules under
+  `kit/scripts/publish-changes/`
+- show a concise preliminary scope before classification and keep full diff output opt-in
+- select update type before final scope confirmation
+- fingerprint tracked and untracked worktree state and abort if it changes before staging
+- stage only the observed path set, show the exact upstream-relative publish scope including prior
+  unpushed commits, and freeze the index tree through commit
+- reject YAML policies that remove immutable Normal or Significant validation/review gates
+- verify stale default-branch state and require confirmation before continuing
+- refresh the default branch only after verified merge state, independent of classification
+- retain Bash as the default until Node 24/manual GitHub smoke review and remaining cutover checks
+  are complete
+
 Current `test-publish-local-change.sh` purpose:
 
 - run deterministic local validation for publish workflow behavior
@@ -230,7 +261,8 @@ Current `install-foundation-kit.sh` purpose:
 - require `--apply` before writing files
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
 - map project templates to `.codex/project/`
-- map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/github-settings/`, and `kit/scripts/` to their matching `.codex/` directories
+- map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/config/`,
+  `kit/github-settings/`, and `kit/scripts/` to their matching `.codex/` directories
 - validate source and target path boundaries before copying
 - warn when target files already exist
 - never auto-merge existing files
@@ -256,7 +288,11 @@ Current `kit/scripts/` purpose:
 
 - provide installable mechanical workflow executors for downstream projects
 - install under `.codex/scripts/`
-- preserve Bash + Git + GitHub CLI as the current runtime contract
+- keep Bash + Git + GitHub CLI as the active fallback during the Theme 17.3 cutover
+- provide a Node.js 24+ ESM publish candidate with modular Git, GitHub, output, prompt, policy,
+  state, action, and final-report boundaries
+- install publish policy under `.codex/config/`
+- fall back to built-in conservative policy when downstream YAML support is unavailable
 - let skills own workflow strategy and authorization while scripts own repeatable mechanics
 
 ## 7. Environment Variables
@@ -270,6 +306,8 @@ THEME_BRANCH_PREFIX
 DESTRUCTIVE_DROP_PERCENT
 DESTRUCTIVE_DROP_LINES
 CHANGE_BRANCH_PREFIX
+PUBLISH_MERGE_POLL_ATTEMPTS
+PUBLISH_MERGE_POLL_INTERVAL_MS
 ```
 
 ## 8. Architecture and Data Flow
@@ -389,6 +427,13 @@ Completed:
     - source-repository compatibility wrappers
     - installer mapping to `.codex/scripts/`
     - deterministic wrapper, direct implementation, and complete-copy tests
+- Theme 17.3 Node publish CLI migration candidate
+    - Node.js 24+ ESM entrypoint and modular publish/shared boundaries
+    - YAML policy with conservative built-in downstream fallback
+    - Vitest publish safety coverage
+    - installer mapping to `.codex/config/` and complete Node script paths
+    - exact upstream-relative publish-scope confirmation and immutable policy safety gates
+    - Bash remains the primary fallback pending manual Node 24/GitHub smoke review
 
 
 In progress / next likely themes:

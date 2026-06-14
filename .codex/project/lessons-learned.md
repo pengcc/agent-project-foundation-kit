@@ -520,3 +520,29 @@ nonexistent artifact.
 - provide the complete plan content or a clear save-later action
 - verify persistence before reporting a saved path
 - keep review and explicit execution approval as separate workflow steps
+
+## Keep: Separate runtime migration from default workflow cutover
+
+### Context
+
+Theme 17.3 adds a modular Node.js publish CLI while the existing Bash implementation remains a
+known fallback.
+
+### Lesson
+
+Installing a replacement implementation is not sufficient evidence for switching the primary
+command. Runtime packaging, parity tests, installer behavior, legacy regression coverage, and
+human-readable CLI output all need independent validation.
+
+### Reuse guidance
+
+- keep migration candidates callable through an explicit secondary command
+- retain the current fallback until automated parity and manual output review are complete
+- do not make installed scripts depend on packages the installer does not provide
+- use built-in conservative defaults when optional policy parsers are unavailable
+- base post-merge recovery on verified repository state, not update classification
+- treat external policy as configuration and enforce safety invariants in code
+- confirm the staged index tree, then verify it is unchanged immediately before commit
+- stage only paths observed during scope collection so new files cannot enter silently
+- compare the confirmed index to the upstream comparison ref rather than `HEAD`, so prior unpushed
+  commits remain visible in the complete publish scope

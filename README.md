@@ -4,36 +4,40 @@ Source repository for the Codex Project Foundation Kit.
 
 ## Local Commands
 
-This repository uses a private, dependency-free `package.json` as a short command façade:
+This repository uses a private `package.json` as a short command façade:
 
 ```bash
 pnpm publish:local
 pnpm publish:local "Commit message"
 pnpm publish:local "Commit message" "PR title"
+pnpm publish:node "Commit message" "PR title"
 pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
 pnpm test:publish
 pnpm check
 ```
 
-`publish:local` is a source-repository compatibility command. Its thin wrapper delegates to the
-same installable implementation shipped in `kit/scripts/publish-changes.sh`.
+`publish:local` remains the Bash compatibility command during Theme 17.3. `publish:node` runs the
+Node.js 24+ ESM migration candidate. Do not switch the default command until the Vitest parity
+suite, existing Bash publish tests, installer tests, and manual CLI output review all pass.
 
-The publish workflow always uses a feature branch and pull request. It never pushes directly to
-`main`. At startup it checks default-branch freshness, lists repository-level open PRs, detects
-the current-branch PR, and inspects uncommitted changes and unpushed commits.
+Both publish implementations use a feature branch and pull request. They never push directly to
+`main`. At startup they check default-branch freshness, list repository-level open PRs, detect the
+current-branch PR, and inspect uncommitted changes and unpushed commits.
 
 The command asks for a commit message only when uncommitted changes need a commit. If the branch
 already has unpushed commits, it uses the latest commit subject as the default PR title. A second
 argument can override the PR title.
 
-Before update classification, the workflow stages uncommitted changes, displays the complete
-relevant scope, and requires scope confirmation. It then shows recommended update type, commit
-message, and PR title, followed by a numbered Small safe / Normal / Significant selection.
-Validation is recorded with structured codes based on update classification. `SMALL_SAFE`
-automatically enables squash auto-merge only after scope confirmation, verifies the remote merge,
-and refreshes local `main`. `NORMAL` and `SIGNIFICANT` continue to offer PR-only, squash
-auto-merge, or immediate squash merge modes with explicit review gates.
+The Bash fallback retains its established scope-first interaction. The Node candidate displays a
+concise preliminary scope and recommendations, asks for the update type, verifies the worktree has
+not changed, stages only the observed path set, displays the exact upstream-relative publish scope
+including prior unpushed commits, and then requires scope confirmation. It verifies the confirmed
+index tree again before commit.
+
+Validation is recorded with structured codes based on update classification.
+`SMALL_SAFE_SCOPE_CONFIRMED` is valid only for Small safe. Normal and Significant require
+structured validation, and external policy cannot remove Significant review or typed merge gates.
 
 If a previously timed-out PR merges later, rerunning from its clean feature branch detects the
 verified merge and offers a safe refresh of local `main`.
@@ -59,18 +63,34 @@ The installer copies the reusable publish implementation and helper to:
 
 ```txt
 .codex/scripts/publish-changes.sh
+.codex/scripts/publish-changes.mjs
+.codex/scripts/publish-changes/
+.codex/scripts/shared/
+.codex/config/publish-changes-policy.yml
 .codex/scripts/lib/workflow-common.sh
 ```
 
-Run it directly from a downstream project:
+The Bash implementation remains the documented fallback during Theme 17.3:
 
 ```bash
 bash .codex/scripts/publish-changes.sh
 bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
 ```
 
-The installer does not create or modify a downstream `package.json`. A project that wants a short
-command may add its own optional alias:
+The Node candidate can be inspected with Node.js 24 or newer:
+
+```bash
+node .codex/scripts/publish-changes.mjs --help
+node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
+```
+
+The source repository uses package-managed `yaml` for policy loading. The installer does not
+create or modify a downstream `package.json`; if `yaml` is unavailable downstream, the Node CLI
+ignores the external YAML file, warns clearly, and uses built-in conservative defaults. A future
+primary cutover must retain that self-contained behavior or provide an explicit runtime packaging
+strategy.
+
+A project that wants a short Bash fallback alias may add its own optional configuration:
 
 ```json
 {

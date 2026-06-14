@@ -1,12 +1,25 @@
 {
   "name": "agent-project-foundation-kit",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "packageManager": "pnpm@10.26.2",
   "scripts": {
     "publish:local": "bash scripts/publish-local-change.sh",
+    "publish:node": "node kit/scripts/publish-changes.mjs",
     "apply-theme": "bash scripts/apply-theme-zip.sh",
     "test:install": "bash scripts/test-install-foundation-kit.sh",
-    "test:publish": "bash scripts/test-publish-local-change.sh",
-    "check": "bash -n scripts/*.sh scripts/lib/*.sh kit/scripts/*.sh kit/scripts/lib/*.sh && bash scripts/test-install-foundation-kit.sh && bash scripts/test-publish-local-change.sh && git diff --check"
+    "test": "vitest run",
+    "test:publish": "pnpm test:publish:node && pnpm test:publish:bash",
+    "test:publish:node": "vitest run tests/publish-changes",
+    "test:publish:bash": "bash scripts/test-publish-local-change.sh",
+    "check": "bash -n scripts/*.sh scripts/lib/*.sh kit/scripts/*.sh kit/scripts/lib/*.sh && pnpm test:publish && pnpm test:install && git diff --check"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.8"
   }
 }
