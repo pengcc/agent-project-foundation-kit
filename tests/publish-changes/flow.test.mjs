@@ -31,6 +31,9 @@ function createHarness({
   let merged = false;
   let prCreated = false;
   let currentBranch = branch;
+  let currentHead = 'head-sha';
+  let currentTree = hasUncommitted ? 'base-tree' : 'confirmed-tree';
+  let currentParent = 'base-parent';
   const answers =
     classification === 'small_safe'
       ? ['1']
@@ -50,6 +53,7 @@ function createHarness({
     upstream: async () => 'origin/feature/publish',
     verifyRef: async () => true,
     logRange: async () => (hasUnpushed ? 'abc Existing local commit' : ''),
+    latestSubject: async () => 'Existing local commit',
     diff: async (args) => {
       if (args.includes('--binary')) return 'binary patch';
       if (args.includes('--numstat')) return '2\t0\tpackage.json';
@@ -67,13 +71,18 @@ function createHarness({
       calls.push('commit');
       clean = true;
       staged = false;
+      currentParent = currentHead;
+      currentHead = 'committed-head-sha';
+      currentTree = 'confirmed-tree';
     },
     switchCreate: async (newBranch) => {
       calls.push(`switch-create:${newBranch}`);
       currentBranch = newBranch;
     },
     push: async (pushedBranch) => calls.push(`push:${pushedBranch}`),
-    head: async () => 'head-sha',
+    head: async () => currentHead,
+    tree: async () => currentTree,
+    parent: async () => currentParent,
     switchBranch: async () => calls.push('switch-main'),
     canFastForwardTo: async () => true,
     pullFastForward: async () => calls.push('pull-main'),
@@ -100,7 +109,7 @@ function createHarness({
       state: merged ? 'MERGED' : 'OPEN',
       baseRefName: 'main',
       headRefName: currentBranch,
-      headRefOid: 'head-sha',
+      headRefOid: currentHead,
       isDraft: false,
       mergeable: 'MERGEABLE',
       mergeStateStatus: 'CLEAN',
@@ -341,6 +350,30 @@ describe('publish flow classification gates', () => {
     expect(harness.calls.some((call) => call.startsWith('add:'))).toBe(false);
   });
 
+  it('aborts when untracked content changes without changing its path', async () => {
+    const harness = createHarness({ classification: 'normal' });
+    harness.git.statusZ = async () => '?? new file.txt\0';
+    let hashRead = 0;
+    harness.git.hashFiles = async () => {
+      hashRead += 1;
+      return hashRead === 1 ? 'first-hash' : 'changed-hash';
+    };
+
+    await expect(
+      runPublishFlow({
+        ...harness,
+        policy: structuredClone(DEFAULT_POLICY),
+        options: {
+          commitMessage: 'Untracked content drift',
+          prTitle: 'Untracked content drift',
+          showDiff: false,
+        },
+        env: {},
+      }),
+    ).rejects.toThrow('Worktree changed after scope collection');
+    expect(harness.calls.some((call) => call.startsWith('add:'))).toBe(false);
+  });
+
   it('aborts when the staged tree changes after scope confirmation', async () => {
     const harness = createHarness({ classification: 'normal' });
     let treeRead = 0;
@@ -361,6 +394,87 @@ describe('publish flow classification gates', () => {
       }),
     ).rejects.toThrow('Staged scope changed after confirmation');
     expect(harness.calls).not.toContain('commit');
+    expect(harness.calls.some((call) => call.startsWith('push:'))).toBe(false);
+  });
+
+  it('aborts when existing unpushed history changes after confirmation', async () => {
+    const harness = createHarness({
+      classification: 'normal',
+      hasUncommitted: false,
+      hasUnpushed: true,
+    });
+    let head = 'confirmed-head';
+    harness.git.head = async () => head;
+    harness.git.tree = async () => `${head}-tree`;
+    const ask = harness.prompts.ask;
+    harness.prompts.ask = async (message) => {
+      const answer = await ask(message);
+      if (message.includes('validation code')) head = 'changed-head';
+      return answer;
+    };
+
+    await expect(
+      runPublishFlow({
+        ...harness,
+        policy: structuredClone(DEFAULT_POLICY),
+        options: {
+          commitMessage: '',
+          prTitle: 'Existing history drift',
+          showDiff: false,
+        },
+        env: {},
+      }),
+    ).rejects.toThrow('Branch history changed after scope confirmation');
+    expect(harness.calls.some((call) => call.startsWith('push:'))).toBe(false);
+  });
+
+  it('aborts when the newly created commit tree differs from the confirmed staged tree', async () => {
+    const harness = createHarness({ classification: 'normal' });
+    const commit = harness.git.commit;
+    harness.git.commit = async (...args) => {
+      await commit(...args);
+      harness.git.tree = async () => 'changed-commit-tree';
+    };
+
+    await expect(
+      runPublishFlow({
+        ...harness,
+        policy: structuredClone(DEFAULT_POLICY),
+        options: {
+          commitMessage: 'Commit tree drift',
+          prTitle: 'Commit tree drift',
+          showDiff: false,
+        },
+        env: {},
+      }),
+    ).rejects.toThrow('Created commit does not match the confirmed scope');
+    expect(harness.calls.some((call) => call.startsWith('push:'))).toBe(false);
+  });
+
+  it('aborts when HEAD changes during validation before push', async () => {
+    const harness = createHarness({ classification: 'normal' });
+    const head = harness.git.head;
+    let changed = false;
+    harness.git.head = async () => (changed ? 'changed-after-validation' : head());
+    const ask = harness.prompts.ask;
+    harness.prompts.ask = async (message) => {
+      const answer = await ask(message);
+      if (message.includes('validation code')) changed = true;
+      return answer;
+    };
+
+    await expect(
+      runPublishFlow({
+        ...harness,
+        policy: structuredClone(DEFAULT_POLICY),
+        options: {
+          commitMessage: 'Validation head drift',
+          prTitle: 'Validation head drift',
+          showDiff: false,
+        },
+        env: {},
+      }),
+    ).rejects.toThrow('Branch history changed after scope confirmation');
     expect(harness.calls.some((call) => call.startsWith('push:'))).toBe(false);
   });
 

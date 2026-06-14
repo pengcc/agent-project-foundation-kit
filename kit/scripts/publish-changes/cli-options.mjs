@@ -51,4 +51,3 @@ export function usage() {
     '  -h, --help     Show this help',
   ].join('\n');
 }
-

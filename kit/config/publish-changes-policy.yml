@@ -30,4 +30,3 @@ classifications:
     require_typed_confirmation: true
     poll_after_auto_merge: true
     refresh_default_branch_after_verified_merge: true
-

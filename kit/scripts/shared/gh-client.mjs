@@ -109,4 +109,3 @@ export function createGhClient(commandRunner, cwd) {
     },
   };
 }
-

@@ -19,6 +19,8 @@ export function createGitClient(commandRunner, cwd) {
     repoRoot: () => required(['rev-parse', '--show-toplevel'], 'Could not determine repository root'),
     branch: () => required(['rev-parse', '--abbrev-ref', 'HEAD'], 'Could not determine current branch'),
     head: () => required(['rev-parse', 'HEAD'], 'Could not determine HEAD'),
+    tree: (ref) => required(['rev-parse', `${ref}^{tree}`], `Could not determine tree for ${ref}`),
+    parent: (ref) => required(['rev-parse', `${ref}^`], `Could not determine parent for ${ref}`),
     status: () => required(['status', '--porcelain'], 'Could not inspect worktree'),
     statusZ: () =>
       requiredRaw(

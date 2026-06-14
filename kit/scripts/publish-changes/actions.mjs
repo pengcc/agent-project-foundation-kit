@@ -162,4 +162,3 @@ export async function refreshDefaultBranch({
   output.success(`Reset ${defaultBranch} to ${remoteRef}.`);
   return { refreshed: true, reset: true, backup };
 }
-

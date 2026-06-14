@@ -15,4 +15,3 @@ export function commandFailure(context, result) {
     { result },
   );
 }
-

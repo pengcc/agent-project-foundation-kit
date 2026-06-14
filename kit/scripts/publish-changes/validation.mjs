@@ -37,4 +37,3 @@ export function assertMergeReady(pr, { branch, defaultBranch, headSha }) {
     throw new PublishError('POLICY_BLOCKED', 'GitHub has not resolved merge readiness.');
   }
 }
-

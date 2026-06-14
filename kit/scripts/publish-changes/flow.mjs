@@ -4,7 +4,11 @@ import {
   chooseCompletionMode,
   chooseValidation,
 } from './prompts.mjs';
-import { recommendClassification, renderScopeSummary } from './scope-summary.mjs';
+import {
+  buildScopeSummary,
+  recommendClassification,
+  renderScopeSummary,
+} from './scope-summary.mjs';
 import {
   buildStagedScope,
   captureWorktreeSnapshot,
@@ -28,6 +32,18 @@ const LABELS = {
 
 function manualRefreshInstruction(defaultBranch) {
   return `After merge verification, re-run this workflow or run: git switch ${defaultBranch} && git fetch origin ${defaultBranch} && git pull --ff-only origin ${defaultBranch}`;
+}
+
+async function captureHeadFingerprint(git) {
+  const head = await git.head();
+  return { head, tree: await git.tree(head) };
+}
+
+async function assertHeadFingerprint(git, expected, message) {
+  const current = await captureHeadFingerprint(git);
+  if (current.head !== expected.head || current.tree !== expected.tree) {
+    throw new PublishError('SCOPE_DRIFT', message);
+  }
 }
 
 export async function runPublishFlow({
@@ -128,6 +144,7 @@ export async function runPublishFlow({
   const classificationPolicy = policy.classifications[classification];
   output.info(`Selected update type: ${LABELS[classification]}`);
 
+  let confirmedHead;
   let confirmedIndexTree = '';
   let confirmedScope = state.scope;
   if (state.hasUncommitted) {
@@ -150,11 +167,30 @@ export async function runPublishFlow({
       heading: 'Exact publish scope',
     });
     confirmedIndexTree = await git.writeTree();
+    confirmedHead = await captureHeadFingerprint(git);
+  } else {
+    confirmedHead = await captureHeadFingerprint(git);
+    const confirmedRange = `${state.compareRef}...${confirmedHead.head}`;
+    confirmedScope = buildScopeSummary({
+      branch: state.branch,
+      nameStatus: await git.diff(['--name-status', confirmedRange]),
+      numstat: await git.diff(['--numstat', confirmedRange]),
+      diff: options.showDiff ? await git.diff([confirmedRange]) : '',
+    });
+    renderScopeSummary(confirmedScope, output, {
+      showDiff: options.showDiff,
+      heading: 'Exact publish scope',
+    });
   }
 
   if (!(await prompts.confirm('Does this scope match the intended task boundary?'))) {
     throw new PublishError('USER_CANCELLED', 'Scope consistency was not confirmed.');
   }
+  await assertHeadFingerprint(
+    git,
+    confirmedHead,
+    'Branch history changed during scope confirmation. Re-run and confirm the updated scope.',
+  );
 
   let branch = await ensureFeatureBranch({
     state,
@@ -166,6 +202,7 @@ export async function runPublishFlow({
     branchPrefix: env.CHANGE_BRANCH_PREFIX || 'change',
   });
   const actions = [];
+  let expectedPushHead = confirmedHead;
   if (state.hasUncommitted) {
     if ((await git.writeTree()) !== confirmedIndexTree) {
       throw new PublishError(
@@ -173,11 +210,32 @@ export async function runPublishFlow({
         'Staged scope changed after confirmation. Re-run and confirm the updated scope.',
       );
     }
+    await assertHeadFingerprint(
+      git,
+      confirmedHead,
+      'Branch history changed after scope confirmation. Re-run and confirm the updated scope.',
+    );
     await git.commit(commitMessage);
+    const committedHead = await captureHeadFingerprint(git);
+    if (
+      committedHead.tree !== confirmedIndexTree ||
+      (await git.parent(committedHead.head)) !== confirmedHead.head
+    ) {
+      throw new PublishError(
+        'SCOPE_DRIFT',
+        'Created commit does not match the confirmed scope. Do not push; re-run and confirm the updated scope.',
+      );
+    }
+    expectedPushHead = committedHead;
     actions.push('commit');
   }
 
   const validation = await chooseValidation(prompts, classification, classificationPolicy);
+  await assertHeadFingerprint(
+    git,
+    expectedPushHead,
+    'Branch history changed after scope confirmation. Do not push; re-run and confirm the updated scope.',
+  );
   await git.push(branch);
   actions.push('push');
   const pr = await createOrUpdatePullRequest({

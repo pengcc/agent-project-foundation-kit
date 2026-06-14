@@ -22,4 +22,3 @@ export function createOutput({ stdout = process.stdout, stderr = process.stderr,
     ['write', write],
   ]);
 }
-
