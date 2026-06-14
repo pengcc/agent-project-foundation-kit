@@ -27,7 +27,7 @@ export const DEFAULT_POLICY = Object.freeze({
       refresh_default_branch_after_verified_merge: true,
     },
     normal: {
-      allow_auto_merge: false,
+      allow_auto_merge: true,
       allow_immediate_merge: false,
       require_validation: true,
       allow_not_run: true,
