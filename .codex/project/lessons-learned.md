@@ -546,3 +546,23 @@ human-readable CLI output all need independent validation.
 - stage only paths observed during scope collection so new files cannot enter silently
 - compare the confirmed index to the upstream comparison ref rather than `HEAD`, so prior unpushed
   commits remain visible in the complete publish scope
+
+## Keep: Smoke-test scope drift by mutating the worktree after collection
+
+### Context
+
+Theme 17.4 manually exercised the Node publish candidate by changing the worktree after the CLI
+collected its preliminary scope.
+
+### Lesson
+
+Scope-integrity safeguards are more credible when a smoke test deliberately creates the race they
+must block. The Node CLI detected the changed worktree and stopped before publishing, confirming
+that a stale scope confirmation cannot silently include later edits.
+
+### Reuse guidance
+
+- include one deliberate post-collection mutation in manual smoke tests for publish tooling
+- verify the command aborts before commit, push, PR creation, or merge
+- treat a successful smoke run as validation evidence, not automatic approval to replace the
+  existing default workflow
