@@ -833,9 +833,11 @@ kit/skills/core/project-architecture-plan/SKILL.md
 docs/foundation-design-log.md
 ```
 
-## Current Recommended Next Themes
+## Roadmap Snapshot
 
-Priority order after Theme 17.1 stabilization:
+This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.
+
+Priority order after Theme 17.3 review / stabilization:
 
 1. technology-specific skills
 2. release workflow
