@@ -805,6 +805,21 @@ README.md
 docs/foundation-design-log.md
 ```
 
+## Theme 17.4: Node Publish CLI Smoke-Test Stabilization
+
+Status:
+
+- Manual smoke testing is mostly complete.
+- Real `pnpm publish:node` usage completed successfully and the flow was reported as smooth after
+  a minor message/UX correction.
+- Smoke Test 10 passed: a worktree change introduced after scope collection was detected and the
+  CLI aborted before publishing.
+- `pnpm publish:local` remains on the Bash fallback.
+- Default cutover to Node is deferred to a separate Theme 17.5 decision.
+
+The smoke results validate the candidate without treating test completion as implicit cutover
+authorization.
+
 ## Maintenance Update: Plan Mode Persistence and Execution Boundary
 
 Accepted decisions:
@@ -837,11 +852,12 @@ docs/foundation-design-log.md
 
 This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.
 
-Priority order after Theme 17.3 review / stabilization:
+Priority order after Theme 17.4 smoke-test stabilization:
 
-1. technology-specific skills
-2. release workflow
-3. deployment workflow
+1. Theme 17.5 Node publish default-cutover decision
+2. technology-specific skills
+3. release workflow
+4. deployment workflow
 
 Rationale:
 

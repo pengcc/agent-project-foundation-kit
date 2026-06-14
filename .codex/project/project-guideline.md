@@ -36,6 +36,7 @@ Completed themes:
 - Theme 17: reusable GitHub repository settings package
 - Theme 17.1: installable publish workflow scripts
 - Theme 17.3: Node publish CLI migration candidate and safety correction
+- Theme 17.4: Node publish CLI smoke-test validation and usability stabilization
 
 Current canonical core skill names:
 
@@ -238,8 +239,12 @@ Current Node publish candidate behavior:
 - reject YAML policies that remove immutable Normal or Significant validation/review gates
 - verify stale default-branch state and require confirmation before continuing
 - refresh the default branch only after verified merge state, independent of classification
-- retain Bash as the default until Node 24/manual GitHub smoke review and remaining cutover checks
-  are complete
+- manual Theme 17.4 smoke testing has mostly validated real `pnpm publish:node` usage and found
+  the interaction flow smooth after minor message/UX correction
+- manual scope-drift testing passed: changes introduced after scope collection were detected and
+  publishing aborted before commit, push, or PR actions
+- retain Bash as the `pnpm publish:local` default; Node cutover remains a separate Theme 17.5
+  decision rather than an automatic result of Theme 17.4 smoke testing
 
 Current `test-publish-local-change.sh` purpose:
 

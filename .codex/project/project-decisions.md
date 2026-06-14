@@ -870,6 +870,29 @@ The migration can be reviewed and exercised without forcing an early wrapper cut
 boundaries support future workflow reuse while keeping publish-only prompts local to the publish
 workflow.
 
+## Decision: Theme 17.4 smoke validation does not authorize the Node default cutover
+
+### Status
+
+Accepted
+
+### Decision
+
+Theme 17.4 manual smoke testing mostly validates the Node publish candidate for real source-repo
+use. `pnpm publish:node` completed a real publish flow smoothly, and the deliberate scope-drift
+scenario detected a changed worktree after scope collection and aborted before publishing.
+
+These results increase confidence in the candidate but do not change the default command.
+`pnpm publish:local` remains on the Bash fallback. Replacing that default requires a separate
+Theme 17.5 decision that reviews the complete smoke-test record, remaining gaps, downstream
+runtime packaging, and rollback expectations.
+
+### Impact
+
+Theme 17.4 can close as smoke-test stabilization without silently turning validation evidence into
+cutover approval. The Bash path remains available while Theme 17.5 makes the default-entrypoint
+decision explicitly.
+
 ## Decision: Planning persistence must be truthful and execution remains separately approved
 
 ### Status
