@@ -1050,6 +1050,11 @@ Resulting files / changes:
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/
 docs/foundation-design-log.md
+```
+
+Local-only artifact updated, not committed:
+
+```txt
 dev_locals/plans/2026-06-10-shared-workflow-script-library-plan.md
 ```
 

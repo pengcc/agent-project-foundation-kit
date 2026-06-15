@@ -915,21 +915,28 @@ Scope:
 Add central gate definition:
 - kit/skills/core/project-memory/SKILL.md
 
+Add required entrypoint references:
+- root AGENTS.md
+- kit/project-templates/AGENTS.md
+
 Add global operating reference:
 - kit/rules/agent-operating-contract.md
 
 Add short references:
+- kit/skills/core/initialize-project-context/SKILL.md
 - kit/skills/core/plan-with-context/SKILL.md
 - kit/skills/core/execute-plan/SKILL.md
 - kit/skills/core/code-review/SKILL.md
 - kit/skills/core/project-architecture-plan/SKILL.md
+- kit/skills/core/update-project-memory/SKILL.md
 - kit/skills/core/handoff/SKILL.md
 - kit/skills/core/publish-current-branch/SKILL.md
 - kit/skills/core/write-a-skill/SKILL.md
 
-Optionally patch:
-- root AGENTS.md
-- kit/project-templates/AGENTS.md
+Add context-repair special handling:
+- initialize-project-context may report incomplete or stale memory while diagnosing context
+- update-project-memory may proceed to repair confirmed memory gaps without treating the gap
+  itself as a permanent workflow block
 ```
 
 Non-goals:
