@@ -354,13 +354,9 @@ If there is not enough context for a good PR body, create a concise factual PR b
 
 ## Project Memory Interaction
 
-Read project memory before publishing when available:
-
-```txt
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
+Before publishing, pass the Project Memory Context Gate defined in the `project-memory` skill and
+include its report in the publish context. Do not redefine the gate sequence or status meanings
+here.
 
 Use project memory to understand:
 

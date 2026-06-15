@@ -6,7 +6,9 @@ Keep this file short and operational. Do not store detailed project facts here. 
 
 ## Required Startup Context
 
-Before any project-related planning, implementation, review, refactor, debugging, documentation, or publishing task, use the `project-memory` skill.
+Before any project-related planning, implementation, review, refactor, debugging, documentation,
+or publishing task, pass the Project Memory Context Gate defined in the installed
+`project-memory` skill. Report the gate result before context-dependent output or mutation.
 
 The `project-memory` skill is the unified entry point for reading and applying durable project memory.
 

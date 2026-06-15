@@ -45,6 +45,13 @@ publish-current-branch = push / PR / merge workflow
 
 `execute-plan` must not expand scope, silently update project memory, or treat generic Codex UI execution as a trusted project workflow boundary.
 
+## Project Memory Context Gate
+
+Before execution, pass the Project Memory Context Gate defined in the `project-memory` skill and
+include its report in the execution context. Confirm that the approved plan still matches current
+project memory and repository evidence. If material drift invalidates the plan, stop and return to
+`plan-with-context`; do not redefine the gate here.
+
 ## Required Approval
 
 `execute-plan` only executes an approved plan.

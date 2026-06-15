@@ -88,16 +88,14 @@ If file writing is not available, output the handoff content and clearly state t
 
 ## Required Context Check
 
-Before creating a handoff, inspect relevant context as available:
+Before creating a handoff, pass the Project Memory Context Gate defined in the `project-memory`
+skill and include its report in the handoff context. Do not redefine the gate sequence or status
+meanings here.
+
+Then inspect task-relevant context as available:
 
 ```txt
-AGENTS.md
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
 current branch / git status summary when available
-recent plan under dev_locals/plans/
-recent handoff under dev_locals/handoffs/
 relevant docs
 relevant changed files
 relevant PR / commit / issue URLs if provided
@@ -106,6 +104,10 @@ relevant PR / commit / issue URLs if provided
 Do not read broad unrelated code.
 
 Do not duplicate existing artifacts. Reference them.
+
+Use an earlier plan, handoff, report, or research note only when the user or active task identifies
+it as relevant, and only after the Project Memory Context Gate freshness check. Do not scan all
+local process artifacts by default.
 
 If the user provides a specific handoff focus, optimize the handoff around that focus instead of summarizing everything.
 

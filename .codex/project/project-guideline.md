@@ -66,6 +66,17 @@ Current canonical productivity skill names:
 - `handoff`
 - `write-a-skill`
 
+Current project-memory context control:
+
+- `kit/skills/core/project-memory/SKILL.md` is the single canonical definition of the Project
+  Memory Context Gate.
+- Root and downstream AGENTS entrypoints, the operating contract, and project-state workflow
+  skills use short references to that definition.
+- The gate applies both to downstream installed projects and this source repository's
+  `.codex/project/` memory.
+- Referenced plans, handoffs, reports, and research notes are checked only when task-relevant and
+  only after freshness and source-of-truth verification.
+
 Future planned themes:
 
 - technology-specific skills
@@ -425,6 +436,9 @@ Current validation is mostly file/content based:
 - Verify remote raw GitHub file line counts after push when needed
 - Prefer PR review for high-risk or multi-file theme updates
 - Run `pnpm check` for shell syntax, installer tests, publish workflow tests, and whitespace validation
+- Verify the complete Project Memory Context Gate sequence and status meanings exist only in
+  `kit/skills/core/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills contain
+  short references only
 
 ## 10. Development Workflow
 
@@ -489,6 +503,9 @@ Completed:
 - Theme 16 `write-a-skill`
     - `kit/skills/core/write-a-skill`
     - `kit/prompts/force-write-a-skill.md`
+- Phase 1 Project Memory Context Gate
+    - canonical definition in `kit/skills/core/project-memory/SKILL.md`
+    - concise references in entrypoints, the operating contract, and scoped workflows
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`

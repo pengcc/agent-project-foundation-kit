@@ -1208,3 +1208,38 @@ The existing `publish:local` and `publish:node` command behavior remains unchang
 Review fixes can be published without stepping through the full classified workflow, while merge
 authorization remains an explicit and independently verifiable action. Both modes share the
 maintained Node clients and narrow safety helpers, and no Bash publish path is restored.
+
+## Decision: Project memory has one canonical context gate
+
+### Status
+
+Accepted
+
+### Context
+
+Project-state workflows previously repeated different memory-reading lists. That duplication made
+source-repository versus downstream behavior unclear and allowed workflow references to drift from
+the central project-memory contract.
+
+### Decision
+
+Define the complete Project Memory Context Gate sequence, source selection, reporting interface,
+continuation rules, and status meanings only in:
+
+```txt
+kit/skills/core/project-memory/SKILL.md
+```
+
+Root `AGENTS.md`, the downstream AGENTS template, the operating contract, and scoped workflow
+skills use short references without redefining the gate.
+
+The same gate applies to downstream installed projects and this foundation-kit source repository.
+Initialization and memory-update workflows follow the central context-repair continuation rules.
+Plans, handoffs, reports, and research notes are inspected only when identified as task-relevant,
+after freshness and source-of-truth verification.
+
+### Impact
+
+Project-state workflows share one auditable context contract while preserving their existing
+planning, execution, review, publishing, handoff, and skill-authoring boundaries. Future gate
+changes have one canonical edit location.

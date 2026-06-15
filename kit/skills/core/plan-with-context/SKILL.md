@@ -35,20 +35,9 @@ The Project Planner clarifies scope, checks project context, verifies technical 
 
 ## Required Workflow Chain
 
-Before creating a plan, follow the `project-memory` skill.
-
-The `project-memory` skill is the unified entry point for reading and applying project memory.
-
-Use it to read and apply:
-
-```txt
-AGENTS.md
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
-
-Do not redefine project memory reading rules inside this skill.
+Before creating a plan, pass the Project Memory Context Gate defined in the `project-memory`
+skill and include its report in the planning context. Follow the central gate result before
+producing a plan; do not redefine its sequence or status meanings here.
 
 If the plan involves technical judgment, API behavior, versions, dependencies, configuration, deployment, tests, external services, debugging, or review best practices, run `docs-first-research`.
 
@@ -103,11 +92,12 @@ lockfile
 config files
 existing source files
 existing tests
-previous related plans in dev_locals/plans/
-handoffs in dev_locals/handoffs/
 ```
 
 Before asking the user a question, check whether the answer is available in project docs, project memory, existing code, configuration files, tests, package files, or official documentation.
+
+Use a plan, handoff, or other local process artifact only when the user or active task identifies
+it as relevant, and only after the Project Memory Context Gate freshness check.
 
 ## Docs-First Requirement
 
