@@ -836,6 +836,16 @@ Accepted decisions:
 7. Downstream projects may invoke the installed Node CLI directly when Node 24+ is available or
    use the installed Bash script as a fallback.
 
+Post-cutover validation status:
+
+- A real source-repository publish completed successfully through the new `pnpm publish:local`
+  Node default.
+- Theme 17.5 is post-cutover validated for source-repository usage.
+- `pnpm publish:node` remains the explicit Node alias and `pnpm publish:bash` remains the supported
+  fallback.
+- Continue dogfooding the Node default for several more real updates before considering Bash
+  removal in a separate decision.
+
 Resulting files / changes:
 
 ```txt

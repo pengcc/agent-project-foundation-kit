@@ -252,6 +252,10 @@ Current Node publish default behavior:
   as an explicit alias and `pnpm publish:bash` as the rollback path
 - keep Node Vitest coverage, Bash publish tests, installer tests, remaining shell syntax checks,
   and whitespace checks in `pnpm check`
+- a real post-cutover `pnpm publish:local` run completed successfully using the Node default
+- consider Theme 17.5 post-cutover validated for source-repository usage while continuing to
+  dogfood the Node default for several more real updates
+- do not remove the Bash fallback until that additional usage is reviewed in a separate decision
 - load publish output styles from `kit/config/publish-cli-theme.json` in the source repository and
   `.codex/config/publish-cli-theme.json` after installation
 - accept only ANSI color strings or three-integer RGB arrays plus `fullLine` in theme level styles
@@ -460,6 +464,8 @@ Completed:
     - `pnpm publish:local` and `pnpm publish:node` use the Node CLI
     - `pnpm publish:bash` retains the supported Bash fallback
     - `pnpm check` validates both implementations, installer behavior, shell syntax, and whitespace
+    - post-cutover source-repository dogfood publish completed successfully
+    - Bash removal remains deferred pending several more real Node-default updates
 
 
 In progress / next likely themes:
