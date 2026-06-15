@@ -928,6 +928,15 @@ Accepted decisions:
     publish tests, installer tests, shell syntax, and whitespace validation.
 14. Default cutover and Bash removal require later explicit themes.
 
+Manual downstream validation status:
+
+- The Node installer candidate was used in a downstream installation smoke test.
+- The smoke test looked good and no blocking issues were observed.
+- Theme 18.1 is validated enough for continued Node installer dogfooding.
+- Bash remains the active/default installer.
+- Theme 18.2 may separately consider a Node-first workflow and Bash archive planning.
+- If later dogfooding finds Node installer issues, prefer fixing the Node implementation.
+
 Resulting files / changes:
 
 ```txt

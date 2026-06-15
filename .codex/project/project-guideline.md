@@ -475,7 +475,10 @@ Completed:
     - dry-run default and exact-token conflict authorization
     - replacement staging, backup snapshots, and complete plan revalidation before downstream writes
     - backup manifests with verified hashes and partial-progress status
-    - Bash default cutover remains a later explicit decision
+    - manual downstream installation smoke testing completed with no blocking issues observed
+    - candidate is validated for continued dogfooding
+    - Bash remains active/default; Node-first workflow and Bash archive planning require a
+      separate Theme 18.2 decision
 
 
 In progress / next likely themes:

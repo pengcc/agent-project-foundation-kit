@@ -622,4 +622,7 @@ every imported helper.
 - record partial progress without claiming automatic rollback
 - keep optional preview tools non-blocking
 - test candidate and fallback implementations together before cutover
+- exercise the candidate in a real downstream installation scenario before considering cutover
+- treat a successful downstream smoke test as dogfooding evidence, not default-switch approval
+- fix candidate defects in the candidate implementation when its architecture remains sound
 - separate candidate introduction, default cutover, and fallback removal decisions

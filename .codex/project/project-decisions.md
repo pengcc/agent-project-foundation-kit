@@ -1037,3 +1037,14 @@ copy, or verification. The installer never creates or modifies downstream `packa
 The source repository gains a testable migration candidate while preserving the known Bash
 rollback path. `pnpm check` covers Node and Bash installer behavior together. Default cutover and
 Bash removal remain separate future decisions.
+
+### Validation status
+
+The Node candidate has been exercised manually in a downstream installation scenario. The smoke
+test looked good and exposed no blocking issue, so Theme 18.1 is validated enough for continued
+Node installer dogfooding.
+
+This evidence does not change the active/default installer. Bash remains active until a separate
+Theme 18.2 decision considers a Node-first workflow and an explicit Bash archive plan. If later
+dogfooding finds a Node installer defect, prefer correcting the Node implementation rather than
+retreating from the candidate without analysis.
