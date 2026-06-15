@@ -1017,6 +1017,47 @@ kit/skills/core/update-project-memory/SKILL.md
 docs/foundation-design-log.md
 ```
 
+## Phase 0: Process Artifact Lifecycle and Maintained Tooling Boundary
+
+Accepted decisions:
+
+1. Plans, handoffs, reports, research notes, and execution logs are process artifacts, not durable
+   project truth or automatic execution authority.
+2. Current `AGENTS.md`, project memory, repository files, package scripts, and maintained tooling
+   boundaries take precedence over stale process artifacts.
+3. Plans older than one day require explicit user selection and current-source re-verification
+   before execution.
+4. The Node publish CLI and Node installer are the maintained publish and installation paths.
+5. `scripts/apply-theme-zip.sh` remains an active Bash source-repository helper.
+6. Bash publish and installer snapshots under `archive/legacy-bash-workflows/` are unsupported
+   historical reference, remain outside `kit/`, and are never installed downstream.
+
+Rationale:
+
+- prevent future planning from reviving archived Bash workflows
+- preserve useful historical artifacts without confusing them with current authority
+- make current package scripts and project memory the explicit freshness check
+
+Non-goals:
+
+- no publish, installer, apply-theme, archive, or script behavior changes
+- no Project Memory Context Gate implementation
+- no Phase 1-7 roadmap implementation
+
+Resulting files / changes:
+
+```txt
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/
+docs/foundation-design-log.md
+```
+
+Local-only artifact updated, not committed:
+
+```txt
+dev_locals/plans/2026-06-10-shared-workflow-script-library-plan.md
+```
+
 ## Roadmap Snapshot
 
 This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.

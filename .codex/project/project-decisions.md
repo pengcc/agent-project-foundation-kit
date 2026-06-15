@@ -1128,3 +1128,43 @@ Every task final report explicitly records external/global actions, including `N
 Project validation remains reproducible without granting agents implicit authority over machine
 configuration. Runtime diagnostics stay available, while global remediation remains visible and
 user-controlled.
+
+## Decision: Process artifacts do not override current project truth
+
+### Status
+
+Accepted
+
+### Context
+
+Local plans, handoffs, reports, research notes, and execution logs preserve useful working context,
+but they can outlive the implementation state and tooling boundary they describe.
+
+### Decision
+
+Treat process artifacts as temporary evidence, not durable project truth or automatic execution
+authority.
+
+Before using one, verify its date, status, explicit user selection, and alignment with:
+
+```txt
+AGENTS.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+current repository files
+current package scripts
+current maintained tooling boundaries
+```
+
+Current project memory and repository state win when a process artifact conflicts with them.
+Plans older than one day must not be proactively used as execution authority unless the user
+explicitly names the plan and it is re-verified. If the conflict cannot be resolved from current
+sources, stop and request user review.
+
+Superseded process artifacts should be marked superseded, deprecated, or archived so their status
+is visible without erasing useful history.
+
+### Impact
+
+Future work will not revive archived Bash publish or installer workflows, or execute stale plans,
+solely because old process artifacts still mention them.
