@@ -903,6 +903,43 @@ kit/skills/core/project-architecture-plan/SKILL.md
 docs/foundation-design-log.md
 ```
 
+## Theme 18.1: Node Installer Candidate
+
+Accepted decisions:
+
+1. Add a Node.js 24+ ESM installer candidate under source `scripts/`.
+2. Keep `scripts/install-foundation-kit.sh` as the active installer and supported fallback.
+3. Do not add or switch a default installer alias in Theme 18.1.
+4. Keep installer-specific modules under `scripts/install-foundation-kit/`.
+5. The Node installer consumes only `kit/` as installable payload and is never installed
+   downstream.
+6. Source-only installer code may reuse `kit/scripts/shared/` output helpers at runtime without
+   changing payload ownership.
+7. Dry-run is the default; writes require `--apply`.
+8. Existing files, including identical files, are conflicts and require the exact
+   `INSTALL_WITH_BACKUP` token through interactive or piped input.
+9. Replacement staging, complete backup snapshot preparation, hash verification, and plan
+   revalidation must all succeed before any downstream write.
+10. Backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` with a
+    relative-path-only manifest and partial-progress status.
+11. Optional `diff -u` preview is non-blocking when unavailable.
+12. The installer never creates or modifies downstream `package.json`.
+13. `test:install` runs the Node Vitest suite and the existing Bash suite; `pnpm check` retains
+    publish tests, installer tests, shell syntax, and whitespace validation.
+14. Default cutover and Bash removal require later explicit themes.
+
+Resulting files / changes:
+
+```txt
+scripts/install-foundation-kit.mjs
+scripts/install-foundation-kit/
+tests/install-foundation-kit/
+package.json
+README.md
+.codex/project/
+docs/foundation-design-log.md
+```
+
 ## Roadmap Snapshot
 
 This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.

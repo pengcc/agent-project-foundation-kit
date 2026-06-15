@@ -980,3 +980,60 @@ execution affordances.
 
 Agents no longer depend on nonexistent plan files or imply that planning automatically advances
 into implementation. The same boundary applies in this source repository and downstream projects.
+
+## Decision: Theme 18.1 adds a source-only Node installer candidate
+
+### Status
+
+Accepted
+
+### Context
+
+The Bash installer is established and tested, but its monolithic structure makes boundary,
+preparation, backup, and interruption behavior harder to isolate and validate. A Node.js 24+ ESM
+candidate can provide explicit planning and deterministic local tests without forcing an
+installer cutover.
+
+### Decision
+
+Theme 18.1 adds:
+
+```txt
+scripts/install-foundation-kit.mjs
+scripts/install-foundation-kit/
+tests/install-foundation-kit/
+```
+
+The Node installer is source-repository tooling only. It consumes `kit/` as the complete
+installable payload and must never install its own entrypoint or installer-specific modules
+downstream. It may import existing source helpers from `kit/scripts/shared/` at runtime; this
+reuse does not change installer ownership or payload boundaries.
+
+The command aliases are:
+
+```txt
+pnpm install:node
+pnpm install:bash
+pnpm test:install:node
+pnpm test:install:bash
+pnpm test:install
+```
+
+No default `install` alias is added. Bash remains the active installer until a later explicit
+cutover decision.
+
+The Node candidate defaults to dry-run and requires `--apply` for writes. Conflicts require the
+exact `INSTALL_WITH_BACKUP` token through interactive or piped input. Before any downstream write,
+all replacement files and required backup snapshots must be staged and hash-verified outside the
+target, and the complete source/target plan must be revalidated. A materialized backup includes a
+relative-path-only manifest with source, target, original/replacement hashes, status, and completed
+targets.
+
+`diff -u` is optional preview behavior. Its absence cannot block planning, authorization, backup,
+copy, or verification. The installer never creates or modifies downstream `package.json`.
+
+### Impact
+
+The source repository gains a testable migration candidate while preserving the known Bash
+rollback path. `pnpm check` covers Node and Bash installer behavior together. Default cutover and
+Bash removal remain separate future decisions.
