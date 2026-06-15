@@ -11,36 +11,26 @@ pnpm publish:local
 pnpm publish:local "Commit message"
 pnpm publish:local "Commit message" "PR title"
 pnpm publish:node "Commit message" "PR title"
-pnpm publish:bash "Commit message" "PR title"
 pnpm install:node -- --target /path/to/project
-pnpm install:bash -- --target /path/to/project
 pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
 pnpm test:publish
 pnpm check
 ```
 
-`publish:local` and `publish:node` run the Node.js 24+ ESM publish CLI. `publish:bash` retains the
-Bash implementation as an explicit fallback. `pnpm check` validates both publish paths, installer
-behavior, and remaining shell syntax.
+`publish:local` and `publish:node` run the maintained Node.js 24+ ESM publish CLI. `pnpm check`
+validates the Node publish and installer paths, active apply-theme Bash syntax, and whitespace.
 
 ## Installer Commands
 
-The Bash installer remains the active, documented installer during Theme 18.1:
-
-```bash
-pnpm install:bash -- --target /path/to/downstream-project
-pnpm install:bash -- --target /path/to/downstream-project --apply
-```
-
-The Node.js 24+ ESM installer is a source-repository candidate:
+The Node.js 24+ ESM installer is maintained source-repository tooling:
 
 ```bash
 pnpm install:node -- --target /path/to/downstream-project
 pnpm install:node -- --target /path/to/downstream-project --apply
 ```
 
-Both installers default to dry-run. The Node candidate reads installable content only from `kit/`
+The installer defaults to dry-run. It reads installable content only from `kit/`
 and never installs its own `scripts/install-foundation-kit.mjs` entrypoint or installer-specific
 modules. It may reuse source-repository output helpers from `kit/scripts/shared/` at runtime, but
 that does not make the installer part of the downstream payload.
@@ -54,19 +44,18 @@ backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` wit
 Use `--show-diff` for optional `diff -u` previews. A missing `diff` command warns but does not
 block dry-run, apply authorization, backup, installation, or verification.
 
-Both publish implementations use a feature branch and pull request. They never push directly to
-`main`. At startup they check default-branch freshness, list repository-level open PRs, detect the
-current-branch PR, and inspect uncommitted changes and unpushed commits.
+The Node publish implementation uses a feature branch and pull request. It never pushes directly
+to `main`. At startup it checks default-branch freshness, lists repository-level open PRs, detects
+the current-branch PR, and inspects uncommitted changes and unpushed commits.
 
 The command asks for a commit message only when uncommitted changes need a commit. If the branch
 already has unpushed commits, it uses the latest commit subject as the default PR title. A second
 argument can override the PR title.
 
-The Bash fallback retains its established scope-first interaction. The Node default displays a
-concise preliminary scope and recommendations, asks for the update type, verifies the worktree has
-not changed, stages only the observed path set, displays the exact upstream-relative publish scope
-including prior unpushed commits, and then requires scope confirmation. It verifies the confirmed
-index tree again before commit.
+The Node default displays a concise preliminary scope and recommendations, asks for the update
+type, verifies the worktree has not changed, stages only the observed path set, displays the exact
+upstream-relative publish scope including prior unpushed commits, and then requires scope
+confirmation. It verifies the confirmed index tree again before commit.
 
 Validation is recorded with structured codes based on update classification.
 `SMALL_SAFE_SCOPE_CONFIRMED` is valid only for Small safe. Normal and Significant require
@@ -92,16 +81,14 @@ local `main` until GitHub confirms that the pull request was merged.
 
 ## Installed Publish Command
 
-The installer copies the reusable publish implementation and helper to:
+The installer copies the reusable Node publish implementation and helpers to:
 
 ```txt
-.codex/scripts/publish-changes.sh
 .codex/scripts/publish-changes.mjs
 .codex/scripts/publish-changes/
 .codex/scripts/shared/
 .codex/config/publish-changes-policy.yml
 .codex/config/publish-cli-theme.json
-.codex/scripts/lib/workflow-common.sh
 ```
 
 Use the installed Node CLI directly when Node.js 24 or newer is available:
@@ -109,13 +96,6 @@ Use the installed Node CLI directly when Node.js 24 or newer is available:
 ```bash
 node .codex/scripts/publish-changes.mjs --help
 node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
-```
-
-The installed Bash implementation remains a supported fallback:
-
-```bash
-bash .codex/scripts/publish-changes.sh
-bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
 ```
 
 The source repository uses package-managed `yaml` for policy loading. The installer does not
@@ -130,15 +110,10 @@ bold, so label bold is intentionally not configurable. Missing or invalid theme 
 warning and activates matching built-in defaults. Documentation should reference the config
 rather than duplicating its complete color table.
 
-A project that wants a short Bash fallback alias may add its own optional configuration:
-
-```json
-{
-  "scripts": {
-    "publish:local": "bash .codex/scripts/publish-changes.sh"
-  }
-}
-```
+Historical Bash publish and installer snapshots are retained under
+`archive/legacy-bash-workflows/` for source-only reference. They are unsupported, are outside
+`kit/`, and are never installed downstream. Existing downstream projects may still contain Bash
+files installed by older kit versions; this installer does not automatically delete them.
 
 Reusable settings for downstream repositories are provided under:
 

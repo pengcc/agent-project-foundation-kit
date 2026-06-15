@@ -149,3 +149,20 @@ For implementation work, run or recommend the smallest meaningful validation:
 - manual verification
 
 If validation is skipped, explain why.
+
+## 16. Reassess the Runtime as Automation Grows
+
+Shell is appropriate for small, linear glue around existing commands. Reassess the runtime before
+a script becomes a workflow engine with complex state, structured data, interactive prompts,
+backups, path-boundary enforcement, recovery logic, or extensive branching.
+
+When those signals appear:
+
+- warn that the current runtime may be increasing correctness and testability risk
+- compare the cost of continued shell growth with migration to a more testable runtime
+- research and plan the migration before the script becomes harder to replace
+- preserve a bounded archive or rollback reference only when it has a clear ownership and support
+  status
+
+Node.js is one suitable choice in this repository, but the general rule is to select the runtime
+that best supports the workflow's state model, validation needs, and long-term maintenance.

@@ -949,6 +949,40 @@ README.md
 docs/foundation-design-log.md
 ```
 
+## Theme 18.2: Node-First Automation and Legacy Bash Archive
+
+Accepted decisions:
+
+1. The Node publish CLI and Node installer are the maintained publish and installer paths.
+2. Future defects should be fixed in the Node implementations first.
+3. Preserve exact legacy Bash publish and installer snapshots under
+   `archive/legacy-bash-workflows/` as unsupported source-only historical reference.
+4. Keep the archive outside `kit/` so it is never installed downstream.
+5. Remove active Bash publish/installer aliases, tests, wrappers, and installable payload files.
+6. Do not automatically remove previously installed Bash files from existing downstream projects.
+7. Keep `scripts/apply-theme-zip.sh` active and give it a source-owned
+   `scripts/lib/workflow-common.sh` helper before removing the installable shared Bash helper.
+8. Keep `pnpm check` focused on Node publish tests, Node installer tests, active apply-theme shell
+   syntax, and whitespace.
+9. Reassess runtime choice early when shell scripts grow from command glue into complex workflow
+   engines with state, structured data, backups, recovery, or path-boundary enforcement.
+
+Resulting files / changes:
+
+```txt
+archive/legacy-bash-workflows/
+package.json
+scripts/lib/workflow-common.sh
+kit/scripts/
+tests/publish-changes/
+tests/install-foundation-kit/
+README.md
+kit/skills/core/publish-current-branch/SKILL.md
+kit/rules/engineering-quality-principles.md
+.codex/project/
+docs/foundation-design-log.md
+```
+
 ## Roadmap Snapshot
 
 This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.

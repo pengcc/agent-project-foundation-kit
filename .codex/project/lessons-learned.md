@@ -626,3 +626,33 @@ every imported helper.
 - treat a successful downstream smoke test as dogfooding evidence, not default-switch approval
 - fix candidate defects in the candidate implementation when its architecture remains sound
 - separate candidate introduction, default cutover, and fallback removal decisions
+
+## Mixed: Reassess the runtime before shell glue becomes a workflow engine
+
+### Context
+
+The publish and installer workflows began as Bash automation and later accumulated structured
+state, interactive decisions, path-boundary enforcement, backup preparation, recovery behavior,
+and extensive deterministic tests. Node migrations ultimately provided clearer module boundaries
+and more focused testability.
+
+### Lesson
+
+Bash remains effective for small, linear command glue such as the active apply-theme workflow.
+Once a script owns substantial state or safety-critical orchestration, continuing to add shell
+branches can make correctness and local testing disproportionately difficult.
+
+Runtime reassessment should happen when complexity signals first appear, not only after a large
+script becomes expensive to replace. Agents should surface the tradeoff, research an appropriate
+runtime, and plan migration while retaining a clear rollback or archival boundary.
+
+### Reuse guidance
+
+- keep shell for bounded command composition where its model remains clear
+- reassess when structured data, interactive prompts, backups, path security, recovery, or
+  cross-step state become central
+- warn the user when runtime complexity is becoming a maintenance risk
+- migrate through candidate, validation, cutover, and archive stages rather than one irreversible
+  replacement
+- label archived implementations as unsupported and keep them outside installable payloads
+- preserve active Bash exceptions only when their ownership and validation remain explicit

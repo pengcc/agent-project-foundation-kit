@@ -1048,3 +1048,47 @@ This evidence does not change the active/default installer. Bash remains active 
 Theme 18.2 decision considers a Node-first workflow and an explicit Bash archive plan. If later
 dogfooding finds a Node installer defect, prefer correcting the Node implementation rather than
 retreating from the candidate without analysis.
+
+## Decision: Theme 18.2 standardizes Node-first automation and archives legacy Bash workflows
+
+### Status
+
+Accepted
+
+### Context
+
+The Node publish CLI is the source-repository default and has been successfully dogfooded. The
+Node installer candidate passed automated coverage and a downstream smoke test. Maintaining Bash
+publish and installer implementations in parallel now duplicates workflow behavior and validation
+without providing the preferred defect-fix path.
+
+The active apply-theme workflow still uses Bash and previously depended on a helper shared with
+the legacy publish path.
+
+### Decision
+
+Theme 18.2 makes the Node publish CLI and Node installer the maintained automation paths. Future
+publish or installer defects should be fixed in the Node implementations first.
+
+Legacy Bash publish and installer files are preserved as exact source-only snapshots under:
+
+```txt
+archive/legacy-bash-workflows/
+```
+
+The archive is unsupported historical reference, remains outside `kit/`, and must never be
+installed downstream. Active Bash publish and installer aliases, tests, wrappers, and installable
+payload files are removed. Existing downstream projects may retain files installed by earlier
+versions; the Node installer does not automatically delete them.
+
+`scripts/apply-theme-zip.sh` remains active Bash tooling. Its required helper is source-owned at
+`scripts/lib/workflow-common.sh`, so it does not depend on archived or installable Bash files.
+
+`pnpm check` validates Node publish tests, Node installer tests, active apply-theme shell syntax,
+and whitespace.
+
+### Impact
+
+The maintained workflow surface is smaller and fresh downstream installs receive only the Node
+publish implementation. Historical Bash behavior remains inspectable without being presented as
+an operational fallback. Apply-theme remains unchanged as an explicit active Bash exception.

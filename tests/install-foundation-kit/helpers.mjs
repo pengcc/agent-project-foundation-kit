@@ -40,14 +40,13 @@ export async function createFixtureKit(repoRoot) {
     'config/example.json': '{"enabled":true}\n',
     'github-settings/example.json': '{"private":true}\n',
     'scripts/publish-changes.mjs': 'console.log("publish");\n',
-    'scripts/lib/workflow-common.sh': '#!/usr/bin/env bash\nprintf "workflow\\n"\n',
   };
   for (const [relative, contents] of Object.entries(files)) {
     const path = resolve(kitRoot, relative);
     await mkdir(resolve(path, '..'), { recursive: true });
     await writeFile(path, contents, 'utf8');
   }
-  await chmod(resolve(kitRoot, 'scripts/lib/workflow-common.sh'), 0o755);
+  await chmod(resolve(kitRoot, 'scripts/publish-changes.mjs'), 0o755);
   return kitRoot;
 }
 

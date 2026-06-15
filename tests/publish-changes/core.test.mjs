@@ -88,23 +88,22 @@ describe('CLI options', () => {
 });
 
 describe('source repository package scripts', () => {
-  it('uses Node as the default publish command and retains explicit aliases', () => {
+  it('uses Node as the maintained publish command without a Bash alias', () => {
     expect(packageJson.scripts['publish:local']).toBe(
       'node kit/scripts/publish-changes.mjs',
     );
     expect(packageJson.scripts['publish:node']).toBe(
       'node kit/scripts/publish-changes.mjs',
     );
-    expect(packageJson.scripts['publish:bash']).toBe(
-      'bash scripts/publish-local-change.sh',
-    );
+    expect(packageJson.scripts['publish:bash']).toBeUndefined();
   });
 
-  it('keeps Node, Bash, installer, shell syntax, and whitespace checks in validation', () => {
-    expect(packageJson.scripts['test:publish']).toBe(
-      'pnpm test:publish:node && pnpm test:publish:bash',
+  it('keeps Node workflows, active apply-theme syntax, and whitespace checks in validation', () => {
+    expect(packageJson.scripts['test:publish']).toBe('pnpm test:publish:node');
+    expect(packageJson.scripts['test:publish:bash']).toBeUndefined();
+    expect(packageJson.scripts.check).toContain(
+      'bash -n scripts/apply-theme-zip.sh scripts/lib/workflow-common.sh',
     );
-    expect(packageJson.scripts.check).toContain('bash -n scripts/*.sh');
     expect(packageJson.scripts.check).toContain('pnpm test:publish');
     expect(packageJson.scripts.check).toContain('pnpm test:install');
     expect(packageJson.scripts.check).toContain('git diff --check');

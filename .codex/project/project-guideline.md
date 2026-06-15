@@ -39,6 +39,7 @@ Completed themes:
 - Theme 17.4: Node publish CLI smoke-test validation and usability stabilization
 - Theme 17.5: Node publish default cutover with supported Bash fallback
 - Theme 18.1: source-only Node installer candidate with Bash default retained
+- Theme 18.2: Node-first automation and legacy Bash workflow archive
 
 Current canonical core skill names:
 
@@ -83,15 +84,16 @@ This repo is documentation/script oriented.
 Current known tooling:
 
 - Markdown for skills, templates, rules, prompts, and design logs
-- Shell scripts under `scripts/`
-- Installable Bash and Node ESM scripts under `kit/scripts/`
+- Active source-only Bash apply-theme tooling under `scripts/`
+- Installable Node ESM scripts under `kit/scripts/`
+- Source-only historical Bash snapshots under `archive/legacy-bash-workflows/`
 - Zip-based theme delivery during development
 - `ripgrep` recommended for migration/reference checks
 - Git / GitHub for version control
 - GitHub CLI expected for PR publishing workflows when available
 - Node.js 24+ for the default source-repository publish workflow
 - pnpm 10.26.2 for local commands and dependency management
-- Vitest for Node publish tests
+- Vitest for Node publish and installer tests
 - `yaml` for source-repository policy loading, with built-in downstream fallback
 
 ## 5. Directory Structure
@@ -108,6 +110,8 @@ kit/config/
 kit/github-settings/
 kit/scripts/
 tests/publish-changes/
+tests/install-foundation-kit/
+archive/legacy-bash-workflows/
 docs/
 scripts/
 .codex/project/
@@ -133,17 +137,14 @@ Current helper scripts:
 
 ```txt
 scripts/apply-theme-zip.sh
-scripts/publish-local-change.sh
-scripts/install-foundation-kit.sh
-scripts/test-install-foundation-kit.sh
-scripts/test-publish-local-change.sh
+scripts/lib/workflow-common.sh
+scripts/install-foundation-kit.mjs
+scripts/install-foundation-kit/
 ```
 
 Installable workflow scripts:
 
 ```txt
-kit/scripts/publish-changes.sh
-kit/scripts/lib/workflow-common.sh
 kit/scripts/publish-changes.mjs
 kit/scripts/publish-changes/
 kit/scripts/shared/
@@ -156,7 +157,7 @@ Short command entrypoints:
 ```txt
 pnpm publish:local
 pnpm publish:node
-pnpm publish:bash
+pnpm install:node
 pnpm apply-theme
 pnpm test
 pnpm test:node
@@ -200,15 +201,14 @@ Current `apply-theme-zip.sh` safety behavior:
 Current publish workflow architecture:
 
 - `pnpm publish:local` and `pnpm publish:node` run `kit/scripts/publish-changes.mjs`
-- `pnpm publish:bash` and `.codex/scripts/publish-changes.sh` remain the supported Bash fallback
-- the following legacy interaction details describe that Bash fallback
-- keep `kit/scripts/publish-changes.sh` as the downstream-neutral Bash implementation
-- keep `kit/scripts/lib/workflow-common.sh` as the canonical shared helper
-- keep `scripts/publish-local-change.sh` and `scripts/lib/workflow-common.sh` as thin source-repository compatibility wrappers
+- Node is the maintained publish workflow; future publish defects should be fixed there first
+- legacy Bash publish snapshots are unsupported source-only history under
+  `archive/legacy-bash-workflows/`
+- archived files remain outside `kit/` and are never installed downstream
 - publish local changes through a feature branch + PR workflow
 - avoid unnecessary theme zip overhead for one/few-file changes
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
-- display and confirm the complete relevant scope before update classification
+- display a preliminary scope, select update type, and then confirm the complete publish scope
 - use a numbered Small safe / Normal / Significant selection while preserving stable internal codes
 - treat `SMALL_SAFE` selection as merge authorization only after scope confirmation
 - inspect branch freshness, repository open PRs, current-branch PR state, uncommitted changes, and unpushed commits before prompting
@@ -249,14 +249,12 @@ Current Node publish default behavior:
   the interaction flow smooth after minor message/UX correction
 - manual scope-drift testing passed: changes introduced after scope collection were detected and
   publishing aborted before commit, push, or PR actions
-- use Node as the source-repository `pnpm publish:local` default while retaining `pnpm publish:node`
-  as an explicit alias and `pnpm publish:bash` as the rollback path
-- keep Node Vitest coverage, Bash publish tests, installer tests, remaining shell syntax checks,
-  and whitespace checks in `pnpm check`
+- use Node as the source-repository `pnpm publish:local` default while retaining
+  `pnpm publish:node` as an explicit alias
+- keep Node publish tests, Node installer tests, active apply-theme shell syntax, and whitespace
+  checks in `pnpm check`
 - a real post-cutover `pnpm publish:local` run completed successfully using the Node default
-- consider Theme 17.5 post-cutover validated for source-repository usage while continuing to
-  dogfood the Node default for several more real updates
-- do not remove the Bash fallback until that additional usage is reviewed in a separate decision
+- consider Theme 17.5 post-cutover validated for source-repository usage
 - load publish output styles from `kit/config/publish-cli-theme.json` in the source repository and
   `.codex/config/publish-cli-theme.json` after installation
 - accept only ANSI color strings or three-integer RGB arrays plus `fullLine` in theme level styles
@@ -264,14 +262,14 @@ Current Node publish default behavior:
 - warn and use matching built-in defaults when the theme config is missing or invalid
 - keep the complete color table in the JSON source of truth rather than duplicating it in docs
 
-Current `test-publish-local-change.sh` purpose:
+Current Node publish test purpose:
 
 - run deterministic local validation for publish workflow behavior
 - use project-local fixtures with fake `git` and `gh` commands
 - avoid real pushes, PR creation, merges, and network access
 - cover scope-confirmation ordering, numbered classification, recommendations, repository/current-branch PR handling, late-merge recovery, required-check states, GitHub CLI errors, merge modes, and verified post-merge refresh
 
-Current `install-foundation-kit.sh` purpose:
+Current `install-foundation-kit.mjs` purpose:
 
 - install the reusable `kit/` payload into a new or early-stage downstream project
 - use a controlled source-to-target boundary exception
@@ -293,7 +291,7 @@ Current `install-foundation-kit.sh` purpose:
 - never install this repo's own `.codex/project/`, `dev_locals/`, `docs/`, or source-repository `scripts/`
 - never create or modify a downstream `package.json`
 
-Current `test-install-foundation-kit.sh` purpose:
+Current Node installer test purpose:
 
 - run local validation for installer behavior
 - keep test artifacts under `dev_locals/test-runs/install-foundation-kit/`
@@ -313,7 +311,6 @@ Current `kit/scripts/` purpose:
 - install under `.codex/scripts/`
 - provide a Node.js 24+ ESM publish default with modular Git, GitHub, output, prompt, policy,
   state, action, and final-report boundaries
-- keep Bash + Git + GitHub CLI as a supported fallback until a later deliberate removal decision
 - install publish policy under `.codex/config/`
 - install publish CLI theme config under `.codex/config/`
 - fall back to built-in conservative policy when downstream YAML support is unavailable
@@ -381,7 +378,7 @@ The repo is developed theme by theme:
 1. Discuss theme decisions.
 2. Freeze accepted decisions.
 3. Choose the safest update method:
-   - single small edit: manual edit or `publish-local-change.sh`
+   - single small edit: manual edit or the Node publish workflow
    - multiple coordinated edits in one file: full-file replacement
    - multiple coordinated files: zip or full-file replacement bundle
    - mature files: verify line counts and diff before commit
@@ -479,6 +476,15 @@ Completed:
     - candidate is validated for continued dogfooding
     - Bash remains active/default; Node-first workflow and Bash archive planning require a
       separate Theme 18.2 decision
+- Theme 18.2 Node-first automation and Bash archive
+    - Node publish and installer paths are the maintained workflows
+    - active Bash publish/installer aliases, tests, and installable payload files are removed
+    - historical Bash snapshots are retained under `archive/legacy-bash-workflows/`
+    - existing downstream Bash files are not automatically deleted
+    - `scripts/apply-theme-zip.sh` remains active with source-owned
+      `scripts/lib/workflow-common.sh`
+    - `pnpm check` validates Node publish, Node installer, active apply-theme syntax, and
+      whitespace
 
 
 In progress / next likely themes:
@@ -498,12 +504,17 @@ In progress / next likely themes:
 - `agent-roles-and-capabilities` now defines generic role profiles and role routing, but technology-specific expert skills remain future work.
 - `project-architecture-plan` is a Project Lifecycle Skill and is normally used after initialization and before feature-level planning.
 - `code-review` is a core Review Workflow Skill with Change Review and Plan Alignment Review modes.
-- `install-foundation-kit.sh` is a repo distribution helper for fresh or early-stage downstream project installation and must install only from `kit/`.
-- `install-foundation-kit.mjs` is a source-repository candidate only; it may reuse source helpers
-  from `kit/scripts/shared/`, but neither the entrypoint nor installer-specific modules are copied
-  downstream.
+- `install-foundation-kit.mjs` is maintained source-repository tooling for fresh or early-stage
+  downstream installation. It may reuse source helpers from `kit/scripts/shared/`, but neither
+  the entrypoint nor installer-specific modules are copied downstream.
 - The Node installer must not write downstream until apply authorization, replacement staging,
   backup snapshot preparation, and complete plan revalidation have succeeded.
+- Legacy Bash publish and installer snapshots are unsupported source-only history under
+  `archive/legacy-bash-workflows/`; archive content must never enter downstream mappings.
+- Older downstream projects may retain previously installed Bash files. The Node installer does
+  not remove those files automatically.
+- `scripts/apply-theme-zip.sh` remains active Bash tooling and owns its source-only helper at
+  `scripts/lib/workflow-common.sh`.
 - Project-wide file operations must stay inside explicit project boundaries by default; the installer has a controlled exception only for copying from `repo_root/kit/` into an explicit `target_root/`.
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.

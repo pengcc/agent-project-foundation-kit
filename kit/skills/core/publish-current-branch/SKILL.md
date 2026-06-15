@@ -90,8 +90,7 @@ If new implementation work is needed, stop and recommend `execute-plan`.
 
 ## Mechanical Executor
 
-When Node.js 24 or newer is available, use the installed Node CLI as the preferred mechanical
-executor:
+Use the installed Node.js 24+ CLI as the maintained mechanical executor:
 
 ```bash
 node .codex/scripts/publish-changes.mjs
@@ -110,26 +109,16 @@ command sequence. Users may also run the same command directly.
 The installer copies the script into `.codex/scripts/`; it does not add or modify a downstream
 `package.json`. Projects may add their own short command alias if desired.
 
-The installed Bash implementation remains a supported fallback when the required Node runtime is
-unavailable or the Node path has a problem:
-
-```bash
-bash .codex/scripts/publish-changes.sh
-bash .codex/scripts/publish-changes.sh "Commit message"
-bash .codex/scripts/publish-changes.sh "Commit message" "PR title"
-```
-
-Both implementations remain covered by source-repository validation. If downstream `yaml` support
-is absent, the Node CLI must warn and use built-in conservative policy defaults rather than
-depending on an uninstalled package.
+If downstream `yaml` support is absent, the Node CLI must warn and use built-in conservative
+policy defaults rather than depending on an uninstalled package.
 
 The Node CLI loads output styles from `.codex/config/publish-cli-theme.json`. Level entries support
 ANSI color strings or RGB arrays plus `fullLine`; all `[LEVEL]` labels remain bold by fixed
 rendering policy. Missing or invalid theme config warns and uses matching built-in defaults.
 
-If both installed scripts are unavailable, use the manual workflow in this skill as the fallback.
-Do not weaken any confirmation, branch, check, review, merge, or refresh boundary in either
-fallback.
+If the Node runtime or installed script is unavailable, use the manual workflow in this skill.
+Archived Bash scripts are historical reference, not an operational fallback. Do not weaken any
+confirmation, branch, check, review, merge, or refresh boundary in the manual path.
 
 ## Supported Triggers
 
