@@ -86,7 +86,7 @@ describe('installer flow', () => {
       'agent instructions\n',
     );
     expect(
-      (await lstat(resolve(fixture.targetRoot, '.codex/scripts/lib/workflow-common.sh'))).mode &
+      (await lstat(resolve(fixture.targetRoot, '.codex/scripts/publish-changes.mjs'))).mode &
         0o111,
     ).not.toBe(0);
     expect(await readFile(resolve(fixture.targetRoot, 'package.json'), 'utf8')).toBe(
@@ -95,6 +95,15 @@ describe('installer flow', () => {
     await expect(
       lstat(resolve(fixture.targetRoot, 'scripts/install-foundation-kit.mjs')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(
+      lstat(resolve(fixture.targetRoot, '.codex/scripts/publish-changes.sh')),
+    ).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(
+      lstat(resolve(fixture.targetRoot, '.codex/scripts/lib/workflow-common.sh')),
+    ).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(lstat(resolve(fixture.targetRoot, 'archive'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
   });
 
   it('cancels conflicts before runtime staging or target writes', async () => {

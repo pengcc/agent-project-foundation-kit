@@ -69,26 +69,20 @@ describe('installer CLI', () => {
 });
 
 describe('source repository package scripts', () => {
-  it('adds explicit Node/Bash installer aliases without a default installer alias', () => {
+  it('uses the explicit Node installer without active Bash or default aliases', () => {
     expect(packageJson.scripts['install:node']).toBe(
       'node scripts/install-foundation-kit.mjs',
     );
-    expect(packageJson.scripts['install:bash']).toBe(
-      'bash scripts/install-foundation-kit.sh',
-    );
+    expect(packageJson.scripts['install:bash']).toBeUndefined();
     expect(packageJson.scripts.install).toBeUndefined();
   });
 
-  it('runs both installer suites through test:install and pnpm check', () => {
+  it('runs the Node installer suite through test:install and pnpm check', () => {
     expect(packageJson.scripts['test:install:node']).toBe(
       'vitest run tests/install-foundation-kit',
     );
-    expect(packageJson.scripts['test:install:bash']).toBe(
-      'bash scripts/test-install-foundation-kit.sh',
-    );
-    expect(packageJson.scripts['test:install']).toBe(
-      'pnpm test:install:node && pnpm test:install:bash',
-    );
+    expect(packageJson.scripts['test:install:bash']).toBeUndefined();
+    expect(packageJson.scripts['test:install']).toBe('pnpm test:install:node');
     expect(packageJson.scripts.check).toContain('pnpm test:install');
   });
 });
@@ -121,6 +115,8 @@ describe('mapping and boundaries', () => {
     expect(mappings.some((entry) => entry.sourceRelative.startsWith('scripts/install-'))).toBe(
       false,
     );
+    expect(mappings.some((entry) => entry.sourceRelative.endsWith('.sh'))).toBe(false);
+    expect(mappings.some((entry) => entry.sourceRelative.startsWith('archive/'))).toBe(false);
     expect(mappings.some((entry) => entry.targetRelative === 'package.json')).toBe(false);
   });
 
