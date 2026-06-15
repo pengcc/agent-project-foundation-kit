@@ -96,12 +96,26 @@ Use the installed Node.js 24+ CLI as the maintained mechanical executor:
 node .codex/scripts/publish-changes.mjs
 node .codex/scripts/publish-changes.mjs "Commit message"
 node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
+node .codex/scripts/publish-changes.mjs --mode pr-only "Commit message" "PR title"
+node .codex/scripts/publish-changes.mjs --mode merge-pr 123
+node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
 ```
 
 The skill remains responsible for publish judgment, role routing, scope, authorization, and final
 reporting. The script owns repeatable Git and GitHub mechanics, including state-aware startup,
 feature-branch creation, commit-message prompting when needed, PR creation or update, classified
 merge handling, required-check inspection, and verified default-branch refresh.
+
+Use `--mode pr-only` for a quick create-or-update PR operation that must not classify, validate,
+merge, or refresh the default branch. It requires an existing feature branch, stages only the
+observed paths, stops on drift, preserves an existing PR title unless an explicit second argument
+is supplied, and never creates a second open PR for the same branch.
+
+Use `--mode merge-pr <pr-number>` only when the user explicitly requests merging that PR. The mode
+requires a clean worktree, displays and revalidates PR metadata, blocks pending or failing required
+checks, squash-merges with expected-head protection, verifies the completed merge, and refreshes
+the default branch with fast-forward-only behavior. `--yes` skips only its human confirmation; it
+does not bypass repository rules, checks, mergeability, head verification, or merge polling.
 
 Agents should prefer invoking the installed script instead of reproducing its Git and GitHub
 command sequence. Users may also run the same command directly.

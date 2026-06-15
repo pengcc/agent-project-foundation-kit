@@ -70,6 +70,18 @@ export function createGhClient(commandRunner, cwd) {
       const result = await run(['pr', 'comment', String(number), '--repo', repo, '--body', body]);
       if (!result.ok) throw commandFailure(`Could not update PR #${number}`, result);
     },
+    async updatePullRequestTitle(repo, number, title) {
+      const result = await run([
+        'pr',
+        'edit',
+        String(number),
+        '--repo',
+        repo,
+        '--title',
+        title,
+      ]);
+      if (!result.ok) throw commandFailure(`Could not update title for PR #${number}`, result);
+    },
     async requiredChecks(repo, number) {
       const result = await run([
         'pr',
@@ -84,6 +96,9 @@ export function createGhClient(commandRunner, cwd) {
       const normalizedError = result.stderr.toLowerCase();
       if (normalizedError.includes('no required checks') || normalizedError.includes('no checks reported')) {
         return [];
+      }
+      if (!result.ok) {
+        throw commandFailure(`Could not verify required checks for PR #${number}`, result);
       }
       if (!result.stdout.trim()) throw commandFailure(`Could not verify required checks for PR #${number}`, result);
       try {

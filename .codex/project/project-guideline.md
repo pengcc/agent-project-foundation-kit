@@ -40,6 +40,7 @@ Completed themes:
 - Theme 17.5: Node publish default cutover with supported Bash fallback
 - Theme 18.1: source-only Node installer candidate with Bash default retained
 - Theme 18.2: Node-first automation and legacy Bash workflow archive
+- Theme 18.3: explicit Node PR-only publish and PR-number merge modes
 
 Current canonical core skill names:
 
@@ -171,6 +172,8 @@ Short command entrypoints:
 ```txt
 pnpm publish:local
 pnpm publish:node
+pnpm publish:pr-only
+pnpm publish:merge-pr
 pnpm install:node
 pnpm apply-theme
 pnpm test
@@ -184,6 +187,8 @@ Maintained workflow tooling boundary:
 
 - `kit/scripts/publish-changes.mjs`, invoked by `pnpm publish:local` and `pnpm publish:node`, is
   the maintained publish path.
+- `pnpm publish:pr-only` and `pnpm publish:merge-pr` are explicit modes of the same maintained
+  Node publish CLI, not separate workflow implementations.
 - `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
   installation path.
 - `scripts/apply-theme-zip.sh` remains an active Bash source-repository helper and uses
@@ -245,6 +250,15 @@ Current publish workflow architecture:
 - show recommended update type, commit message, and PR title while allowing overrides
 - list repository-level open PRs and require acknowledgement without blocking solely because they exist
 - update an existing current-branch PR instead of creating a duplicate
+- use `publish:pr-only` for non-interactive create/update PR publishing from an existing feature
+  branch without classification, validation, completion, merge, or default-branch refresh
+- preserve an existing PR title in PR-only mode unless an explicit second title argument is given
+- use `publish:merge-pr <pr-number>` for explicit squash merge with clean-worktree, base-branch,
+  mergeability, required-check, and head-OID verification
+- treat `--yes` in merge-PR mode as confirmation bypass only, never as safety or branch-protection
+  bypass
+- refresh after explicit PR merge only after verified remote merge and with fast-forward-only
+  behavior; never hard-reset in merge-PR mode
 - show final staged scope for uncommitted changes and commit/diff scope for unpushed commits
 - recover clean current-branch PRs that merged after a polling timeout and refresh only after verifying `mergedAt` and the default-branch base
 - skip the validation prompt for `SMALL_SAFE` and record its scope-confirmed authorization statement
@@ -290,6 +304,12 @@ Current Node publish default behavior:
 - render every `[LEVEL]` label bold as a fixed rule; label bold is not theme-configurable
 - warn and use matching built-in defaults when the theme config is missing or invalid
 - keep the complete color table in the JSON source of truth rather than duplicating it in docs
+- dispatch explicit PR-only and merge-PR modes without loading the classification policy used by
+  the default publish flow
+- keep PR-only deterministic and non-interactive except for a missing required commit message
+- report PR-only results as created, updated, or unchanged with the PR files URL
+- report merge-PR partial success when GitHub merged the PR but local default-branch refresh cannot
+  fast-forward
 
 Current Node publish test purpose:
 
@@ -297,6 +317,10 @@ Current Node publish test purpose:
 - use project-local fixtures with fake `git` and `gh` commands
 - avoid real pushes, PR creation, merges, and network access
 - cover scope-confirmation ordering, numbered classification, recommendations, repository/current-branch PR handling, late-merge recovery, required-check states, GitHub CLI errors, merge modes, and verified post-merge refresh
+- cover PR-only default-branch blocking, title preservation, duplicate prevention, observed-path
+  staging, drift protection, and created/updated/unchanged reporting
+- cover explicit PR-number validation, clean-worktree enforcement, required checks, head changes,
+  confirmation-only `--yes`, verified merge, and fast-forward-only refresh
 
 Current `install-foundation-kit.mjs` purpose:
 

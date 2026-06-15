@@ -12,6 +12,8 @@ import { parseCliOptions, usage } from './publish-changes/cli-options.mjs';
 import { loadPolicy } from './publish-changes/policy.mjs';
 import { createPrompts } from './publish-changes/prompts.mjs';
 import { runPublishFlow } from './publish-changes/flow.mjs';
+import { runPrOnlyFlow } from './publish-changes/pr-only-flow.mjs';
+import { runMergePrFlow } from './publish-changes/merge-pr-flow.mjs';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 
@@ -47,10 +49,17 @@ export async function main(argv = process.argv.slice(2)) {
   const commandRunner = createCommandRunner();
   const git = createGitClient(commandRunner, process.cwd());
   const gh = createGhClient(commandRunner, process.cwd());
-  const policyPath =
-    options.policyPath || resolve(scriptDir, '..', 'config', 'publish-changes-policy.yml');
-
   try {
+    if (options.mode === 'pr-only') {
+      await runPrOnlyFlow({ git, gh, prompts, output, options });
+      return;
+    }
+    if (options.mode === 'merge-pr') {
+      await runMergePrFlow({ git, gh, prompts, output, options });
+      return;
+    }
+    const policyPath =
+      options.policyPath || resolve(scriptDir, '..', 'config', 'publish-changes-policy.yml');
     const { policy, source } = await loadPolicy({ path: policyPath, output });
     output.debug(`Policy source: ${source}`);
     await runPublishFlow({ git, gh, prompts, output, policy, options });

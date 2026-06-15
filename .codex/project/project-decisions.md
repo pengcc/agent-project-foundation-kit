@@ -1168,3 +1168,43 @@ is visible without erasing useful history.
 
 Future work will not revive archived Bash publish or installer workflows, or execute stale plans,
 solely because old process artifacts still mention them.
+
+## Decision: Separate quick PR publication from explicit PR-number merge
+
+### Status
+
+Accepted
+
+### Context
+
+The classified `publish:local` workflow remains appropriate when an agent needs update
+classification, validation evidence, completion-mode selection, and policy-controlled merge
+handling. Review-fix publishing and deliberate merge of an already reviewed PR need smaller,
+explicit workflows without duplicating the Node publish implementation.
+
+### Decision
+
+The maintained Node publish CLI provides two additional modes:
+
+```txt
+pnpm publish:pr-only "Commit message" ["PR title"]
+pnpm publish:merge-pr <pr-number> [--yes]
+```
+
+PR-only mode operates only from an existing feature branch. It retains deterministic worktree
+snapshot, observed-path staging, commit integrity, authentication, and drift checks while skipping
+classification, validation, scope-confirmation, completion, merge, and refresh prompts. It reuses
+the branch's open PR and preserves its title unless an explicit replacement is provided.
+
+Merge-PR mode requires a clean worktree and explicit PR number. It validates the default-branch
+target, open/non-draft state, mergeability, required checks, and unchanged head OID before squash
+merge. `--yes` skips only human confirmation. Refresh occurs only after verified merge and is
+fast-forward only; this mode never uses admin bypass or hard-reset recovery.
+
+The existing `publish:local` and `publish:node` command behavior remains unchanged.
+
+### Impact
+
+Review fixes can be published without stepping through the full classified workflow, while merge
+authorization remains an explicit and independently verifiable action. Both modes share the
+maintained Node clients and narrow safety helpers, and no Bash publish path is restored.
