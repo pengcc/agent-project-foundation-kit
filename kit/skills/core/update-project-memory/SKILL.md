@@ -107,25 +107,14 @@ Do not use this skill for:
 
 ## Required Context
 
-Always read:
-
-```txt
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
-
-When relevant, also read:
-
-```txt
-dev_locals/plans/
-dev_locals/handoffs/
-README.md
-package.json
-.env.example
-```
+Pass the Project Memory Context Gate defined in the `project-memory` skill and include its report
+in the update context. As a context-repair workflow, follow the central gate's continuation rules
+without redefining them here.
 
 Also inspect changed files when the update follows implementation work.
+
+Use a plan, handoff, or other local process artifact only when the user or active task identifies
+it as relevant, and only after the Project Memory Context Gate freshness check.
 
 ## Workflow Header
 

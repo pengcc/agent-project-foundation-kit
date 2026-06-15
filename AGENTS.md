@@ -139,4 +139,9 @@ and result. If a possible out-of-project change is discovered, report it explici
 
 Use `.codex/project/` as this repository's durable development memory.
 
+Before project-state planning, implementation, review, documentation, or publishing, pass the
+Project Memory Context Gate defined in `kit/skills/core/project-memory/SKILL.md`. Use the
+source-repository path defined there and report the gate result before context-dependent output or
+mutation.
+
 Update project memory when durable facts, long-term decisions, or reusable lessons change. Do not write foundation-kit-specific development history into installable downstream templates unless it has been deliberately distilled into generic reusable guidance.

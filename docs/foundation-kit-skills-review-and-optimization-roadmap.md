@@ -442,7 +442,7 @@ Any workflow that touches project state must pass the Project Memory Context Gat
 
 ### 7.3 Trigger Scope
 
-The gate applies to:
+Phase 1 applies the gate to:
 
 ```text
 initialize-project-context
@@ -450,24 +450,20 @@ project-architecture-plan
 plan-with-context
 execute-plan
 code-review
-future codebase-audit
 handoff
 publish-current-branch
 write-a-skill
 update-project-memory
-future kit-evolution-loop
 ```
 
-### 7.4 Minimum Gate
+Future workflows must integrate with the gate when their own implementation phase is approved.
+They are not part of Phase 1.
 
-```text
-1. Read the applicable AGENTS.md.
-2. Read/apply project-memory guidance.
-3. Read `.codex/project/project-guideline.md` when available.
-4. Conditionally read `.codex/project/project-decisions.md` when the task touches architecture, dependencies, workflow, conventions, product direction, or prior trade-offs.
-5. Conditionally read `.codex/project/lessons-learned.md` when the task touches implementation, debugging, recurring mistakes, review, refactoring, tooling, publishing, or skill evolution.
-6. State whether memory is sufficient, missing, stale, or needs update.
-```
+### 7.4 Canonical Definition
+
+The complete gate sequence, source selection, reporting interface, continuation rules, and status
+meanings belong only in `kit/skills/core/project-memory/SKILL.md`. Entrypoints, rules, and workflow
+skills should contain short references and must not create competing definitions.
 
 ### 7.5 Implementation Approach
 
@@ -483,9 +479,11 @@ kit/skills/core/project-memory/SKILL.md
 
 #### Global Operating Reference
 
-Add a short entry to:
+Add short entries to:
 
 ```text
+AGENTS.md
+kit/project-templates/AGENTS.md
 kit/rules/agent-operating-contract.md
 ```
 
@@ -498,29 +496,23 @@ kit/skills/core/plan-with-context/SKILL.md
 kit/skills/core/execute-plan/SKILL.md
 kit/skills/core/code-review/SKILL.md
 kit/skills/core/project-architecture-plan/SKILL.md
+kit/skills/core/initialize-project-context/SKILL.md
+kit/skills/core/update-project-memory/SKILL.md
 kit/skills/core/handoff/SKILL.md
 kit/skills/core/publish-current-branch/SKILL.md
 kit/skills/core/write-a-skill/SKILL.md
 ```
 
-Example references:
+#### Source-Repository Memory and Design Record
 
-```text
-Before planning, pass the Project Memory Context Gate.
-Before execution, pass the Project Memory Context Gate and confirm the approved plan still matches current project memory.
-Before review, pass the Project Memory Context Gate so findings can be classified against current project facts, decisions, and lessons.
-```
+Record the completed Phase 1 capability and durable decision in this repository's
+`.codex/project/` memory, with lessons updated only if a reusable lesson is discovered. Record the
+accepted design in `docs/foundation-design-log.md`.
 
-### 7.6 Reporting Field
+### 7.6 Reporting
 
-Relevant workflows should be able to report:
-
-```text
-Project Memory Context:
-- Gate: passed | partial | blocked
-- Files checked:
-- Memory status: sufficient | missing | stale | update recommended
-```
+Relevant workflows should incorporate the standard report defined by the central
+`project-memory` skill without reproducing its schema or status meanings.
 
 ### 7.7 Why This Comes First
 
@@ -944,20 +936,34 @@ Non-goals:
 ```text
 - no codebase-audit
 - no third-party-skill-adoption-policy
+- no kit-evolution-loop
 - no UI skill
 - no installer changes
 - no scripts changes
+- no publish CLI behavior or package script changes
+- no validation-command changes
 - no architecture-review
 - no React/Node/DB optional skills
+- no Phase 2-7 work
+```
+
+Source-repository updates:
+
+```text
+- .codex/project/project-guideline.md
+- .codex/project/project-decisions.md
+- .codex/project/lessons-learned.md only if a reusable lesson is discovered
+- docs/foundation-design-log.md
 ```
 
 Validation:
 
 ```text
 - search confirms central definition appears once
-- workflow skills contain short references, not duplicated long rules
+- workflow skills contain short references, not duplicated sequences or status meanings
 - AGENTS / operating contract stay concise
 - no mature skill large rewrite or line-count drop
+- no scripts, package commands, validation commands, dependencies, or runtime behavior change
 ```
 
 ### Phase 2: Plan / Execute / Review Quality Hardening

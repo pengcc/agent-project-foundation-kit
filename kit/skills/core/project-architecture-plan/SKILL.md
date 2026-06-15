@@ -41,20 +41,9 @@ The Project Architect plans system structure, module boundaries, MVP and phase b
 
 ## Required Workflow Chain
 
-Before creating an architecture plan, follow the `project-memory` skill.
-
-The `project-memory` skill is the unified entry point for reading and applying project memory.
-
-Use it to read and apply:
-
-```txt
-AGENTS.md
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
-
-Do not redefine project memory reading rules inside this skill.
+Before creating an architecture plan, pass the Project Memory Context Gate defined in the
+`project-memory` skill and include its report in the architecture context. Follow the central
+gate result before planning; do not redefine its sequence or status meanings here.
 
 If the architecture plan involves technical judgment, versions, APIs, dependencies, configuration, deployment, tests, external services, security/privacy, database/ORM behavior, or long-term technical maintenance risk, run `docs-first-research`.
 
@@ -114,10 +103,12 @@ lockfile
 configuration files
 source directory structure
 existing tests
-previous plans in dev_locals/plans/
 initialization reports in dev_locals/research-notes/
-handoffs in dev_locals/handoffs/
 ```
+
+Use a plan, handoff, initialization report, or other local process artifact only when the user or
+active task identifies it as relevant, and only after the Project Memory Context Gate freshness
+check.
 
 ## Product / Project Blueprint Requirement
 

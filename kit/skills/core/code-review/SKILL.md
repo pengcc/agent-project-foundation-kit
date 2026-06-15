@@ -102,16 +102,9 @@ Focus areas:
 
 ## Required Workflow Chain
 
-Before producing a formal review report, follow the `project-memory` skill.
-
-Use it to read and apply:
-
-```txt
-AGENTS.md
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
+Before producing a formal review report, pass the Project Memory Context Gate defined in the
+`project-memory` skill. Include its report in the review baseline and use current memory to
+classify findings. Do not redefine the gate sequence or status meanings here.
 
 Inspect the review target and relevant context.
 

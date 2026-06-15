@@ -1058,6 +1058,56 @@ Local-only artifact updated, not committed:
 dev_locals/plans/2026-06-10-shared-workflow-script-library-plan.md
 ```
 
+## Phase 1: Project Memory Context Gate
+
+Accepted decisions:
+
+1. Define the complete Project Memory Context Gate sequence, source selection, reporting
+   interface, continuation rules, and status meanings only in
+   `kit/skills/core/project-memory/SKILL.md`.
+2. Keep root and downstream AGENTS entrypoints, the operating contract, and scoped workflow
+   skills as short references to the canonical definition.
+3. Apply the gate both to downstream installed projects and this foundation-kit source
+   repository's `.codex/project/` memory.
+4. Let initialization and memory-update workflows follow the central context-repair continuation
+   rules without duplicating them.
+5. Inspect plans, handoffs, reports, and research notes only when identified as task-relevant and
+   only after freshness and source-of-truth verification.
+
+Rationale:
+
+- prevent duplicated gate definitions from drifting across mature workflow skills
+- make source-repository and downstream context handling explicit
+- preserve process artifacts as useful evidence without treating them as durable truth
+
+Non-goals:
+
+- no publish CLI, package command, validation-command, installer, script, dependency, or runtime
+  behavior changes
+- no Phase 2-7 roadmap work or new optional workflow skills
+
+Validation:
+
+- the canonical sequence and status meanings appear only in `project-memory`
+- all scoped entrypoints, rules, and workflow skills contain concise references
+- repository validation and diff checks pass without script or package changes
+
+Resulting files / changes:
+
+```txt
+AGENTS.md
+kit/project-templates/AGENTS.md
+kit/skills/core/project-memory/SKILL.md
+kit/rules/agent-operating-contract.md
+kit/skills/core/{plan-with-context,execute-plan,code-review,project-architecture-plan}/SKILL.md
+kit/skills/core/{initialize-project-context,update-project-memory,handoff}/SKILL.md
+kit/skills/core/{publish-current-branch,write-a-skill}/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:

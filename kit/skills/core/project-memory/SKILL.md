@@ -54,29 +54,46 @@ Do not use this skill for:
 - Temporary scratch notes that will not affect the project
 - Generic knowledge questions that do not require project context
 
-## Required Context
+## Project Memory Context Gate
 
-Always read:
+Use this gate before producing context-dependent output or modifying project state.
+
+### Source Selection
+
+For a downstream project, use:
 
 ```txt
+.codex/skills/core/project-memory/SKILL.md
+.codex/project/project-decisions.md
 .codex/project/project-guideline.md
+.codex/project/lessons-learned.md
 ```
 
-When relevant, also read:
+For the foundation-kit source repository, use:
 
 ```txt
+root AGENTS.md
+kit/skills/core/project-memory/SKILL.md
+.codex/project/project-guideline.md
 .codex/project/project-decisions.md
 .codex/project/lessons-learned.md
 ```
 
-If the task refers to a plan or handoff, also read the referenced file under:
+Do not assume the source repository has the kit installed under `.codex/skills/`.
 
-```txt
-dev_locals/plans/
-dev_locals/handoffs/
-```
+### Gate Sequence
 
-If the task depends on project implementation details, inspect relevant:
+1. Read and apply the applicable `AGENTS.md` instructions.
+2. Read and apply this `project-memory` skill from the applicable source above.
+3. Read `.codex/project/project-guideline.md` when available.
+4. Read `.codex/project/project-decisions.md` when the task touches architecture, dependencies,
+   workflow, conventions, product direction, or prior tradeoffs.
+5. Read `.codex/project/lessons-learned.md` when the task touches implementation, debugging,
+   recurring mistakes, review, refactoring, tooling, publishing, or skill evolution.
+6. If the user or active task identifies a plan, handoff, report, or research note, verify its
+   date, status, and alignment with current sources before using it. Do not scan local process
+   artifacts by default or treat them as durable truth.
+7. Inspect the task-specific repository evidence needed to confirm current behavior, such as:
 
 ```txt
 README.md
@@ -87,6 +104,36 @@ config files
 source files
 tests
 ```
+
+8. Report the gate result before context-dependent output or mutation.
+
+### Reporting Interface
+
+```txt
+Project Memory Context:
+- Gate: passed | partial | blocked
+- Files checked:
+- Memory status: sufficient | missing | stale | update recommended
+```
+
+Gate status meanings:
+
+- `passed`: required context was checked and is sufficient for the task.
+- `partial`: context is incomplete or stale, but the active workflow can safely diagnose or
+  repair it, or the gap is explicitly non-blocking.
+- `blocked`: missing or conflicting context prevents safe continuation. Stop before
+  context-dependent output or mutation.
+
+Memory status meanings:
+
+- `sufficient`: the checked memory supports the task without a durable update.
+- `missing`: an expected memory source is absent.
+- `stale`: memory conflicts with verified current project sources.
+- `update recommended`: verified durable facts, decisions, or lessons should be recorded after
+  the active workflow.
+
+`initialize-project-context` and `update-project-memory` may continue from `partial` to diagnose
+or repair context. They must still stop on `blocked`.
 
 ## Workflow Header
 
@@ -198,7 +245,7 @@ Do not add:
 When using this skill, briefly state:
 
 - Which memory files were read
-- Whether the memory was sufficient
+- The Project Memory Context report
 - Whether a project memory update may be needed
 
 If no update is needed, say why.

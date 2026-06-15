@@ -22,6 +22,13 @@ Do not jump directly into feature planning or implementation before initializati
 
 `grill-me` is not the first startup step. Use it when goals, scope, requirements, constraints, or decision branches remain unclear after checking available project context.
 
+## Project Memory Context Gate
+
+Before a workflow produces project-state output or changes project state, pass the Project Memory
+Context Gate defined in the installed `project-memory` skill. Use its source selection, sequence,
+reporting interface, and continuation rules rather than redefining them in this contract or in
+individual workflow skills.
+
 ## Project Root Boundary
 
 The current project root is the default file-operation boundary.

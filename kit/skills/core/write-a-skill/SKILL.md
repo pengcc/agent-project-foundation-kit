@@ -82,20 +82,22 @@ This workflow must not:
 
 ## Required Context Check
 
-Before writing or modifying a skill, inspect relevant context as available:
+Before writing or modifying a skill, pass the Project Memory Context Gate defined in the
+`project-memory` skill and include its report in the authoring context. Do not redefine the gate
+sequence or status meanings here.
+
+Then inspect task-relevant sources as available:
 
 ```txt
-AGENTS.md
 kit/rules/agent-operating-contract.md
 kit/rules/engineering-quality-principles.md
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
 existing related skills under kit/skills/core/
 existing prompts under kit/prompts/
 docs/foundation-design-log.md
-previous related plans under dev_locals/plans/
 ```
+
+Use an earlier plan or other local process artifact only when the user or active task identifies
+it as relevant, and only after the Project Memory Context Gate freshness check.
 
 If adapting from external material, inspect the external reference and rewrite it for this project instead of copying it.
 

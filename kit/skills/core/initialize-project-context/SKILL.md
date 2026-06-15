@@ -41,6 +41,9 @@ Initialization must therefore be role-routed, not only file-scanning. It should 
 
 If goals, scope, requirements, constraints, or decision branches remain unclear after reading available project context, recommend `grill-me` as the next workflow. If `grill-me` is not installed yet, state that it is a planned productivity skill instead of pretending it exists.
 
+Pass the Project Memory Context Gate defined in the `project-memory` skill before the
+initialization report. As a context-diagnosis workflow, follow the central gate's continuation
+rules without redefining them here.
 
 Use this skill to initialize project context after installing the foundation kit or when an existing project is first connected to agent workflows.
 
