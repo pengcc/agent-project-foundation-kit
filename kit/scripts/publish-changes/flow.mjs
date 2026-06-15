@@ -330,6 +330,10 @@ export async function runPublishFlow({
       branch,
       defaultBranch,
       mode,
+      output,
+      attempts: Number(env.PUBLISH_READINESS_POLL_ATTEMPTS || 6),
+      intervalMs: Number(env.PUBLISH_READINESS_POLL_INTERVAL_MS || 2000),
+      sleep,
     });
     actions.push(
       mode === "auto" ? "enable auto-merge" : "immediate squash merge",

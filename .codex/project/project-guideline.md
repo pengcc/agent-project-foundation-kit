@@ -232,6 +232,7 @@ Current publish workflow architecture:
 - skip the validation prompt for `SMALL_SAFE` and record its scope-confirmed authorization statement
 - use structured validation codes for `NORMAL` and `SIGNIFICANT`, with `NOT_RUN` allowed only for `NORMAL`
 - distinguish no required checks, pending checks, failing checks, and GitHub CLI errors before merge
+- retry GitHub's transient `UNKNOWN` merge-readiness state for a bounded interval before blocking
 - automatically enable squash auto-merge for `SMALL_SAFE`, verify the remote merge, and refresh local `main`
 - skip the PR completion mode and manual-review token for `SMALL_SAFE` because its post-scope classification is explicit authorization
 - offer PR-only, squash auto-merge, or immediate squash merge modes for `NORMAL` and `SIGNIFICANT`
@@ -338,6 +339,8 @@ THEME_BRANCH_PREFIX
 DESTRUCTIVE_DROP_PERCENT
 DESTRUCTIVE_DROP_LINES
 CHANGE_BRANCH_PREFIX
+PUBLISH_READINESS_POLL_ATTEMPTS
+PUBLISH_READINESS_POLL_INTERVAL_MS
 PUBLISH_MERGE_POLL_ATTEMPTS
 PUBLISH_MERGE_POLL_INTERVAL_MS
 ```

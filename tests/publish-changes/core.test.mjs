@@ -20,6 +20,7 @@ import {
   pollForVerifiedMerge,
   refreshDefaultBranch,
   safeBranchName,
+  verifyAndMerge,
 } from '../../kit/scripts/publish-changes/actions.mjs';
 import { createCommandRunner } from '../../kit/scripts/shared/command-runner.mjs';
 import { createGhClient } from '../../kit/scripts/shared/gh-client.mjs';
@@ -533,6 +534,98 @@ describe('scope and validation', () => {
         headSha: 'head-sha',
       }),
     ).toThrow(message);
+  });
+
+  it('retries transient unknown merge readiness before merging', async () => {
+    const views = [
+      {
+        number: 7,
+        state: 'OPEN',
+        baseRefName: 'main',
+        headRefName: 'feature/test',
+        headRefOid: 'head-sha',
+        isDraft: false,
+        mergeable: 'UNKNOWN',
+        mergeStateStatus: 'UNKNOWN',
+      },
+      {
+        number: 7,
+        state: 'OPEN',
+        baseRefName: 'main',
+        headRefName: 'feature/test',
+        headRefOid: 'head-sha',
+        isDraft: false,
+        mergeable: 'MERGEABLE',
+        mergeStateStatus: 'CLEAN',
+      },
+    ];
+    const gh = {
+      viewPullRequest: vi.fn(async () => views.shift()),
+      requiredChecks: vi.fn(async () => []),
+      merge: vi.fn(async () => {}),
+    };
+    const sleep = vi.fn(async () => {});
+    const output = { warning: vi.fn() };
+
+    await expect(
+      verifyAndMerge({
+        gh,
+        git: { head: async () => 'head-sha' },
+        repo: 'owner/repo',
+        pr: { number: 7 },
+        branch: 'feature/test',
+        defaultBranch: 'main',
+        mode: 'auto',
+        output,
+        attempts: 3,
+        intervalMs: 1,
+        sleep,
+      }),
+    ).resolves.toMatchObject({ checkState: { pending: false } });
+
+    expect(gh.viewPullRequest).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledTimes(1);
+    expect(output.warning).toHaveBeenCalledWith(
+      expect.stringContaining('still calculating merge readiness'),
+    );
+    expect(gh.merge).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks safely when merge readiness remains unknown', async () => {
+    const gh = {
+      viewPullRequest: vi.fn(async () => ({
+        number: 7,
+        state: 'OPEN',
+        baseRefName: 'main',
+        headRefName: 'feature/test',
+        headRefOid: 'head-sha',
+        isDraft: false,
+        mergeable: 'UNKNOWN',
+        mergeStateStatus: 'UNKNOWN',
+      })),
+      requiredChecks: vi.fn(async () => []),
+      merge: vi.fn(async () => {}),
+    };
+
+    await expect(
+      verifyAndMerge({
+        gh,
+        git: { head: async () => 'head-sha' },
+        repo: 'owner/repo',
+        pr: { number: 7 },
+        branch: 'feature/test',
+        defaultBranch: 'main',
+        mode: 'auto',
+        output: { warning: vi.fn() },
+        attempts: 3,
+        intervalMs: 1,
+        sleep: async () => {},
+      }),
+    ).rejects.toThrow('GitHub has not resolved merge readiness');
+
+    expect(gh.viewPullRequest).toHaveBeenCalledTimes(3);
+    expect(gh.requiredChecks).not.toHaveBeenCalled();
+    expect(gh.merge).not.toHaveBeenCalled();
   });
 });
 

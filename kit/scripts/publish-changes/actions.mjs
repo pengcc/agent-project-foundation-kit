@@ -1,5 +1,9 @@
 import { PublishError } from '../shared/errors.mjs';
-import { assertMergeReady, evaluateRequiredChecks } from './validation.mjs';
+import {
+  assertMergeReady,
+  evaluateRequiredChecks,
+  isMergeReadinessPending,
+} from './validation.mjs';
 
 export function safeBranchName(message, { prefix = 'change', now = new Date() } = {}) {
   const stem =
@@ -85,9 +89,23 @@ export async function verifyAndMerge({
   branch,
   defaultBranch,
   mode,
+  output,
+  attempts = 6,
+  intervalMs = 2000,
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 }) {
   const headSha = await git.head();
-  const fresh = await gh.viewPullRequest(repo, pr.number);
+  let fresh;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    fresh = await gh.viewPullRequest(repo, pr.number);
+    if (!isMergeReadinessPending(fresh)) break;
+    if (attempt === 1) {
+      output?.warning(
+        `GitHub is still calculating merge readiness for PR #${pr.number}; waiting before merge verification.`,
+      );
+    }
+    if (attempt < attempts) await sleep(intervalMs);
+  }
   assertMergeReady(fresh, { branch, defaultBranch, headSha });
   const checks = await gh.requiredChecks(repo, fresh.number);
   const checkState = evaluateRequiredChecks(checks, mode);
