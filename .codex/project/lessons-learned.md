@@ -683,3 +683,28 @@ global runtime merely to make validation pass.
 - require explicit user approval before any global or out-of-project mutation
 - record external/global actions explicitly in every final report
 - state clearly when an observed machine issue was not caused by the agent
+
+## Avoid: Treating stale process artifacts as execution authority
+
+### Context
+
+Local plans, handoffs, reports, research notes, and execution logs may describe workflows or files
+that were valid when written but have since been replaced, removed, or archived.
+
+### Lesson
+
+Check a process artifact's status, date, and source-of-truth alignment before using it. Plans older
+than one day must not be proactively treated as execution authority unless the user explicitly
+names the plan and current project sources re-verify it.
+
+If an artifact conflicts with the project guideline, project decisions, current repository state,
+or current package scripts, stop and request user review rather than choosing the stale artifact.
+
+### Reuse guidance
+
+- prefer `AGENTS.md`, project memory, current repository files, and current package scripts
+- verify that named targets still exist and remain maintained
+- distinguish historical design records from present-tense operating guidance
+- mark superseded artifacts as superseded, deprecated, or archived
+- move obsolete artifacts to an archive path when relocation improves clarity without losing
+  useful history

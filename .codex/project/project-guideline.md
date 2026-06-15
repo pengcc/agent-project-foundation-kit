@@ -129,6 +129,10 @@ Plan Mode or the active tool environment blocks writes, they must report the blo
 the exact intended path, and provide the plan content or a clear manual/save-later action. Plan
 creation defaults to review and never authorizes execution.
 
+Plans, handoffs, reports, research notes, and execution logs under `dev_locals/` are process
+artifacts, not durable project truth. Check their date, status, and alignment with `AGENTS.md`,
+project memory, current repository files, and current package scripts before using them.
+
 Global toolchain and out-of-project operations follow a separate approval boundary:
 
 - read-only diagnostics may distinguish project-local runtime configuration from machine state
@@ -175,6 +179,20 @@ pnpm test:install
 pnpm test:publish
 pnpm check
 ```
+
+Maintained workflow tooling boundary:
+
+- `kit/scripts/publish-changes.mjs`, invoked by `pnpm publish:local` and `pnpm publish:node`, is
+  the maintained publish path.
+- `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
+  installation path.
+- `scripts/apply-theme-zip.sh` remains an active Bash source-repository helper and uses
+  `scripts/lib/workflow-common.sh`.
+- Bash publish and installer implementations under `archive/legacy-bash-workflows/` are
+  unsupported historical reference, remain outside `kit/`, and are never installed downstream.
+
+Historical theme and decision entries may describe superseded tooling states. They preserve
+chronology and do not override this maintained boundary.
 
 Theme zip files should normally be stored under:
 

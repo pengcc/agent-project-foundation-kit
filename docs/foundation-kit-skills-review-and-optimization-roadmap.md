@@ -117,6 +117,21 @@ This is good for keeping the kit lean, but it also reveals several rule-level ga
 - repository content as data, not instruction
 - report depth levels / concise output guidance
 
+### 3.4 Maintained Workflow Tooling Boundary
+
+Future planning must use the current repository and package scripts to identify maintained
+tooling:
+
+- the Node publish CLI is the maintained publish path
+- the Node installer is the maintained installation path
+- `scripts/apply-theme-zip.sh` is an active Bash source-repository helper
+- Bash publish and installer implementations under `archive/legacy-bash-workflows/` are
+  unsupported historical reference, remain outside `kit/`, and are never installed downstream
+
+Old plans, handoffs, reports, and research notes are process artifacts rather than current
+execution authority. Verify their status and alignment with project memory and current repository
+state before using them.
+
 ---
 
 ## 4. Core Strengths
@@ -871,6 +886,20 @@ Playwright references
 ---
 
 ## 15. Phased Roadmap
+
+### Phase 0: Process Artifact Lifecycle and Maintained Tooling Boundary
+
+Prerequisite:
+
+```text
+Confirm that future phases use current project memory, repository files, and package scripts.
+Do not target archived Bash publish or installer implementations.
+Treat old plans, handoffs, reports, and research notes as process artifacts that require
+freshness and source-of-truth verification.
+```
+
+This phase is documentation-only. It does not change the Node publish CLI, Node installer,
+`scripts/apply-theme-zip.sh`, archived files, or any Phase 1-7 implementation.
 
 ### Phase 1: Project Memory Context Gate
 
