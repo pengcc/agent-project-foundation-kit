@@ -12,6 +12,8 @@ pnpm publish:local "Commit message"
 pnpm publish:local "Commit message" "PR title"
 pnpm publish:node "Commit message" "PR title"
 pnpm publish:bash "Commit message" "PR title"
+pnpm install:node -- --target /path/to/project
+pnpm install:bash -- --target /path/to/project
 pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
 pnpm test:publish
@@ -21,6 +23,36 @@ pnpm check
 `publish:local` and `publish:node` run the Node.js 24+ ESM publish CLI. `publish:bash` retains the
 Bash implementation as an explicit fallback. `pnpm check` validates both publish paths, installer
 behavior, and remaining shell syntax.
+
+## Installer Commands
+
+The Bash installer remains the active, documented installer during Theme 18.1:
+
+```bash
+pnpm install:bash -- --target /path/to/downstream-project
+pnpm install:bash -- --target /path/to/downstream-project --apply
+```
+
+The Node.js 24+ ESM installer is a source-repository candidate:
+
+```bash
+pnpm install:node -- --target /path/to/downstream-project
+pnpm install:node -- --target /path/to/downstream-project --apply
+```
+
+Both installers default to dry-run. The Node candidate reads installable content only from `kit/`
+and never installs its own `scripts/install-foundation-kit.mjs` entrypoint or installer-specific
+modules. It may reuse source-repository output helpers from `kit/scripts/shared/` at runtime, but
+that does not make the installer part of the downstream payload.
+
+For conflicting files, Node apply requires the exact `INSTALL_WITH_BACKUP` token from interactive
+or piped input. It stages and verifies all replacements and backup snapshots under
+`dev_locals/workflow-tmp/` and revalidates the plan before the first downstream write. Verified
+backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` with a
+`manifest.json`. The installer does not create or modify downstream `package.json`.
+
+Use `--show-diff` for optional `diff -u` previews. A missing `diff` command warns but does not
+block dry-run, apply authorization, backup, installation, or verification.
 
 Both publish implementations use a feature branch and pull request. They never push directly to
 `main`. At startup they check default-branch freshness, list repository-level open PRs, detect the

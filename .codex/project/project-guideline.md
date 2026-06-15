@@ -38,6 +38,7 @@ Completed themes:
 - Theme 17.3: Node publish CLI migration candidate and safety correction
 - Theme 17.4: Node publish CLI smoke-test validation and usability stabilization
 - Theme 17.5: Node publish default cutover with supported Bash fallback
+- Theme 18.1: source-only Node installer candidate with Bash default retained
 
 Current canonical core skill names:
 
@@ -466,6 +467,15 @@ Completed:
     - `pnpm check` validates both implementations, installer behavior, shell syntax, and whitespace
     - post-cutover source-repository dogfood publish completed successfully
     - Bash removal remains deferred pending several more real Node-default updates
+- Theme 18.1 Node installer candidate
+    - source-only Node.js 24+ ESM entrypoint under `scripts/`
+    - installer-specific modules remain under `scripts/install-foundation-kit/`
+    - `install:node` candidate and `install:bash` active fallback aliases
+    - aggregate Node Vitest and Bash installer validation through `test:install`
+    - dry-run default and exact-token conflict authorization
+    - replacement staging, backup snapshots, and complete plan revalidation before downstream writes
+    - backup manifests with verified hashes and partial-progress status
+    - Bash default cutover remains a later explicit decision
 
 
 In progress / next likely themes:
@@ -486,6 +496,11 @@ In progress / next likely themes:
 - `project-architecture-plan` is a Project Lifecycle Skill and is normally used after initialization and before feature-level planning.
 - `code-review` is a core Review Workflow Skill with Change Review and Plan Alignment Review modes.
 - `install-foundation-kit.sh` is a repo distribution helper for fresh or early-stage downstream project installation and must install only from `kit/`.
+- `install-foundation-kit.mjs` is a source-repository candidate only; it may reuse source helpers
+  from `kit/scripts/shared/`, but neither the entrypoint nor installer-specific modules are copied
+  downstream.
+- The Node installer must not write downstream until apply authorization, replacement staging,
+  backup snapshot preparation, and complete plan revalidation have succeeded.
 - Project-wide file operations must stay inside explicit project boundaries by default; the installer has a controlled exception only for copying from `repo_root/kit/` into an explicit `target_root/`.
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.

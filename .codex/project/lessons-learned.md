@@ -593,3 +593,33 @@ allow themes to weaken a stable usability rule.
 - validate external config strictly and fall back to matching built-in defaults
 - preserve tested visual behavior when extracting hard-coded values into config
 - keep the canonical table in one machine-readable source instead of duplicating it across docs
+
+## Keep: Prepare installer writes completely before crossing the target boundary
+
+### Context
+
+Theme 18.1 adds a Node installer candidate that may replace many downstream files. Authorizing an
+overwrite is insufficient if staging, backup collection, or the source/target plan can still fail
+after destination writes begin.
+
+### Lesson
+
+Treat installer apply as a preparation phase followed by a distinct destination-write phase.
+Before crossing the target boundary, verify authorization, every staged replacement, every
+required backup snapshot, and the complete current plan. Revalidate again after materializing a
+backup and before mapped payload writes.
+
+Source-only tools may reuse installable helper modules at runtime without becoming part of the
+installed payload. Ownership follows the entrypoint and mapping contract, not the location of
+every imported helper.
+
+### Reuse guidance
+
+- keep dry-run free of temporary and destination writes
+- stage replacements and backup snapshots outside the destination
+- hash-verify preparation artifacts before destination writes
+- accept exact destructive confirmation over both interactive and piped input
+- record partial progress without claiming automatic rollback
+- keep optional preview tools non-blocking
+- test candidate and fallback implementations together before cutover
+- separate candidate introduction, default cutover, and fallback removal decisions
