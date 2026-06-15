@@ -656,3 +656,30 @@ runtime, and plan migration while retaining a clear rollback or archival boundar
   replacement
 - label archived implementations as unsupported and keep them outside installable payloads
 - preserve active Bash exceptions only when their ownership and validation remain explicit
+
+## Keep: Diagnose runtime boundaries without silently repairing global tooling
+
+### Context
+
+After Theme 18.2, the globally resolved Node version differed from the project runtime.
+Investigation found duplicated or misordered shell profile configuration and PATH ordering. The
+problem was local machine configuration, not a Codex operation or repository change.
+
+### Lesson
+
+The reusable lesson is boundary clarity, not blame. A project can correctly declare and provide a
+runtime while the interactive shell resolves a different global executable.
+
+Agents should use read-only diagnostics to distinguish those states, then report the mismatch.
+They must not silently edit shell profiles, change PATH, relink package-manager tools, or install a
+global runtime merely to make validation pass.
+
+### Reuse guidance
+
+- report detected and required versions together
+- include the failing command and resolved executable path when available
+- distinguish project-local runtime configuration from global shell resolution
+- recommend manual remediation and explain machine-wide risk
+- require explicit user approval before any global or out-of-project mutation
+- record external/global actions explicitly in every final report
+- state clearly when an observed machine issue was not caused by the agent

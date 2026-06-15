@@ -1,5 +1,9 @@
 import { PublishError } from '../shared/errors.mjs';
 
+export function isMergeReadinessPending(pr) {
+  return pr.mergeable === 'UNKNOWN' || pr.mergeStateStatus === 'UNKNOWN';
+}
+
 export function evaluateRequiredChecks(checks, mode) {
   let pending = false;
   for (const check of checks) {
@@ -33,7 +37,7 @@ export function assertMergeReady(pr, { branch, defaultBranch, headSha }) {
   }
   if (pr.isDraft) throw new PublishError('POLICY_BLOCKED', 'Draft PRs cannot be merged.');
   if (pr.mergeable === 'CONFLICTING') throw new PublishError('POLICY_BLOCKED', 'PR has conflicts.');
-  if (pr.mergeable === 'UNKNOWN' || pr.mergeStateStatus === 'UNKNOWN') {
+  if (isMergeReadinessPending(pr)) {
     throw new PublishError('POLICY_BLOCKED', 'GitHub has not resolved merge readiness.');
   }
 }

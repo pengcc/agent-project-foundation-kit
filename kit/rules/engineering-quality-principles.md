@@ -166,3 +166,22 @@ When those signals appear:
 
 Node.js is one suitable choice in this repository, but the general rule is to select the runtime
 that best supports the workflow's state model, validation needs, and long-term maintenance.
+
+## 17. Keep Project and Global Tooling Boundaries Explicit
+
+Treat project-local runtime configuration and global machine tooling as separate state.
+
+Use read-only diagnostics to identify which executable and version a project command actually
+uses. Do not install, upgrade, downgrade, relink, reconfigure, or otherwise mutate global tools,
+shell profiles, PATH, global Git configuration, or files outside the project root without explicit
+user approval.
+
+When a runtime mismatch blocks validation:
+
+- report the detected and required versions
+- report the failing command
+- distinguish global state from project-local state
+- recommend a manual correction and explain its machine-wide risk
+- wait for explicit approval before any mutating command
+
+Do not silently repair global tooling to make a project check pass.

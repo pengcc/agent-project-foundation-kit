@@ -26,7 +26,9 @@ Do not jump directly into feature planning or implementation before initializati
 
 The current project root is the default file-operation boundary.
 
-Do not read, write, delete, move, inspect, or generate files outside the project root unless the user explicitly approves the exact path and purpose.
+Do not write, delete, move, or generate files outside the project root unless the user explicitly
+approves the exact path and purpose. Read-only global toolchain diagnostics are allowed when
+needed to distinguish project-local state from machine state.
 
 Any exception must include:
 
@@ -37,6 +39,44 @@ Any exception must include:
 5. user confirmation
 
 Controlled exceptions must be documented by the active workflow. For example, the foundation-kit installer may copy from `repo_root/kit/` into an explicit `target_root/`.
+
+## Global Toolchain and Out-of-Project Operation Boundary
+
+Project-local runtime configuration and global machine configuration are separate trust
+boundaries.
+
+Without explicit user approval, agents must not install, upgrade, downgrade, unlink, relink,
+configure, or otherwise mutate:
+
+- Homebrew or other system package managers and packages
+- Node.js, pnpm, npm, corepack, mise, Volta, or global package managers
+- shell profiles such as `.zprofile`, `.zshrc`, or `.bashrc`
+- PATH configuration
+- global Git configuration
+- files outside the current project root
+
+Read-only diagnostics are allowed without approval. Examples include `node -v`, `which node`,
+`which -a node`, `pnpm -v`, `mise current`, `mise doctor`, `brew info`,
+`brew list --versions`, Homebrew log inspection, PATH inspection, shell-profile inspection without
+editing, and Git configuration inspection without modification.
+
+Mutating commands such as `brew install`, `brew upgrade`, `brew reinstall`, `brew link`,
+`brew unlink`, `mise use -g`, non-project/global `mise install`, `pnpm env use`,
+`corepack enable`, shell-profile edits, PATH changes, and global Git configuration changes require
+explicit approval.
+
+If required tooling is missing or wrong:
+
+1. stop the affected workflow
+2. report the detected version
+3. report the required version
+4. report the failing command
+5. distinguish global runtime state from project-local runtime state
+6. recommend a manual fix and explain global-change risk
+7. wait for explicit approval before running a mutating command
+
+Never silently change global tooling to make validation pass. If a possible global or
+out-of-project change is discovered, report it instead of hiding it or assuming it is safe.
 
 ## Skill Routing Map
 
@@ -150,3 +190,15 @@ Do not copy third-party skills or rules directly into the project. Extract patte
 - Do not publish, merge, release, or deploy unless the user explicitly requests the matching workflow.
 - Do not introduce dependencies, tooling, architecture changes, or workflow changes without checking project memory and explaining impact.
 - Prefer small, reversible changes.
+
+## Final Report Boundary
+
+Every task final report must explicitly include:
+
+```txt
+External / global actions:
+- None
+```
+
+If any external or global action was performed with explicit approval, list the command or change,
+approval, reason, and result.

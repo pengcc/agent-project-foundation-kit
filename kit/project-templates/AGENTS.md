@@ -38,7 +38,31 @@ AGENTS.md
 
 The current project root is the default file-operation boundary.
 
-Do not read, write, delete, move, inspect, or generate files outside the project root unless the user explicitly approves the exact path and purpose.
+Do not write, delete, move, or generate files outside the project root unless the user explicitly
+approves the exact path and purpose. Read-only global toolchain diagnostics are allowed when
+needed to distinguish project-local state from machine state.
+
+## Global Toolchain and Out-of-Project Operation Boundary
+
+Do not install, upgrade, downgrade, unlink, relink, configure, or otherwise mutate global
+developer tooling without explicit user approval. This includes Homebrew or system packages,
+Node.js, pnpm, npm, corepack, mise, Volta, global package managers, global Git configuration,
+shell profiles such as `.zprofile`, `.zshrc`, or `.bashrc`, PATH configuration, and files outside
+the project root.
+
+Allowed read-only diagnostics include commands such as `node -v`, `which node`, `which -a node`,
+`pnpm -v`, `mise current`, `mise doctor`, `brew info`, `brew list --versions`, and inspection of
+logs, PATH, shell profiles, or Git configuration without editing them.
+
+Commands or changes such as `brew install`, `brew upgrade`, `brew reinstall`, `brew link`,
+`brew unlink`, `mise use -g`, non-project/global `mise install`, `pnpm env use`,
+`corepack enable`, shell-profile edits, PATH changes, global Git configuration changes, or other
+out-of-project writes require explicit approval.
+
+If required tooling is missing or has the wrong version, stop and report the detected version,
+required version, failing command, and whether the mismatch is global or project-local. Recommend
+a manual fix, explain the risk of changing global tools, and wait for explicit approval before any
+mutation. Never silently change global tooling to make validation pass.
 
 ## Working Style
 
@@ -208,6 +232,16 @@ The report must include:
 - validation performed
 - project memory or documentation updates
 - whether commit, push, pull request, merge, or other external actions were performed
+
+Every task final report must also include:
+
+```txt
+External / global actions:
+- None
+```
+
+If approved external or global actions occurred, list each command or change, approval, reason,
+and result. If a possible out-of-project change is discovered, report it explicitly.
 
 ## Scope and Safety Rules
 

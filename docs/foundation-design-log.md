@@ -983,6 +983,40 @@ kit/rules/engineering-quality-principles.md
 docs/foundation-design-log.md
 ```
 
+## Guardrail Update: Global Toolchain and Out-of-Project Operation Boundary
+
+Accepted decisions:
+
+1. Project-local runtime configuration and global machine tooling are separate trust boundaries.
+2. Read-only diagnostics may inspect versions, executable paths, mise state, package-manager
+   information, logs, PATH, shell profiles, and Git configuration.
+3. Global tooling, shell profiles, PATH, global Git configuration, and files outside the current
+   project must not be mutated without explicit user approval.
+4. Runtime mismatch reports include detected version, required version, failing command, and
+   global versus project-local state.
+5. Agents recommend manual remediation and explain machine-wide risk before requesting approval.
+6. Agents never silently repair global tooling to make validation pass.
+7. Every task final report explicitly lists external/global actions, including `None`.
+8. The Node version incident was caused by local shell profile duplication/PATH ordering, not
+   Codex or repository changes; the durable outcome is clearer operation boundaries.
+
+Resulting files / changes:
+
+```txt
+AGENTS.md
+kit/project-templates/AGENTS.md
+kit/rules/agent-operating-contract.md
+kit/rules/engineering-quality-principles.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/initialize-project-context/SKILL.md
+kit/skills/core/publish-current-branch/SKILL.md
+kit/skills/core/update-project-memory/SKILL.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
+docs/foundation-design-log.md
+```
+
 ## Roadmap Snapshot
 
 This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.

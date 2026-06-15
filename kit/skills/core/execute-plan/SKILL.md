@@ -136,6 +136,17 @@ Do not invent validation commands.
 
 If validation is skipped, explain why.
 
+If validation fails because a runtime or tool is missing or has the wrong version, stop and report:
+
+- detected version and executable path when available
+- required project version
+- failing command
+- global versus project-local runtime state
+- a manual remediation recommendation and its machine-wide risk
+
+Do not mutate global tooling, shell profiles, PATH, global Git configuration, or files outside the
+project root without explicit user approval.
+
 ## Local Commit Policy
 
 `execute-plan` may create a local commit only when the approved plan explicitly includes a commit step or the user explicitly requested commit as part of execution.
@@ -199,6 +210,7 @@ Execution Summary:
 - Deviations:
 - Blockers:
 - Project memory update check:
+- External / global actions:
 - Recommended next workflow:
 ```
 
