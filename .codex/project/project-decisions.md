@@ -1092,3 +1092,39 @@ and whitespace.
 The maintained workflow surface is smaller and fresh downstream installs receive only the Node
 publish implementation. Historical Bash behavior remains inspectable without being presented as
 an operational fallback. Apply-theme remains unchanged as an explicit active Bash exception.
+
+## Decision: Global toolchain and out-of-project mutations require explicit approval
+
+### Status
+
+Accepted
+
+### Context
+
+After Theme 18.2, a global Node version differed from the project runtime. Investigation found
+duplicated or misordered local shell profile configuration and PATH ordering. Codex did not cause
+the mismatch and no repository change caused it.
+
+The investigation exposed a broader safety gap: agents need an explicit boundary between
+project-local runtime configuration, read-only machine diagnostics, and global machine mutation.
+
+### Decision
+
+Agents may run read-only diagnostics to identify executable paths, versions, mise state, PATH,
+shell-profile contents, package-manager information, logs, and Git configuration.
+
+Agents must not install, upgrade, downgrade, unlink, relink, configure, or otherwise mutate global
+developer tooling, shell profiles, PATH, global Git configuration, or files outside the project
+root without explicit user approval.
+
+When required tooling is missing or wrong, the agent must stop the affected workflow, report the
+detected and required versions and failing command, distinguish global from project-local state,
+recommend a manual fix with its machine-wide risk, and wait for explicit approval.
+
+Every task final report explicitly records external/global actions, including `None`.
+
+### Impact
+
+Project validation remains reproducible without granting agents implicit authority over machine
+configuration. Runtime diagnostics stay available, while global remediation remains visible and
+user-controlled.

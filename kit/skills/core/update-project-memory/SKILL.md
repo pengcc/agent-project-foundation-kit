@@ -268,6 +268,9 @@ Not updated:
 
 Validation:
 - <check>
+
+External / global actions:
+- None
 ```
 
 If no update is needed, say:
@@ -275,4 +278,10 @@ If no update is needed, say:
 ```txt
 No project memory update needed.
 Reason:
+
+External / global actions:
+- None
 ```
+
+If an external or global action occurred with explicit approval, replace `None` with the command
+or change, approval, reason, and result.

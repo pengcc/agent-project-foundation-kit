@@ -120,6 +120,11 @@ If the Node runtime or installed script is unavailable, use the manual workflow 
 Archived Bash scripts are historical reference, not an operational fallback. Do not weaken any
 confirmation, branch, check, review, merge, or refresh boundary in the manual path.
 
+Do not install, upgrade, relink, or configure Node, package managers, mise, shell profiles, PATH,
+or other global tooling to make publishing available. Report the detected and required runtime,
+the failing command, and the project-local alternative. Wait for explicit user approval before
+any global or out-of-project mutation.
+
 ## Supported Triggers
 
 The short command is enough:
@@ -377,6 +382,7 @@ Publish Summary:
 - Checks:
 - Blockers:
 - Project memory update check:
+- External / global actions:
 - Recommended next workflow:
 ```
 

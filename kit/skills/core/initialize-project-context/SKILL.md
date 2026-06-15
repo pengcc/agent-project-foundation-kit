@@ -94,6 +94,8 @@ Do not use this skill to:
 - Create a release
 - Deploy the project
 - Silently write project memory
+- Install, upgrade, relink, or configure global developer tooling
+- Edit shell profiles, PATH, global Git configuration, or files outside the project root
 
 Use `plan-with-context` for feature planning.
 
@@ -205,6 +207,15 @@ Use `docs-first-research` when initialization analysis involves external technic
 
 Do not use `docs-first-research` just to read repo-internal facts.
 
+Read-only global diagnostics may be used to distinguish machine state from project-local state,
+including executable paths, versions, mise status, PATH, shell profiles, package-manager
+information, logs, and Git configuration. Do not mutate those sources.
+
+If a required runtime or tool is missing or wrong, report the detected version, required version,
+failing command, and whether the mismatch is global or project-local. Recommend a manual fix,
+explain machine-wide risk, and wait for explicit approval before any global or out-of-project
+change.
+
 If official docs are unavailable, use degraded research mode and clearly separate:
 
 ```txt
@@ -280,7 +291,12 @@ Output a fixed report:
 ## 12. Recommended Project Memory Updates
 
 ## 13. Recommended Next Workflow
+
+## 14. External / Global Actions
 ```
+
+Section 14 must explicitly state `None` or list each approved external/global action with its
+reason and result.
 
 If the `agent-roles-and-capabilities` skill exists, section 9 may also include:
 

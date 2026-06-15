@@ -129,6 +129,16 @@ Plan Mode or the active tool environment blocks writes, they must report the blo
 the exact intended path, and provide the plan content or a clear manual/save-later action. Plan
 creation defaults to review and never authorizes execution.
 
+Global toolchain and out-of-project operations follow a separate approval boundary:
+
+- read-only diagnostics may distinguish project-local runtime configuration from machine state
+- global tooling, shell profiles, PATH, global Git configuration, and out-of-project files must
+  not be mutated without explicit user approval
+- runtime mismatches must report detected versus required versions and the failing command
+- agents must recommend manual remediation and explain machine-wide risk before requesting
+  approval
+- every task final report must include an `External / global actions` section
+
 The downstream `AGENTS.md` template defines generic role routing, working style, feature-branch publishing boundaries, final-report classification, and durable project-memory behavior using installed `.codex/` content.
 
 ## 6. Scripts and Commands
@@ -518,3 +528,4 @@ In progress / next likely themes:
 - Project-wide file operations must stay inside explicit project boundaries by default; the installer has a controlled exception only for copying from `repo_root/kit/` into an explicit `target_root/`.
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
+- Project-local validation must not silently mutate global tooling to satisfy runtime requirements.

@@ -66,6 +66,23 @@ mode and ask the agent to save it.
 Plan creation is not execution approval. After producing a plan, default to review, revision, or
 saving the plan. Execute it only after the user explicitly approves execution.
 
+## Global Toolchain and Out-of-Project Operation Boundary
+
+Do not install, upgrade, downgrade, unlink, relink, configure, or otherwise mutate global
+developer tooling without explicit user approval. This includes Homebrew or system packages,
+Node.js, pnpm, npm, corepack, mise, Volta, global package managers, global Git configuration,
+shell profiles such as `.zprofile`, `.zshrc`, or `.bashrc`, PATH configuration, and files outside
+the repository.
+
+Read-only diagnostics are allowed without approval, including version and path checks, `mise`
+status or doctor commands, package-manager information, logs, shell PATH/profile inspection, and
+Git configuration inspection.
+
+If required tooling is missing or has the wrong version, stop and report the detected version,
+required version, failing command, and whether the mismatch is global or project-local. Recommend
+a manual fix, explain the risk of changing global tools, and wait for explicit approval before any
+mutation. Never silently change global tooling to make validation pass.
+
 ## Basic Branch Workflow
 
 Before editing files:
@@ -107,6 +124,16 @@ The final report must include:
 - validation performed
 - whether project memory or docs were updated
 - whether commit, push, PR, merge, or other external actions were performed
+
+Every task final report must include:
+
+```txt
+External / global actions:
+- None
+```
+
+If approved external or global actions occurred, list each command or change, approval, reason,
+and result. If a possible out-of-project change is discovered, report it explicitly.
 
 ## Project Memory
 
