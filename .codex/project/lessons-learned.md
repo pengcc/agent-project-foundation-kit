@@ -542,6 +542,8 @@ fallback removal should also remain separate decisions.
 - retain the current fallback until automated parity and manual output review are complete
 - retain a tested explicit fallback after default cutover until removal is separately approved
 - keep both implementations in the aggregate validation command during the overlap period
+- require several successful real default-path updates after cutover before considering fallback
+  removal
 - do not make installed scripts depend on packages the installer does not provide
 - use built-in conservative defaults when optional policy parsers are unavailable
 - base post-merge recovery on verified repository state, not update classification

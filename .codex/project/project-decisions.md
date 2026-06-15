@@ -909,6 +909,11 @@ The Bash implementation is not removed. Node Vitest coverage, existing Bash publ
 installer tests, remaining shell syntax checks, and whitespace validation stay in `pnpm check`
 until Bash is deliberately removed in a later theme.
 
+A real source-repository publish completed successfully through the post-cutover
+`pnpm publish:local` Node default. This validates Theme 17.5 for current source-repository use but
+does not authorize removing `pnpm publish:bash`. Continue dogfooding the Node default for several
+more real updates before reviewing fallback removal as a separate decision.
+
 The installer continues copying both implementations without creating or modifying a downstream
 `package.json`. Downstream projects may run the installed Node CLI directly when runtime
 requirements are met or use the installed Bash script as a fallback.
