@@ -33,7 +33,7 @@ export function assertMergeReady(pr, { branch, defaultBranch, headSha }) {
     throw new PublishError('POLICY_BLOCKED', `PR head ${pr.headRefName} does not match ${branch}.`);
   }
   if (pr.headRefOid !== headSha) {
-    throw new PublishError('POLICY_BLOCKED', 'PR head commit does not match local HEAD.');
+    throw new PublishError('POLICY_BLOCKED', 'PR head commit does not match the expected head.');
   }
   if (pr.isDraft) throw new PublishError('POLICY_BLOCKED', 'Draft PRs cannot be merged.');
   if (pr.mergeable === 'CONFLICTING') throw new PublishError('POLICY_BLOCKED', 'PR has conflicts.');

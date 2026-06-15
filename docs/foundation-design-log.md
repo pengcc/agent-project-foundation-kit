@@ -1058,6 +1058,53 @@ Local-only artifact updated, not committed:
 dev_locals/plans/2026-06-10-shared-workflow-script-library-plan.md
 ```
 
+## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
+
+Accepted decisions:
+
+1. Add `pnpm publish:pr-only "Commit message" ["PR title"]` as a quick create-or-update PR mode
+   on the maintained Node publish CLI.
+2. Keep PR-only deterministic but non-interactive: retain authentication, observed-path staging,
+   commit integrity, and scope-drift checks while skipping classification, validation,
+   scope-confirmation, completion, merge, and refresh prompts.
+3. Require PR-only callers to start from an existing feature branch and reuse its open PR instead
+   of creating duplicate review-fix PRs.
+4. Add `pnpm publish:merge-pr <pr-number> [--yes]` as an explicit squash-merge mode with
+   clean-worktree, default-base, open/non-draft, mergeability, required-check, and head-OID gates.
+5. Define `--yes` as human-confirmation bypass only; it does not bypass repository rules or safety
+   checks.
+6. Verify GitHub's merged state before switching branches, then refresh the default branch with
+   fast-forward-only behavior and report partial success without hard reset when refresh is
+   blocked.
+7. Preserve existing `publish:local` and `publish:node` behavior and reuse only narrow Node helper
+   boundaries.
+
+Rationale:
+
+- make repeated review-fix publication quick without weakening deterministic scope safety
+- separate PR creation/update intent from explicit merge authorization
+- retain one maintained Node implementation and avoid restoring archived Bash workflows
+
+Non-goals:
+
+- no installer, apply-theme Bash, archive, publish-policy schema, release, or deployment changes
+- no Project Memory Context Gate implementation
+
+Resulting files / changes:
+
+```txt
+package.json
+README.md
+kit/scripts/publish-changes.mjs
+kit/scripts/publish-changes/
+kit/scripts/shared/gh-client.mjs
+kit/skills/core/publish-current-branch/SKILL.md
+tests/publish-changes/
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Roadmap Snapshot
 
 This design log records historical theme decisions and design rationale. The current project status is tracked in `.codex/project/project-guideline.md`.

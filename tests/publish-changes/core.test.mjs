@@ -57,8 +57,12 @@ describe('CLI options', () => {
 
   it('preserves two positional arguments and explicit output options', () => {
     expect(parseCliOptions(['--show-diff', 'Commit title', 'PR title'])).toEqual({
+      mode: 'publish',
       commitMessage: 'Commit title',
       prTitle: 'PR title',
+      prTitleExplicit: true,
+      prNumber: null,
+      yes: false,
       showDiff: true,
       verbose: false,
       policyPath: '',
@@ -86,6 +90,36 @@ describe('CLI options', () => {
       help: true,
     });
   });
+
+  it('parses PR-only mode and tracks an explicitly supplied PR title', () => {
+    expect(
+      parseCliOptions(['--mode', 'pr-only', 'Commit title', 'Explicit PR title']),
+    ).toMatchObject({
+      mode: 'pr-only',
+      commitMessage: 'Commit title',
+      prTitle: 'Explicit PR title',
+      prTitleExplicit: true,
+      prNumber: null,
+      yes: false,
+    });
+  });
+
+  it('requires a positive PR number and scopes --yes to merge-pr mode', () => {
+    expect(parseCliOptions(['--mode', 'merge-pr', '42', '--yes'])).toMatchObject({
+      mode: 'merge-pr',
+      prNumber: 42,
+      yes: true,
+    });
+    expect(() => parseCliOptions(['--mode', 'merge-pr'])).toThrow(
+      'requires exactly one positive integer PR number',
+    );
+    expect(() => parseCliOptions(['--mode', 'merge-pr', '0'])).toThrow(
+      'requires exactly one positive integer PR number',
+    );
+    expect(() => parseCliOptions(['--yes', 'Commit title'])).toThrow(
+      '--yes is supported only with merge-pr mode',
+    );
+  });
 });
 
 describe('source repository package scripts', () => {
@@ -95,6 +129,12 @@ describe('source repository package scripts', () => {
     );
     expect(packageJson.scripts['publish:node']).toBe(
       'node kit/scripts/publish-changes.mjs',
+    );
+    expect(packageJson.scripts['publish:pr-only']).toBe(
+      'node kit/scripts/publish-changes.mjs --mode pr-only',
+    );
+    expect(packageJson.scripts['publish:merge-pr']).toBe(
+      'node kit/scripts/publish-changes.mjs --mode merge-pr',
     );
     expect(packageJson.scripts['publish:bash']).toBeUndefined();
   });
@@ -510,7 +550,7 @@ describe('scope and validation', () => {
   it.each([
     ['wrong base', { baseRefName: 'develop' }, 'not main'],
     ['wrong head', { headRefName: 'feature/other' }, 'does not match'],
-    ['wrong SHA', { headRefOid: 'other-sha' }, 'does not match local HEAD'],
+    ['wrong SHA', { headRefOid: 'other-sha' }, 'does not match the expected head'],
     ['draft', { isDraft: true }, 'Draft PRs'],
     ['conflict', { mergeable: 'CONFLICTING' }, 'conflicts'],
     ['unknown mergeability', { mergeable: 'UNKNOWN' }, 'not resolved merge readiness'],
@@ -665,6 +705,21 @@ describe('command and branch safety', () => {
     );
   });
 
+  it('blocks a failed required-check command even when it emits JSON', async () => {
+    const runner = {
+      run: vi.fn().mockResolvedValue({
+        ok: false,
+        exitCode: 1,
+        stdout: '[{"bucket":"pass","state":"SUCCESS"}]',
+        stderr: 'HTTP 500: check service unavailable',
+      }),
+    };
+    const gh = createGhClient(runner, '/repo');
+    await expect(gh.requiredChecks('owner/repo', 7)).rejects.toThrow(
+      'HTTP 500: check service unavailable',
+    );
+  });
+
   it('reuses an existing pull request instead of creating a duplicate', async () => {
     const calls = [];
     const gh = {
@@ -683,7 +738,10 @@ describe('command and branch safety', () => {
       classification: 'normal',
       validation: 'CHECK_PASSED',
     });
-    expect(result.number).toBe(7);
+    expect(result).toMatchObject({
+      action: 'updated',
+      pr: { number: 7 },
+    });
     expect(calls).toEqual(['comment:7']);
   });
 });
@@ -787,5 +845,35 @@ describe('post-merge recovery', () => {
     expect(result).toMatchObject({ refreshed: true, reset: true });
     expect(calls[2]).toMatch(/^backup:/);
     expect(calls[3]).toBe('reset');
+  });
+
+  it('leaves a diverged default branch intact in fast-forward-only mode', async () => {
+    const calls = [];
+    const git = {
+      status: async () => '',
+      fetchDefault: async () => calls.push('fetch'),
+      switchBranch: async () => calls.push('switch'),
+      canFastForwardTo: async () => false,
+      createBackup: async () => calls.push('backup'),
+      resetHard: async () => calls.push('reset'),
+    };
+    const result = await refreshDefaultBranch({
+      git,
+      prompts: { typed: vi.fn() },
+      output: { skipped: vi.fn(), success: vi.fn() },
+      defaultBranch: 'main',
+      verifiedPr: {
+        number: 9,
+        baseRefName: 'main',
+        mergedAt: '2026-06-13T12:00:00Z',
+      },
+      fastForwardOnly: true,
+    });
+    expect(result).toMatchObject({
+      refreshed: false,
+      reset: false,
+      reason: 'non-fast-forward',
+    });
+    expect(calls).toEqual(['fetch', 'switch']);
   });
 });

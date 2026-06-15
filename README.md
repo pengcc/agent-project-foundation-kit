@@ -11,6 +11,9 @@ pnpm publish:local
 pnpm publish:local "Commit message"
 pnpm publish:local "Commit message" "PR title"
 pnpm publish:node "Commit message" "PR title"
+pnpm publish:pr-only "Commit message" "PR title"
+pnpm publish:merge-pr 123
+pnpm publish:merge-pr 123 --yes
 pnpm install:node -- --target /path/to/project
 pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
@@ -18,8 +21,9 @@ pnpm test:publish
 pnpm check
 ```
 
-`publish:local` and `publish:node` run the maintained Node.js 24+ ESM publish CLI. `pnpm check`
-validates the Node publish and installer paths, active apply-theme Bash syntax, and whitespace.
+`publish:local`, `publish:node`, `publish:pr-only`, and `publish:merge-pr` run the maintained
+Node.js 24+ ESM publish CLI. `pnpm check` validates the Node publish and installer paths, active
+apply-theme Bash syntax, and whitespace.
 
 ## Installer Commands
 
@@ -79,6 +83,24 @@ Configure the repository before using the automatic `SMALL_SAFE` path:
 The script never bypasses repository rules. It reports GitHub CLI stderr and does not refresh
 local `main` until GitHub confirms that the pull request was merged.
 
+### Quick PR-Only and Explicit Merge Commands
+
+`pnpm publish:pr-only` is the non-merging path for quickly publishing review changes from the
+current feature branch. It commits confirmed uncommitted changes when needed, stages only observed
+paths, pushes the branch, and creates or reuses its open PR. It does not ask classification,
+validation, scope-confirmation, completion-mode, or merge questions. It blocks on the default
+branch instead of creating a feature branch automatically.
+
+An existing PR keeps its title unless the optional second argument is explicitly supplied. The
+result reports the PR number, PR URL, files URL, branch, and whether the PR was created, updated,
+or unchanged.
+
+`pnpm publish:merge-pr <pr-number>` reads and validates the named PR, required checks, base branch,
+mergeability, and head OID before requesting one squash-merge confirmation. `--yes` skips only
+that confirmation. It does not bypass repository rules or checks. After GitHub verifies the merge,
+the command refreshes the default branch with fast-forward-only behavior and never hard-resets a
+diverged branch.
+
 ## Installed Publish Command
 
 The installer copies the reusable Node publish implementation and helpers to:
@@ -96,6 +118,9 @@ Use the installed Node CLI directly when Node.js 24 or newer is available:
 ```bash
 node .codex/scripts/publish-changes.mjs --help
 node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
+node .codex/scripts/publish-changes.mjs --mode pr-only "Commit message" "PR title"
+node .codex/scripts/publish-changes.mjs --mode merge-pr 123
+node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
 ```
 
 The source repository uses package-managed `yaml` for policy loading. The installer does not
