@@ -48,6 +48,7 @@ Completed themes:
 - Theme 22.0: stage review, inventory, and roadmap refresh
 - Theme 22.0.1: dependency invariant and publish handoff clarification
 - Theme 22.1: third-party skill adoption safety
+- Theme 22.2: kit evolution and reusable lesson promotion loop
 
 Current canonical core skill names:
 
@@ -100,6 +101,10 @@ Current foundation alignment boundaries:
   license/copying risk, trigger and boundary fit, workflow conflict, ecosystem assumptions,
   tool/mutation/network permissions, secret handling, source freshness, and rewrite requirements
   before adaptation.
+- Kit evolution and reusable lesson promotion live in existing `update-project-memory`,
+  `write-a-skill`, and `agent-operating-contract` surfaces. Project experience must be recorded in
+  local memory first, then generalized as a reusable lesson candidate with user confirmation and an
+  approved plan before any foundation-kit rule, skill, template, or documentation change.
 - `agent-roles-and-capabilities` owns the Missing Specialist Skill Policy.
 - `grill-me` may use Brainstorming Mode only for clarification before routing back to planning or
   architecture workflows.
@@ -149,7 +154,6 @@ Current roadmap and stage-review status:
 
 Future planned themes:
 
-- Theme 22.2: Kit Evolution and Reusable Lesson Promotion Loop
 - technology-specific skills
 - release workflow
 - deployment workflow

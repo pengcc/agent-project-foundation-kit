@@ -281,6 +281,19 @@ When adapting external skills:
 
 If license/provenance or copying risk is unclear, do not copy content verbatim.
 
+## Project Experience Adaptation
+
+When adapting project experience into a kit skill, rule, template, or documentation, start from a
+confirmed reusable lesson candidate.
+
+Remove project-specific history, project names, business context, secrets, customer data, and
+one-off implementation details before writing generic kit guidance.
+
+Do not copy project-specific history into installable templates or kit assets merely because it was
+recorded in local memory. Reusable promotion needs generalization, user confirmation, and an
+approved plan. Use `plan-with-context` for the kit change plan and `execute-plan` for approved
+implementation.
+
 ## Skill Authoring Verification
 
 Before finalizing a new or refined skill, verify:

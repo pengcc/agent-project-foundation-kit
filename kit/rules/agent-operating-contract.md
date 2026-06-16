@@ -167,6 +167,11 @@ Use `update-project-memory` for confirmed updates.
 
 Do not silently update memory. Do not copy plans, handoffs, logs, or scratch notes into project memory. Summarize only durable facts, decisions, and reusable lessons.
 
+Project-local lessons must not be copied into installable templates or kit assets merely because
+they exist in local memory. Reusable lesson promotion requires generalization, explicit user
+confirmation, and an approved plan before changing foundation-kit rules, skills, templates, or
+documentation.
+
 ## Lessons as Pattern Memory
 
 `lessons-learned.md` is not only for mistakes.

@@ -46,6 +46,33 @@ Mixed:
 
 Do not silently write memory. Propose the update first, then wait for user confirmation unless the user has explicitly authorized the update workflow.
 
+## Reusable Lesson Promotion Candidates
+
+Project experience must be recorded in local project memory first when it is durable.
+
+This workflow may identify a reusable lesson candidate, but it does not promote lessons into
+foundation-kit files by itself. Reusable lesson promotion requires generalization review, user
+confirmation, and a later approved plan before any kit rule, skill, template, or documentation
+change.
+
+Use this candidate format:
+
+```txt
+Reusable Lesson Candidate:
+- Source project / source context:
+- Original lesson:
+- Reusable principle:
+- What generalizes:
+- What does not generalize:
+- Proposed destination:
+- Risk of overgeneralization:
+- User decision:
+- Next workflow:
+```
+
+Rule: do not automatically promote project lessons. A candidate remains local project memory until the
+user confirms that it should be generalized for the foundation kit.
+
 
 Use this skill to update durable project memory after project facts, decisions, or reusable lessons change.
 
