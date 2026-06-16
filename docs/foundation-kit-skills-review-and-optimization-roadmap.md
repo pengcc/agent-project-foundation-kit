@@ -38,7 +38,10 @@ It should install reusable core workflows for:
 
 A downstream project should be able to grow its own memory, lessons, and optional skills without polluting the foundation kit. Reusable lessons may be promoted back to the foundation kit only through explicit review, generalization, and user confirmation.
 
-The core kit must stay concise, composable, trigger-clear, boundary-clear, and auditable. Technology-specific skills should normally be optional or referenced through an external skill catalog, especially when official or maintainer-authored skills exist.
+The core kit must stay concise, composable, trigger-clear, boundary-clear, and auditable.
+Technology-specific skills should normally be optional specialist candidates tracked through the
+source-repository optional skill catalog model, especially when official or maintainer-authored
+references exist.
 
 Implementation reports should be auditable: they should state not only what changed and how it was validated, but also which workflow boundary, project conventions, engineering principles, UI rules, docs-first facts, and quality constraints were followed.
 
@@ -896,40 +899,48 @@ repeated usage later proves that the compact existing-surface guidance is insuff
 
 ---
 
-## 14. External Skill Catalog and Optional Packs
+## 14. Optional Skill Catalog and Specialist Packs
 
-Add a future catalog:
+Status: implemented/current through Phase 7.
+
+Phase 7 added source-repository planning documentation for optional specialist candidates:
 
 ```text
-docs/external-skill-catalog.md
+docs/optional-skill-catalog.md
 ```
 
-Track:
+The catalog is not an installer manifest, package registry, marketplace, generated package
+workflow, or downstream-installed runtime file. It defines vocabulary, metadata shape, candidate
+status, and workflow routing for future optional specialist packs.
+
+Track candidate metadata such as:
 
 ```text
-- source
-- maintainer type: official | expert | community | unknown
-- license / provenance
-- trigger scope
-- useful patterns
-- risks
-- recommended mode: reference only | adapt rule | adapt skill | optional install | reject
+- id
+- name
+- category
+- maturity: stable | experimental | reference
+- install default: never | prompt | project-template-specific
+- dependencies
+- conflicts
+- required project signals
+- trigger examples
+- non-goals
+- validation notes
+- source / provenance
+- license / copying risk
+- adaptation status
+- recommended next workflow
 ```
 
-Initial candidates:
+Current boundary:
 
 ```text
-shadcn/improve
-Matt Pocock improve-codebase-architecture
-shadcn/ui official skill
-Supabase Agent Skills
-Better Auth skills
-Minimal Design System Skill
-UI / UX design skills
-React / Next.js / TanStack references
-Node / TypeScript references
-Drizzle / Prisma / database references
-Playwright references
+- no actual optional packs are implemented
+- no technology-specific skills are added
+- no optional pack is installed by default
+- no installer behavior exists yet
+- external references remain reference candidates until docs-first-research evaluation
 ```
 
 ---
@@ -1256,7 +1267,10 @@ Scope:
 
 ```text
 Add or expand:
-- docs/external-skill-catalog.md
+- docs/optional-skill-catalog.md
+
+Do not add real optional specialist packs, technology-specific skill directories, installer
+mapping, marketplace behavior, or auto-install behavior in this phase.
 ```
 
 ---
@@ -1287,14 +1301,20 @@ architecture, review, and audit surfaces.
 Phase 6 Architecture Review Refinement is complete. It stayed within existing architecture,
 review, and audit surfaces.
 
-The next recommended implementation area is Phase 7, if approved separately:
+Phase 7 Optional Skill Catalog and Specialist Packs is complete. It added source-repository
+planning documentation for future optional specialist candidates without adding actual packs,
+technology-specific skills, installer behavior, marketplace behavior, or auto-install behavior.
+
+The next recommended implementation areas remain future work and require separate plans:
 
 ```text
-Phase 7: Optional Skill Catalog and Specialist Packs
+technology-specific skills
+release workflow
+deployment workflow
 ```
 
-Do not execute Phase 7, release workflow, deployment workflow, or technology-specific skill work
-without a separate plan and approval.
+Do not execute technology-specific skill, release workflow, or deployment workflow work without a
+separate plan and approval.
 
 ---
 

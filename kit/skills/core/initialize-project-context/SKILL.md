@@ -262,6 +262,11 @@ Do not present role boundaries as confirmed if the role system skill does not ex
 
 The full role taxonomy, capability boundaries, and task-to-role routing belong to a later `agent-roles-and-capabilities` skill.
 
+When initialization detects a capability area that would benefit from a future optional specialist
+skill or pack, report it as an optional candidate only. Do not silently install, promote, or add
+specialist packs during initialization. In the foundation-kit source repository,
+`docs/optional-skill-catalog.md` defines the planning model for future candidates.
+
 ## Required Project Initialization Report
 
 Output a fixed report:

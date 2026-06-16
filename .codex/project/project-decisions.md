@@ -1608,3 +1608,41 @@ The foundation kit has a lightweight learning loop while preserving local projec
 boundaries. Theme 22.2 does not implement UI Quality Foundation, Architecture Review Refinement,
 Optional Skill Catalog, specialist packs, scripts, package commands, installer behavior,
 dependencies, tests, archive changes, generated package workflow, or runtime behavior.
+
+## Decision: Phase 7 defines optional skill catalog shape without installable packs
+
+### Status
+
+Accepted
+
+### Context
+
+The foundation kit needs a way to discuss future optional specialist skills and specialist packs
+without bloating the minimal core kit, implying unavailable specialist support, or creating an
+external marketplace or installer behavior prematurely.
+
+### Decision
+
+Use `docs/optional-skill-catalog.md` as source-repository planning documentation for optional
+specialist candidate evaluation.
+
+The catalog defines:
+
+```txt
+core versus optional terminology
+candidate metadata shape
+candidate status values
+candidate-only workflow routing
+external source / provenance / license checks
+```
+
+Do not create `kit/catalog/`, `kit/catalog/optional-skills.yml`, actual optional skill
+directories, technology-specific specialist packs, marketplace behavior, auto-install behavior, or
+installer mappings for Phase 7.
+
+### Impact
+
+Future optional specialist work has a shared vocabulary and routing model, but the minimal
+installable kit remains unchanged. Actual optional packs, technology-specific skills, installer
+support, release workflow, and deployment workflow remain future work requiring separate approved
+plans.
