@@ -1349,3 +1349,41 @@ The kit can now identify and prioritize repository-wide improvement work while p
 boundaries. Theme 21 does not add architecture-review, third-party skill policy, kit evolution
 loop, UI rules, technology-specific skills, scripts, package commands, installer behavior,
 dependencies, tests, archive changes, or runtime behavior.
+
+## Decision: Approved-plan execution may use bounded supporting skills
+
+### Status
+
+Accepted
+
+### Context
+
+Executing an approved plan can include bounded substeps that clearly belong to an installed
+dedicated skill, such as skill authoring, external fact verification, durable memory updates,
+review, auditing, clarification, or publishing. Theme 21 showed that creating or refining a skill
+should keep `execute-plan` as the primary workflow while explicitly applying `write-a-skill` as
+supporting guidance.
+
+### Decision
+
+`execute-plan` remains the primary workflow for approved-plan execution.
+
+Before each step group, the executor may classify whether an installed supporting skill applies to
+a bounded substep. If used, the supporting skill must be read or applied, reported, and then the
+agent returns to the primary workflow.
+
+Supporting skills do not override the approved plan, expand scope, bypass the Project Memory
+Context Gate, bypass safety rules, or silently change workflow boundaries. Material drift returns
+to `plan-with-context`.
+
+`write-a-skill` includes generic authoring verification for trigger clarity, boundary clarity,
+workflow separation, concise force prompts, and misuse or rationalization checks. These checks use
+external references only as inspiration and must not copy external skill content or adopt
+tool-specific process mechanics unless separately approved.
+
+### Impact
+
+Future implementation work can apply dedicated skill guidance without turning supporting skills
+into new workflows or weakening approved-plan control. Theme 21.1 does not change scripts,
+package commands, installer behavior, dependencies, tests, archive files, generated package
+workflow, or runtime behavior.

@@ -195,9 +195,10 @@ triggers:
 
 Description rules:
 
-- state what the skill does
-- state when to use it
+- prioritize trigger and when-to-use wording
+- describe the task, situation, or user request that should activate the skill
 - include trigger language
+- avoid summarizing the full workflow in the description
 - avoid vague descriptions
 - avoid claiming unavailable capabilities
 - avoid long implementation detail
@@ -274,6 +275,32 @@ When adapting external skills:
 
 If license or provenance is unclear, do not copy content verbatim.
 
+## Skill Authoring Verification
+
+Before finalizing a new or refined skill, verify:
+
+```txt
+- purpose, trigger, and when-not-to-use boundaries are clear
+- required context, workflow steps, output, and stop conditions are explicit
+- metadata description supports discovery through trigger / when-to-use wording
+- metadata triggers are specific and not broader than the skill boundary
+- prompt support, if present, stays concise and does not duplicate the full SKILL.md
+- workflow separation is preserved for planning, execution, review, publishing, research, and memory updates
+- external references were rewritten for this kit and not copied wholesale
+```
+
+For boundary-sensitive skills, add a misuse and rationalization check:
+
+```txt
+- What excuse might an agent use to invoke this skill outside its boundary?
+- What shortcut might cause the skill to absorb another workflow's responsibility?
+- What wording should close the loophole without bloating the skill?
+```
+
+Use static self-checks, manual scenario checks, or targeted review. Do not require mandatory
+delegated-agent tests, test-driven authoring, or tool-specific process mechanics unless this
+project explicitly adopts them later.
+
 ## Review Checklist
 
 Before finalizing a skill, check:
@@ -292,6 +319,8 @@ Before finalizing a skill, check:
 - Are scripts justified, deterministic, and validated?
 - Does it preserve project root boundaries?
 - Does it route durable facts, decisions, or lessons to update-project-memory?
+- Does it pass the skill authoring verification checks?
+- Do boundary-sensitive skills address likely misuse or rationalization paths?
 ```
 
 ## Output Format

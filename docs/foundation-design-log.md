@@ -1255,6 +1255,52 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Theme 21.1: Supporting Skill Invocation and Skill Authoring Verification
+
+Accepted decisions:
+
+1. Keep `execute-plan` as the primary workflow for approved-plan execution.
+2. Allow installed supporting skills only for bounded substeps that clearly match their boundary.
+3. Require agents to report supporting skills actually read or applied, then return to the primary
+   workflow.
+4. Add a concise Supporting Skill Invocation concept to `agent-roles-and-capabilities` without
+   creating a broad new taxonomy.
+5. Strengthen `write-a-skill` with generic authoring verification for trigger clarity, boundaries,
+   workflow separation, concise force prompts, and misuse/rationalization checks.
+
+Rationale:
+
+- reduce accidental underuse of dedicated skills during approved-plan execution
+- preserve the approved plan as the execution contract
+- improve skill quality checks without copying external skill content or adopting tool-specific
+  process mechanics
+
+Non-goals:
+
+- no new workflows, third-party skill adoption policy, kit evolution loop, AGENTS changes,
+  scripts, package commands, installer behavior, dependencies, tests, archive changes, generated
+  package workflow, or runtime behavior
+- no Obra, Superpowers, Claude, or TodoWrite-specific runtime language
+
+Validation:
+
+- scoped searches confirm supporting-skill language in intended files
+- scoped searches confirm generic `write-a-skill` verification wording
+- negative searches confirm no external-tool-specific runtime language
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/write-a-skill/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:
