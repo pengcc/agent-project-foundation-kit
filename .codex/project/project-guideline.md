@@ -45,6 +45,7 @@ Completed themes:
 - Theme 20: plan, execute, and review quality hardening
 - Theme 21: read-only codebase audit foundation
 - Theme 21.1: supporting skill invocation and skill authoring verification
+- Theme 22.0: stage review, inventory, and roadmap refresh
 
 Current canonical core skill names:
 
@@ -62,6 +63,8 @@ Current canonical core skill names:
 
 Current canonical core rules:
 
+- `agent-operating-contract`
+- `docs-first-policy`
 - `engineering-quality-principles`
 
 
@@ -121,8 +124,20 @@ Current codebase-audit boundaries:
 - Concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews remain
   `code-review` responsibilities.
 
+Current roadmap and stage-review status:
+
+- `docs/foundation-kit-skills-review-and-optimization-roadmap.md` is the canonical long-term
+  roadmap and planning reference.
+- `docs/foundation-kit-stage-review-and-forward-plan-2026-06-16.md` is a dated stage-review
+  report and audit input. It informs roadmap refresh work but does not replace the roadmap or
+  durable project memory.
+- Theme 22.0 refreshed current skill/rule/prompt inventory and next-step guidance before
+  Third-Party Skill Adoption Safety or Kit Evolution work.
+
 Future planned themes:
 
+- Theme 22.1: Third-Party Skill Adoption Safety
+- Theme 22.2: Kit Evolution and Reusable Lesson Promotion Loop
 - technology-specific skills
 - release workflow
 - deployment workflow
@@ -584,6 +599,10 @@ Completed:
     - clarified bounded supporting skill activation during `execute-plan`
     - added the Supporting Skill Invocation concept to role routing
     - strengthened generic `write-a-skill` authoring verification
+- Theme 22.0 stage review, inventory, and roadmap refresh
+    - refreshed long-term roadmap current-state inventory and next-step guidance
+    - corrected current canonical rule inventory in project memory
+    - preserved the stage review report as a dated input, not a roadmap replacement
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`

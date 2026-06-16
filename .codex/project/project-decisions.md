@@ -1387,3 +1387,44 @@ Future implementation work can apply dedicated skill guidance without turning su
 into new workflows or weakening approved-plan control. Theme 21.1 does not change scripts,
 package commands, installer behavior, dependencies, tests, archive files, generated package
 workflow, or runtime behavior.
+
+## Decision: Stage reviews are dated inputs, not roadmap replacements
+
+### Status
+
+Accepted
+
+### Context
+
+After Themes 19, 20, 21, and 21.1, the foundation kit had current project memory and a dated stage
+review report that identified roadmap and inventory drift. The review was useful, but treating it
+as the new roadmap would create another source of truth and repeat the process-artifact drift
+problem.
+
+### Decision
+
+Keep:
+
+```txt
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+```
+
+as the canonical long-term roadmap and planning reference.
+
+Treat dated stage review reports, including:
+
+```txt
+docs/foundation-kit-stage-review-and-forward-plan-2026-06-16.md
+```
+
+as audit inputs that can inform roadmap refreshes, project memory updates, and design-log entries.
+They do not replace project memory for current facts, and they do not replace the roadmap for
+long-term planning.
+
+### Impact
+
+Future planning starts from the refreshed roadmap and current project memory while still preserving
+stage reviews as useful historical evidence. Theme 22.0 does not implement Third-Party Skill
+Adoption Safety, Kit Evolution, UI Quality Foundation, Architecture Review Refinement, Optional
+Skill Catalog, release workflow, deployment workflow, technology-specific skills, or runtime/tooling
+changes.
