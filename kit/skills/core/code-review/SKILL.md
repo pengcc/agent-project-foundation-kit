@@ -77,6 +77,14 @@ Focus areas:
 - project memory impact
 - merge/apply readiness
 
+For UI-facing diffs, also check UI quality against `engineering-quality-principles`, including
+user flow clarity, visual hierarchy, responsive behavior, accessibility basics, loading / empty /
+error / disabled / success states, interaction feedback, content clarity, and reuse of existing
+project UI conventions or components.
+
+UI review remains part of `code-review`. Do not turn it into a separate UI workflow, design-system
+package, component library, or technology-specific UI skill.
+
 ### 2. Plan Alignment Review
 
 Use Plan Alignment Review when the user asks for staged review, architecture review, engineering direction review, plan consistency review, or whether work has drifted from an accepted plan.

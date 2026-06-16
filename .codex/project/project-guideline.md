@@ -49,6 +49,7 @@ Completed themes:
 - Theme 22.0.1: dependency invariant and publish handoff clarification
 - Theme 22.1: third-party skill adoption safety
 - Theme 22.2: kit evolution and reusable lesson promotion loop
+- Phase 5: UI Quality Foundation
 
 Current canonical core skill names:
 
@@ -142,6 +143,16 @@ Current codebase-audit boundaries:
 - Concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews remain
   `code-review` responsibilities.
 
+Current UI Quality Foundation boundaries:
+
+- UI quality guidance lives in `kit/rules/engineering-quality-principles.md`.
+- It applies through existing planning, architecture, review, and audit workflows.
+- It covers user flow clarity, visual hierarchy, responsive behavior, accessibility basics,
+  loading / empty / error / disabled / success states, interaction feedback, content clarity,
+  existing design system or UI library reuse, maintainability, and avoiding speculative redesign.
+- It is not a UI workflow, component library, design system package, technology-specific UI skill,
+  or professional accessibility audit.
+
 Current roadmap and stage-review status:
 
 - `docs/foundation-kit-skills-review-and-optimization-roadmap.md` is the canonical long-term
@@ -154,6 +165,7 @@ Current roadmap and stage-review status:
 
 Future planned themes:
 
+- Architecture Review Refinement
 - technology-specific skills
 - release workflow
 - deployment workflow

@@ -85,15 +85,20 @@ Use the smallest mode that fits the request.
 
 Survey the repository broadly for high-leverage findings across architecture, correctness,
 validation, maintainability, security basics, performance risks, documentation, and developer
-experience.
+experience. For user-facing projects, include broad UI quality opportunities when visible from repo
+evidence, such as unclear flows, weak visual hierarchy, missing loading / empty / error states,
+responsive risk, accessibility basics, or inconsistent reuse of existing UI conventions.
 
 ### Focus Audit
 
 Survey one requested focus area:
 
 ```txt
-security | tests | architecture | dx | performance | docs | dependencies
+security | tests | architecture | dx | performance | docs | dependencies | ui
 ```
+
+UI focus audits remain read-only surveys. Route selected UI quality findings to
+`plan-with-context`; use `code-review` for concrete UI diffs.
 
 ### Branch Audit
 

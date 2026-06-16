@@ -150,7 +150,37 @@ For implementation work, run or recommend the smallest meaningful validation:
 
 If validation is skipped, explain why.
 
-## 16. Reassess the Runtime as Automation Grows
+## 16. UI Quality and Design-System Reuse
+
+For user-facing UI work, existing project conventions, design systems, component libraries,
+tokens, accessibility practices, and product context take priority.
+
+Before custom UI, inspect and reuse existing components, variants, tokens, layout patterns, and
+interaction states where they fit the approved scope.
+
+Evaluate UI changes with this compact checklist:
+
+- Scope / screen / flow: identify the exact user flow or surface being changed
+- User goal: preserve the user's primary task and avoid distracting additions
+- Existing design system or UI library: reuse established primitives before creating custom UI
+- Layout / visual hierarchy: make primary actions, content groups, and navigation clear
+- Responsive behavior: account for narrow, medium, and wide layouts when relevant
+- Accessibility basics: preserve semantic structure, labels, keyboard paths, focus visibility, and
+  reasonable contrast assumptions
+- States: include loading, empty, error, disabled, and success states when the flow can reach them
+- Interaction and feedback: make actions, progress, validation, and failure states visible
+- Content clarity: keep labels, helper text, and error copy concise and specific
+- Reuse / maintainability: avoid one-off styling, raw color overrides, and speculative abstractions
+- Risks / tradeoffs: call out uncertainty, visual debt, or cases needing designer/user review
+- Recommendation: state whether to proceed, simplify, defer, or route to another workflow
+- Next workflow: use `plan-with-context` for concrete UI changes, `project-architecture-plan` for
+  product-wide UI direction, `code-review` for UI diffs, or `codebase-audit` for broad UI
+  opportunities
+
+This guidance is not a component library, design system package, technology-specific UI skill, or
+professional accessibility audit.
+
+## 17. Reassess the Runtime as Automation Grows
 
 Shell is appropriate for small, linear glue around existing commands. Reassess the runtime before
 a script becomes a workflow engine with complex state, structured data, interactive prompts,
@@ -167,7 +197,7 @@ When those signals appear:
 Node.js is one suitable choice in this repository, but the general rule is to select the runtime
 that best supports the workflow's state model, validation needs, and long-term maintenance.
 
-## 17. Keep Project and Global Tooling Boundaries Explicit
+## 18. Keep Project and Global Tooling Boundaries Explicit
 
 Treat project-local runtime configuration and global machine tooling as separate state.
 
