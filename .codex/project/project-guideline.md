@@ -46,6 +46,7 @@ Completed themes:
 - Theme 21: read-only codebase audit foundation
 - Theme 21.1: supporting skill invocation and skill authoring verification
 - Theme 22.0: stage review, inventory, and roadmap refresh
+- Theme 22.0.1: dependency invariant and publish handoff clarification
 
 Current canonical core skill names:
 
@@ -108,11 +109,17 @@ Current plan/execute/review quality boundaries:
 - `execute-plan` remains the primary workflow for approved-plan execution. It may invoke installed
   supporting skills for bounded substeps, but supporting skills do not override or expand the
   approved plan.
+- `publish-current-branch` is a post-execution workflow transition, not an internal
+  `execute-plan` supporting substep. Push, PR, and merge require an explicit workflow switch after
+  execution.
 - `code-review` remains review-only and advisory. Reviews distinguish findings introduced by the
   change from pre-existing issues, check generated package/theme zip safety, and perform plan-hunk
   alignment when an approved plan exists.
 - `write-a-skill` includes generic authoring verification for trigger clarity, boundary clarity,
   workflow separation, concise force prompts, and misuse/rationalization checks.
+- Initial role/workflow routing may use `agent-roles-and-capabilities` before the Project Memory
+  Context Gate. If routing depends on project-specific facts, use `project-memory` as supporting
+  context before making project-state decisions.
 
 Current codebase-audit boundaries:
 

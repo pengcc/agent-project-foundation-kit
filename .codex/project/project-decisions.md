@@ -1428,3 +1428,32 @@ stage reviews as useful historical evidence. Theme 22.0 does not implement Third
 Adoption Safety, Kit Evolution, UI Quality Foundation, Architecture Review Refinement, Optional
 Skill Catalog, release workflow, deployment workflow, technology-specific skills, or runtime/tooling
 changes.
+
+## Decision: Publishing handoff and role routing stay bootstrap-safe
+
+### Status
+
+Accepted
+
+### Context
+
+Theme 21.1 allowed approved-plan execution to use bounded supporting skills. A dependency/deadlock
+risk review found that treating `publish-current-branch` like a normal internal supporting substep
+could blur the boundary between execution and externally visible publishing actions. The same
+review found that role routing must remain usable before the Project Memory Context Gate so agents
+can decide which workflow should run.
+
+### Decision
+
+`publish-current-branch` is a post-execution workflow transition. `execute-plan` may recommend a
+publish handoff after execution, but it must not run `publish-current-branch` as an internal
+execution substep. Push, PR, and merge require an explicit workflow switch after execution.
+
+`agent-roles-and-capabilities` may be used for initial role/workflow routing without first passing
+the Project Memory Context Gate. If routing depends on project-specific facts, use
+`project-memory` as supporting context before making project-state decisions.
+
+### Impact
+
+Approved-plan execution keeps a clear boundary around externally visible GitHub actions, while
+initial routing remains bootstrap-safe and avoids a context-gate dependency loop.

@@ -35,6 +35,14 @@ After the bounded substep, return to the primary workflow.
 Supporting skills do not bypass the Project Memory Context Gate, approved-plan boundaries, safety
 rules, or the Missing Specialist Skill Policy.
 
+## Bootstrap-Safe Routing Invariant
+
+This skill may be used for initial role/workflow routing without first passing the Project Memory
+Context Gate.
+
+If routing depends on project-specific facts, use project-memory as supporting context before
+making project-state decisions.
+
 ## Role Routing Header
 
 When this skill is used for task routing, output a concise header:
