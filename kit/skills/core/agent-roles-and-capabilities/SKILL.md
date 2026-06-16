@@ -24,6 +24,17 @@ A workflow may use multiple roles.
 
 A role may be used by multiple workflows.
 
+## Supporting Skill Invocation
+
+The primary workflow remains active while a supporting skill is used for a bounded substep.
+
+Do not claim a supporting skill was used unless its instructions were read and applied.
+
+After the bounded substep, return to the primary workflow.
+
+Supporting skills do not bypass the Project Memory Context Gate, approved-plan boundaries, safety
+rules, or the Missing Specialist Skill Policy.
+
 ## Role Routing Header
 
 When this skill is used for task routing, output a concise header:

@@ -1152,30 +1152,31 @@ Add or expand:
 
 ## 16. Recommended Next Step
 
-The next step should be to review the Theme 21 Codebase Audit Foundation
-implementation:
+Theme 21 Codebase Audit Foundation is implemented. Theme 21.1 adds the support-hardening step
+between codebase audit and future kit-evolution work:
 
 ```text
-Workflow: code-review
-Goal: Review Theme 21 Codebase Audit Foundation
-Primary role: Code Reviewer
-Supporting roles: Workflow Reviewer, Skill Author, Project Memory Curator
+Workflow: execute-plan
+Goal: Supporting Skill Invocation and Skill Authoring Verification
+Primary role: Implementation Executor
+Supporting skills: write-a-skill, update-project-memory
 ```
 
-The Theme 21 review should confirm:
+Theme 21.1 should confirm:
 
 ```text
-- codebase-audit remains read-only
-- selected findings route to plan-with-context, not executable fix plans
-- concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews remain code-review responsibilities
+- execute-plan remains the primary workflow for approved-plan execution
+- supporting skills are bounded substep guidance only
+- supporting skills must be read/applied before being claimed
+- write-a-skill verification remains generic and not external-tool-specific
 - record durable project memory and design-log updates
 - avoid scripts, package commands, installer, dependency, runtime, tests, and archive changes
-- avoid prohibited workflows or broad role taxonomy changes
+- avoid new workflows or broad role taxonomy changes
 ```
 
-After Theme 21 is reviewed and accepted, Phase 4 Kit Evolution and Third-Party Skill Safety
+After Theme 21.1 is reviewed and accepted, Phase 4 Kit Evolution and Third-Party Skill Safety
 requires a separate `plan-with-context` plan and explicit approval before implementation. Do not
-execute Phase 4–7 as part of Theme 21.
+execute Phase 4–7 as part of Theme 21.1.
 
 ---
 

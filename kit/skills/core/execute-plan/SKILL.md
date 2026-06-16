@@ -90,6 +90,30 @@ explicit approval.
 Material drift in scope, baseline, validation, architecture, dependencies, risk, file ownership, or
 repository state returns to `plan-with-context`.
 
+## Supporting Skill Activation
+
+`execute-plan` remains the primary workflow during approved-plan execution.
+
+Before each step group, classify whether an installed supporting skill applies to a bounded
+substep:
+
+```txt
+skill creation/refinement -> write-a-skill
+external technical facts -> docs-first-research
+durable memory write -> update-project-memory
+concrete diff/PR/package review -> code-review
+repo-wide audit -> codebase-audit
+unclear requirements -> grill-me
+publishing -> publish-current-branch
+```
+
+Read and apply the supporting skill only for that bounded substep, report the supporting skill
+used, then return to `execute-plan`.
+
+Supporting skills must not expand, replace, or override the approved plan boundary. If a supporting
+skill reveals material drift in scope, steps, risk, validation, dependency, configuration,
+architecture, or repository state, pause and return to `plan-with-context`.
+
 ## Generic Codex Mode Boundary
 
 Generic Codex modes are not trusted workflow boundaries.
@@ -236,6 +260,7 @@ Execution Summary:
 - Commit:
 - Deviations:
 - Blockers:
+- Supporting Skills Used:
 - Quality / Constraints Followed:
 - Project memory update check:
 - External / global actions:

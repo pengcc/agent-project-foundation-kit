@@ -44,6 +44,7 @@ Completed themes:
 - Theme 19: core foundation alignment after Project Memory Context Gate
 - Theme 20: plan, execute, and review quality hardening
 - Theme 21: read-only codebase audit foundation
+- Theme 21.1: supporting skill invocation and skill authoring verification
 
 Current canonical core skill names:
 
@@ -101,9 +102,14 @@ Current plan/execute/review quality boundaries:
 - `execute-plan` treats the approved plan as the execution contract. Changed hunks must map to a
   plan step, validation step, or approved memory/design-log update; material drift returns to
   `plan-with-context`.
+- `execute-plan` remains the primary workflow for approved-plan execution. It may invoke installed
+  supporting skills for bounded substeps, but supporting skills do not override or expand the
+  approved plan.
 - `code-review` remains review-only and advisory. Reviews distinguish findings introduced by the
   change from pre-existing issues, check generated package/theme zip safety, and perform plan-hunk
   alignment when an approved plan exists.
+- `write-a-skill` includes generic authoring verification for trigger clarity, boundary clarity,
+  workflow separation, concise force prompts, and misuse/rationalization checks.
 
 Current codebase-audit boundaries:
 
@@ -488,6 +494,10 @@ Current validation is mostly file/content based:
   references stay short, selected findings route to `plan-with-context`, concrete change reviews
   remain `code-review`, and no scripts, package commands, installer files, dependencies, tests,
   archive files, or runtime behavior changed
+- For Theme 21.1-style supporting-skill hardening, confirm `execute-plan` remains the primary
+  workflow, supporting skills stay bounded, `write-a-skill` verification remains generic and not
+  external-tool-specific, and no scripts, package commands, installer files, dependencies, tests,
+  archive files, or runtime behavior changed
 
 ## 10. Development Workflow
 
@@ -570,6 +580,10 @@ Completed:
     - added `force-codebase-audit`
     - added short routing references in the operating contract and role routing
     - kept selected findings routed to `plan-with-context`
+- Theme 21.1 supporting skill invocation and skill authoring verification
+    - clarified bounded supporting skill activation during `execute-plan`
+    - added the Supporting Skill Invocation concept to role routing
+    - strengthened generic `write-a-skill` authoring verification
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`
