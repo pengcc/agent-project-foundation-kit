@@ -117,6 +117,24 @@ A plan must include a recommendation.
 
 Default to the smallest useful, verifiable, reversible option unless project memory or the user goal clearly requires a heavier solution.
 
+## Self-Contained Plan Quality
+
+Plans must be executable by a fresh agent that did not see the original conversation.
+
+For non-trivial work, include:
+
+- exact files in scope
+- exact files, directories, or behavior explicitly out of scope
+- baseline branch, commit, or repository state used for planning
+- STOP conditions that tell `execute-plan` when to pause, return to planning, or ask the user
+- validation commands confirmed from repo files such as `package.json`, README, project memory,
+  existing docs, or the current codebase
+
+Do not rely on hidden chat context, unstated assumptions, or phrases such as "as discussed above".
+
+Keep small plans proportional, but include enough context for safe execution without the original
+conversation.
+
 ## Plan Persistence
 
 Save the plan to `dev_locals/plans/` when it is multi-step, executable, cross-session, affects multiple files/modules, affects architecture/dependencies/configuration/deployment/tests/workflows, or is explicitly requested.

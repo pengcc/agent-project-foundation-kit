@@ -1284,3 +1284,36 @@ project authority.
 The foundation entrypoints stay short, missing specialist skills become visible without adding
 optional technology skills, and early brainstorming remains clarification-only rather than an
 implementation or planning bypass.
+
+## Decision: Plans, execution, and reviews use explicit quality contracts
+
+### Status
+
+Accepted
+
+### Context
+
+After Project Memory Context Gate and core foundation alignment, the existing planning,
+execution, and review skills needed small quality hardening without creating new workflows or
+changing runtime/tooling behavior.
+
+### Decision
+
+`plan-with-context` must produce self-contained plans that a fresh agent can execute. Non-trivial
+plans include exact files in scope and out of scope, a baseline branch/commit/state, STOP
+conditions, and validation commands confirmed from repository sources.
+
+`execute-plan` treats the approved plan as the execution contract. Every changed hunk maps to a
+plan step, validation step, or approved memory/design-log update. Material drift returns to
+`plan-with-context`; user or pre-existing changes are not reverted without explicit approval.
+
+`code-review` remains advisory and review-only. It distinguishes findings introduced by the
+reviewed change from pre-existing issues, checks generated package/theme zip safety, and performs
+plan-hunk alignment when an approved plan exists.
+
+### Impact
+
+Future agents have clearer boundaries for planning, execution, and review quality while preserving
+the existing workflow set. Theme 20 does not add codebase audit, new prompts/rules/metadata,
+technology-specific skills, scripts, package commands, installer behavior, dependencies, tests, or
+runtime behavior.
