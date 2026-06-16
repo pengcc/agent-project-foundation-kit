@@ -281,6 +281,40 @@ audit workflows.
 
 This keeps core guidance reusable without turning the foundation kit into a UI style library.
 
+## Decision: Architecture Review Refinement uses code-review Plan Alignment Review
+
+### Status
+
+Accepted
+
+### Decision
+
+Implement Phase 6 Architecture Review Refinement primarily in:
+
+```txt
+kit/skills/core/code-review/SKILL.md
+```
+
+Use short relationship references in:
+
+```txt
+kit/skills/core/project-architecture-plan/SKILL.md
+kit/skills/core/codebase-audit/SKILL.md
+```
+
+Do not add a separate `architecture-review` skill, architecture rule file, or
+`project-architecture-plan/REFERENCE.md` for this phase.
+
+### Rationale
+
+Architecture review is a review activity when the target is a plan, PR, branch, implementation
+direction, or proposed structural change. `code-review` already owns review-only behavior, Plan
+Alignment Review, findings, advisory verdicts, and routing to follow-up workflows.
+
+Keeping Phase 6 in existing surfaces sharpens architecture review without creating a heavy
+enterprise architecture process or blurring `project-architecture-plan`, `codebase-audit`, and
+`execute-plan` boundaries.
+
 ## Decision: Preserve existing workflow skill content during role routing integration
 
 ### Status

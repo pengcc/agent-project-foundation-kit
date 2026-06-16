@@ -108,6 +108,32 @@ Focus areas:
 - project memory / decisions consistency
 - whether the plan needs revision
 
+Architecture review is a Plan Alignment Review focus. It reviews structural direction and
+architecture-impacting changes against an explicit baseline; it does not create a new architecture
+plan, survey the whole repository by default, or execute changes.
+
+Use this compact Architecture Review Checklist when the target affects architecture direction:
+
+- Scope / decision under review: name the plan, PR, diff, branch, or proposed structural change
+- Current architecture context: summarize relevant accepted plans, project memory, and repo reality
+- Proposed direction: state what structural direction the target introduces or changes
+- Boundary impact: check module, service, package, API, data, UI, infrastructure, or ownership boundaries
+- Dependency direction and data-flow impact: check whether dependencies and data movement stay understandable
+- Coupling / cohesion impact: identify tighter coupling, scattered responsibility, or clearer separation
+- Cross-cutting concerns: check validation, errors, observability, configuration, security, privacy, and performance where relevant
+- Testing / validation impact: check whether validation matches the affected boundary and risk
+- Migration / rollback impact: check compatibility, transition path, reversibility, and partial-failure handling
+- Runtime / deployment assumptions: flag unverified assumptions that require `docs-first-research`
+- Ownership / maintainability impact: check whether future changes remain local, understandable, and project-conventional
+- Alternatives considered: note simpler or lower-risk options when the current direction is questionable
+- Fit with project memory and accepted plans: flag conflicts or missing decisions
+- Risks / tradeoffs: state risk, confidence, and whether the plan needs revision
+- Recommendation: advisory verdict or issue-specific fix recommendation only
+- Next workflow: `plan-with-context` for planned fixes, `project-architecture-plan` for changed project-level direction, `codebase-audit` for broad repo survey, or `none`
+
+Architecture review must remain review-only. It must not replace `project-architecture-plan`,
+produce a full executable fix plan by default, or turn `code-review` into `codebase-audit`.
+
 ## Required Workflow Chain
 
 Before producing a formal review report, pass the Project Memory Context Gate defined in the

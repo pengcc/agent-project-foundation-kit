@@ -273,6 +273,18 @@ Do not turn an architecture plan into UI wireframes, detailed component tickets,
 library, a design system package, or technology-specific UI guidance. Route concrete UI changes to
 `plan-with-context`.
 
+## Architecture Review Relationship
+
+This skill creates or updates project-level architecture direction.
+
+Use `code-review` Plan Alignment Review to review an existing architecture plan, PR, branch,
+implementation direction, or proposed structural change against accepted project memory, roadmap,
+module boundaries, dependency direction, data flow, migration/rollback risk, and validation
+strategy.
+
+Do not turn `project-architecture-plan` into a review workflow. If review finds that project-level
+architecture direction changed, route the next decision back to this skill.
+
 ## Architecture and Roadmap Granularity
 
 This skill outputs project-level architecture and roadmap only.

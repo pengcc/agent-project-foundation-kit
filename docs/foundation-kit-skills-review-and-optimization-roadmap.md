@@ -855,27 +855,44 @@ These should not be core by default.
 
 ## 13. Architecture Review Refinement
 
-The existing `project-architecture-plan` provides architecture planning. The gap is architecture review methodology.
+Status: implemented/current through Phase 6.
 
-Add a future reference:
+The existing `project-architecture-plan` provides architecture planning. Phase 6 refined
+architecture review through the existing `code-review` Plan Alignment Review mode, with short
+relationship notes in `project-architecture-plan` and `codebase-audit`.
 
-```text
-kit/skills/core/project-architecture-plan/REFERENCE.md
-```
-
-Include:
+Implemented surface:
 
 ```text
-- Module / Interface / Implementation
-- Depth / Seam / Adapter / Leverage / Locality
-- deletion test
-- interface as test surface
-- one adapter = hypothetical seam
-- two adapters = real seam
-- architecture candidate report format
+- kit/skills/core/code-review/SKILL.md
+- kit/skills/core/project-architecture-plan/SKILL.md
+- kit/skills/core/codebase-audit/SKILL.md
 ```
 
-Only create a separate `architecture-review` skill if repeated usage justifies it.
+Architecture review now covers:
+
+```text
+- scope / decision under review
+- current architecture context
+- proposed direction
+- boundary impact
+- dependency direction and data-flow impact
+- coupling / cohesion impact
+- cross-cutting concerns
+- security / privacy impact
+- testing / validation impact
+- migration / rollback impact
+- runtime / deployment assumptions
+- ownership / maintainability impact
+- alternatives considered
+- fit with project memory and accepted plans
+- risks / tradeoffs
+- recommendation
+- next workflow
+```
+
+Only create a separate `architecture-review` skill or `project-architecture-plan/REFERENCE.md` if
+repeated usage later proves that the compact existing-surface guidance is insufficient.
 
 ---
 
@@ -1207,6 +1224,8 @@ Future only if repeated use justifies it:
 
 ### Phase 6: Architecture Review Refinement
 
+Status: implemented/current.
+
 Goal:
 
 ```text
@@ -1216,8 +1235,13 @@ Enhance existing project-architecture-plan with architecture review methodology.
 Scope:
 
 ```text
-Add:
+Implemented through:
+- code-review Plan Alignment Review architecture checklist
+- short relationship references in project-architecture-plan and codebase-audit
+
+Future only if repeated use justifies it:
 - kit/skills/core/project-architecture-plan/REFERENCE.md
+- kit/skills/core/architecture-review/
 ```
 
 ### Phase 7: Optional Skill Catalog and Specialist Packs
@@ -1260,14 +1284,17 @@ memory, skill-authoring, and operating-contract surfaces.
 Phase 5 UI Quality Foundation is complete. It stayed within existing engineering-quality,
 architecture, review, and audit surfaces.
 
-The next recommended implementation area is Phase 6, if approved separately:
+Phase 6 Architecture Review Refinement is complete. It stayed within existing architecture,
+review, and audit surfaces.
+
+The next recommended implementation area is Phase 7, if approved separately:
 
 ```text
-Phase 6: Architecture Review Refinement
+Phase 7: Optional Skill Catalog and Specialist Packs
 ```
 
-Do not execute Phase 6, Phase 7, release workflow, deployment workflow, or technology-specific
-skill work without a separate plan and approval.
+Do not execute Phase 7, release workflow, deployment workflow, or technology-specific skill work
+without a separate plan and approval.
 
 ---
 

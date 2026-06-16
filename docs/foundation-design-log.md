@@ -1531,6 +1531,57 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Phase 6: Architecture Review Refinement
+
+Accepted decisions:
+
+1. Make `code-review` Plan Alignment Review the primary home for architecture review guidance.
+2. Add only short relationship references in `project-architecture-plan` and `codebase-audit`.
+3. Keep architecture review advisory and review-only.
+4. Do not create a separate `architecture-review` skill, architecture rule file, or
+   `project-architecture-plan/REFERENCE.md`.
+
+Rationale:
+
+- architecture review is a review activity when the target is a plan, PR, branch, implementation
+  direction, or proposed structural change
+- `code-review` already owns review-only behavior, Plan Alignment Review, findings, advisory
+  verdicts, and follow-up routing
+- existing-surface guidance avoids a heavy enterprise architecture process and preserves workflow
+  boundaries
+
+Non-goals:
+
+- no separate `architecture-review` skill
+- no `kit/rules/architecture-review-principles.md`
+- no `kit/skills/core/project-architecture-plan/REFERENCE.md`
+- no Optional Skill Catalog, specialist packs, release workflow, deployment workflow, or
+  technology-specific architecture skills
+- no scripts, package commands, installer behavior, dependencies, tests, archive changes,
+  generated package workflow, runtime behavior, AGENTS changes, skill renames, or mature-skill
+  rewrites
+
+Validation:
+
+- scoped searches confirm architecture review, boundary impact, dependency direction, data flow,
+  migration, rollback, maintainability, runtime, deployment, ownership, alternatives, and next
+  workflow language
+- scoped checks confirm no runtime/tooling, package, installer, test, archive, AGENTS, new
+  architecture-review skill, architecture rule file, or `REFERENCE.md` changes
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/code-review/SKILL.md
+kit/skills/core/project-architecture-plan/SKILL.md
+kit/skills/core/codebase-audit/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:
