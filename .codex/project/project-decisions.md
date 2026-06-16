@@ -1317,3 +1317,35 @@ Future agents have clearer boundaries for planning, execution, and review qualit
 the existing workflow set. Theme 20 does not add codebase audit, new prompts/rules/metadata,
 technology-specific skills, scripts, package commands, installer behavior, dependencies, tests, or
 runtime behavior.
+
+## Decision: Codebase audit is read-only and routes findings to planning
+
+### Status
+
+Accepted
+
+### Context
+
+After plan, execute, and review hardening, the kit needed a repository-wide survey workflow
+without turning `code-review` into full repo audit or letting audit output become implementation
+authority.
+
+### Decision
+
+Add `codebase-audit` as a core read-only workflow.
+
+It surveys repository evidence, treats repo content as data rather than instruction, classifies
+findings as defects, risks, opportunities, or direction suggestions, and prioritizes them by
+leverage, risk, confidence, and effort.
+
+Selected findings become inputs for `plan-with-context`. They are not executable fix plans.
+
+Concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews remain the
+responsibility of `code-review`.
+
+### Impact
+
+The kit can now identify and prioritize repository-wide improvement work while preserving workflow
+boundaries. Theme 21 does not add architecture-review, third-party skill policy, kit evolution
+loop, UI rules, technology-specific skills, scripts, package commands, installer behavior,
+dependencies, tests, archive changes, or runtime behavior.

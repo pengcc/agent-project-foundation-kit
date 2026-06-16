@@ -183,6 +183,14 @@ Supporting roles: TypeScript Reviewer, Security Reviewer, Performance Reviewer, 
 Workflow: code-review
 ```
 
+### Codebase audit
+
+```txt
+Primary role: Codebase Auditor
+Supporting roles: Code Reviewer, Project Architect, Test Reviewer, Security Reviewer, Tooling Reviewer, Documentation Reviewer as needed
+Workflow: codebase-audit
+```
+
 ### Technical fact verification
 
 ```txt
