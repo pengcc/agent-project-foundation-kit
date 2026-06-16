@@ -1182,9 +1182,12 @@ Theme 22.2:
 Kit Evolution and Reusable Lesson Promotion Loop
 ```
 
-Theme 22.2 should define how project experience becomes reusable foundation-kit guidance without
-polluting installable templates. Do not combine this with Theme 22.1 unless explicitly planned and
-approved later.
+Status: implemented/current.
+
+Theme 22.2 defines how project experience becomes reusable foundation-kit guidance without
+polluting installable templates. It uses existing `update-project-memory`, `write-a-skill`, and
+`agent-operating-contract` surfaces rather than adding a dedicated kit-evolution workflow or rule
+file.
 
 ### Phase 5: UI Quality Foundation
 
@@ -1255,15 +1258,17 @@ Theme 22.1 Third-Party Skill Adoption Safety is complete. It remained lightweigh
 - avoid a broad external marketplace or catalog
 ```
 
-The next recommended implementation plan is:
+Theme 22.2 Kit Evolution and Reusable Lesson Promotion Loop is complete. It stayed within existing
+memory, skill-authoring, and operating-contract surfaces.
+
+The next recommended implementation area is Phase 5, if approved separately:
 
 ```text
-Theme 22.2: Kit Evolution and Reusable Lesson Promotion Loop
+Phase 5: UI Quality Foundation
 ```
 
-Theme 22.2 should define how project experience becomes reusable foundation-kit guidance without
-polluting installable templates. Keep it separate from completed Theme 22.1 and do not execute
-Phase 5–7 work as part of Theme 22.2.
+Do not execute Phase 5, Phase 6, Phase 7, release workflow, deployment workflow, or
+technology-specific skill work without a separate plan and approval.
 
 ---
 

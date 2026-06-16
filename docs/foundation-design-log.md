@@ -1428,6 +1428,58 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Theme 22.2: Kit Evolution and Reusable Lesson Promotion Loop
+
+Accepted decisions:
+
+1. Keep project experience in local project memory first.
+2. Treat reusable lesson promotion as a candidate review and generalization process, not an
+   automatic write into the foundation kit.
+3. Use `update-project-memory` for reusable lesson candidates.
+4. Use `write-a-skill` to adapt confirmed reusable patterns into generic kit guidance.
+5. Use `agent-operating-contract` for a concise promotion boundary.
+6. Do not add a new workflow, catalog, marketplace, technology-specific skill, or
+   `kit/rules/kit-evolution-loop.md`.
+
+Rationale:
+
+- prevent project-specific history from polluting installable templates
+- require generalization, explicit user confirmation, and an approved plan before kit changes
+- keep the learning loop lightweight and separate from future UI, architecture, catalog, release,
+  deployment, and technology-specific work
+
+Non-goals:
+
+- no UI Quality Foundation implementation
+- no Architecture Review Refinement implementation
+- no Optional Skill Catalog or specialist packs
+- no broad marketplace/catalog
+- no technology-specific skills
+- no scripts, package commands, installer behavior, dependencies, tests, archive changes,
+  generated package workflow, or runtime behavior
+- no AGENTS changes, skill renames, or mature-skill rewrites
+
+Validation:
+
+- scoped searches confirm reusable lesson, promotion, generalization, user confirmation,
+  project-specific history, and approved-plan language
+- scoped checks confirm no runtime/tooling, package, installer, test, archive, metadata, prompt,
+  new workflow, catalog, technology-specific, UI, architecture-review, release, or deployment
+  changes
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+kit/rules/agent-operating-contract.md
+kit/skills/core/update-project-memory/SKILL.md
+kit/skills/core/write-a-skill/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:

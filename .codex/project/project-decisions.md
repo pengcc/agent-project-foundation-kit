@@ -1498,3 +1498,51 @@ External skill learning now has a lightweight safety gate while preserving the c
 set. Theme 22.1 does not implement Theme 22.2 Kit Evolution, a marketplace/catalog, technology
 skills, scripts, package commands, installer behavior, dependencies, tests, archive changes,
 generated package workflow, or runtime behavior.
+
+## Decision: Reusable lesson promotion uses existing memory and skill surfaces
+
+### Status
+
+Accepted
+
+### Context
+
+The kit needs to learn from project experience without copying downstream or source-repository
+history into generic installable assets. Existing workflows already separate local memory writes,
+skill/rule authoring, planning, execution, review, and external fact research.
+
+### Decision
+
+Use existing surfaces for Theme 22.2:
+
+```txt
+update-project-memory -> project-local durable memory and reusable lesson candidates
+write-a-skill -> adaptation of confirmed reusable patterns into kit guidance
+agent-operating-contract -> concise operating boundary for promotion
+```
+
+Do not create a new kit-evolution workflow, marketplace, catalog, technology-specific skill, or
+`kit/rules/kit-evolution-loop.md` for this theme.
+
+Reusable lesson promotion follows this order:
+
+```txt
+project experience
+-> local project memory
+-> reusable lesson candidate
+-> generalization review
+-> user confirmation
+-> approved plan
+-> foundation-kit rule / skill / template / documentation update
+```
+
+Project-specific history, project names, business context, secrets, customer data, and one-off
+implementation details must not be copied into installable templates or kit assets. Promotion
+requires an explicit user decision and an approved plan before implementation.
+
+### Impact
+
+The foundation kit has a lightweight learning loop while preserving local project memory
+boundaries. Theme 22.2 does not implement UI Quality Foundation, Architecture Review Refinement,
+Optional Skill Catalog, specialist packs, scripts, package commands, installer behavior,
+dependencies, tests, archive changes, generated package workflow, or runtime behavior.
