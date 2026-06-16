@@ -1340,7 +1340,6 @@ Validation:
 Resulting files / changes:
 
 ```txt
-docs/foundation-kit-stage-review-and-forward-plan-2026-06-16.md
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-guideline.md
 .codex/project/project-decisions.md
