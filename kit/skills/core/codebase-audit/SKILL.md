@@ -89,6 +89,10 @@ experience. For user-facing projects, include broad UI quality opportunities whe
 evidence, such as unclear flows, weak visual hierarchy, missing loading / empty / error states,
 responsive risk, accessibility basics, or inconsistent reuse of existing UI conventions.
 
+Architecture opportunities in a standard audit should stay at repository-survey level: structural
+risks, unclear boundaries, dependency direction issues, data-flow confusion, migration or rollback
+risk, validation gaps, or maintainability pressure visible from repo evidence.
+
 ### Focus Audit
 
 Survey one requested focus area:
@@ -99,6 +103,11 @@ security | tests | architecture | dx | performance | docs | dependencies | ui
 
 UI focus audits remain read-only surveys. Route selected UI quality findings to
 `plan-with-context`; use `code-review` for concrete UI diffs.
+
+Architecture focus audits remain read-only surveys. Route selected architecture findings to
+`plan-with-context` for bounded changes or `project-architecture-plan` when project-level
+architecture direction, roadmap, or phase boundaries need to change. Use `code-review` for
+concrete diff, PR, branch, package, or plan-alignment architecture review.
 
 ### Branch Audit
 

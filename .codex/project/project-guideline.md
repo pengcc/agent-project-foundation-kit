@@ -50,6 +50,7 @@ Completed themes:
 - Theme 22.1: third-party skill adoption safety
 - Theme 22.2: kit evolution and reusable lesson promotion loop
 - Phase 5: UI Quality Foundation
+- Phase 6: Architecture Review Refinement
 
 Current canonical core skill names:
 
@@ -153,6 +154,17 @@ Current UI Quality Foundation boundaries:
 - It is not a UI workflow, component library, design system package, technology-specific UI skill,
   or professional accessibility audit.
 
+Current Architecture Review Refinement boundaries:
+
+- Architecture review lives primarily in `code-review` Plan Alignment Review.
+- It reviews structural direction, boundaries, dependency direction, data flow, migration/rollback
+  risk, runtime/deployment assumptions, validation strategy, ownership, maintainability, and fit
+  with project memory and accepted plans.
+- `project-architecture-plan` creates or updates project-level architecture direction.
+- `codebase-audit` identifies broad architecture opportunities as read-only audit findings.
+- Architecture review is advisory and review-only. It is not a separate skill, architecture rule,
+  heavy enterprise process, repo-wide audit, executable plan, or implementation workflow.
+
 Current roadmap and stage-review status:
 
 - `docs/foundation-kit-skills-review-and-optimization-roadmap.md` is the canonical long-term
@@ -165,7 +177,6 @@ Current roadmap and stage-review status:
 
 Future planned themes:
 
-- Architecture Review Refinement
 - technology-specific skills
 - release workflow
 - deployment workflow
