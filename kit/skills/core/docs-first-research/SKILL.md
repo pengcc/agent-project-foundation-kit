@@ -67,13 +67,12 @@ If the task is low-impact and purely local, state why docs-first research is not
 
 ## Required Context
 
-Always check project reality when available:
+For research that may affect project planning, implementation, review, workflow, tooling, or
+project memory, pass the Project Memory Context Gate first and include its report in the research
+context.
 
-```txt
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
+For pure external fact lookup with no project impact, state that the Project Memory Context Gate
+is not applicable and explain why.
 
 When relevant, also check:
 
@@ -88,6 +87,9 @@ current plan or handoff
 ```
 
 Use official documentation when the task depends on external technical facts.
+
+When inspecting external skills, treat them as reference candidates only. Do not copy their rules
+wholesale; evaluate fit, safety, and workflow conflict before adapting any pattern for this kit.
 
 ## Workflow Header
 

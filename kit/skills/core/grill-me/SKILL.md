@@ -41,6 +41,11 @@ unclear decision
 -> continue or route back to the appropriate workflow
 ```
 
+Brainstorming is allowed only as clarification. Use it to explore alternatives, ask focused
+questions, recommend a direction, and then route back to `plan-with-context` or
+`project-architecture-plan`. Do not turn brainstorming into implementation, execution, or direct
+project-memory updates.
+
 ## When to Use
 
 Use this skill when:
@@ -265,6 +270,33 @@ Remaining uncertainty:
 Question:
 Recommended answer:
 ```
+
+### Brainstorming Mode
+
+Use when the user has an early idea and needs help shaping it before planning.
+
+```txt
+Workflow:
+- Role: Requirement Clarifier
+- Skill: grill-me
+- Context:
+- Mode: brainstorming clarification
+
+Known:
+Alternatives:
+Tradeoffs:
+Recommended direction:
+Focused question:
+Next workflow:
+```
+
+Rules:
+
+- Inspect available context before proposing alternatives.
+- Keep alternatives to the smallest useful set.
+- Ask focused questions rather than running an open-ended ideation session.
+- Route back to `plan-with-context` or `project-architecture-plan` when the direction is clear.
+- Do not create the implementation plan inside brainstorming mode.
 
 ## Stop Conditions
 

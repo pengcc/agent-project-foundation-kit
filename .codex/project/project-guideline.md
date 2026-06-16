@@ -41,6 +41,7 @@ Completed themes:
 - Theme 18.1: source-only Node installer candidate with Bash default retained
 - Theme 18.2: Node-first automation and legacy Bash workflow archive
 - Theme 18.3: explicit Node PR-only publish and PR-number merge modes
+- Theme 19: core foundation alignment after Project Memory Context Gate
 
 Current canonical core skill names:
 
@@ -70,12 +71,24 @@ Current project-memory context control:
 
 - `kit/skills/core/project-memory/SKILL.md` is the single canonical definition of the Project
   Memory Context Gate.
+- `project-memory` owns durable memory reading/applying; `update-project-memory` owns confirmed
+  durable writes.
 - Root and downstream AGENTS entrypoints, the operating contract, and project-state workflow
   skills use short references to that definition.
 - The gate applies both to downstream installed projects and this source repository's
   `.codex/project/` memory.
 - Referenced plans, handoffs, reports, and research notes are checked only when task-relevant and
   only after freshness and source-of-truth verification.
+
+Current foundation alignment boundaries:
+
+- `docs-first-research` passes the Project Memory Context Gate for project-impacting research and
+  may state the gate is not applicable for pure external fact lookup.
+- External skills are reference candidates only; patterns require evaluation and rewriting before
+  adoption.
+- `agent-roles-and-capabilities` owns the Missing Specialist Skill Policy.
+- `grill-me` may use Brainstorming Mode only for clarification before routing back to planning or
+  architecture workflows.
 
 Future planned themes:
 
@@ -439,6 +452,10 @@ Current validation is mostly file/content based:
 - Verify the complete Project Memory Context Gate sequence and status meanings exist only in
   `kit/skills/core/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills contain
   short references only
+- Verify the complete Missing Specialist Skill Policy exists only in
+  `kit/skills/core/agent-roles-and-capabilities/SKILL.md`
+- For Theme 19-style docs-only alignment, confirm no scripts, package commands, installer files,
+  dependencies, runtime behavior, tests, or archive files changed
 
 ## 10. Development Workflow
 
@@ -506,6 +523,11 @@ Completed:
 - Phase 1 Project Memory Context Gate
     - canonical definition in `kit/skills/core/project-memory/SKILL.md`
     - concise references in entrypoints, the operating contract, and scoped workflows
+- Theme 19 core foundation alignment
+    - clarified `project-memory` / `update-project-memory` ownership
+    - clarified docs-first gate and external-reference boundaries
+    - added Missing Specialist Skill Policy to `agent-roles-and-capabilities`
+    - added clarification-only Brainstorming Mode to `grill-me`
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`

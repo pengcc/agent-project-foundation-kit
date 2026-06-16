@@ -49,6 +49,10 @@ Do not silently write memory. Propose the update first, then wait for user confi
 
 Use this skill to update durable project memory after project facts, decisions, or reusable lessons change.
 
+This skill owns confirmed durable writes. It depends on `project-memory` for the Project Memory
+Context Gate and memory-reading rules; it must not become a general planning, research, or
+context-discovery workflow.
+
 This skill updates one or more of:
 
 ```txt

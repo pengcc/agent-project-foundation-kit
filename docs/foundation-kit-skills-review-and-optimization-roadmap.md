@@ -176,11 +176,17 @@ The role routing direction is correct. Roles are working perspectives, not job t
 
 ### 5.1 Project Memory Context Gate
 
-`project-memory` should become the unified context gate for all workflows that touch project state.
+`project-memory` is now the unified context gate for workflows that touch project state.
 
-Many skills already mention reading project memory, but without a central gate the instructions can drift across workflows.
+Phase 1 defined the complete gate in `kit/skills/core/project-memory/SKILL.md` and kept other
+entrypoints, rules, and workflow skills to short references.
 
-The kit should define one central gate and let other workflows reference it briefly.
+Theme 19 should now lightly align nearby foundation boundaries without redefining the gate:
+
+- `project-memory` reads/applies durable memory and owns the gate
+- `update-project-memory` owns confirmed durable writes
+- `docs-first-research` clarifies when project-impacting research passes the gate
+- `agent-roles-and-capabilities` owns missing-specialist fallback
 
 ### 5.2 Codebase Audit
 
@@ -196,7 +202,11 @@ This is the area where `shadcn/improve` provides the strongest inspiration.
 
 ### 5.3 Third-Party Skill Adoption Safety
 
-The kit already says not to copy third-party skills wholesale, but it needs a dedicated policy for evaluating external skills.
+The kit already says not to copy third-party skills wholesale, but it eventually needs a dedicated
+policy for evaluating external skills.
+
+Theme 19 should not create that policy. It should only clarify the foundation rule that external
+skills are reference candidates that require evaluation before adoption.
 
 Risks include:
 
@@ -264,18 +274,12 @@ It should be strengthened with:
 
 The kit should explicitly avoid pretending that technology-specific skills exist.
 
-When a relevant specialist skill would be useful but is not installed, the agent should state:
-
-```text
-- Missing specialist skill:
-- Fallback generic role:
-- Repo facts checked:
-- External facts that require docs-first-research:
-- Risk of proceeding without the specialist skill:
-- Future skill candidate: yes | no
-```
+When a relevant specialist skill would be useful but is not installed, the agent should use the
+policy defined in `agent-roles-and-capabilities`.
 
 This makes future optional skill needs visible without prematurely bloating the core kit.
+
+Theme 19 should implement this policy inside `agent-roles-and-capabilities` only.
 
 ### 5.9 UI Guidance
 
@@ -966,6 +970,48 @@ Validation:
 - no scripts, package commands, validation commands, dependencies, or runtime behavior change
 ```
 
+### Theme 19: Core Foundation Alignment
+
+Goal:
+
+```text
+Lightly align foundation entrypoints and foundational skills after Project Memory Context Gate.
+```
+
+Scope:
+
+```text
+Clarify:
+- project-memory owns durable memory reading/applying and the Project Memory Context Gate
+- update-project-memory owns confirmed durable writes
+- docs-first-research passes the gate for project-impacting research and can mark pure external
+  lookup as gate-not-applicable
+- agent-roles-and-capabilities owns the Missing Specialist Skill Policy
+- grill-me may include a clarification-only brainstorming mode
+```
+
+External reference handling:
+
+```text
+- Vercel Labs find-skills informs future external skill discovery evaluation only
+- Obra Superpowers brainstorming informs the optional grill-me brainstorming increment only
+- Obra verification, review, debugging, TDD, and execution patterns remain later inputs for
+  Plan / Execute / Review hardening
+```
+
+Non-goals:
+
+```text
+- no codebase-audit
+- no third-party skill adoption policy
+- no external skill catalog
+- no kit evolution loop
+- no UI rules
+- no technology-specific skills
+- no scripts, package commands, installer, dependency, or runtime behavior changes
+- no Plan / Execute / Review hardening implementation
+```
+
 ### Phase 2: Plan / Execute / Review Quality Hardening
 
 Goal:
@@ -1088,30 +1134,27 @@ Add or expand:
 
 ## 16. Recommended Next Step
 
-The next step should be to create and review a formal `plan-with-context` implementation plan for Phase 1 only:
+The next step should be to execute the approved Theme 19 Core Foundation Alignment plan:
 
 ```text
-Workflow: plan-with-context
-Goal: Implement Project Memory Context Gate as Phase 1
-Primary role: Project Planner
-Supporting roles: Skill Author, Code Reviewer
+Workflow: execute-plan
+Goal: Implement Theme 19 Core Foundation Alignment
+Primary role: Implementation Executor
+Supporting roles: Project Memory Curator, Documentation Writer, Skill Author, Workflow Reviewer
 ```
 
-The Phase 1 plan should define:
+The Theme 19 execution should:
 
 ```text
-- exact files to patch
-- central definition location
-- short-reference locations
-- output/report field additions
-- validation by search/grep
-- no script changes
-- no installer changes
-- no mature skill large rewrite
-- memory/design-log update check
+- keep Project Memory Context Gate fully defined only in project-memory
+- keep Missing Specialist Skill Policy fully defined only in agent-roles-and-capabilities
+- update docs-first-research and docs-first-policy only for gate/research boundaries
+- keep grill-me brainstorming clarification-only
+- record durable project memory and design-log updates
+- avoid scripts, package commands, installer, dependency, runtime, tests, and archive changes
 ```
 
-Do not execute Phase 2–7 until Phase 1 is reviewed and completed.
+Do not execute Phase 2–7 until Theme 19 is reviewed and completed.
 
 ---
 

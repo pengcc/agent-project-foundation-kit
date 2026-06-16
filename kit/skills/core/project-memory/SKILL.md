@@ -4,6 +4,9 @@ Use this skill when a task depends on project-specific facts, constraints, archi
 
 This skill is the unified entry point for reading and applying durable project memory.
 
+It owns the Project Memory Context Gate and durable memory reading/applying. It does not write
+durable memory directly; confirmed writes belong to `update-project-memory`.
+
 It covers:
 
 ```txt

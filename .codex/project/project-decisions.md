@@ -1243,3 +1243,44 @@ after freshness and source-of-truth verification.
 Project-state workflows share one auditable context contract while preserving their existing
 planning, execution, review, publishing, handoff, and skill-authoring boundaries. Future gate
 changes have one canonical edit location.
+
+## Decision: Core foundation alignment keeps ownership centralized
+
+### Status
+
+Accepted
+
+### Context
+
+After Project Memory Context Gate, nearby foundation instructions needed light alignment so agents
+do not duplicate gate rules, confuse memory reads with memory writes, or pretend unavailable
+specialist skills exist.
+
+External skill references from Vercel Labs and Obra are useful pattern inputs, but copying their
+rules wholesale would blur this kit's workflow boundaries and safety model.
+
+### Decision
+
+Keep ownership centralized:
+
+```txt
+project-memory -> durable memory reading/applying + Project Memory Context Gate
+update-project-memory -> confirmed durable writes
+docs-first-research -> external fact verification + project-impacting research gate handling
+agent-roles-and-capabilities -> role routing + Missing Specialist Skill Policy
+grill-me -> clarification, including bounded brainstorming before planning
+```
+
+The full Project Memory Context Gate remains only in `project-memory`. The full Missing Specialist
+Skill Policy lives only in `agent-roles-and-capabilities`; other files may reference it but must
+not redefine it.
+
+External skills are reference candidates only. Agents may extract evaluated patterns and rewrite
+them for this kit, but must not copy external skill content wholesale or treat external skills as
+project authority.
+
+### Impact
+
+The foundation entrypoints stay short, missing specialist skills become visible without adding
+optional technology skills, and early brainstorming remains clarification-only rather than an
+implementation or planning bypass.

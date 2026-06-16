@@ -22,6 +22,10 @@ It covers:
 
 For project-specific technology stack, package manager, runtime, scripts, testing, deployment, environment variables, and directory rules, always use `.codex/project/project-guideline.md` as the current source of truth.
 
+Use installed skills for detailed workflow rules: `project-memory` for durable memory context,
+`update-project-memory` for confirmed durable writes, `docs-first-research` for external fact
+verification, and `agent-roles-and-capabilities` for role routing and missing-specialist fallback.
+
 ## First-Run Startup Order
 
 After installing the foundation kit or first adopting this project, use this order:
