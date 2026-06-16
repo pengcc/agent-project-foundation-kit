@@ -1,7 +1,7 @@
 # Foundation Kit Skills Review and Optimization Roadmap
 
-Date: 2026-06-15  
-Recommended repository path: `docs/foundation-kit-skills-review-and-optimization-roadmap.md`  
+Date: 2026-06-15
+Recommended repository path: `docs/foundation-kit-skills-review-and-optimization-roadmap.md`
 Status: Reference document for future planning and review. This is not an approved implementation plan.
 
 ---
@@ -117,7 +117,6 @@ engineering-quality-principles.md
 
 This is good for keeping the kit lean, but it also reveals several rule-level gaps:
 
-- third-party skill adoption policy
 - kit evolution loop
 - reusable lesson promotion policy
 - UI quality / design system reuse principles
@@ -245,25 +244,26 @@ commits, branches, and plan-alignment reviews.
 
 ### 5.3 Third-Party Skill Adoption Safety
 
-The kit already says not to copy third-party skills wholesale, but it eventually needs a dedicated
-policy for evaluating external skills.
+Status: implemented/current.
 
-Theme 19 should not create that policy. It should only clarify the foundation rule that external
-skills are reference candidates that require evaluation before adoption.
+Theme 22.1 added a lightweight external-skill evaluation boundary without creating a new
+workflow, broad policy file, or external skill catalog.
 
-Risks include:
+Current boundary:
 
-- unclear license or provenance
-- prompt injection
-- overbroad trigger descriptions
-- tool permission overreach
-- unsafe scripts
-- secret handling risks
-- network or file-system side effects
-- abandoned repositories
-- version mismatch
-- workflow conflicts
-- skill sprawl
+```text
+docs-first-policy -> concise evaluation rule
+docs-first-research -> external source verification and evaluation report
+write-a-skill -> adaptation of approved patterns into this kit
+```
+
+External skills remain reference candidates only. Accepted patterns must be evaluated for source,
+provenance, license/copying risk, trigger and boundary fit, workflow conflict, tool assumptions,
+mutation/network/destructive-action permissions, secret handling, source freshness, and rewrite
+requirements before adaptation.
+
+Remaining future work is not third-party adoption safety itself; it is the broader Theme 22.2 kit
+evolution and reusable lesson promotion loop.
 
 ### 5.4 Kit Evolution Loop
 
@@ -636,11 +636,14 @@ ID | Finding | Category | Impact | Effort | Risk | Confidence | Evidence | Recom
 
 ---
 
-## 9. Third-Party Skill Adoption Policy
+## 9. Third-Party Skill Adoption Safety
+
+Status: implemented/current through Theme 22.1.
 
 ### 9.1 Purpose
 
-Create a safe process for reviewing external skills before adopting, adapting, or referencing them.
+Provide a lightweight safety boundary for reviewing external skills before adapting or referencing
+them, without adding a new workflow, broad policy file, or external skill catalog.
 
 ### 9.2 Risks
 
@@ -680,7 +683,7 @@ Check trigger scope.
 Check tools/scripts/file writes.
 Check secret/network/global-tooling risk.
 Check conflict with AGENTS.md, project memory, and workflow boundaries.
-Record source in design notes/catalog.
+Record source in the plan, evaluation report, or design log when relevant.
 Do not let third-party skills override project rules.
 ```
 
@@ -1241,13 +1244,7 @@ Theme 22.0 Stage Review, Inventory, and Roadmap Refresh is complete.
 
 Theme 22.0.1 Dependency Invariant and Publish Handoff Clarification is complete.
 
-Theme 22.1 Third-Party Skill Adoption Safety is complete.
-
-```text
-Theme 22.1: Third-Party Skill Adoption Safety
-```
-
-Theme 22.1 remains lightweight:
+Theme 22.1 Third-Party Skill Adoption Safety is complete. It remained lightweight:
 
 ```text
 - evaluate external skills as reference candidates only
@@ -1265,15 +1262,8 @@ Theme 22.2: Kit Evolution and Reusable Lesson Promotion Loop
 ```
 
 Theme 22.2 should define how project experience becomes reusable foundation-kit guidance without
-polluting installable templates. Keep it separate from Theme 22.1.
-
-```text
-- no broad kit evolution loop is implemented by Theme 22.1
-- no UI Quality Foundation, Architecture Review Refinement, Optional Skill Catalog, release
-  workflow, deployment workflow, or technology-specific skills are implemented by Theme 22.1
-```
-
-Do not execute Phase 5–7 work as part of Theme 22.2.
+polluting installable templates. Keep it separate from completed Theme 22.1 and do not execute
+Phase 5–7 work as part of Theme 22.2.
 
 ---
 
