@@ -181,7 +181,7 @@ The role routing direction is correct. Roles are working perspectives, not job t
 Phase 1 defined the complete gate in `kit/skills/core/project-memory/SKILL.md` and kept other
 entrypoints, rules, and workflow skills to short references.
 
-Theme 19 should now lightly align nearby foundation boundaries without redefining the gate:
+Theme 19 completed the light alignment of nearby foundation boundaries without redefining the gate:
 
 - `project-memory` reads/applies durable memory and owns the gate
 - `update-project-memory` owns confirmed durable writes
@@ -972,6 +972,8 @@ Validation:
 
 ### Theme 19: Core Foundation Alignment
 
+Status: completed/current.
+
 Goal:
 
 ```text
@@ -1013,6 +1015,8 @@ Non-goals:
 ```
 
 ### Phase 2: Plan / Execute / Review Quality Hardening
+
+Status: implemented/current.
 
 Goal:
 
@@ -1134,27 +1138,30 @@ Add or expand:
 
 ## 16. Recommended Next Step
 
-The next step should be to execute the approved Theme 19 Core Foundation Alignment plan:
+The next step should be to review the Theme 20 Plan Execute Review Quality Hardening
+implementation:
 
 ```text
-Workflow: execute-plan
-Goal: Implement Theme 19 Core Foundation Alignment
-Primary role: Implementation Executor
-Supporting roles: Project Memory Curator, Documentation Writer, Skill Author, Workflow Reviewer
+Workflow: code-review
+Goal: Review Theme 20 Plan Execute Review Quality Hardening
+Primary role: Code Reviewer
+Supporting roles: Workflow Reviewer, Skill Author, Project Memory Curator
 ```
 
-The Theme 19 execution should:
+The Theme 20 review should confirm:
 
 ```text
-- keep Project Memory Context Gate fully defined only in project-memory
-- keep Missing Specialist Skill Policy fully defined only in agent-roles-and-capabilities
-- update docs-first-research and docs-first-policy only for gate/research boundaries
-- keep grill-me brainstorming clarification-only
+- strengthen plan-with-context self-contained plan quality
+- strengthen execute-plan approved-plan contract handling
+- strengthen code-review package safety, finding provenance, and plan-hunk alignment
 - record durable project memory and design-log updates
 - avoid scripts, package commands, installer, dependency, runtime, tests, and archive changes
+- avoid creating new workflows or broad skill rewrites
 ```
 
-Do not execute Phase 2–7 until Theme 19 is reviewed and completed.
+After Theme 20 is reviewed and accepted, Phase 3 Codebase Audit Foundation requires a separate
+`plan-with-context` plan and explicit approval before implementation. Do not execute Phase 3–7 as
+part of Theme 20.
 
 ---
 

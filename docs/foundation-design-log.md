@@ -1162,6 +1162,52 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Theme 20: Plan Execute Review Quality Hardening
+
+Accepted decisions:
+
+1. Strengthen `plan-with-context` with self-contained plan quality requirements for fresh-agent
+   execution, exact scope boundaries, baseline state, STOP conditions, and validated commands.
+2. Strengthen `execute-plan` by treating the approved plan as the execution contract and mapping
+   changed hunks to plan steps, validation steps, or approved memory/design-log updates.
+3. Strengthen `code-review` without changing its review-only boundary: include generated
+   package/theme zip safety checks, finding provenance, and plan-hunk alignment when an approved
+   plan exists.
+
+Rationale:
+
+- reduce execution drift from underspecified plans
+- make out-of-scope implementation changes easier to detect and pause
+- keep review findings grounded in the reviewed change rather than turning review into repo-wide
+  audit
+
+Non-goals:
+
+- no new workflows, prompts, metadata, rules, scripts, package commands, installer behavior,
+  dependencies, tests, archive changes, or runtime behavior
+- no codebase-audit, third-party skill policy, kit evolution loop, UI rules, architecture-review,
+  or technology-specific skills
+- no broad rewrite or rename of existing mature workflow skills
+
+Validation:
+
+- scoped diff checks confirm only documentation and skill-instruction files changed
+- scoped searches confirm required hardening terminology in the intended skills
+- scoped searches confirm no new workflow files or prohibited rule names were added
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/code-review/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:

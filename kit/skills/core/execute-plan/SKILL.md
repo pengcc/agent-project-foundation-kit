@@ -70,6 +70,26 @@ If no approved plan exists, stop and recommend:
 Suggested workflow: plan-with-context
 ```
 
+## Approved Plan Contract
+
+Treat the approved plan as the execution contract.
+
+Every changed hunk must map to one of:
+
+- a plan implementation step
+- a plan validation step
+- an approved project memory or design-log update
+
+If a needed change is outside the approved plan, pause and ask the user whether to revise the plan
+with `plan-with-context`.
+
+If an out-of-scope agent-made change was introduced during execution and can be isolated safely,
+revert that agent-made change before continuing. Do not revert user or pre-existing changes without
+explicit approval.
+
+Material drift in scope, baseline, validation, architecture, dependencies, risk, file ownership, or
+repository state returns to `plan-with-context`.
+
 ## Generic Codex Mode Boundary
 
 Generic Codex modes are not trusted workflow boundaries.
@@ -216,6 +236,7 @@ Execution Summary:
 - Commit:
 - Deviations:
 - Blockers:
+- Quality / Constraints Followed:
 - Project memory update check:
 - External / global actions:
 - Recommended next workflow:

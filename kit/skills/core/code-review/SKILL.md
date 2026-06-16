@@ -173,15 +173,17 @@ Use the smallest meaningful diff range when possible.
 
 ### Generated theme zip / package
 
-For generated package review, inspect:
+For generated package or theme zip review, inspect:
 
 - file list
-- line counts
+- line counts and destructive-looking line-count drops
 - new files
 - overwritten files
-- destructive-looking line-count drops
+- deleted files when applicable
 - mature files touched
-- whether package structure matches the approved plan
+- source repo vs installable payload separation
+- script, package, or runtime behavior change risk
+- whether package structure and changed hunks match the approved plan when present
 
 Do not apply the package as part of review.
 
@@ -238,6 +240,17 @@ Provisional Alignment Review
 
 and state what baseline is missing. Do not claim full alignment confidence.
 
+## Plan-Hunk Alignment
+
+When an approved plan exists, compare changed files and changed hunks against the plan steps,
+non-goals, and validation scope.
+
+Flag unplanned hunks as scope drift, or ask for baseline clarification when it is unclear whether
+the hunk is introduced by this change or belongs to the approved plan.
+
+When no approved plan exists, state that plan-hunk alignment was not available instead of implying
+plan compliance.
+
 ## Severity Levels
 
 Use these severity levels for findings.
@@ -257,6 +270,17 @@ Should be fixed, but may be handled in the current PR or a follow-up depending o
 ### Low / Notes
 
 Minor readability, style, documentation, maintainability, or small improvement notes. Not blocking.
+
+## Finding Provenance
+
+Classify findings when possible:
+
+- `introduced by this change`
+- `pre-existing`
+- `unclear / needs baseline`
+
+Do not treat a pre-existing issue as a blocker for the reviewed change unless the change worsens it,
+depends on it, or the user explicitly asked for a broader review.
 
 ## Positive Findings
 

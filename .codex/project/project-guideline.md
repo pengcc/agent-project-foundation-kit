@@ -42,6 +42,7 @@ Completed themes:
 - Theme 18.2: Node-first automation and legacy Bash workflow archive
 - Theme 18.3: explicit Node PR-only publish and PR-number merge modes
 - Theme 19: core foundation alignment after Project Memory Context Gate
+- Theme 20: plan, execute, and review quality hardening
 
 Current canonical core skill names:
 
@@ -89,6 +90,18 @@ Current foundation alignment boundaries:
 - `agent-roles-and-capabilities` owns the Missing Specialist Skill Policy.
 - `grill-me` may use Brainstorming Mode only for clarification before routing back to planning or
   architecture workflows.
+
+Current plan/execute/review quality boundaries:
+
+- `plan-with-context` plans must be self-contained enough for a fresh agent to execute, with exact
+  scope boundaries, baseline state, STOP conditions, and validation commands confirmed from repo
+  files for non-trivial work.
+- `execute-plan` treats the approved plan as the execution contract. Changed hunks must map to a
+  plan step, validation step, or approved memory/design-log update; material drift returns to
+  `plan-with-context`.
+- `code-review` remains review-only and advisory. Reviews distinguish findings introduced by the
+  change from pre-existing issues, check generated package/theme zip safety, and perform plan-hunk
+  alignment when an approved plan exists.
 
 Future planned themes:
 
@@ -456,6 +469,9 @@ Current validation is mostly file/content based:
   `kit/skills/core/agent-roles-and-capabilities/SKILL.md`
 - For Theme 19-style docs-only alignment, confirm no scripts, package commands, installer files,
   dependencies, runtime behavior, tests, or archive files changed
+- For Theme 20-style plan/execute/review hardening, confirm no new workflows, prompts, metadata,
+  rules, scripts, package commands, installer files, dependencies, runtime behavior, tests, or
+  archive files changed
 
 ## 10. Development Workflow
 
@@ -528,6 +544,11 @@ Completed:
     - clarified docs-first gate and external-reference boundaries
     - added Missing Specialist Skill Policy to `agent-roles-and-capabilities`
     - added clarification-only Brainstorming Mode to `grill-me`
+- Theme 20 plan, execute, and review quality hardening
+    - strengthened self-contained plan requirements in `plan-with-context`
+    - strengthened approved-plan contract handling in `execute-plan`
+    - strengthened generated package safety, finding provenance, and plan-hunk alignment in
+      `code-review`
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`
