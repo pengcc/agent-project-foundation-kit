@@ -1235,9 +1235,19 @@ Add or expand:
 
 ## 16. Recommended Next Step
 
-Theme 22.0 Stage Review, Inventory, and Roadmap Refresh is the current consolidation step.
+Theme 22.0 Stage Review, Inventory, and Roadmap Refresh is complete.
 
-After Theme 22.0 is reviewed and accepted, the next recommended implementation plan is:
+Before Theme 22.1, apply the small Theme 22.0.1 dependency-invariant clarification:
+
+```text
+Theme 22.0.1: Dependency Invariant and Publish Handoff Clarification
+```
+
+Theme 22.0.1 should clarify that `publish-current-branch` is a post-execution workflow transition,
+not an internal `execute-plan` supporting substep, and that initial role/workflow routing remains
+bootstrap-safe before project-specific context decisions.
+
+After Theme 22.0.1 is reviewed and accepted, the next recommended implementation plan is:
 
 ```text
 Theme 22.1: Third-Party Skill Adoption Safety
@@ -1256,7 +1266,7 @@ Theme 22.1 should remain lightweight:
 
 Theme 22.2 Kit Evolution and Reusable Lesson Promotion Loop remains separate future work.
 
-Do not execute Theme 22.1, Theme 22.2, or Phase 5–7 work as part of Theme 22.0.
+Do not execute Theme 22.1, Theme 22.2, or Phase 5–7 work as part of Theme 22.0.1.
 
 ---
 

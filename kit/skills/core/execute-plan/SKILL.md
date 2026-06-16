@@ -104,11 +104,14 @@ durable memory write -> update-project-memory
 concrete diff/PR/package review -> code-review
 repo-wide audit -> codebase-audit
 unclear requirements -> grill-me
-publishing -> publish-current-branch
+publish readiness / publish handoff -> recommend publish-current-branch after execution
 ```
 
 Read and apply the supporting skill only for that bounded substep, report the supporting skill
 used, then return to `execute-plan`.
+
+Do not run publish-current-branch as an internal execution substep. Push, PR, and merge require
+an explicit workflow switch after execution.
 
 Supporting skills must not expand, replace, or override the approved plan boundary. If a supporting
 skill reveals material drift in scope, steps, risk, validation, dependency, configuration,

@@ -1346,6 +1346,41 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Theme 22.0.1: Dependency Invariant and Publish Handoff Clarification
+
+Accepted decisions:
+
+1. Treat `publish-current-branch` as a post-execution workflow transition, not an internal
+   `execute-plan` supporting substep.
+2. Require an explicit workflow switch after execution before push, PR, or merge actions.
+3. Keep `agent-roles-and-capabilities` bootstrap-safe for initial role/workflow routing before the
+   Project Memory Context Gate.
+4. Use `project-memory` as supporting context when routing depends on project-specific facts.
+
+Rationale:
+
+- prevent approved-plan execution from accidentally absorbing externally visible publishing work
+- avoid a role-routing dependency loop before an agent knows which workflow applies
+- keep the change as a small instruction clarification before Theme 22.1
+
+Non-goals:
+
+- no Theme 22.1 or Theme 22.2 implementation
+- no new workflows, skills, rules, prompts, scripts, package commands, installer behavior,
+  dependencies, tests, archive changes, generated package workflow, or runtime behavior
+- no AGENTS changes, skill renames, or mature-skill rewrites
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:
