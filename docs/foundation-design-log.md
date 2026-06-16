@@ -1382,6 +1382,52 @@ docs/foundation-design-log.md
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
 ```
 
+## Theme 22.1: Third-Party Skill Adoption Safety
+
+Accepted decisions:
+
+1. Keep external skills as reference candidates only; they are not project authority.
+2. Use `docs-first-policy` for the concise external-skill evaluation boundary.
+3. Use `docs-first-research` for source verification and evaluation reporting.
+4. Use `write-a-skill` to adapt approved patterns into this kit after evaluation.
+5. Do not add a new workflow, new skill, external skill catalog, broad policy file, or
+   `third-party-skill-adoption-policy.md`.
+
+Rationale:
+
+- prevent wholesale copying or unsafe adoption of third-party skill instructions
+- preserve this kit's AGENTS, project memory, workflow, safety, and tooling boundaries
+- keep Theme 22.1 lightweight and separate from Theme 22.2 Kit Evolution
+
+Non-goals:
+
+- no Theme 22.2 Kit Evolution / Reusable Lesson Promotion Loop implementation
+- no broad external skill marketplace or catalog
+- no technology-specific skills
+- no scripts, package commands, installer behavior, dependencies, tests, archive changes,
+  generated package workflow, or runtime behavior
+- no AGENTS changes, skill renames, or mature-skill rewrites
+
+Validation:
+
+- scoped searches confirm reference-candidate, no-wholesale-copying, license/provenance, and
+  rewrite-for-this-kit language
+- scoped checks confirm no runtime/tooling, package, installer, test, archive, metadata, prompt,
+  new workflow, new skill, catalog, or policy-file changes
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+kit/rules/docs-first-policy.md
+kit/skills/core/docs-first-research/SKILL.md
+kit/skills/core/write-a-skill/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:

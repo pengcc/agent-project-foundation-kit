@@ -1167,9 +1167,11 @@ Theme 22.1:
 Third-Party Skill Adoption Safety
 ```
 
-Theme 22.1 should define a lightweight external-skill evaluation boundary before adapting
-external skills into this kit. Prefer a concise rule or small existing-skill sections unless a
-future plan proves a dedicated workflow or policy file is necessary.
+Status: implemented/current.
+
+Theme 22.1 defines a lightweight external-skill evaluation boundary before adapting external
+skills into this kit. It uses existing `docs-first-policy`, `docs-first-research`, and
+`write-a-skill` surfaces rather than adding a dedicated workflow, catalog, or policy file.
 
 Theme 22.2:
 
@@ -1237,24 +1239,15 @@ Add or expand:
 
 Theme 22.0 Stage Review, Inventory, and Roadmap Refresh is complete.
 
-Theme 22.0.1 Dependency Invariant and Publish Handoff Clarification is the current pre-step before
-Theme 22.1:
+Theme 22.0.1 Dependency Invariant and Publish Handoff Clarification is complete.
 
-```text
-Theme 22.0.1: Dependency Invariant and Publish Handoff Clarification
-```
-
-Theme 22.0.1 should clarify that `publish-current-branch` is a post-execution workflow transition,
-not an internal `execute-plan` supporting substep, and that initial role/workflow routing remains
-bootstrap-safe before project-specific context decisions.
-
-After Theme 22.0.1 is reviewed and accepted, the next recommended implementation plan is:
+Theme 22.1 Third-Party Skill Adoption Safety is complete.
 
 ```text
 Theme 22.1: Third-Party Skill Adoption Safety
 ```
 
-Theme 22.1 should remain lightweight:
+Theme 22.1 remains lightweight:
 
 ```text
 - evaluate external skills as reference candidates only
@@ -1265,9 +1258,22 @@ Theme 22.1 should remain lightweight:
 - avoid a broad external marketplace or catalog
 ```
 
-Theme 22.2 Kit Evolution and Reusable Lesson Promotion Loop remains separate future work.
+The next recommended implementation plan is:
 
-Do not execute Theme 22.1, Theme 22.2, or Phase 5–7 work as part of Theme 22.0.1.
+```text
+Theme 22.2: Kit Evolution and Reusable Lesson Promotion Loop
+```
+
+Theme 22.2 should define how project experience becomes reusable foundation-kit guidance without
+polluting installable templates. Keep it separate from Theme 22.1.
+
+```text
+- no broad kit evolution loop is implemented by Theme 22.1
+- no UI Quality Foundation, Architecture Review Refinement, Optional Skill Catalog, release
+  workflow, deployment workflow, or technology-specific skills are implemented by Theme 22.1
+```
+
+Do not execute Phase 5–7 work as part of Theme 22.2.
 
 ---
 

@@ -63,6 +63,24 @@ Project memory updates still require the `update-project-memory` workflow and it
 
 ## External Skill References
 
-External skills may be inspected as reference candidates, but they are not project authority.
-Do not copy external skill content wholesale. Evaluate source, fit, safety, and workflow conflict
-before adapting any pattern, and rewrite accepted patterns for this kit.
+Treat this as the rule: external skills are reference candidates only; they are not project
+authority.
+
+Do not copy wholesale. Before adapting any external skill pattern, evaluate:
+
+- source URL and provenance
+- whether the source is official, maintainer-authored, community-authored, or unknown
+- license/provenance and copying risk
+- trigger and boundary fit
+- duplication with existing kit workflows
+- workflow conflict risk
+- ecosystem-specific assumptions
+- tool assumptions
+- file, network, mutation, global-tooling, and destructive-action permissions
+- secret handling risk
+- stale or abandoned source risk
+- whether official docs or repository evidence are needed first
+- whether adaptation belongs in `write-a-skill`
+
+Accepted patterns must be rewritten for this kit and preserve this repository's AGENTS, project
+memory, workflow, safety, and tooling boundaries.

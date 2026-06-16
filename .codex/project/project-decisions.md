@@ -1457,3 +1457,44 @@ the Project Memory Context Gate. If routing depends on project-specific facts, u
 
 Approved-plan execution keeps a clear boundary around externally visible GitHub actions, while
 initial routing remains bootstrap-safe and avoids a context-gate dependency loop.
+
+## Decision: Third-party skill adoption safety uses existing rule and skill surfaces
+
+### Status
+
+Accepted
+
+### Context
+
+Theme 19 established that external skills are reference candidates only. Theme 21.1 clarified that
+`execute-plan` may use bounded supporting skills, and `write-a-skill` owns reusable skill
+adaptation. The kit needed a lightweight safety boundary for evaluating external skill patterns
+without adding another workflow, broad policy file, or catalog.
+
+### Decision
+
+Use existing surfaces for Theme 22.1:
+
+```txt
+docs-first-policy -> concise evaluation boundary
+docs-first-research -> external source verification and evaluation report
+write-a-skill -> adaptation of approved patterns into this kit
+```
+
+Do not create a new third-party adoption workflow, external skill catalog, or
+`third-party-skill-adoption-policy.md` file for this theme.
+
+External skill evaluation checks source URL, provenance, license/copying risk, trigger and
+boundary fit, duplication with existing workflows, workflow conflict, ecosystem assumptions, tool
+assumptions, file/network/mutation/global-tooling/destructive-action permissions, secret handling,
+source freshness, and whether adaptation belongs in `write-a-skill`.
+
+Accepted patterns must be rewritten for this kit and must not override AGENTS, project memory,
+workflow boundaries, safety rules, or maintained tooling boundaries.
+
+### Impact
+
+External skill learning now has a lightweight safety gate while preserving the current workflow
+set. Theme 22.1 does not implement Theme 22.2 Kit Evolution, a marketplace/catalog, technology
+skills, scripts, package commands, installer behavior, dependencies, tests, archive changes,
+generated package workflow, or runtime behavior.

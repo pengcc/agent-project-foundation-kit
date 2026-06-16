@@ -91,6 +91,27 @@ Use official documentation when the task depends on external technical facts.
 When inspecting external skills, treat them as reference candidates only. Do not copy their rules
 wholesale; evaluate fit, safety, and workflow conflict before adapting any pattern for this kit.
 
+## External Skill Evaluation
+
+Use this workflow to verify external source facts and evaluate external skill patterns before any
+adaptation. It does not install, adapt, or copy external skills.
+
+Check source URL, provenance, license/copying risk, trigger fit, boundary fit, workflow conflict,
+ecosystem-specific assumptions, tool assumptions, file/network/mutation permissions, secret
+handling risk, source freshness, and whether adaptation should route to `write-a-skill`.
+
+Use this compact output when evaluating an external skill:
+
+```txt
+External source checked:
+Useful patterns:
+Rejected patterns:
+Adaptation recommendation:
+Required project-specific rewrite:
+Risks / open questions:
+Next workflow:
+```
+
 ## Workflow Header
 
 Use this header:
