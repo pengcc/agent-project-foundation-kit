@@ -114,6 +114,9 @@ Approved execution:
 Review / alignment / PR / diff:
   code-review
 
+Repository survey / prioritized improvement audit:
+  codebase-audit
+
 Cross-session / cross-agent continuation:
   handoff
 

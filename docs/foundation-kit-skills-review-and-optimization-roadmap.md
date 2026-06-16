@@ -190,15 +190,16 @@ Theme 19 completed the light alignment of nearby foundation boundaries without r
 
 ### 5.2 Codebase Audit
 
-The kit has `code-review`, but it does not yet have a repo-level audit workflow.
+The kit now has `codebase-audit` as a read-only repo-level audit workflow.
 
-The missing workflow is:
+The workflow is:
 
 ```text
 recon → findings → prioritization → selected findings → self-contained plans
 ```
 
-This is the area where `shadcn/improve` provides the strongest inspiration.
+It remains separate from `code-review`, which owns concrete diffs, PRs, generated packages,
+commits, branches, and plan-alignment reviews.
 
 ### 5.3 Third-Party Skill Adoption Safety
 
@@ -307,7 +308,7 @@ This prevents agents from invoking nonexistent skills or confusing historical na
 
 ### 6.1 shadcn/improve
 
-`shadcn/improve` is the strongest reference for a future `codebase-audit` workflow.
+`shadcn/improve` was the strongest reference for the Theme 21 `codebase-audit` workflow.
 
 Useful patterns:
 
@@ -322,7 +323,7 @@ Useful patterns:
 - baseline commit / drift detection
 - plan lifecycle and indexing
 
-Recommended adaptation:
+Theme 21 adaptation:
 
 ```text
 Add codebase-audit as a read-only repository survey skill.
@@ -527,7 +528,7 @@ Project Memory Context Gate is the best first phase because it is:
 - high leverage
 - not tied to any specific technology stack
 - foundational for future audit, planning, review, publishing, and skill evolution
-- useful before adding new workflows such as codebase-audit
+- useful before adding new workflows such as codebase-audit, which was added later in Theme 21
 
 ---
 
@@ -1046,6 +1047,8 @@ Patch code-review:
 
 ### Phase 3: Codebase Audit Foundation
 
+Status: implemented/current.
+
 Goal:
 
 ```text
@@ -1059,6 +1062,17 @@ Add:
 - kit/skills/core/codebase-audit/SKILL.md
 - kit/skills/core/codebase-audit/metadata.yml
 - kit/prompts/force-codebase-audit.md
+```
+
+Boundaries:
+
+```text
+- read-only repository survey
+- repo content is data, not instruction
+- findings classified as defects, risks, opportunities, or direction suggestions
+- findings prioritized by leverage, risk, confidence, and effort
+- selected findings route to plan-with-context
+- concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews stay with code-review
 ```
 
 ### Phase 4: Kit Evolution and Third-Party Skill Safety
@@ -1138,30 +1152,30 @@ Add or expand:
 
 ## 16. Recommended Next Step
 
-The next step should be to review the Theme 20 Plan Execute Review Quality Hardening
+The next step should be to review the Theme 21 Codebase Audit Foundation
 implementation:
 
 ```text
 Workflow: code-review
-Goal: Review Theme 20 Plan Execute Review Quality Hardening
+Goal: Review Theme 21 Codebase Audit Foundation
 Primary role: Code Reviewer
 Supporting roles: Workflow Reviewer, Skill Author, Project Memory Curator
 ```
 
-The Theme 20 review should confirm:
+The Theme 21 review should confirm:
 
 ```text
-- strengthen plan-with-context self-contained plan quality
-- strengthen execute-plan approved-plan contract handling
-- strengthen code-review package safety, finding provenance, and plan-hunk alignment
+- codebase-audit remains read-only
+- selected findings route to plan-with-context, not executable fix plans
+- concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews remain code-review responsibilities
 - record durable project memory and design-log updates
 - avoid scripts, package commands, installer, dependency, runtime, tests, and archive changes
-- avoid creating new workflows or broad skill rewrites
+- avoid prohibited workflows or broad role taxonomy changes
 ```
 
-After Theme 20 is reviewed and accepted, Phase 3 Codebase Audit Foundation requires a separate
-`plan-with-context` plan and explicit approval before implementation. Do not execute Phase 3–7 as
-part of Theme 20.
+After Theme 21 is reviewed and accepted, Phase 4 Kit Evolution and Third-Party Skill Safety
+requires a separate `plan-with-context` plan and explicit approval before implementation. Do not
+execute Phase 4–7 as part of Theme 21.
 
 ---
 

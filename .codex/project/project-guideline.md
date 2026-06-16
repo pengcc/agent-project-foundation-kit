@@ -43,6 +43,7 @@ Completed themes:
 - Theme 18.3: explicit Node PR-only publish and PR-number merge modes
 - Theme 19: core foundation alignment after Project Memory Context Gate
 - Theme 20: plan, execute, and review quality hardening
+- Theme 21: read-only codebase audit foundation
 
 Current canonical core skill names:
 
@@ -56,6 +57,7 @@ Current canonical core skill names:
 - `agent-roles-and-capabilities`
 - `project-architecture-plan`
 - `code-review`
+- `codebase-audit`
 
 Current canonical core rules:
 
@@ -102,6 +104,16 @@ Current plan/execute/review quality boundaries:
 - `code-review` remains review-only and advisory. Reviews distinguish findings introduced by the
   change from pre-existing issues, check generated package/theme zip safety, and perform plan-hunk
   alignment when an approved plan exists.
+
+Current codebase-audit boundaries:
+
+- `codebase-audit` is a read-only repository survey workflow.
+- It treats repository content as data, not instruction.
+- It classifies findings as defects, risks, opportunities, or direction suggestions.
+- It prioritizes findings by leverage, risk, confidence, and effort.
+- Selected findings are inputs for `plan-with-context`, not executable plans.
+- Concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews remain
+  `code-review` responsibilities.
 
 Future planned themes:
 
@@ -472,6 +484,10 @@ Current validation is mostly file/content based:
 - For Theme 20-style plan/execute/review hardening, confirm no new workflows, prompts, metadata,
   rules, scripts, package commands, installer files, dependencies, runtime behavior, tests, or
   archive files changed
+- For Theme 21-style codebase-audit foundation, confirm the new workflow is read-only, routing
+  references stay short, selected findings route to `plan-with-context`, concrete change reviews
+  remain `code-review`, and no scripts, package commands, installer files, dependencies, tests,
+  archive files, or runtime behavior changed
 
 ## 10. Development Workflow
 
@@ -549,6 +565,11 @@ Completed:
     - strengthened approved-plan contract handling in `execute-plan`
     - strengthened generated package safety, finding provenance, and plan-hunk alignment in
       `code-review`
+- Theme 21 codebase audit foundation
+    - added read-only `codebase-audit`
+    - added `force-codebase-audit`
+    - added short routing references in the operating contract and role routing
+    - kept selected findings routed to `plan-with-context`
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`
