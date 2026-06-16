@@ -789,47 +789,42 @@ Generated package checklist should include:
 
 ## 12. UI Quality Foundation
 
-### 12.1 First Step: Design System Reuse
+Status: implemented/current through Phase 5.
 
-Add either:
+Phase 5 added lightweight UI quality and design-system reuse guidance without creating a new UI
+workflow, rule file, component library, design system package, or technology-specific UI skill.
+
+### 12.1 Implemented Surface
+
+Canonical guidance now lives in:
 
 ```text
-kit/rules/design-system-reuse.md
+kit/rules/engineering-quality-principles.md
 ```
 
-or make it the first section of:
+Short workflow references live in:
 
 ```text
-kit/rules/ui-quality-principles.md
-```
-
-Core guidance:
-
-```text
-Before custom UI:
-- inspect existing components
-- inspect design tokens / theme
-- reuse variants
-- prefer semantic tokens
-- avoid raw color overrides
-- preserve accessibility states
-- preserve responsive patterns
-- compose existing primitives before creating new abstractions
+- kit/skills/core/project-architecture-plan/SKILL.md
+- kit/skills/core/code-review/SKILL.md
+- kit/skills/core/codebase-audit/SKILL.md
 ```
 
 ### 12.2 UI Quality Principles
 
-Future UI quality guidance should cover:
+Current core UI quality guidance covers:
 
 ```text
-- semantic HTML
-- keyboard and focus states
-- form labels and validation states
-- loading / empty / error states
+- user flow clarity
+- visual hierarchy
 - responsive behavior
-- accessible color and contrast assumptions
-- visual consistency with product context
-- avoiding generic AI UI when visual direction matters
+- accessibility basics
+- loading / empty / error / disabled / success states
+- interaction feedback
+- content clarity
+- existing design system or UI library reuse
+- frontend maintainability
+- avoiding over-design and speculative redesign
 ```
 
 ### 12.3 UI Review Skill
@@ -1191,6 +1186,8 @@ file.
 
 ### Phase 5: UI Quality Foundation
 
+Status: implemented/current.
+
 Goal:
 
 ```text
@@ -1200,12 +1197,11 @@ Add UI quality guidance without turning core kit into a UI style library.
 Scope:
 
 ```text
-Add:
-- kit/rules/design-system-reuse.md
-or
-- kit/rules/ui-quality-principles.md with Design System Reuse First section
+Implemented through:
+- kit/rules/engineering-quality-principles.md
+- short references in project-architecture-plan, code-review, and codebase-audit
 
-Possibly later:
+Future only if repeated use justifies it:
 - kit/skills/core/ui-review/SKILL.md
 ```
 
@@ -1261,14 +1257,17 @@ Theme 22.1 Third-Party Skill Adoption Safety is complete. It remained lightweigh
 Theme 22.2 Kit Evolution and Reusable Lesson Promotion Loop is complete. It stayed within existing
 memory, skill-authoring, and operating-contract surfaces.
 
-The next recommended implementation area is Phase 5, if approved separately:
+Phase 5 UI Quality Foundation is complete. It stayed within existing engineering-quality,
+architecture, review, and audit surfaces.
+
+The next recommended implementation area is Phase 6, if approved separately:
 
 ```text
-Phase 5: UI Quality Foundation
+Phase 6: Architecture Review Refinement
 ```
 
-Do not execute Phase 5, Phase 6, Phase 7, release workflow, deployment workflow, or
-technology-specific skill work without a separate plan and approval.
+Do not execute Phase 6, Phase 7, release workflow, deployment workflow, or technology-specific
+skill work without a separate plan and approval.
 
 ---
 

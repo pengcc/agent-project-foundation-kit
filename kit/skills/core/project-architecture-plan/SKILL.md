@@ -260,6 +260,19 @@ Conditional dimensions may include:
 - Internationalization / localization impact
 - Offline / low-resource environment fit
 
+## UI Architecture Direction
+
+When UI direction affects product-wide flow, design-system reuse, component strategy,
+accessibility/SEO posture, or phase boundaries, handle it at architecture-plan level.
+
+Apply `engineering-quality-principles` for UI quality and design-system reuse. Prefer existing
+project UI conventions, components, tokens, and layout patterns before recommending custom UI
+direction.
+
+Do not turn an architecture plan into UI wireframes, detailed component tickets, a component
+library, a design system package, or technology-specific UI guidance. Route concrete UI changes to
+`plan-with-context`.
+
 ## Architecture and Roadmap Granularity
 
 This skill outputs project-level architecture and roadmap only.

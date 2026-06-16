@@ -253,6 +253,34 @@ It defines cross-technology quality constraints such as KISS, DRY with no premat
 
 It is a rule, not a standalone workflow skill.
 
+## Decision: UI Quality Foundation uses existing rule and workflow surfaces
+
+### Status
+
+Accepted
+
+### Decision
+
+Implement Phase 5 UI Quality Foundation through existing foundation-kit surfaces:
+
+```txt
+kit/rules/engineering-quality-principles.md
+kit/skills/core/project-architecture-plan/SKILL.md
+kit/skills/core/code-review/SKILL.md
+kit/skills/core/codebase-audit/SKILL.md
+```
+
+Do not add a new UI workflow, UI rule file, component library, design system package, or
+technology-specific UI skill for this phase.
+
+### Rationale
+
+UI quality is a cross-technology engineering quality concern. The lightweight foundation belongs in
+the shared quality rule, with short routing references from architecture planning, review, and
+audit workflows.
+
+This keeps core guidance reusable without turning the foundation kit into a UI style library.
+
 ## Decision: Preserve existing workflow skill content during role routing integration
 
 ### Status

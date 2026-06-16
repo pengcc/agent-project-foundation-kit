@@ -1480,6 +1480,57 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Phase 5: UI Quality Foundation
+
+Accepted decisions:
+
+1. Implement UI Quality Foundation through existing rule and workflow surfaces.
+2. Use `kit/rules/engineering-quality-principles.md` as the canonical home for lightweight UI
+   quality and design-system reuse guidance.
+3. Add only short references in `project-architecture-plan`, `code-review`, and `codebase-audit`.
+4. Do not create a new UI workflow, UI rule file, component library, design system package,
+   screenshots/mockups/generated UI assets, or technology-specific UI skill.
+
+Rationale:
+
+- UI quality is a cross-technology engineering quality concern.
+- Existing project UI conventions, components, tokens, and design systems should win over generic
+  advice.
+- Architecture planning, review, and audit need routing hooks, but concrete UI changes still route
+  through existing planning/execution workflows.
+
+Non-goals:
+
+- no `ui-review` implementation
+- no UI component library or design system package
+- no React, Vue, Tailwind, shadcn, CSS architecture, or frontend framework skill pack
+- no screenshots, mockups, generated UI assets, scripts, package commands, installer behavior,
+  dependencies, tests, archive changes, generated package workflow, or runtime behavior
+- no Architecture Review Refinement, Optional Skill Catalog, release workflow, deployment
+  workflow, or technology-specific skill implementation
+
+Validation:
+
+- scoped searches confirm UI quality, visual hierarchy, responsive, accessibility, state,
+  interaction, content clarity, reuse, and maintainability language
+- scoped checks confirm no runtime/tooling, package, installer, test, archive, generated asset,
+  new UI workflow, new UI rule file, component library, design system package, or
+  technology-specific UI skill changes
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+kit/rules/engineering-quality-principles.md
+kit/skills/core/project-architecture-plan/SKILL.md
+kit/skills/core/code-review/SKILL.md
+kit/skills/core/codebase-audit/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:
