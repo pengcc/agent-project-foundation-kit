@@ -265,15 +265,21 @@ validation command
 
 When adapting external skills:
 
+- require prior external skill evaluation through `docs-first-research` when source facts,
+  provenance, license/copying risk, safety, or workflow fit are not already verified
 - inspect the external reference
 - extract patterns
-- rewrite for this project
+- evaluate trigger and boundary fit
+- preserve workflow separation between research, planning, execution, review, publishing, and
+  memory updates
+- reject ecosystem-specific assumptions that do not fit this kit
+- rewrite for this kit
 - do not copy wholesale
 - preserve this project's operating contract and memory boundaries
 - cite or mention the external reference in the plan or design log when relevant
 - keep final runtime instructions auditable inside this repo
 
-If license or provenance is unclear, do not copy content verbatim.
+If license/provenance or copying risk is unclear, do not copy content verbatim.
 
 ## Skill Authoring Verification
 

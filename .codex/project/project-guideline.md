@@ -47,6 +47,7 @@ Completed themes:
 - Theme 21.1: supporting skill invocation and skill authoring verification
 - Theme 22.0: stage review, inventory, and roadmap refresh
 - Theme 22.0.1: dependency invariant and publish handoff clarification
+- Theme 22.1: third-party skill adoption safety
 
 Current canonical core skill names:
 
@@ -94,6 +95,11 @@ Current foundation alignment boundaries:
   may state the gate is not applicable for pure external fact lookup.
 - External skills are reference candidates only; patterns require evaluation and rewriting before
   adoption.
+- Third-party skill adoption safety lives in the existing `docs-first-policy`,
+  `docs-first-research`, and `write-a-skill` surfaces. It evaluates source URL, provenance,
+  license/copying risk, trigger and boundary fit, workflow conflict, ecosystem assumptions,
+  tool/mutation/network permissions, secret handling, source freshness, and rewrite requirements
+  before adaptation.
 - `agent-roles-and-capabilities` owns the Missing Specialist Skill Policy.
 - `grill-me` may use Brainstorming Mode only for clarification before routing back to planning or
   architecture workflows.
@@ -143,7 +149,6 @@ Current roadmap and stage-review status:
 
 Future planned themes:
 
-- Theme 22.1: Third-Party Skill Adoption Safety
 - Theme 22.2: Kit Evolution and Reusable Lesson Promotion Loop
 - technology-specific skills
 - release workflow
