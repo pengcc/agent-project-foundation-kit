@@ -1237,7 +1237,8 @@ Add or expand:
 
 Theme 22.0 Stage Review, Inventory, and Roadmap Refresh is complete.
 
-Before Theme 22.1, apply the small Theme 22.0.1 dependency-invariant clarification:
+Theme 22.0.1 Dependency Invariant and Publish Handoff Clarification is the current pre-step before
+Theme 22.1:
 
 ```text
 Theme 22.0.1: Dependency Invariant and Publish Handoff Clarification

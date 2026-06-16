@@ -1373,6 +1373,7 @@ Non-goals:
 Resulting files / changes:
 
 ```txt
+docs/foundation-kit-skill-dependency-deadlock-risk-review-2026-06-16.md
 kit/skills/core/execute-plan/SKILL.md
 kit/skills/core/agent-roles-and-capabilities/SKILL.md
 .codex/project/project-guideline.md
