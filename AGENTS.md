@@ -23,6 +23,11 @@ Use these source files as the intended installed behavior:
 - `kit/prompts/*`
 - `kit/project-templates/*`
 
+Core workflow boundaries live in the kit source skills: `project-memory` reads/applies durable
+memory and owns the context gate, `update-project-memory` owns confirmed durable writes,
+`docs-first-research` owns external fact verification, and `agent-roles-and-capabilities` owns
+role routing and missing-specialist fallback.
+
 ## Working Style
 
 Work professionally, efficiently, and concisely.

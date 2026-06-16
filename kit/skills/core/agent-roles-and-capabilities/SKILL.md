@@ -68,6 +68,28 @@ Technology-specific expert skills such as Next.js, TanStack, Vue, NestJS, SFCC, 
 
 If those skills are not installed, use generic roles and support technical claims with repo facts and `docs-first-research`.
 
+## Missing Specialist Skill Policy
+
+When a technology-specific or domain-specific skill would be useful but is not installed, do not
+pretend it exists and do not expand the current task into skill creation.
+
+State the fallback explicitly:
+
+```txt
+Missing Specialist Skill:
+- Missing specialist skill:
+- Fallback generic role:
+- Repo facts checked:
+- External facts that require docs-first-research:
+- Risk of proceeding without the specialist skill:
+- Future skill candidate: yes | no
+```
+
+Use this policy to make capability gaps visible without blocking low-risk work or adding optional
+skills prematurely. If the missing skill materially affects correctness, security, architecture,
+or user-facing behavior, use `docs-first-research` and surface the residual risk before
+continuing.
+
 ## Expected Maturity
 
 Role titles do not use `Senior` by default.

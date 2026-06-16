@@ -1108,6 +1108,60 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Theme 19: Core Foundation Alignment
+
+Accepted decisions:
+
+1. Keep `project-memory` and `update-project-memory` names unchanged.
+2. Clarify that `project-memory` owns durable memory reading/applying and the Project Memory
+   Context Gate, while `update-project-memory` owns confirmed durable writes.
+3. Clarify that `docs-first-research` passes the gate for project-impacting research and may
+   report the gate as not applicable for pure external fact lookup.
+4. Define the Missing Specialist Skill Policy only in `agent-roles-and-capabilities`.
+5. Add `grill-me` Brainstorming Mode as clarification-only: explore alternatives, ask focused
+   questions, recommend a direction, then route back to planning or architecture.
+6. Treat Vercel Labs `find-skills` and Obra Superpowers as reference inputs only. Do not copy
+   external skill content wholesale.
+
+Rationale:
+
+- align the foundational skill boundaries after Project Memory Context Gate
+- make missing specialist capabilities visible without adding technology-specific skills
+- preserve short AGENTS and operating-contract references instead of duplicating skill rules
+- keep external skill patterns auditable before adoption
+
+Non-goals:
+
+- no codebase-audit, third-party skill adoption policy, external skill catalog, kit evolution
+  loop, UI rules, technology-specific skills, or Plan/Execute/Review hardening
+- no scripts, package commands, installer behavior, dependencies, runtime behavior, tests, or
+  archived-file changes
+
+Validation:
+
+- full Project Memory Context Gate remains only in `project-memory`
+- full Missing Specialist Skill Policy appears only in `agent-roles-and-capabilities`
+- scoped search confirms Theme 19 references
+- `pnpm check` passes without runtime or tooling changes
+
+Resulting files / changes:
+
+```txt
+AGENTS.md
+kit/project-templates/AGENTS.md
+kit/rules/agent-operating-contract.md
+kit/rules/docs-first-policy.md
+kit/skills/core/project-memory/SKILL.md
+kit/skills/core/update-project-memory/SKILL.md
+kit/skills/core/docs-first-research/SKILL.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/grill-me/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:

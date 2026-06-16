@@ -129,6 +129,10 @@ Push / PR / merge:
 
 If a referenced skill is not installed yet, state that clearly and use the closest installed workflow without pretending the missing skill exists.
 
+When a technology-specific or domain-specific skill would be useful but is not installed, follow
+the Missing Specialist Skill Policy in `agent-roles-and-capabilities`; do not define a separate
+policy here.
+
 ## Concise Output Contract
 
 Stay concise, but not incomplete.
@@ -187,7 +191,9 @@ Project files and durable project memory are the source of truth for project-spe
 
 Official documentation and high-quality primary/community sources beat model memory.
 
-Do not copy third-party skills or rules directly into the project. Extract patterns, rewrite them for this project, and keep runtime rules auditable.
+Do not copy third-party skills or rules directly into the project. Treat external skills as
+reference candidates, extract patterns only after evaluation, rewrite them for this project, and
+keep runtime rules auditable.
 
 ## Scope and Safety Guardrails
 
