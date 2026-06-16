@@ -1301,6 +1301,51 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Theme 22.0: Stage Review, Inventory, and Roadmap Refresh
+
+Accepted decisions:
+
+1. Keep `docs/foundation-kit-skills-review-and-optimization-roadmap.md` as the canonical
+   long-term roadmap.
+2. Preserve `docs/foundation-kit-stage-review-and-forward-plan-2026-06-16.md` as a dated review
+   input, not a roadmap replacement.
+3. Refresh the roadmap current-state inventory for skills, rules, prompts, implemented phases, and
+   recommended next steps.
+4. Record Theme 22.1 Third-Party Skill Adoption Safety and Theme 22.2 Kit Evolution and Reusable
+   Lesson Promotion Loop as separate future work.
+5. Correct this repository's current project-memory inventory for canonical rules.
+
+Rationale:
+
+- avoid future agents planning from stale roadmap fragments
+- keep useful long-term roadmap sections while correcting current state
+- make the stage review useful without promoting a process artifact into project truth
+
+Non-goals:
+
+- no Third-Party Skill Adoption Safety implementation
+- no Kit Evolution Loop implementation
+- no new workflows, skills, prompts, rules, scripts, package commands, installer behavior,
+  dependencies, tests, archive changes, generated package workflow, or runtime behavior
+- no AGENTS changes, skill renames, or broad mature-skill rewrites
+
+Validation:
+
+- roadmap inventory includes `codebase-audit`
+- project memory lists all current canonical rules
+- scoped diff checks confirm no skill, rule, prompt, runtime, tooling, test, script, package,
+  installer, archive, or dependency changes
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:

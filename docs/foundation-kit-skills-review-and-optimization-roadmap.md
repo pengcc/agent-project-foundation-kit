@@ -66,23 +66,29 @@ The intended source-of-truth split is:
 
 This distinction is critical. Foundation-kit-specific development history should not be copied into downstream templates unless it has been deliberately distilled into generic reusable guidance.
 
-### 3.2 Current Core Skills
+### 3.2 Current Installed Skills
 
-The current core skill set includes:
+The current core workflow and context skills are:
 
 ```text
 agent-roles-and-capabilities
 code-review
+codebase-audit
 docs-first-research
 execute-plan
-grill-me
-handoff
 initialize-project-context
 plan-with-context
 project-architecture-plan
 project-memory
 publish-current-branch
 update-project-memory
+```
+
+The current productivity and supporting skills are:
+
+```text
+grill-me
+handoff
 write-a-skill
 ```
 
@@ -94,6 +100,7 @@ The current kit is already beyond a prompt collection. It has a real operating s
 - architecture planning
 - planning and execution separation
 - review workflow
+- audit workflow
 - handoff workflow
 - publishing workflow
 - skill authoring workflow
@@ -114,10 +121,27 @@ This is good for keeping the kit lean, but it also reveals several rule-level ga
 - kit evolution loop
 - reusable lesson promotion policy
 - UI quality / design system reuse principles
-- repository content as data, not instruction
+- broader repository content as data, not instruction guidance outside `codebase-audit`
 - report depth levels / concise output guidance
 
-### 3.4 Maintained Workflow Tooling Boundary
+### 3.4 Current Force Prompts
+
+The current force prompts are:
+
+```text
+force-code-review.md
+force-codebase-audit.md
+force-execute-plan.md
+force-grill-me.md
+force-handoff.md
+force-initialize-project-context.md
+force-plan-with-context.md
+force-project-architecture-plan.md
+force-publish-current-branch.md
+force-write-a-skill.md
+```
+
+### 3.5 Maintained Workflow Tooling Boundary
 
 Future planning must use the current repository and package scripts to identify maintained
 tooling:
@@ -131,6 +155,24 @@ tooling:
 Old plans, handoffs, reports, and research notes are process artifacts rather than current
 execution authority. Verify their status and alignment with project memory and current repository
 state before using them.
+
+### 3.6 Document Lifecycle
+
+Use the repository documents with distinct authority:
+
+```text
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+  canonical long-term roadmap and planning reference
+
+.codex/project/
+  current project facts, durable decisions, and reusable lessons
+
+docs/foundation-kit-stage-review-and-forward-plan-2026-06-16.md
+  dated stage-review input and audit evidence
+```
+
+The dated stage review can inform roadmap and memory updates, but it does not replace the roadmap
+or durable project memory.
 
 ---
 
@@ -240,9 +282,11 @@ project experience
 
 This prevents project-specific history from polluting the installable kit while still allowing the kit to grow.
 
-### 5.5 Plan Quality
+### 5.5 Plan / Execute / Review Quality
 
-`plan-with-context` is mature, but it should absorb a stronger self-contained plan standard:
+Plan / Execute / Review quality hardening is implemented/current.
+
+`plan-with-context` now uses a stronger self-contained plan standard:
 
 - executable by a fresh agent
 - includes exact files in scope and out of scope
@@ -251,44 +295,35 @@ This prevents project-specific history from polluting the installable kit while 
 - records baseline commit or baseline state for non-trivial plans
 - includes STOP conditions
 
-### 5.6 Execution Safety
+`execute-plan` now treats the approved plan as the execution contract:
 
-`execute-plan` is strict by default. It can be strengthened by adding:
+- every changed hunk maps to a plan step, validation step, or approved memory/design-log update
+- out-of-scope changes pause for user decision or return to planning
+- supporting skills remain bounded and cannot override the approved plan
 
-```text
-Treat the approved plan as the execution contract.
-Every changed hunk must map to a plan step.
-Out-of-scope changes must be reverted or paused for user decision, even if they look helpful.
-```
+`code-review` remains diff / PR / package / plan-alignment focused and does not become full repo
+audit. It now includes:
 
-### 5.7 Code Review Safety
-
-`code-review` should remain diff / PR / package / plan-alignment focused and should not become full repo audit.
-
-It should be strengthened with:
-
-- generated package safety checklist
+- generated package / theme zip safety checks
 - introduced vs pre-existing finding distinction
 - plan-hunk alignment when an approved plan exists
 
-### 5.8 Missing Specialist Skill Policy
+### 5.6 Missing Specialist Skill Policy
 
-The kit should explicitly avoid pretending that technology-specific skills exist.
+Missing Specialist Skill Policy is implemented/current in `agent-roles-and-capabilities`.
 
 When a relevant specialist skill would be useful but is not installed, the agent should use the
 policy defined in `agent-roles-and-capabilities`.
 
 This makes future optional skill needs visible without prematurely bloating the core kit.
 
-Theme 19 should implement this policy inside `agent-roles-and-capabilities` only.
-
-### 5.9 UI Guidance
+### 5.7 UI Guidance
 
 The kit has a UI / Accessibility Reviewer role, but it lacks UI-specific rules and review guidance.
 
 The first step should be lightweight design system reuse guidance, not a large UI style skill.
 
-### 5.10 Skill Inventory and Workflow Map Consistency
+### 5.8 Skill Inventory and Workflow Map Consistency
 
 As the number of skills grows, the kit needs an inventory that clearly separates:
 
@@ -326,7 +361,7 @@ Useful patterns:
 Theme 21 adaptation:
 
 ```text
-Add codebase-audit as a read-only repository survey skill.
+Theme 21 added codebase-audit as a read-only repository survey skill.
 Do not copy shadcn/improve directly.
 Do not adopt Claude-specific subagent or isolated worktree assumptions as core behavior.
 Selected findings should feed plan-with-context.
@@ -697,9 +732,11 @@ Do not automatically promote downstream project experience into the foundation k
 
 ## 11. Planning / Execution / Review Quality Hardening
 
+Status: implemented/current.
+
 ### 11.1 Plan Quality
 
-Patch `plan-with-context` with:
+`plan-with-context` includes:
 
 ```text
 - self-contained plan quality
@@ -712,7 +749,7 @@ Patch `plan-with-context` with:
 
 ### 11.2 Execution Quality
 
-Patch `execute-plan` with:
+`execute-plan` includes:
 
 ```text
 - approved plan as execution contract
@@ -723,7 +760,7 @@ Patch `execute-plan` with:
 
 ### 11.3 Review Quality
 
-Patch `code-review` with:
+`code-review` includes:
 
 ```text
 - generated package safety checklist
@@ -1075,28 +1112,74 @@ Boundaries:
 - concrete diffs, PRs, generated packages, commits, branches, and plan-alignment reviews stay with code-review
 ```
 
+### Theme 21.1: Supporting Skill Invocation and Skill Authoring Verification
+
+Status: implemented/current.
+
+Goal:
+
+```text
+Clarify bounded supporting-skill invocation during approved-plan execution and strengthen
+write-a-skill authoring verification.
+```
+
+Boundaries:
+
+```text
+- execute-plan remains the primary workflow for approved-plan execution
+- supporting skills are bounded substep guidance only
+- write-a-skill verification remains generic and not external-tool-specific
+- no new workflows, scripts, package commands, installer behavior, dependencies, tests, archive
+  changes, generated package workflow, or runtime behavior
+```
+
+### Theme 22.0: Stage Review, Inventory, and Roadmap Refresh
+
+Status: implemented/current.
+
+Goal:
+
+```text
+Refresh current-state inventory and next-step guidance after the dated stage review.
+```
+
+Boundaries:
+
+```text
+- roadmap remains the canonical long-term roadmap
+- stage review remains a dated input
+- Theme 22.1 and Theme 22.2 remain future work
+- no skill, rule, prompt, script, package, installer, dependency, test, archive, generated package
+  workflow, or runtime behavior changes
+```
+
 ### Phase 4: Kit Evolution and Third-Party Skill Safety
 
 Goal:
 
 ```text
-Create a safe loop for learning from project experience and external skills.
+Create safe, separate loops for learning from external skills and from project experience.
 ```
 
-Scope:
+Theme 22.1:
 
 ```text
-Add:
-- kit/rules/kit-evolution-loop.md
-- kit/rules/third-party-skill-adoption-policy.md
-- optional reusable lesson candidate format
-- optional docs/external-skill-catalog.md
-
-Patch:
-- write-a-skill
-- docs-first-research / docs-first-policy community practice branch
-- agent-roles-and-capabilities Missing Specialist Skill Policy
+Third-Party Skill Adoption Safety
 ```
+
+Theme 22.1 should define a lightweight external-skill evaluation boundary before adapting
+external skills into this kit. Prefer a concise rule or small existing-skill sections unless a
+future plan proves a dedicated workflow or policy file is necessary.
+
+Theme 22.2:
+
+```text
+Kit Evolution and Reusable Lesson Promotion Loop
+```
+
+Theme 22.2 should define how project experience becomes reusable foundation-kit guidance without
+polluting installable templates. Do not combine this with Theme 22.1 unless explicitly planned and
+approved later.
 
 ### Phase 5: UI Quality Foundation
 
@@ -1152,31 +1235,28 @@ Add or expand:
 
 ## 16. Recommended Next Step
 
-Theme 21 Codebase Audit Foundation is implemented. Theme 21.1 adds the support-hardening step
-between codebase audit and future kit-evolution work:
+Theme 22.0 Stage Review, Inventory, and Roadmap Refresh is the current consolidation step.
+
+After Theme 22.0 is reviewed and accepted, the next recommended implementation plan is:
 
 ```text
-Workflow: execute-plan
-Goal: Supporting Skill Invocation and Skill Authoring Verification
-Primary role: Implementation Executor
-Supporting skills: write-a-skill, update-project-memory
+Theme 22.1: Third-Party Skill Adoption Safety
 ```
 
-Theme 21.1 should confirm:
+Theme 22.1 should remain lightweight:
 
 ```text
-- execute-plan remains the primary workflow for approved-plan execution
-- supporting skills are bounded substep guidance only
-- supporting skills must be read/applied before being claimed
-- write-a-skill verification remains generic and not external-tool-specific
-- record durable project memory and design-log updates
+- evaluate external skills as reference candidates only
+- verify source, provenance, license/copying risk, fit, safety, and workflow conflict
+- route adaptation through write-a-skill after docs-first source evaluation
+- do not copy external skills wholesale
 - avoid scripts, package commands, installer, dependency, runtime, tests, and archive changes
-- avoid new workflows or broad role taxonomy changes
+- avoid a broad external marketplace or catalog
 ```
 
-After Theme 21.1 is reviewed and accepted, Phase 4 Kit Evolution and Third-Party Skill Safety
-requires a separate `plan-with-context` plan and explicit approval before implementation. Do not
-execute Phase 4–7 as part of Theme 21.1.
+Theme 22.2 Kit Evolution and Reusable Lesson Promotion Loop remains separate future work.
+
+Do not execute Theme 22.1, Theme 22.2, or Phase 5–7 work as part of Theme 22.0.
 
 ---
 
