@@ -294,6 +294,28 @@ recorded in local memory. Reusable promotion needs generalization, user confirma
 approved plan. Use `plan-with-context` for the kit change plan and `execute-plan` for approved
 implementation.
 
+## Optional Specialist Skill Authoring
+
+Optional specialist skills and specialist packs require an approved `plan-with-context` plan before
+creation or installation behavior changes.
+
+When authoring an approved optional skill or pack, preserve:
+
+```txt
+- trigger clarity
+- metadata and discovery wording
+- workflow boundaries
+- dependencies and conflicts
+- required project signals
+- non-goals
+- validation notes
+- external source / provenance
+- license or copying-risk notes
+```
+
+Do not treat entries in `docs/optional-skill-catalog.md` as implementation approval. They are
+planning candidates until a user approves a specific plan.
+
 ## Skill Authoring Verification
 
 Before finalizing a new or refined skill, verify:

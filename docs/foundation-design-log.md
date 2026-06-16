@@ -1582,6 +1582,57 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
 
+## Phase 7: Optional Skill Catalog and Specialist Packs
+
+Accepted decisions:
+
+1. Add a source-repository optional skill catalog model at `docs/optional-skill-catalog.md`.
+2. Treat optional specialist packs as future candidates, not installed capabilities.
+3. Keep `agent-roles-and-capabilities` responsible for missing-specialist routing.
+4. Allow `initialize-project-context` to report optional pack candidates from project signals
+   without installing or promoting them.
+5. Use `write-a-skill` only after external evaluation, planning, and approval to author future
+   optional skills or packs.
+6. Do not create `docs/external-skill-catalog.md`, `kit/catalog/`, actual optional packs,
+   technology-specific skills, marketplace behavior, auto-install behavior, or installer changes.
+
+Rationale:
+
+- make future specialist needs discoverable without bloating the minimal core kit
+- keep external references as candidates until evaluated through `docs-first-research`
+- preserve workflow boundaries between detection, evaluation, planning, authoring, execution, and
+  memory updates
+
+Non-goals:
+
+- no React, Vue, Node, SFCC, Tailwind, shadcn, database, deployment, release, security, UI, or
+  architecture specialist packs
+- no marketplace, auto-install behavior, default optional packs, package dependencies, installer
+  mapping, package commands, runtime behavior, tests, archives, generated package workflow,
+  release workflow, or deployment workflow
+- no AGENTS changes, skill renames, broad mature-skill rewrites, or copied external skill content
+
+Validation:
+
+- scoped searches confirm optional skill, specialist pack, candidate metadata, status, and
+  workflow routing language
+- scoped checks confirm no runtime/tooling, installer, package, test, archive, `kit/catalog`,
+  marketplace, auto-install, or actual technology-specific pack changes
+- repository validation runs through `pnpm check`
+
+Resulting files / changes:
+
+```txt
+docs/optional-skill-catalog.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/initialize-project-context/SKILL.md
+kit/skills/core/write-a-skill/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
 ## Theme 18.3: Explicit Node PR-Only and PR-Number Merge Modes
 
 Accepted decisions:

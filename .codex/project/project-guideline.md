@@ -51,6 +51,7 @@ Completed themes:
 - Theme 22.2: kit evolution and reusable lesson promotion loop
 - Phase 5: UI Quality Foundation
 - Phase 6: Architecture Review Refinement
+- Phase 7: Optional Skill Catalog and Specialist Packs
 
 Current canonical core skill names:
 
@@ -164,6 +165,20 @@ Current Architecture Review Refinement boundaries:
 - `codebase-audit` identifies broad architecture opportunities as read-only audit findings.
 - Architecture review is advisory and review-only. It is not a separate skill, architecture rule,
   heavy enterprise process, repo-wide audit, executable plan, or implementation workflow.
+
+Current Optional Skill Catalog boundaries:
+
+- `docs/optional-skill-catalog.md` is source-repository planning documentation for future optional
+  specialist skill and specialist pack candidates.
+- It defines vocabulary, candidate metadata shape, status values, and workflow routing.
+- It is not an installer manifest, package registry, marketplace, generated package workflow, or
+  downstream-installed runtime file.
+- No optional specialist packs or technology-specific skills are currently implemented through the
+  catalog.
+- Optional pack installation remains future work and requires separate planning and approval.
+- External skill references remain reference candidates until evaluated through
+  `docs-first-research` and rewritten for this kit through approved `write-a-skill` and
+  `execute-plan` work.
 
 Current roadmap and stage-review status:
 
@@ -642,6 +657,25 @@ Completed:
     - refreshed long-term roadmap current-state inventory and next-step guidance
     - corrected current canonical rule inventory in project memory
     - preserved the stage review report as a dated input, not a roadmap replacement
+- Theme 22.0.1 dependency invariant and publish handoff clarification
+    - clarified that `publish-current-branch` is a post-execution workflow transition
+    - recorded bootstrap-safe role-routing invariants
+- Theme 22.1 third-party skill adoption safety
+    - added lightweight external-skill evaluation boundaries to existing surfaces
+    - kept external skills as reference candidates until evaluated and rewritten
+- Theme 22.2 kit evolution and reusable lesson promotion loop
+    - kept project experience promotion behind local memory, generalization, user confirmation,
+      approved planning, and execution
+- Phase 5 UI Quality Foundation
+    - added lightweight UI quality guidance through existing engineering-quality and workflow
+      surfaces
+- Phase 6 Architecture Review Refinement
+    - refined architecture review through existing review, architecture planning, and audit
+      surfaces
+- Phase 7 Optional Skill Catalog and Specialist Packs
+    - added `docs/optional-skill-catalog.md` as source-repository planning documentation
+    - defined optional candidate metadata, status, and workflow routing without adding packs or
+      installer behavior
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`

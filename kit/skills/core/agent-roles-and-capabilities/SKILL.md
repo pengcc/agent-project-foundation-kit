@@ -109,6 +109,10 @@ skills prematurely. If the missing skill materially affects correctness, securit
 or user-facing behavior, use `docs-first-research` and surface the residual risk before
 continuing.
 
+For this foundation-kit source repository, `docs/optional-skill-catalog.md` records the
+source-repository model for future optional specialist candidates. Treat catalog entries as
+candidates only unless the referenced skill is actually installed and used.
+
 ## Expected Maturity
 
 Role titles do not use `Senior` by default.
