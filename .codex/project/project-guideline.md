@@ -55,6 +55,7 @@ Completed themes:
 - Consolidation: Archive Bash Apply-Theme Helper
 - Release-readiness cleanup and publish secret-safety guard
 - Requirement clarification gate and ambiguity handling contract
+- AGENTS template and operating contract alignment
 
 Current canonical core skill names:
 
@@ -98,6 +99,9 @@ Current project-memory context control:
 
 Current foundation alignment boundaries:
 
+- `kit/project-templates/AGENTS.md` remains a short downstream entrypoint. It points agents to
+  `.codex/rules/agent-operating-contract.md` for detailed operating rules, including Requirement
+  Clarification and concise-output behavior, without duplicating full rule text.
 - `agent-operating-contract` owns the lightweight Requirement Clarification Gate: agents must not
   assume requests are clear, complete, or scope-stable when ambiguity affects scope, safety, files,
   architecture, data, Git/publish, external side effects, irreversible actions, user intent, or

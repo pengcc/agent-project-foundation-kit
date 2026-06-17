@@ -1852,3 +1852,38 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## AGENTS Template and Operating Contract Alignment
+
+Accepted decisions:
+
+1. Keep `kit/project-templates/AGENTS.md` short and operational.
+2. Point downstream agents to `.codex/rules/agent-operating-contract.md` for detailed operating
+   rules.
+3. Add only short downstream reminders for Requirement Clarification, `grill-me` deep
+   clarification routing, and concise reports.
+4. Do not duplicate the full Project Memory Context Gate, full Requirement Clarification Gate, or
+   future report-depth policy in AGENTS.
+
+Rationale:
+
+- keep the downstream AGENTS template useful as a stable entrypoint
+- avoid creating a second policy surface that can drift from the operating contract
+- make the newly added ambiguity-handling convention visible to downstream projects
+
+Non-goals:
+
+- no operating-contract rewrite
+- no roadmap rewrite
+- no full report-depth policy
+- no package scripts, runtime code, publish, installer, secret-safety, archive, release,
+  deployment, dependency, test, or generated-package changes
+
+Resulting files / changes:
+
+```txt
+kit/project-templates/AGENTS.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

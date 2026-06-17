@@ -1760,3 +1760,32 @@ Core workflows can pause on meaningful ambiguity without turning every small ass
 full `grill-me` session. This decision does not change package scripts, runtime code, publish
 workflow behavior, installer behavior, secret-safety behavior, archive files, optional packs,
 release workflow, deployment workflow, or dependencies.
+
+## Decision: Downstream AGENTS template delegates detailed operating rules
+
+### Status
+
+Accepted
+
+### Context
+
+The downstream `kit/project-templates/AGENTS.md` file is the stable entrypoint for projects that
+install the foundation kit. The operating contract already owns detailed first-run, routing,
+Requirement Clarification, concise-output, memory, evidence, and safety rules.
+
+### Decision
+
+Keep the downstream AGENTS template short and operational. It may contain brief entrypoint
+reminders, but it must delegate detailed operating rules to:
+
+```txt
+.codex/rules/agent-operating-contract.md
+```
+
+Do not duplicate the full Project Memory Context Gate, full Requirement Clarification Gate, or a
+future report-depth policy in AGENTS.
+
+### Impact
+
+Downstream projects get visible startup and clarification reminders without creating a second
+policy surface that can drift from the installed operating contract.
