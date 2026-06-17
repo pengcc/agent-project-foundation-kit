@@ -107,7 +107,7 @@ Do not push directly to `main`.
 When ready to publish local changes, normally use:
 
 ```bash
-pnpm publish:local "Commit message"
+pnpm publish:changes "Commit message"
 ```
 
 ## Final Report Requirement
