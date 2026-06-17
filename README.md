@@ -21,6 +21,9 @@ pnpm check
 
 `publish:changes`, `publish:pr-only`, and `publish:merge-pr` run the maintained Node.js 24+ ESM
 publish CLI. `pnpm check` validates the Node publish and installer paths plus whitespace.
+`publish:changes` and `publish:pr-only` run a lightweight local secret-safety guard against the
+confirmed publish scope before commit, push, or PR updates. The guard is dependency-free and
+high-confidence only; it can have false positives and false negatives.
 Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
 historical reference. Future apply-theme behavior should be planned as a Node.js workflow before
 being reintroduced.

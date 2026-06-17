@@ -1,7 +1,8 @@
 import { PassThrough } from 'node:stream';
 import { readFileSync } from 'node:fs';
-import { mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
+import { glob, mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import YAML from 'yaml';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   assertSupportedRuntime,
@@ -87,6 +88,31 @@ describe('source repository package scripts', () => {
   });
 });
 
+describe('source repository metadata hygiene', () => {
+  it('keeps core skill metadata files as single YAML documents', async () => {
+    const paths = [];
+    for await (const path of glob('kit/skills/core/*/metadata.yml')) {
+      paths.push(path);
+    }
+    expect(paths.length).toBeGreaterThan(0);
+
+    for (const path of paths.sort()) {
+      const text = await readFile(path, 'utf8');
+      const documents = YAML.parseAllDocuments(text);
+      expect(documents, path).toHaveLength(1);
+      expect(documents[0].errors, path).toEqual([]);
+
+      const metadata = documents[0].toJSON();
+      expect(metadata, path).toMatchObject({
+        name: expect.any(String),
+        description: expect.any(String),
+        category: expect.any(String),
+        version: expect.any(String),
+      });
+    }
+  });
+});
+
 describe('mapping and boundaries', () => {
   it('maps templates and complete installable trees deterministically', async () => {
     const fixture = await workspace('mapping');
@@ -118,6 +144,20 @@ describe('mapping and boundaries', () => {
     expect(mappings.some((entry) => entry.sourceRelative.endsWith('.sh'))).toBe(false);
     expect(mappings.some((entry) => entry.sourceRelative.startsWith('archive/'))).toBe(false);
     expect(mappings.some((entry) => entry.targetRelative === 'package.json')).toBe(false);
+  });
+
+  it('excludes local OS junk files from installable tree mappings', async () => {
+    const fixture = await workspace('mapping-os-junk');
+    await writeFile(resolve(fixture.kitRoot, 'skills/.DS_Store'), 'local artifact\n');
+    await writeFile(resolve(fixture.kitRoot, 'prompts/Thumbs.db'), 'local artifact\n');
+    await writeFile(resolve(fixture.kitRoot, 'rules/._example.md'), 'local artifact\n');
+    await writeFile(resolve(fixture.kitRoot, 'config/desktop.ini'), 'local artifact\n');
+
+    const mappings = await buildMappings(fixture.kitRoot);
+    expect(mappings.some((entry) => entry.sourceRelative.includes('.DS_Store'))).toBe(false);
+    expect(mappings.some((entry) => entry.sourceRelative.includes('Thumbs.db'))).toBe(false);
+    expect(mappings.some((entry) => entry.sourceRelative.includes('/._'))).toBe(false);
+    expect(mappings.some((entry) => entry.sourceRelative.includes('desktop.ini'))).toBe(false);
   });
 
   it('treats identical existing files as conflicts', async () => {

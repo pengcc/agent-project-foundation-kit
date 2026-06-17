@@ -29,6 +29,16 @@ export const TREE_MAPPINGS = Object.freeze([
   ['scripts', '.codex/scripts', 'scripts'],
 ]);
 
+export function isLocalOsJunkFile(relativePath) {
+  const name = relativePath.split('/').at(-1);
+  return (
+    name === '.DS_Store' ||
+    name === 'Thumbs.db' ||
+    name === 'desktop.ini' ||
+    name.startsWith('._')
+  );
+}
+
 export async function buildMappings(kitRoot) {
   const mappings = DIRECT_MAPPINGS.map(([sourceRelative, targetRelative, category]) => ({
     sourceRelative,
@@ -40,6 +50,7 @@ export async function buildMappings(kitRoot) {
     const root = join(kitRoot, sourceDirectory);
     for (const sourcePath of await walkRegularFiles(root, { boundary: kitRoot })) {
       const relative = relativePosix(root, sourcePath);
+      if (isLocalOsJunkFile(relative)) continue;
       mappings.push({
         sourceRelative: `${sourceDirectory}/${relative}`,
         targetRelative: `${targetDirectory}/${relative}`,
