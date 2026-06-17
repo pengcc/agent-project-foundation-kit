@@ -76,15 +76,25 @@ Work professionally, efficiently, and concisely.
 
 For meaningful changes, explain the reason, relevant tradeoffs, expected impact or risk, and validation.
 
+Keep reports concise unless the task requires depth or the user asks for detail.
+
 Prefer small, reviewable, reversible changes. Do not silently perform meaningful or risky actions.
 
 ## Agent Operating Contract
 
-Detailed first-run, skill routing, concise output, durable memory, evidence-first research, and safety rules live in:
+Detailed first-run, skill routing, Requirement Clarification, concise output, durable memory,
+evidence-first research, and safety rules live in:
 
 ```txt
 .codex/rules/agent-operating-contract.md
 ```
+
+Do not guess through material ambiguity. Use the installed Requirement Clarification Gate when
+scope, safety, files, architecture, data, Git/publish, external side effects, irreversible
+actions, user intent, or acceptance criteria are unclear.
+
+Use `grill-me` only when lightweight clarification is not enough, such as broad, branching,
+decision-heavy, or systematic requirement discovery.
 
 ## Required Role Routing
 
