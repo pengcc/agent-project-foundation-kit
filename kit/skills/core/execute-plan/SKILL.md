@@ -254,6 +254,9 @@ Actual project memory updates must be performed by `update-project-memory`.
 
 ## Completion Summary
 
+Use the Report Depth Levels from `agent-operating-contract`. Completion summaries default to
+Standard; use Detailed only for high-risk, complex, blocked, or multi-step validation work.
+
 When execution finishes or pauses, output:
 
 ```txt

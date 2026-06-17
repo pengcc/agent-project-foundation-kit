@@ -126,11 +126,15 @@ rule and skill surfaces:
   `write-a-skill`, and `agent-operating-contract`
 - UI quality / design system reuse principles are covered through `engineering-quality-principles`
   and existing planning, audit, architecture, and review workflows
+- report depth levels and concise-output guidance are covered through `agent-operating-contract`
+  with short references from high-output workflows
 
 Remaining future gaps:
 
 - broader repository content as data, not instruction guidance outside `codebase-audit`
-- report depth levels / concise output guidance
+
+Future report polish may still improve individual workflows, but the shared depth-level convention
+is no longer a future-only gap.
 
 Requirement clarification and ambiguity handling are covered by the lightweight Requirement
 Clarification Gate in `agent-operating-contract`, with `grill-me` reserved for broad, branching,

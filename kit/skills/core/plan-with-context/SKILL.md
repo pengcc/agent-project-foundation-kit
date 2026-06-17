@@ -246,3 +246,6 @@ execution has not been approved.
 
 When responding, include workflow header, plan status, saved path only if it was actually saved,
 recommendation, blocking questions if any, execution status, and a review-oriented next action.
+
+Use the Report Depth Levels from `agent-operating-contract`. Keep simple planning responses brief,
+and use more detail only when scope, risk, ambiguity, or validation complexity requires it.

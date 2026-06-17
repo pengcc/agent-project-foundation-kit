@@ -200,6 +200,10 @@ Concrete diffs, PRs, generated packages, commits, branches, and plan-alignment r
 
 ## Report Structure
 
+Use the Report Depth Levels from `agent-operating-contract`. Standard audits are usually
+Detailed; quick audits may be Standard if evidence, prioritization, selected findings, and next
+workflow routing stay clear.
+
 Use this structure for formal reports:
 
 ```md

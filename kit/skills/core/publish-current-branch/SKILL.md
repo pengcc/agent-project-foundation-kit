@@ -374,6 +374,10 @@ Do not update project memory directly.
 
 ## Publish Summary
 
+Use the Report Depth Levels from `agent-operating-contract`. Publish summaries should stay
+Standard and factual unless blockers, unknown GitHub state, or high-risk publishing conditions
+require more detail.
+
 When publishing finishes or pauses, output:
 
 ```txt

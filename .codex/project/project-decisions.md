@@ -1789,3 +1789,37 @@ future report-depth policy in AGENTS.
 
 Downstream projects get visible startup and clarification reminders without creating a second
 policy surface that can drift from the installed operating contract.
+
+## Decision: Report depth levels live in the operating contract
+
+### Status
+
+Accepted
+
+### Context
+
+The kit already required concise output and explicit external/global action reporting, but it did
+not define how much detail different task types should use. High-output workflows also had fixed
+report structures that should not be rewritten or duplicated across skills.
+
+### Decision
+
+Define shared Report Depth Levels in `agent-operating-contract`:
+
+```txt
+Brief
+Standard
+Detailed
+```
+
+Use short references from high-output workflows instead of duplicating the full convention in each
+skill. Concise output must still preserve what changed, what was reviewed, or what was decided,
+validation status, risks or blockers when present, external/global actions, and the next
+recommended step.
+
+### Impact
+
+Agents can scale report detail to task risk and complexity without making small tasks noisy or
+omitting important decisions, validation, or risks. This decision does not change package scripts,
+runtime code, publish workflow behavior, installer behavior, secret-safety behavior, archive
+files, release workflow, deployment workflow, dependencies, tests, or generated artifacts.
