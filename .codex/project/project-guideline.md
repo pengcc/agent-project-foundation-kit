@@ -53,6 +53,7 @@ Completed themes:
 - Phase 6: Architecture Review Refinement
 - Phase 7: Optional Skill Catalog and Specialist Packs
 - Consolidation: Archive Bash Apply-Theme Helper
+- Release-readiness cleanup and publish secret-safety guard
 
 Current canonical core skill names:
 
@@ -311,8 +312,19 @@ Maintained workflow tooling boundary:
   the maintained publish path.
 - `pnpm publish:pr-only` and `pnpm publish:merge-pr` are explicit modes of the same maintained
   Node publish CLI, not separate workflow implementations.
+- `pnpm publish:changes` and `pnpm publish:pr-only` run a lightweight dependency-free
+  secret-safety guard against the confirmed publish scope before commit, push, or PR create/update
+  side effects.
+- The secret-safety guard scans confirmed publish-scope paths and diff content for dangerous
+  credential paths and high-confidence secret patterns. It is not a complete secret-scanning
+  product and does not validate tokens over the network.
+- `pnpm publish:merge-pr` does not perform remote PR diff secret scanning.
 - `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
   installation path.
+- Skill `metadata.yml` files should remain single YAML metadata documents, with source-repository
+  tests covering parse hygiene.
+- Installer tree mapping excludes local OS junk files such as `.DS_Store`, `Thumbs.db`,
+  `desktop.ini`, and AppleDouble `._*` files from downstream `.codex/` mappings.
 - Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
   historical reference.
 - Future apply-theme behavior should be planned as a Node.js workflow before being reintroduced.
@@ -680,6 +692,11 @@ Completed:
       `archive/legacy-bash-workflows/`
     - consolidated the source-repository publish command to `pnpm publish:changes`
     - removed active apply-theme package command and Bash syntax validation from `pnpm check`
+- Release-readiness cleanup and publish secret-safety guard
+    - fixed source skill metadata parse hygiene
+    - excluded local OS junk files from installable tree mappings
+    - added lightweight confirmed-scope secret-safety checks to `publish:changes` and
+      `publish:pr-only`
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`

@@ -17,6 +17,7 @@ import {
   verifyAndMerge,
 } from "./actions.mjs";
 import { renderFinalReport } from "./final-report.mjs";
+import { assertSecretSafePublishScope } from "./secret-safety.mjs";
 import {
   assertHeadFingerprint,
   collectExactPublishScope,
@@ -177,6 +178,12 @@ export async function runPublishFlow({
     confirmed.head,
     "Branch history changed during scope confirmation. Re-run and confirm the updated scope.",
   );
+  await assertSecretSafePublishScope({
+    git,
+    state,
+    confirmed,
+    output,
+  });
 
   let branch = await ensureFeatureBranch({
     state,

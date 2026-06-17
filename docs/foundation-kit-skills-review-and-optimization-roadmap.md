@@ -118,11 +118,16 @@ docs-first-policy.md
 engineering-quality-principles.md
 ```
 
-This is good for keeping the kit lean, but it also reveals several rule-level gaps:
+This is good for keeping the kit lean. Several earlier rule-level gaps are now covered by existing
+rule and skill surfaces:
 
-- kit evolution loop
-- reusable lesson promotion policy
-- UI quality / design system reuse principles
+- kit evolution loop and reusable lesson promotion policy are covered through `update-project-memory`,
+  `write-a-skill`, and `agent-operating-contract`
+- UI quality / design system reuse principles are covered through `engineering-quality-principles`
+  and existing planning, audit, architecture, and review workflows
+
+Remaining future gaps:
+
 - broader repository content as data, not instruction guidance outside `codebase-audit`
 - report depth levels / concise output guidance
 

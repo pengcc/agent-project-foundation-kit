@@ -15,6 +15,10 @@ function createOutput() {
   };
 }
 
+function generatedToken(prefix, length = 24) {
+  return `${prefix}${'A'.repeat(length)}`;
+}
+
 function createPrOnlyHarness({
   branch = 'feature/quick-pr',
   hasUncommitted = true,
@@ -231,6 +235,44 @@ describe('PR-only flow', () => {
       }),
     ).rejects.toThrow('authentication is required');
     expect(harness.calls).toEqual(['fetch']);
+  });
+
+  it('blocks confirmed secret-looking content before commit, push, or PR creation', async () => {
+    const harness = createPrOnlyHarness();
+    const sensitiveValue = generatedToken('xoxb-', 24);
+    harness.git.status = async () => ' M config.js';
+    harness.git.statusZ = async () => ' M config.js\0';
+    harness.git.diff = async (args) => {
+      if (args.includes('--binary')) return 'binary patch';
+      if (args.includes('--numstat')) return '1\t0\tconfig.js';
+      if (args.includes('--name-status')) return 'M\tconfig.js';
+      if (args.includes('--cached')) {
+        return [
+          'diff --git a/config.js b/config.js',
+          '--- a/config.js',
+          '+++ b/config.js',
+          '@@ -0,0 +1 @@',
+          `+const value = "${sensitiveValue}";`,
+        ].join('\n');
+      }
+      return '';
+    };
+
+    await expect(
+      runPrOnlyFlow({
+        ...harness,
+        options: prOnlyOptions(),
+        env: {},
+      }),
+    ).rejects.toThrow('Publish blocked');
+
+    expect(harness.calls).toEqual(['fetch', 'add:config.js']);
+    expect(harness.calls.some((call) => call.startsWith('commit:'))).toBe(false);
+    expect(harness.calls.some((call) => call.startsWith('push:'))).toBe(false);
+    expect(harness.calls.some((call) => call.startsWith('create-pr:'))).toBe(false);
+    expect(
+      harness.output.messages.some(([, message]) => message.includes(sensitiveValue)),
+    ).toBe(false);
   });
 
   it('blocks worktree drift before staging or push', async () => {

@@ -1681,3 +1681,38 @@ The active source-repository workflow surface is Node-first. Bash apply-theme re
 historical reference. This cleanup does not implement a Node apply-theme replacement, publish
 secret-safety guard, metadata parse validation, source hygiene validation, release/deployment
 workflow, optional specialist packs, technology-specific skills, or Node publish behavior changes.
+
+## Decision: Release-readiness hygiene and publish secret-safety guard
+
+### Status
+
+Accepted
+
+### Context
+
+A release-readiness review found that one source skill metadata file was not parseable as a single
+YAML document and that ignored local OS artifacts under `kit/` could be mapped into downstream
+`.codex/` payloads. The maintained Node publish CLI also lacked a local fail-fast guard for
+high-confidence secrets in changes about to be committed, pushed, or used to create/update a PR.
+
+### Decision
+
+Keep `kit/skills/core/*/metadata.yml` files as single YAML metadata documents and validate that
+hygiene in source-repository tests.
+
+Exclude local OS junk files such as `.DS_Store`, `Thumbs.db`, `desktop.ini`, and AppleDouble `._*`
+files from installable tree mappings.
+
+Add a lightweight dependency-free secret-safety guard to `pnpm publish:changes` and
+`pnpm publish:pr-only`. The guard scans confirmed publish-scope paths and diff content for
+dangerous credential file paths and high-confidence secret patterns before commit, push, PR
+creation, or PR update side effects. It redacts previews and does not print full secret values.
+
+Do not add bypass flags, dependencies, token-validity network checks, full entropy scanning, or
+remote PR diff scanning in this phase. `pnpm publish:merge-pr` behavior remains unchanged.
+
+### Impact
+
+Release-readiness checks now cover metadata parse hygiene, installer source hygiene, and local
+publish secret-safety before upload. The guard is a lightweight safety net with possible false
+positives and false negatives; it is not a complete secret-scanning product.

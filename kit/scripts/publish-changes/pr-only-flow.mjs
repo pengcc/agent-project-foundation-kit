@@ -1,6 +1,7 @@
 import { PublishError } from '../shared/errors.mjs';
 import { prOnlyPublishRecord } from './actions.mjs';
 import { renderPrOnlyReport } from './final-report.mjs';
+import { assertSecretSafePublishScope } from './secret-safety.mjs';
 import { renderScopeSummary } from './scope-summary.mjs';
 import {
   assertHeadFingerprint,
@@ -98,6 +99,12 @@ export async function runPrOnlyFlow({
     confirmed.head,
     'Branch history changed during scope verification. No files were pushed. Re-run the command.',
   );
+  await assertSecretSafePublishScope({
+    git,
+    state,
+    confirmed,
+    output,
+  });
 
   let expectedPushHead = confirmed.head;
   if (state.hasUncommitted) {

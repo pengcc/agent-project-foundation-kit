@@ -1760,3 +1760,54 @@ archive/legacy-bash-workflows/lib/workflow-common.sh
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Release-Readiness Cleanup and Publish Secret-Safety Guard
+
+Accepted decisions:
+
+1. Keep core skill `metadata.yml` files as single YAML metadata documents.
+2. Validate source-repository metadata hygiene through tests.
+3. Exclude local OS junk files such as `.DS_Store`, `Thumbs.db`, `desktop.ini`, and AppleDouble
+   `._*` files from installable tree mappings.
+4. Add a lightweight dependency-free secret-safety guard to `publish:changes` and
+   `publish:pr-only`.
+5. Run the guard against confirmed publish-scope paths and diff content before commit, push, PR
+   creation, or PR update side effects.
+6. Keep `publish:merge-pr` unchanged in this phase.
+7. Do not add bypass flags, dependencies, token-validity network checks, or a full secret-scanning
+   product.
+
+Rationale:
+
+- make release/checkpoint hygiene verifiable instead of relying on ad hoc review
+- prevent ignored local OS artifacts from entering downstream `.codex/` installs
+- reduce risk of locally staged or committed secrets being uploaded by maintained publish commands
+- keep the guard high-confidence and self-contained so it fits the current Node publish CLI
+
+Non-goals:
+
+- no release or deployment workflow
+- no optional specialist pack or technology-specific skill
+- no Node apply-theme replacement
+- no package dependency change
+- no bypass flag
+- no remote PR diff secret scanning
+
+Resulting files / changes:
+
+```txt
+README.md
+kit/skills/core/code-review/metadata.yml
+scripts/install-foundation-kit/mapping.mjs
+tests/install-foundation-kit/core.test.mjs
+kit/scripts/publish-changes/secret-safety.mjs
+kit/scripts/publish-changes/flow.mjs
+kit/scripts/publish-changes/pr-only-flow.mjs
+tests/publish-changes/secret-safety.test.mjs
+tests/publish-changes/flow.test.mjs
+tests/publish-changes/modes.test.mjs
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
