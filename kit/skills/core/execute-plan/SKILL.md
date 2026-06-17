@@ -90,6 +90,12 @@ explicit approval.
 Material drift in scope, baseline, validation, architecture, dependencies, risk, file ownership, or
 repository state returns to `plan-with-context`.
 
+If execution reveals material ambiguity in plan interpretation, user intent, scope, safety, files,
+architecture, data, Git/publish, external side effects, irreversible actions, or acceptance
+criteria, stop instead of guessing. State the ambiguity, recommend the next interpretation or
+decision, and return to clarification or `plan-with-context`. Use `grill-me` only when ambiguity is
+broad, branching, or decision-heavy.
+
 ## Supporting Skill Activation
 
 `execute-plan` remains the primary workflow during approved-plan execution.

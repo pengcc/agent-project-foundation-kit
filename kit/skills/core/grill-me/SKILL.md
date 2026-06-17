@@ -28,6 +28,10 @@ Do not claim `agent-roles-and-capabilities` was used unless it was actually read
 
 It is a dependency-style productivity skill. Other current and future workflows may route to it when unclear goals, requirements, scope, constraints, tradeoffs, or decision branches block safe progress.
 
+The lightweight Requirement Clarification Gate lives in `agent-operating-contract`. Use this
+skill when that lightweight gate is not enough because ambiguity is broad, branching,
+decision-heavy, or requires systematic requirement discovery.
+
 `grill-me` should stay useful even when other skills are added, renamed, removed, or replaced.
 
 Core behavior:

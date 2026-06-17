@@ -100,6 +100,7 @@ The current kit is already beyond a prompt collection. It has a real operating s
 - workflow boundaries
 - role routing
 - project memory
+- requirement clarification / ambiguity handling
 - architecture planning
 - planning and execution separation
 - review workflow
@@ -130,6 +131,10 @@ Remaining future gaps:
 
 - broader repository content as data, not instruction guidance outside `codebase-audit`
 - report depth levels / concise output guidance
+
+Requirement clarification and ambiguity handling are covered by the lightweight Requirement
+Clarification Gate in `agent-operating-contract`, with `grill-me` reserved for broad, branching,
+decision-heavy, or systematic requirement discovery.
 
 ### 3.4 Current Force Prompts
 

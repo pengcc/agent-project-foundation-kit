@@ -29,6 +29,21 @@ Context Gate defined in the installed `project-memory` skill. Use its source sel
 reporting interface, and continuation rules rather than redefining them in this contract or in
 individual workflow skills.
 
+## Requirement Clarification Gate
+
+Do not assume a user request is clear, complete, or scope-stable.
+
+If ambiguity affects scope, safety, files, architecture, data, Git or publishing, external side
+effects, irreversible actions, user intent, or acceptance criteria, pause before execution. State
+the ambiguity plainly, provide the recommended interpretation or next decision, and ask the user
+to confirm before proceeding.
+
+For low-risk reversible assumptions, the agent may proceed only when the assumption is explicitly
+stated.
+
+Use `grill-me` when ambiguity is broad, branching, decision-heavy, or requires systematic
+requirement discovery. Do not route every tiny ambiguity to `grill-me`.
+
 ## Project Root Boundary
 
 The current project root is the default file-operation boundary.

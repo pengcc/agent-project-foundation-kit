@@ -43,6 +43,11 @@ Context Gate.
 If routing depends on project-specific facts, use project-memory as supporting context before
 making project-state decisions.
 
+If routing depends on unclear user intent, apply the Requirement Clarification Gate from
+`agent-operating-contract`: state the ambiguity, recommend the likely workflow route or next
+decision, and ask for confirmation. Use `grill-me` when the routing ambiguity is broad, branching,
+or decision-heavy.
+
 ## Role Routing Header
 
 When this skill is used for task routing, output a concise header:
