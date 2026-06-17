@@ -54,6 +54,7 @@ Completed themes:
 - Phase 7: Optional Skill Catalog and Specialist Packs
 - Consolidation: Archive Bash Apply-Theme Helper
 - Release-readiness cleanup and publish secret-safety guard
+- Requirement clarification gate and ambiguity handling contract
 
 Current canonical core skill names:
 
@@ -97,6 +98,13 @@ Current project-memory context control:
 
 Current foundation alignment boundaries:
 
+- `agent-operating-contract` owns the lightweight Requirement Clarification Gate: agents must not
+  assume requests are clear, complete, or scope-stable when ambiguity affects scope, safety, files,
+  architecture, data, Git/publish, external side effects, irreversible actions, user intent, or
+  acceptance criteria.
+- Low-risk reversible assumptions may proceed only when explicitly stated. `grill-me` remains the
+  deep clarification workflow for broad, branching, decision-heavy, or systematic requirement
+  discovery.
 - `docs-first-research` passes the Project Memory Context Gate for project-impacting research and
   may state the gate is not applicable for pure external fact lookup.
 - External skills are reference candidates only; patterns require evaluation and rewriting before
@@ -697,6 +705,9 @@ Completed:
     - excluded local OS junk files from installable tree mappings
     - added lightweight confirmed-scope secret-safety checks to `publish:changes` and
       `publish:pr-only`
+- Requirement clarification gate and ambiguity handling contract
+    - added a lightweight global ambiguity rule to `agent-operating-contract`
+    - kept `grill-me` as the deep clarification workflow, not the default for tiny assumptions
 - Theme 16.1 local publish workflow entrypoint and safety hardening
     - private dependency-free `package.json` command façade
     - hardened `scripts/publish-local-change.sh`

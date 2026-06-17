@@ -107,6 +107,12 @@ Trigger `docs-first-research` when planning involves technical judgment, APIs, v
 
 Before planning, decide whether clarification is required.
 
+Apply the Requirement Clarification Gate from `agent-operating-contract`: after checking available
+repo docs, code, config, tests, package files, and project memory, do not create a plan from
+materially ambiguous scope, safety, file, architecture, data, Git/publish, external-side-effect,
+user-intent, or acceptance-criteria assumptions. State the ambiguity, recommend an interpretation
+or next decision, and ask for confirmation.
+
 Use `grill-me` first when the goal, MVP boundary, business rules, scope, constraints, or technical path are unclear.
 
 Do not use `grill-me` when the answer can be found by inspecting available project sources.

@@ -1811,3 +1811,44 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Requirement Clarification Gate and Ambiguity Handling Contract
+
+Accepted decisions:
+
+1. Add a lightweight Requirement Clarification Gate to `agent-operating-contract`.
+2. Do not assume every user request is clear, complete, or scope-stable.
+3. Pause before execution when ambiguity affects scope, safety, files, architecture, data,
+   Git/publish, external side effects, irreversible actions, user intent, or acceptance criteria.
+4. State the ambiguity, recommend an interpretation or next decision, and ask the user to confirm.
+5. Allow low-risk reversible assumptions only when explicitly stated.
+6. Keep `grill-me` as the deep clarification workflow for broad, branching, decision-heavy, or
+   systematic requirement discovery.
+7. Do not create a separate requirement-clarification skill or workflow.
+
+Rationale:
+
+- reduce unsafe guessing without turning every small assumption into a full clarification session
+- keep the global convention in one operating rule
+- let existing workflows reference the rule without duplicating it
+
+Non-goals:
+
+- no new skill or workflow
+- no broad rewrite of `grill-me`
+- no package scripts, runtime code, publish, installer, secret-safety, archive, release,
+  deployment, optional-pack, dependency, or generated-package changes
+
+Resulting files / changes:
+
+```txt
+kit/rules/agent-operating-contract.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/grill-me/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

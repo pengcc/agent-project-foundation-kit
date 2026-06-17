@@ -1716,3 +1716,38 @@ remote PR diff scanning in this phase. `pnpm publish:merge-pr` behavior remains 
 Release-readiness checks now cover metadata parse hygiene, installer source hygiene, and local
 publish secret-safety before upload. The guard is a lightweight safety net with possible false
 positives and false negatives; it is not a complete secret-scanning product.
+
+## Decision: Requirement Clarification Gate uses operating contract plus grill-me
+
+### Status
+
+Accepted
+
+### Context
+
+`grill-me` already handles deep clarification for unclear goals, requirements, scope,
+constraints, tradeoffs, and decision branches. The kit still needed a lighter global convention
+for cases where ambiguity is important enough to pause, but not broad enough to require a full
+clarification workflow.
+
+### Decision
+
+Add the lightweight Requirement Clarification Gate to `agent-operating-contract`.
+
+Agents must not assume user requests are clear, complete, or scope-stable when ambiguity affects
+scope, safety, files, architecture, data, Git/publish, external side effects, irreversible
+actions, user intent, or acceptance criteria. In those cases, agents should state the ambiguity,
+recommend an interpretation or next decision, and ask for confirmation before proceeding.
+
+Low-risk reversible assumptions may proceed only when explicitly stated. `grill-me` remains the
+deep clarification workflow for broad, branching, decision-heavy, or systematic requirement
+discovery.
+
+Do not create a separate requirement-clarification skill or workflow for this convention.
+
+### Impact
+
+Core workflows can pause on meaningful ambiguity without turning every small assumption into a
+full `grill-me` session. This decision does not change package scripts, runtime code, publish
+workflow behavior, installer behavior, secret-safety behavior, archive files, optional packs,
+release workflow, deployment workflow, or dependencies.
