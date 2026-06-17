@@ -166,6 +166,25 @@ Use the shortest format that preserves:
 
 Do not produce long reports when a short answer is enough. Do not compress away important uncertainty, warnings, or decisions.
 
+## Report Depth Levels
+
+Use the smallest report depth that preserves correctness and decision quality.
+
+- `Brief`: simple answers, confirmations, or work with no meaningful repository mutation.
+- `Standard`: normal planning, implementation, review, publish, or PR work.
+- `Detailed`: audits, architecture decisions, high-risk changes, ambiguous requirements,
+  user-requested deep analysis, or multi-step validation.
+
+Concise does not mean incomplete.
+
+Meaningful reports should preserve:
+
+- what changed, what was reviewed, or what was decided
+- validation status
+- risks, uncertainties, blockers, or scope deviations when present
+- external/global actions
+- next recommended step
+
 ## Durable Project Memory Loop
 
 After meaningful planning, implementation, debugging, review, publishing, installation, or major discussion, consider whether durable project memory should be updated.

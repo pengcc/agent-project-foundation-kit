@@ -113,6 +113,9 @@ If the user provides a specific handoff focus, optimize the handoff around that 
 
 ## Handoff Content Rules
 
+Use the Report Depth Levels from `agent-operating-contract`. Handoffs should be concise but
+complete enough for safe continuation; use Detailed only when continuity risk is high.
+
 A handoff should include:
 
 ```txt

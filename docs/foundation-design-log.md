@@ -1887,3 +1887,45 @@ kit/project-templates/AGENTS.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Report Depth Levels and Final Report Concision Contract
+
+Accepted decisions:
+
+1. Add shared Report Depth Levels to `agent-operating-contract`.
+2. Use `Brief`, `Standard`, and `Detailed` as lightweight depth choices.
+3. Keep concise output from becoming incomplete by preserving decisions, validation, risks or
+   blockers when present, external/global actions, and next recommended steps.
+4. Add only short references from high-output workflows.
+5. Do not duplicate the full report-depth convention across skills or rewrite existing workflow
+   report structures.
+
+Rationale:
+
+- give agents a shared way to scale output detail to task risk and complexity
+- prevent small tasks from producing noisy reports
+- prevent concise reports from omitting decisions, validation, risks, or external action status
+
+Non-goals:
+
+- no formal report template engine
+- no new skill, prompt, or rule file
+- no package scripts, runtime code, publish, installer, secret-safety, archive, release,
+  deployment, dependency, test, or generated-artifact changes
+- no broad rewrite of existing workflow report structures
+
+Resulting files / changes:
+
+```txt
+kit/rules/agent-operating-contract.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/code-review/SKILL.md
+kit/skills/core/codebase-audit/SKILL.md
+kit/skills/core/publish-current-branch/SKILL.md
+kit/skills/core/handoff/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

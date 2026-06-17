@@ -436,6 +436,9 @@ It does not approve, merge, apply, publish, or modify anything.
 
 ## Report Structure
 
+Use the Report Depth Levels from `agent-operating-contract`. Quick reviews may be Brief; formal
+reviews should be Standard or Detailed based on scope, risk, and finding complexity.
+
 Use this structure for formal reports:
 
 ```md
