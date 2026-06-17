@@ -1711,3 +1711,52 @@ Rationale:
 - release workflow
 - deployment workflow
 - deliberate reusable lesson/rule distillation from `.codex/project/lessons-learned.md` into `kit/`
+
+## Consolidation: Archive Bash Apply-Theme Helper
+
+Accepted decisions:
+
+1. Treat the Bash apply-theme helper as historical source-only tooling.
+2. Archive `scripts/apply-theme-zip.sh` under
+   `archive/legacy-bash-workflows/apply-theme-zip.sh`.
+3. Archive `scripts/lib/workflow-common.sh` under
+   `archive/legacy-bash-workflows/lib/workflow-common.sh`.
+4. Remove the active `apply-theme` package command.
+5. Remove active Bash apply-theme syntax checks from `pnpm check`.
+6. Use `publish:changes` as the canonical source-repository publish command instead of duplicate
+   `publish:local` / `publish:node` aliases.
+7. Do not add a Node apply-theme replacement in this cleanup.
+
+Rationale:
+
+- keep active workflow commands focused on maintained Node publish and installer paths
+- prevent future agents from planning against an active Bash apply-theme helper that no longer
+  exists under `scripts/`
+- preserve Bash apply-theme history under `archive/legacy-bash-workflows/` for source-only
+  reference
+
+Non-goals:
+
+- no publish secret-safety guard
+- no metadata parse or source hygiene implementation
+- no release or deployment workflow
+- no installer behavior change except removing expectations for archived Bash files
+- no optional specialist packs
+- no technology-specific skills
+- no Node apply-theme replacement
+
+Resulting files / changes:
+
+```txt
+README.md
+package.json
+tests/publish-changes/core.test.mjs
+tests/install-foundation-kit/flow.test.mjs
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+archive/legacy-bash-workflows/README.md
+archive/legacy-bash-workflows/apply-theme-zip.sh
+archive/legacy-bash-workflows/lib/workflow-common.sh
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

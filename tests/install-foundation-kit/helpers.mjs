@@ -40,6 +40,8 @@ export async function createFixtureKit(repoRoot) {
     'config/example.json': '{"enabled":true}\n',
     'github-settings/example.json': '{"private":true}\n',
     'scripts/publish-changes.mjs': 'console.log("publish");\n',
+    'scripts/shared/command-runner.mjs': 'export function createCommandRunner() {}\n',
+    'scripts/shared/git-client.mjs': 'export function createGitClient() {}\n',
   };
   for (const [relative, contents] of Object.entries(files)) {
     const path = resolve(kitRoot, relative);

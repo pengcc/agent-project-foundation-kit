@@ -1,7 +1,8 @@
 # Legacy Bash Workflows
 
-This directory preserves the Bash publish and installer implementations that were archived during
-Theme 18.2.
+This directory preserves Bash workflow implementations archived from the source repository,
+including the publish and installer implementations archived during Theme 18.2 and the later
+apply-theme helper cleanup.
 
 These files are historical reference material:
 
@@ -14,5 +15,6 @@ Existing downstream projects may still contain Bash files installed by an earlie
 Theme 18.2 does not remove those files automatically because downstream copies may contain local
 changes. Projects may remove them manually after confirming they are unused.
 
-The active Bash `apply-theme-zip.sh` workflow is not archived. Its helper remains source-only under
-`scripts/lib/`.
+The Bash `apply-theme-zip.sh` helper and its `workflow-common.sh` helper are now archived here as
+source-only historical references. Future apply-theme behavior should be planned as a Node.js
+workflow before being reintroduced.

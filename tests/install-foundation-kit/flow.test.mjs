@@ -99,6 +99,12 @@ describe('installer flow', () => {
       lstat(resolve(fixture.targetRoot, '.codex/scripts/publish-changes.sh')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(
+      lstat(resolve(fixture.targetRoot, '.codex/scripts/shared/command-runner.mjs')),
+    ).resolves.toBeTruthy();
+    await expect(
+      lstat(resolve(fixture.targetRoot, '.codex/scripts/shared/git-client.mjs')),
+    ).resolves.toBeTruthy();
+    await expect(
       lstat(resolve(fixture.targetRoot, '.codex/scripts/lib/workflow-common.sh')),
     ).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(lstat(resolve(fixture.targetRoot, 'archive'))).rejects.toMatchObject({
