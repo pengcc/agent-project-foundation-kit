@@ -123,13 +123,12 @@ describe('CLI options', () => {
 });
 
 describe('source repository package scripts', () => {
-  it('uses Node as the maintained publish command without a Bash alias', () => {
-    expect(packageJson.scripts['publish:local']).toBe(
+  it('uses publish:changes as the maintained publish command without Bash or duplicate aliases', () => {
+    expect(packageJson.scripts['publish:changes']).toBe(
       'node kit/scripts/publish-changes.mjs',
     );
-    expect(packageJson.scripts['publish:node']).toBe(
-      'node kit/scripts/publish-changes.mjs',
-    );
+    expect(packageJson.scripts['publish:local']).toBeUndefined();
+    expect(packageJson.scripts['publish:node']).toBeUndefined();
     expect(packageJson.scripts['publish:pr-only']).toBe(
       'node kit/scripts/publish-changes.mjs --mode pr-only',
     );
@@ -137,14 +136,14 @@ describe('source repository package scripts', () => {
       'node kit/scripts/publish-changes.mjs --mode merge-pr',
     );
     expect(packageJson.scripts['publish:bash']).toBeUndefined();
+    expect(packageJson.scripts['apply-theme']).toBeUndefined();
   });
 
-  it('keeps Node workflows, active apply-theme syntax, and whitespace checks in validation', () => {
+  it('keeps Node workflows and whitespace checks in validation', () => {
     expect(packageJson.scripts['test:publish']).toBe('pnpm test:publish:node');
     expect(packageJson.scripts['test:publish:bash']).toBeUndefined();
-    expect(packageJson.scripts.check).toContain(
-      'bash -n scripts/apply-theme-zip.sh scripts/lib/workflow-common.sh',
-    );
+    expect(packageJson.scripts.check).not.toContain('apply-theme-zip.sh');
+    expect(packageJson.scripts.check).not.toContain('workflow-common.sh');
     expect(packageJson.scripts.check).toContain('pnpm test:publish');
     expect(packageJson.scripts.check).toContain('pnpm test:install');
     expect(packageJson.scripts.check).toContain('git diff --check');

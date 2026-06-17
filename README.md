@@ -7,23 +7,23 @@ Source repository for the Codex Project Foundation Kit.
 This repository uses a private `package.json` as a short command façade:
 
 ```bash
-pnpm publish:local
-pnpm publish:local "Commit message"
-pnpm publish:local "Commit message" "PR title"
-pnpm publish:node "Commit message" "PR title"
+pnpm publish:changes
+pnpm publish:changes "Commit message"
+pnpm publish:changes "Commit message" "PR title"
 pnpm publish:pr-only "Commit message" "PR title"
 pnpm publish:merge-pr 123
 pnpm publish:merge-pr 123 --yes
 pnpm install:node -- --target /path/to/project
-pnpm apply-theme <zip-path-or-file-name> "Commit message"
 pnpm test:install
 pnpm test:publish
 pnpm check
 ```
 
-`publish:local`, `publish:node`, `publish:pr-only`, and `publish:merge-pr` run the maintained
-Node.js 24+ ESM publish CLI. `pnpm check` validates the Node publish and installer paths, active
-apply-theme Bash syntax, and whitespace.
+`publish:changes`, `publish:pr-only`, and `publish:merge-pr` run the maintained Node.js 24+ ESM
+publish CLI. `pnpm check` validates the Node publish and installer paths plus whitespace.
+Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
+historical reference. Future apply-theme behavior should be planned as a Node.js workflow before
+being reintroduced.
 
 ## Installer Commands
 
@@ -135,10 +135,11 @@ bold, so label bold is intentionally not configurable. Missing or invalid theme 
 warning and activates matching built-in defaults. Documentation should reference the config
 rather than duplicating its complete color table.
 
-Historical Bash publish and installer snapshots are retained under
+Historical Bash publish, installer, and apply-theme snapshots are retained under
 `archive/legacy-bash-workflows/` for source-only reference. They are unsupported, are outside
 `kit/`, and are never installed downstream. Existing downstream projects may still contain Bash
-files installed by older kit versions; this installer does not automatically delete them.
+files installed by older kit versions; this installer does not automatically delete them. Future
+apply-theme behavior should be planned as a Node.js workflow before being reintroduced.
 
 Reusable settings for downstream repositories are provided under:
 

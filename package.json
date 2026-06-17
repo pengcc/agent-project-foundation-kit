@@ -6,19 +6,17 @@
   },
   "packageManager": "pnpm@10.26.2",
   "scripts": {
-    "publish:local": "node kit/scripts/publish-changes.mjs",
-    "publish:node": "node kit/scripts/publish-changes.mjs",
+    "publish:changes": "node kit/scripts/publish-changes.mjs",
     "publish:pr-only": "node kit/scripts/publish-changes.mjs --mode pr-only",
     "publish:merge-pr": "node kit/scripts/publish-changes.mjs --mode merge-pr",
     "install:node": "node scripts/install-foundation-kit.mjs",
-    "apply-theme": "bash scripts/apply-theme-zip.sh",
     "test:install": "pnpm test:install:node",
     "test:install:node": "vitest run tests/install-foundation-kit",
     "test": "vitest run",
     "test:node": "vitest run",
     "test:publish": "pnpm test:publish:node",
     "test:publish:node": "vitest run tests/publish-changes",
-    "check": "pnpm test:publish && pnpm test:install && bash -n scripts/apply-theme-zip.sh scripts/lib/workflow-common.sh && git diff --check"
+    "check": "pnpm test:publish && pnpm test:install && git diff --check"
   },
   "dependencies": {
     "yaml": "^2.9.0"

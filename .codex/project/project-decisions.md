@@ -1646,3 +1646,38 @@ Future optional specialist work has a shared vocabulary and routing model, but t
 installable kit remains unchanged. Actual optional packs, technology-specific skills, installer
 support, release workflow, and deployment workflow remain future work requiring separate approved
 plans.
+
+## Decision: Source publish command is publish:changes and Bash apply-theme is archived
+
+### Status
+
+Accepted
+
+### Context
+
+The source repository no longer maintains the Bash apply-theme helper as active tooling. The
+source-repository publish command was also consolidated to avoid duplicate `publish:local` and
+`publish:node` aliases for the same maintained Node CLI.
+
+### Decision
+
+Use `pnpm publish:changes` as the canonical source-repository publish command. Keep
+`pnpm publish:pr-only`, `pnpm publish:merge-pr`, and `pnpm install:node` as explicit maintained
+commands.
+
+Archive the Bash apply-theme helper and its shared helper under:
+
+```txt
+archive/legacy-bash-workflows/apply-theme-zip.sh
+archive/legacy-bash-workflows/lib/workflow-common.sh
+```
+
+Remove the active `apply-theme` package command and remove active Bash apply-theme syntax checks
+from `pnpm check`.
+
+### Impact
+
+The active source-repository workflow surface is Node-first. Bash apply-theme remains source-only
+historical reference. This cleanup does not implement a Node apply-theme replacement, publish
+secret-safety guard, metadata parse validation, source hygiene validation, release/deployment
+workflow, optional specialist packs, technology-specific skills, or Node publish behavior changes.
