@@ -19,8 +19,8 @@ const DANGEROUS_PATH_RULES = [
 ];
 
 const SECRET_CONTENT_RULES = [
-  ['openai-api-key', /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g],
   ['anthropic-api-key', /\bsk-ant-[A-Za-z0-9_-]{20,}\b/g],
+  ['openai-api-key', /\bsk-(?!ant-)(?:proj-)?[A-Za-z0-9_-]{20,}\b/g],
   ['github-token', /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b/g],
   ['github-fine-grained-token', /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g],
   ['slack-token', /\bxox[abpr]-[A-Za-z0-9-]{20,}\b/g],
@@ -52,17 +52,11 @@ function isPlaceholderValue(value) {
   return PLACEHOLDER_VALUE_PATTERN.test(normalized);
 }
 
-function normalizeDiffLine(line) {
-  if (line.startsWith('+++ ') || line.startsWith('--- ')) return '';
-  if (line.startsWith('+') || line.startsWith('-')) return line.slice(1);
-  return line;
-}
-
 export function scanSecretSafety({ files = [], diff = '' } = {}) {
   const findings = [];
   for (const file of files) {
     const path = file.path || file;
-    if (!path || isTemplatePath(path)) continue;
+    if (!path || isTemplatePath(path) || file.status === 'D') continue;
     for (const [rule, pattern] of DANGEROUS_PATH_RULES) {
       if (pattern.test(path)) {
         findings.push({
@@ -87,9 +81,9 @@ export function scanSecretSafety({ files = [], diff = '' } = {}) {
       currentPath = fileMatch[1];
       continue;
     }
-    if (!rawLine.startsWith('+') && !rawLine.startsWith('-')) continue;
+    if (!rawLine.startsWith('+') || rawLine.startsWith('+++ ')) continue;
     if (isTemplatePath(currentPath)) continue;
-    const line = normalizeDiffLine(rawLine);
+    const line = rawLine.slice(1);
     if (!line) continue;
 
     for (const [rule, pattern] of SECRET_CONTENT_RULES) {

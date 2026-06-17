@@ -15,6 +15,16 @@ function diffFor(path, line) {
   ].join('\n');
 }
 
+function deletionDiffFor(path, line) {
+  return [
+    `diff --git a/${path} b/${path}`,
+    `--- a/${path}`,
+    `+++ b/${path}`,
+    '@@ -1 +0,0 @@',
+    `-${line}`,
+  ].join('\n');
+}
+
 describe('publish secret safety scanning', () => {
   it('blocks dangerous credential file paths', () => {
     const findings = scanSecretSafety({
@@ -48,6 +58,15 @@ describe('publish secret safety scanning', () => {
     expect(findings).toEqual([]);
   });
 
+  it('allows deleting dangerous credential file paths', () => {
+    const findings = scanSecretSafety({
+      files: [{ status: 'D', path: '.env' }],
+      diff: '',
+    });
+
+    expect(findings).toEqual([]);
+  });
+
   it('detects high-confidence provider token patterns without exposing full values', () => {
     const value = token('github_pat_', 32);
     const findings = scanSecretSafety({
@@ -61,6 +80,30 @@ describe('publish secret safety scanning', () => {
       rule: 'github-fine-grained-token',
     });
     expect(findings[0].preview).not.toContain(value);
+  });
+
+  it('does not scan deleted diff lines for content findings', () => {
+    const value = token('ghp_', 24);
+    const findings = scanSecretSafety({
+      files: [{ status: 'M', path: 'src/config.js' }],
+      diff: deletionDiffFor('src/config.js', `const value = "${value}";`),
+    });
+
+    expect(findings).toEqual([]);
+  });
+
+  it('classifies Anthropic keys before generic OpenAI-style keys', () => {
+    const value = token('sk-ant-', 24);
+    const findings = scanSecretSafety({
+      files: [{ status: 'M', path: 'src/config.js' }],
+      diff: diffFor('src/config.js', `const value = "${value}";`),
+    });
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({
+      path: 'src/config.js',
+      rule: 'anthropic-api-key',
+    });
   });
 
   it('allows placeholder credential assignments', () => {
