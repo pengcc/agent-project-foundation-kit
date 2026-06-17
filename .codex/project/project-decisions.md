@@ -787,8 +787,9 @@ The script must:
 - refresh the default branch only after a verified merge and explicit approval outside the `SMALL_SAFE` automatic path
 - create a backup branch and require typed `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
-Use a private dependency-free `package.json` for short local commands. Use `publish:local`,
-not `publish`, and do not add dependencies or a lockfile.
+At this stage, use a private dependency-free `package.json` for short local commands. Use
+`publish:local`, not `publish`, and do not add dependencies or a lockfile. This command naming
+was later superseded by the source publish command consolidation to `publish:changes`.
 
 Task-start guidance must also inspect current branch work and pause before mixing an unrelated task
 into a non-default branch with uncommitted changes, unpushed commits, or an open PR.
@@ -883,8 +884,9 @@ The `publish-current-branch` skill owns strategy, role routing, scope, authoriza
 reporting. Agents prefer the installed script for Git and GitHub mechanics and use the skill's
 manual procedure only when the script is unavailable.
 
-This source repository dogfoods the same implementation through thin compatibility wrappers under
-`scripts/`, preserving `pnpm publish:local` without maintaining a second publish implementation.
+This source repository dogfooded the same implementation through thin compatibility wrappers under
+`scripts/`, preserving the then-current `pnpm publish:local` alias without maintaining a second
+publish implementation. The source publish command was later consolidated to `publish:changes`.
 
 ### Impact
 
@@ -909,9 +911,10 @@ execution must not require an uninstalled package: when YAML support is unavaila
 warns, ignores the external policy file, and uses built-in conservative defaults.
 
 The installer maps `kit/config/` to `.codex/config/` and continues copying the complete scripts
-tree. The Bash implementation and `pnpm publish:local` remain the active fallback until the
-Vitest parity suite, existing Bash publish tests, installer tests, and manual CLI output review
-all pass.
+tree. At this stage, the Bash implementation and `pnpm publish:local` served as the fallback
+until the Vitest parity suite, existing Bash publish tests, installer tests, and manual CLI output
+review all passed. This fallback status was later superseded by the Node-first and Bash-archive
+decisions.
 
 Default-branch refresh is based on verified merge state rather than update classification. It may
 run only after GitHub reports a merge into the configured default branch. Diverged local default
@@ -944,10 +947,10 @@ Theme 17.4 manual smoke testing mostly validates the Node publish candidate for 
 use. `pnpm publish:node` completed a real publish flow smoothly, and the deliberate scope-drift
 scenario detected a changed worktree after scope collection and aborted before publishing.
 
-These results increase confidence in the candidate but do not change the default command.
-`pnpm publish:local` remains on the Bash fallback. Replacing that default requires a separate
-Theme 17.5 decision that reviews the complete smoke-test record, remaining gaps, downstream
-runtime packaging, and rollback expectations.
+These results increased confidence in the candidate but did not change the default command at
+that stage. `pnpm publish:local` stayed on the Bash fallback at that stage until the later Theme
+17.5 cutover decision reviewed the complete smoke-test record, remaining gaps, downstream runtime
+packaging, and rollback expectations.
 
 ### Impact
 
@@ -963,18 +966,19 @@ Accepted
 
 ### Decision
 
-`pnpm publish:local` and the explicit `pnpm publish:node` alias run the Node.js 24+ ESM publish
-CLI. `pnpm publish:bash` retains `scripts/publish-local-change.sh` as the supported operational
-fallback.
+At this stage, `pnpm publish:local` and the explicit `pnpm publish:node` alias ran the Node.js
+24+ ESM publish CLI. `pnpm publish:bash` retained `scripts/publish-local-change.sh` as the
+supported operational fallback. These aliases were later superseded by the source publish command
+consolidation to `publish:changes`, `publish:pr-only`, and `publish:merge-pr`.
 
 The Bash implementation is not removed. Node Vitest coverage, existing Bash publish tests,
 installer tests, remaining shell syntax checks, and whitespace validation stay in `pnpm check`
 until Bash is deliberately removed in a later theme.
 
-A real source-repository publish completed successfully through the post-cutover
-`pnpm publish:local` Node default. This validates Theme 17.5 for current source-repository use but
-does not authorize removing `pnpm publish:bash`. Continue dogfooding the Node default for several
-more real updates before reviewing fallback removal as a separate decision.
+A real source-repository publish completed successfully through the then-current post-cutover
+`pnpm publish:local` Node default. This validated Theme 17.5 for source-repository use at that
+time but did not authorize removing `pnpm publish:bash`. The fallback-removal question was later
+resolved by Node-first automation and Bash archive decisions.
 
 The installer continues copying both implementations without creating or modifying a downstream
 `package.json`. Downstream projects may run the installed Node CLI directly when runtime
@@ -1106,10 +1110,10 @@ The Node candidate has been exercised manually in a downstream installation scen
 test looked good and exposed no blocking issue, so Theme 18.1 is validated enough for continued
 Node installer dogfooding.
 
-This evidence does not change the active/default installer. Bash remains active until a separate
-Theme 18.2 decision considers a Node-first workflow and an explicit Bash archive plan. If later
-dogfooding finds a Node installer defect, prefer correcting the Node implementation rather than
-retreating from the candidate without analysis.
+This evidence did not change the active/default installer at that stage. Bash stayed active until
+the later Theme 18.2 decision considered a Node-first workflow and an explicit Bash archive plan.
+If later dogfooding found a Node installer defect, the preferred path was correcting the Node
+implementation rather than retreating from the candidate without analysis.
 
 ## Decision: Theme 18.2 standardizes Node-first automation and archives legacy Bash workflows
 
@@ -1124,8 +1128,9 @@ Node installer candidate passed automated coverage and a downstream smoke test. 
 publish and installer implementations in parallel now duplicates workflow behavior and validation
 without providing the preferred defect-fix path.
 
-The active apply-theme workflow still uses Bash and previously depended on a helper shared with
-the legacy publish path.
+At this stage, the apply-theme workflow still used Bash and previously depended on a helper
+shared with the legacy publish path. The apply-theme Bash helper was later archived as
+source-only history.
 
 ### Decision
 
@@ -1143,11 +1148,13 @@ installed downstream. Active Bash publish and installer aliases, tests, wrappers
 payload files are removed. Existing downstream projects may retain files installed by earlier
 versions; the Node installer does not automatically delete them.
 
-`scripts/apply-theme-zip.sh` remains active Bash tooling. Its required helper is source-owned at
-`scripts/lib/workflow-common.sh`, so it does not depend on archived or installable Bash files.
+At this stage, `scripts/apply-theme-zip.sh` remained active Bash tooling. Its required helper was
+source-owned at `scripts/lib/workflow-common.sh`, so it did not depend on archived or installable
+Bash files. This active status was later superseded by the Bash apply-theme archive decision.
 
-`pnpm check` validates Node publish tests, Node installer tests, active apply-theme shell syntax,
-and whitespace.
+At this stage, `pnpm check` validated Node publish tests, Node installer tests, apply-theme shell
+syntax, and whitespace. That apply-theme shell syntax validation was later removed when the Bash
+helper was archived.
 
 ### Impact
 
@@ -1239,10 +1246,11 @@ Accepted
 
 ### Context
 
-The classified `publish:local` workflow remains appropriate when an agent needs update
-classification, validation evidence, completion-mode selection, and policy-controlled merge
-handling. Review-fix publishing and deliberate merge of an already reviewed PR need smaller,
-explicit workflows without duplicating the Node publish implementation.
+At this stage, the classified `publish:local` workflow was appropriate when an agent needed
+update classification, validation evidence, completion-mode selection, and policy-controlled
+merge handling. Review-fix publishing and deliberate merge of an already reviewed PR needed
+smaller, explicit workflows without duplicating the Node publish implementation. The source
+publish command was later consolidated to `publish:changes`.
 
 ### Decision
 
@@ -1263,7 +1271,8 @@ target, open/non-draft state, mergeability, required checks, and unchanged head 
 merge. `--yes` skips only human confirmation. Refresh occurs only after verified merge and is
 fast-forward only; this mode never uses admin bypass or hard-reset recovery.
 
-The existing `publish:local` and `publish:node` command behavior remains unchanged.
+At this stage, the existing `publish:local` and `publish:node` command behavior was unchanged.
+These aliases were later superseded by the source publish command consolidation.
 
 ### Impact
 

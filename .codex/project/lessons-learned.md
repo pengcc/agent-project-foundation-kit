@@ -638,9 +638,11 @@ and more focused testability.
 
 ### Lesson
 
-Bash remains effective for small, linear command glue such as the active apply-theme workflow.
-Once a script owns substantial state or safety-critical orchestration, continuing to add shell
-branches can make correctness and local testing disproportionately difficult.
+Bash remains effective for small, linear command glue such as the historical apply-theme workflow.
+The source repository now treats that Bash helper as archived source-only history, while active
+workflow tooling is Node-first. Once a script owns substantial state or safety-critical
+orchestration, continuing to add shell branches can make correctness and local testing
+disproportionately difficult.
 
 Runtime reassessment should happen when complexity signals first appear, not only after a large
 script becomes expensive to replace. Agents should surface the tradeoff, research an appropriate

@@ -418,7 +418,6 @@ Current publish workflow architecture:
 - refresh the default branch only after a verified merge; require explicit refresh approval outside the `SMALL_SAFE` automatic path
 - create a backup branch and require `RESET_MAIN_TO_ORIGIN` before hard-reset recovery
 
-Current Node publish default behavior:
 
 - require Node.js 24+
 - keep reusable command, Git, GitHub, error, and output modules under `kit/scripts/shared/`
@@ -432,14 +431,15 @@ Current Node publish default behavior:
 - reject YAML policies that remove immutable Normal or Significant validation/review gates
 - verify stale default-branch state and require confirmation before continuing
 - refresh the default branch only after verified merge state, independent of classification
-- manual Theme 17.4 smoke testing has mostly validated real `pnpm publish:node` usage and found
-  the interaction flow smooth after minor message/UX correction
+- manual Theme 17.4 smoke testing validated real Node publish CLI usage through the then-current
+  `pnpm publish:node` alias and found the interaction flow smooth after minor message/UX correction
 - manual scope-drift testing passed: changes introduced after scope collection were detected and
   publishing aborted before commit, push, or PR actions
 - use `pnpm publish:changes` as the canonical source-repository publish command
 - keep Node publish tests, Node installer tests, and whitespace checks in `pnpm check`
-- a real post-cutover `pnpm publish:local` run completed successfully using the Node default
-  before the command was consolidated to `publish:changes`
+- a real post-cutover publish run completed successfully through the then-current
+  `pnpm publish:local` alias before the source publish command was consolidated to
+  `publish:changes`
 - consider Theme 17.5 post-cutover validated for source-repository usage
 - load publish output styles from `kit/config/publish-cli-theme.json` in the source repository and
   `.codex/config/publish-cli-theme.json` after installation
@@ -558,7 +558,6 @@ The installer should not copy this repo's own `.codex/project/` into downstream 
 
 ## 9. Testing and Validation
 
-Current validation is mostly file/content based:
 
 - Check generated zip contents
 - Check line counts before/after apply
@@ -567,7 +566,7 @@ Current validation is mostly file/content based:
 - Check diff stats before commit
 - Verify remote raw GitHub file line counts after push when needed
 - Prefer PR review for high-risk or multi-file theme updates
-- Run `pnpm check` for shell syntax, installer tests, publish workflow tests, and whitespace validation
+- Run `pnpm check` for publish workflow tests, installer tests, and whitespace validation
 - Verify the complete Project Memory Context Gate sequence and status meanings exist only in
   `kit/skills/core/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills contain
   short references only
@@ -733,7 +732,8 @@ Completed:
 - Theme 17.4 Node publish CLI smoke-test stabilization
     - representative real publish paths and deliberate scope-drift protection validated manually
 - Theme 17.5 Node publish default cutover
-    - `pnpm publish:local` and `pnpm publish:node` use the Node CLI
+    - the then-current `pnpm publish:local` and `pnpm publish:node` aliases used the Node CLI before
+      later consolidation to `pnpm publish:changes`
     - `pnpm publish:bash` retains the supported Bash fallback
     - `pnpm check` validates both implementations, installer behavior, shell syntax, and whitespace
     - post-cutover source-repository dogfood publish completed successfully
