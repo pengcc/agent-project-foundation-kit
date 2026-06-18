@@ -71,7 +71,7 @@ This distinction is critical. Foundation-kit-specific development history should
 
 ### 3.2 Current Installed Skills
 
-The current core workflow and context skills are:
+The current core workflow, context, and supporting skills are:
 
 ```text
 agent-roles-and-capabilities
@@ -84,10 +84,11 @@ plan-with-context
 project-architecture-plan
 project-memory
 publish-current-branch
+ui-design-basics
 update-project-memory
 ```
 
-The current productivity and supporting skills are:
+The current productivity skills are:
 
 ```text
 grill-me
@@ -813,12 +814,17 @@ Status: implemented/current through Phase 5.
 Phase 5 added lightweight UI quality and design-system reuse guidance without creating a new UI
 workflow, rule file, component library, design system package, or technology-specific UI skill.
 
+Practical baseline UI guidance for concrete pages, screens, flows, forms, layout clarity, UI
+states, and existing-system reuse is now covered by the framework-agnostic core supporting skill
+`ui-design-basics`.
+
 ### 12.1 Implemented Surface
 
 Canonical guidance now lives in:
 
 ```text
 kit/rules/engineering-quality-principles.md
+kit/skills/core/ui-design-basics/SKILL.md
 ```
 
 Short workflow references live in:

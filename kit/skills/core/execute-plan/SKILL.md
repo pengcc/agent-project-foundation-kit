@@ -106,6 +106,7 @@ substep:
 ```txt
 skill creation/refinement -> write-a-skill
 external technical facts -> docs-first-research
+concrete UI screen/flow/form implementation -> ui-design-basics
 durable memory write -> update-project-memory
 concrete diff/PR/package review -> code-review
 repo-wide audit -> codebase-audit

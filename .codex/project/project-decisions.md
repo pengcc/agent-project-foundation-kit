@@ -1859,3 +1859,46 @@ microservices, CQRS, framework-specific composition, or a broad security handboo
 Planning, implementation, and review receive stronger reusable boundary guidance without changing
 workflow routing, project templates, runtime behavior, tooling, dependencies, or tests. Further
 optimization should follow concrete downstream project experience.
+
+## Decision: UI design basics is a core supporting skill
+
+### Status
+
+Accepted
+
+### Context
+
+Most downstream software projects need practical baseline guidance for UI clarity, hierarchy,
+states, content, and reuse even when they do not have a dedicated design specialist or a mature
+design system.
+
+### Decision
+
+Add `ui-design-basics` as a framework-agnostic core supporting skill. Keep it bounded guidance
+inside planning, execution, review, and architecture workflows; it must not replace those
+workflows or provide standalone architecture direction, implementation approval, or review
+verdicts.
+
+Treat shadcn/ui support as detection-based existing-system reuse. Apply it only when repository
+evidence confirms shadcn/ui and the active project approves the relevant changes or tooling; do
+not make shadcn/ui mandatory.
+
+Defer React, Next.js, TanStack, and shadcn specialist skills until concrete downstream project
+experience demonstrates stable reusable needs. External skills and discovery platforms remain
+research sources only. Installing an external skill, plugin, MCP server, CLI, or other tool
+requires explicit user approval.
+
+### Impact
+
+Downstream projects gain practical baseline UI guidance without expanding the core skill into
+professional design, accessibility certification, framework specialization, or automatic external
+tool installation.
+
+### Related files
+
+```txt
+kit/skills/core/ui-design-basics/SKILL.md
+kit/skills/core/ui-design-basics/metadata.yml
+kit/prompts/force-ui-design-basics.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+```

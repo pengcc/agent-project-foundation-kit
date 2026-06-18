@@ -327,7 +327,8 @@ Purpose: Implement and reason about client-side UI, state, routing, components, 
 
 Focus: component structure, state flow, rendering behavior, accessibility basics, responsive behavior, error/empty/loading states.
 
-Supporting skills: execute-plan, code-review, docs-first-research for framework/API facts.
+Supporting skills: ui-design-basics, execute-plan, code-review, docs-first-research for
+framework/API facts.
 
 Boundaries: does not invent backend API contracts or claim framework-specific expertise without skill/docs.
 
