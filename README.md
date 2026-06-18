@@ -13,7 +13,7 @@ pnpm publish:changes "Commit message" "PR title"
 pnpm publish:pr-only "Commit message" "PR title"
 pnpm publish:merge-pr 123
 pnpm publish:merge-pr 123 --yes
-pnpm install:node -- --target /path/to/project
+pnpm install:node --target /path/to/project
 pnpm test:install
 pnpm test:publish
 pnpm format
@@ -47,10 +47,12 @@ being reintroduced.
 The Node.js 24+ ESM installer is maintained source-repository tooling:
 
 ```bash
-pnpm install:node -- --target /path/to/downstream-project
-pnpm install:node -- --target /path/to/downstream-project --apply
-pnpm install:node -- --target /path/to/downstream-project --project-mode existing
+pnpm install:node --target /path/to/downstream-project
+pnpm install:node --target /path/to/downstream-project --apply
+pnpm install:node --target /path/to/downstream-project --project-mode existing
 ```
+
+When using pnpm's direct script shortcut, pass installer flags directly as shown above. If using the explicit `pnpm run` form, use pnpm's separator instead: `pnpm run install:node -- --target /path/to/downstream-project`.
 
 The installer defaults to dry-run. It reads installable content only from `kit/`
 and never installs its own `scripts/install-foundation-kit.mjs` entrypoint or installer-specific
