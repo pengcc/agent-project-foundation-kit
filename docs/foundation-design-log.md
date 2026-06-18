@@ -1929,3 +1929,38 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Engineering Quality Principles Minimal Strengthening
+
+Accepted decisions:
+
+1. Add `Composable Boundaries and Extension Seams` to favor focused units, explicit contracts,
+   visible dependency direction, and demonstrated variation before extension points.
+2. Add `Configuration, Secrets, and Security Boundaries` to separate deploy-varying configuration
+   and secrets from code and keep security-sensitive behavior small and auditable.
+3. Prefer secure defaults, least privilege, established libraries or patterns, and docs-first
+   verification for security-sensitive behavior.
+4. Preserve the existing simplicity and anti-overengineering direction.
+
+Rationale:
+
+- strengthen broadly reusable engineering boundaries before downstream adoption
+- close narrow composition, dependency, configuration, secret, and security-boundary gaps
+- leave further optimization to concrete downstream project experience
+
+Non-goals:
+
+- no technology-specific framework rules
+- no plugin architecture, dependency-injection container, mandatory layering, microservices, or
+  CQRS guidance
+- no security handbook or custom security mechanism guidance
+- no workflow, template, runtime, tooling, dependency, archive, or test changes
+
+Resulting files / changes:
+
+```txt
+kit/rules/engineering-quality-principles.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
