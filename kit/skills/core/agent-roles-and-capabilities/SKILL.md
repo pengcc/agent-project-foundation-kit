@@ -88,7 +88,9 @@ These categories cover HTML, CSS, JavaScript, React, Next.js, Vue, TanStack, Typ
 
 Theme 9 defines generic roles only.
 
-Technology-specific expert skills such as Next.js, TanStack, Vue, NestJS, SFCC, Adyen, Prisma, Drizzle, PostgreSQL, SQLite, or MongoDB remain future skills.
+Technology-specific expert skills such as Next.js, Vue, NestJS, SFCC, Adyen, Prisma, Drizzle,
+PostgreSQL, SQLite, or MongoDB remain future skills. TanStack Router and Query guidance is
+available only through `tanstack-router-query-patterns` when installed or explicitly adopted.
 
 If those skills are not installed, use generic roles and support technical claims with repo facts and `docs-first-research`.
 
@@ -338,8 +340,9 @@ Purpose: Work through framework-specific frontend behavior using generic capabil
 
 Use when: React, Next.js, Vue, TanStack, routing, rendering, hydration, caching, or framework conventions matter.
 
-Supporting skills: docs-first-research, react-component-patterns when installed or explicitly
-adopted, future technology-specific skills.
+Supporting skills: docs-first-research; react-component-patterns and
+tanstack-router-query-patterns when installed or explicitly adopted; future technology-specific
+skills.
 
 Boundaries: not a real framework expert unless a relevant technology-specific skill is installed and used.
 

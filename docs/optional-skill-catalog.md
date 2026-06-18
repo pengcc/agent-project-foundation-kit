@@ -170,7 +170,15 @@ Installer support is future work and requires a separate approved plan.
 | ID | Name | Category | Maturity | Install default | Adaptation status | Recommended next workflow |
 | --- | --- | --- | --- | --- | --- | --- |
 | react-component-patterns | React Component Patterns | technology / framework | experimental | never | implemented | plan-with-context for explicit project adoption |
+| tanstack-router-query-patterns | TanStack Router and Query Patterns | technology / framework | experimental | never | implemented | plan-with-context for explicit project adoption |
 
 `react-component-patterns` requires React dependency or source evidence. It covers component and
 local-state implementation only; Next.js, React Server Components, TanStack, shadcn/ui, Tailwind,
 testing, architecture, and data fetching remain separate concerns.
+
+`tanstack-router-query-patterns` requires explicit adoption plus a TanStack Router or TanStack
+Query project signal, or an explicit user request. It covers routing, URL/search state, loaders,
+navigation, server-state queries, mutations, caching, and invalidation. Other TanStack libraries,
+TanStack Start, Next.js, React Server Components, backend/API/database/authentication design,
+testing strategy, full frontend architecture, React local state, and visual design remain separate
+concerns.
