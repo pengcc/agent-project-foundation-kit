@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { runMergePrFlow } from "../../kit/scripts/publish-changes/merge-pr-flow.mjs";
 import { runPrOnlyFlow } from "../../kit/scripts/publish-changes/pr-only-flow.mjs";
+import { PublishError } from "../../kit/scripts/shared/errors.mjs";
 
 function createOutput() {
   const messages = [];
@@ -294,7 +295,15 @@ describe("PR-only flow", () => {
   });
 });
 
-function createMergeHarness({ yes = false, canFastForward = true, checks = [] } = {}) {
+function createMergeHarness({
+  yes = false,
+  autoMerge = false,
+  canFastForward = true,
+  checks = [],
+  checksSequence = null,
+  mergeAfterView = 4,
+  mergeError = null,
+} = {}) {
   const calls = [];
   const promptEvents = [];
   let viewCount = 0;
@@ -337,11 +346,13 @@ function createMergeHarness({ yes = false, canFastForward = true, checks = [] } 
     repoName: async () => "owner/repo",
     viewPullRequest: async () => {
       viewCount += 1;
-      return viewCount >= 4 ? mergedPr : openPr;
+      return viewCount >= mergeAfterView ? mergedPr : openPr;
     },
-    requiredChecks: vi.fn(async () => checks),
-    merge: async (_repo, number, options) =>
-      calls.push(`merge:${number}:${options.headSha}:${options.auto}`),
+    requiredChecks: vi.fn(async () => checksSequence?.shift() ?? checks),
+    merge: async (_repo, number, options) => {
+      if (mergeError) throw mergeError;
+      calls.push(`merge:${number}:${options.headSha}:${options.auto}`);
+    },
   };
   const prompts = {
     confirm: async (message) => {
@@ -356,7 +367,7 @@ function createMergeHarness({ yes = false, canFastForward = true, checks = [] } 
     gh,
     prompts,
     output: createOutput(),
-    options: { mode: "merge-pr", prNumber: 23, yes },
+    options: { mode: "merge-pr", prNumber: 23, yes, autoMerge },
   };
 }
 
@@ -378,6 +389,7 @@ describe("merge-PR flow", () => {
     expect(result.report).toMatchObject({
       prNumber: 23,
       mergeStatus: "verified merged",
+      autoMergeStatus: "not enabled",
       refreshStatus: "refreshed with fast-forward only",
       currentBranch: "main",
     });
@@ -421,7 +433,7 @@ describe("merge-PR flow", () => {
     expect(harness.calls).toEqual([]);
   });
 
-  it("blocks pending required checks before merge", async () => {
+  it("blocks pending required checks with guidance before merge", async () => {
     const harness = createMergeHarness({ checks: [{ bucket: "pending", state: "PENDING" }] });
     await expect(
       runMergePrFlow({
@@ -429,8 +441,122 @@ describe("merge-PR flow", () => {
         env: {},
         sleep: async () => {},
       }),
-    ).rejects.toThrow("Required checks are pending");
+    ).rejects.toThrow("wait and rerun merge-pr, or use --auto-merge");
     expect(harness.calls.some((call) => call.startsWith("merge:"))).toBe(false);
+  });
+
+  it("enables auto-merge for pending checks without polling or refreshing locally", async () => {
+    const harness = createMergeHarness({
+      autoMerge: true,
+      checks: [{ bucket: "pending", state: "PENDING" }],
+      mergeAfterView: Number.POSITIVE_INFINITY,
+    });
+    const result = await runMergePrFlow({
+      ...harness,
+      env: {},
+      sleep: async () => {},
+    });
+    expect(harness.promptEvents).toEqual([
+      "confirm:Complete PR #23 with squash merge now if ready, or enable auto-merge if required checks are pending?",
+    ]);
+    expect(harness.calls).toEqual(["merge:23:reviewed-head:true"]);
+    expect(result).toMatchObject({
+      status: "auto-merge-enabled",
+      report: {
+        prNumber: 23,
+        autoMergeStatus: "enabled; GitHub will merge after requirements pass",
+        refreshStatus: "not attempted; PR remains open and local branch is unchanged",
+        currentBranch: "feature/reviewed",
+      },
+    });
+  });
+
+  it("uses the immediate merge path when checks pass with --auto-merge", async () => {
+    const harness = createMergeHarness({ yes: true, autoMerge: true });
+    const result = await runMergePrFlow({
+      ...harness,
+      env: {},
+      sleep: async () => {},
+    });
+    expect(harness.calls).toEqual([
+      "merge:23:reviewed-head:false",
+      "fetch",
+      "switch:main",
+      "pull:main",
+    ]);
+    expect(result.report.autoMergeStatus).toBe("not enabled");
+  });
+
+  it("revalidates pending checks and merges immediately if they pass before execution", async () => {
+    const harness = createMergeHarness({
+      yes: true,
+      autoMerge: true,
+      checksSequence: [[{ bucket: "pending", state: "PENDING" }], []],
+    });
+    await runMergePrFlow({ ...harness, env: {}, sleep: async () => {} });
+    expect(harness.calls).toContain("merge:23:reviewed-head:false");
+  });
+
+  it("refreshes main when GitHub reports a verified merge after the auto-merge request", async () => {
+    const harness = createMergeHarness({
+      yes: true,
+      autoMerge: true,
+      checks: [{ bucket: "pending", state: "PENDING" }],
+    });
+    const result = await runMergePrFlow({
+      ...harness,
+      env: {},
+      sleep: async () => {},
+    });
+    expect(harness.calls).toEqual([
+      "merge:23:reviewed-head:true",
+      "fetch",
+      "switch:main",
+      "pull:main",
+    ]);
+    expect(result.report.autoMergeStatus).toContain("already merged");
+  });
+
+  it("reports AUTO_MERGE_FAILED and leaves local state unchanged when GitHub rejects it", async () => {
+    const harness = createMergeHarness({
+      yes: true,
+      autoMerge: true,
+      checks: [{ bucket: "pending", state: "PENDING" }],
+      mergeError: new PublishError("COMMAND_FAILED", "auto-merge is disabled", {
+        result: { stderr: "repository does not allow auto-merge" },
+      }),
+    });
+    await expect(
+      runMergePrFlow({ ...harness, env: {}, sleep: async () => {} }),
+    ).rejects.toMatchObject({
+      type: "AUTO_MERGE_FAILED",
+      message: expect.stringMatching(/remains open.*settings.*permissions.*eligibility.*disabled/i),
+      details: {
+        causeType: "COMMAND_FAILED",
+        causeDetails: { result: { stderr: "repository does not allow auto-merge" } },
+      },
+    });
+    expect(harness.calls).toEqual([]);
+  });
+
+  it("blocks a closed, unmerged PR after an auto-merge request", async () => {
+    const harness = createMergeHarness({
+      yes: true,
+      autoMerge: true,
+      checks: [{ bucket: "pending", state: "PENDING" }],
+      mergeAfterView: Number.POSITIVE_INFINITY,
+    });
+    let views = 0;
+    const originalView = harness.gh.viewPullRequest;
+    harness.gh.viewPullRequest = async (...args) => {
+      views += 1;
+      const pr = await originalView(...args);
+      return views === 4 ? { ...pr, state: "CLOSED" } : pr;
+    };
+    await expect(runMergePrFlow({ ...harness, env: {}, sleep: async () => {} })).rejects.toThrow(
+      "CLOSED without verified merge",
+    );
+    expect(harness.calls).toEqual(["merge:23:reviewed-head:true"]);
   });
 
   it("blocks a changed remote head after metadata display", async () => {

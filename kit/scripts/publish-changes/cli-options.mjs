@@ -8,6 +8,7 @@ export function parseCliOptions(argv) {
     prTitleExplicit: false,
     prNumber: null,
     yes: false,
+    autoMerge: false,
     showDiff: false,
     verbose: false,
     policyPath: "",
@@ -20,6 +21,7 @@ export function parseCliOptions(argv) {
     if (value === "--show-diff") options.showDiff = true;
     else if (value === "--verbose") options.verbose = true;
     else if (value === "--yes") options.yes = true;
+    else if (value === "--auto-merge") options.autoMerge = true;
     else if (value === "--help" || value === "-h") options.help = true;
     else if (value === "--mode") {
       index += 1;
@@ -42,6 +44,12 @@ export function parseCliOptions(argv) {
   if (options.yes && options.mode !== "merge-pr") {
     throw new PublishError("INVALID_ARGUMENT", "--yes is supported only with merge-pr mode.");
   }
+  if (options.autoMerge && options.mode !== "merge-pr") {
+    throw new PublishError(
+      "INVALID_ARGUMENT",
+      "--auto-merge is supported only with merge-pr mode.",
+    );
+  }
   if (options.policyPath && options.mode !== "publish") {
     throw new PublishError("INVALID_ARGUMENT", "--policy is supported only with publish mode.");
   }
@@ -49,7 +57,7 @@ export function parseCliOptions(argv) {
     if (options.showDiff || options.policyPath) {
       throw new PublishError(
         "INVALID_ARGUMENT",
-        "merge-pr supports only --yes, --verbose, and --help.",
+        "merge-pr supports only --yes, --auto-merge, --verbose, and --help.",
       );
     }
     if (options.help) return options;
@@ -81,12 +89,13 @@ export function usage() {
     "Usage:",
     '  node .codex/scripts/publish-changes.mjs [options] ["Commit message"] ["PR title"]',
     '  node .codex/scripts/publish-changes.mjs --mode pr-only [options] ["Commit message"] ["PR title"]',
-    "  node .codex/scripts/publish-changes.mjs --mode merge-pr <pr-number> [--yes] [--verbose]",
+    "  node .codex/scripts/publish-changes.mjs --mode merge-pr <pr-number> [--auto-merge] [--yes] [--verbose]",
     "",
     "Options:",
     "  --show-diff    Print the full relevant diff",
     "  --mode MODE    Use publish, pr-only, or merge-pr mode",
     "  --yes          Skip only the merge-pr human confirmation",
+    "  --auto-merge   Enable PR auto-merge only when required checks are pending",
     "  --verbose      Print DEBUG output",
     "  --policy PATH  Use a specific YAML policy file",
     "  -h, --help     Show this help",

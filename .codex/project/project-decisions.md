@@ -2089,3 +2089,32 @@ documentation; never copy project memory automatically.
 ### Impact
 
 Reusable guidance, source history, and downstream memory remain cleanly separated.
+
+## Decision: Explicit merge-PR auto-merge waits for pending requirements
+
+### Status
+
+Accepted
+
+### Context
+
+Explicit PR-number merge safely stopped when required checks were pending, but callers had to wait
+and rerun the command even when the repository supported GitHub auto-merge.
+
+### Decision
+
+Add public `--auto-merge` only to `--mode merge-pr`, with source alias
+`publish:merge-pr:auto`. Passed checks retain the existing immediate squash-merge path. Pending
+checks request GitHub PR-level auto-merge using squash and expected-head protection, then read the
+PR once. Refresh the default branch only when that read verifies a merge; otherwise report the
+open waiting PR and leave the local branch unchanged. Failed or unknown checks, changed heads,
+drafts, conflicts, dirty worktrees, and wrong bases remain blocking.
+
+Repository-level **Allow auto-merge** permits the feature but does not enable it per PR. The option
+is never inferred, never bypasses checks or reviews, and is invalid for normal publish and PR-only
+modes. Downstream package aliases remain optional manual setup; the installer does not add them.
+
+### Impact
+
+Users can explicitly delegate the wait for required checks and reviews to GitHub without adding a
+second merge implementation or weakening merge safety.

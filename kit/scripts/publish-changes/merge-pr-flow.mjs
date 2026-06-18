@@ -16,7 +16,7 @@ function showPullRequestMetadata(output, pr) {
   output.info(`Mergeability: ${pr.mergeable}`);
 }
 
-async function validateMergeCandidate({ gh, repo, prNumber, defaultBranch, expected }) {
+async function validateMergeCandidate({ gh, repo, prNumber, defaultBranch, expected, checkMode }) {
   const pr = await gh.viewPullRequest(repo, prNumber);
   const headBranch = expected?.headRefName || pr.headRefName;
   const headSha = expected?.headRefOid || pr.headRefOid;
@@ -26,8 +26,16 @@ async function validateMergeCandidate({ gh, repo, prNumber, defaultBranch, expec
     headSha,
   });
   const checks = await gh.requiredChecks(repo, pr.number);
-  evaluateRequiredChecks(checks, "immediate");
-  return pr;
+  const checkState = evaluateRequiredChecks(checks, checkMode);
+  return { pr, checkState };
+}
+
+function autoMergeFailure(error, prNumber) {
+  return new PublishError(
+    "AUTO_MERGE_FAILED",
+    `GitHub did not enable auto-merge for PR #${prNumber}; the PR remains open. Check repository auto-merge settings, permissions, and PR eligibility. ${error.message}`,
+    { causeType: error.type, causeDetails: error.details },
+  );
 }
 
 export async function runMergePrFlow({
@@ -58,24 +66,30 @@ export async function runMergePrFlow({
   const repo = await gh.repoName();
   const displayedPr = await gh.viewPullRequest(repo, options.prNumber);
   showPullRequestMetadata(output, displayedPr);
+  const checkMode = options.autoMerge ? "auto" : "immediate";
   await validateMergeCandidate({
     gh,
     repo,
     prNumber: displayedPr.number,
     defaultBranch,
     expected: displayedPr,
+    checkMode,
   });
 
-  if (!options.yes && !(await prompts.confirm(`Squash merge PR #${displayedPr.number}?`))) {
+  const confirmation = options.autoMerge
+    ? `Complete PR #${displayedPr.number} with squash merge now if ready, or enable auto-merge if required checks are pending?`
+    : `Squash merge PR #${displayedPr.number}?`;
+  if (!options.yes && !(await prompts.confirm(confirmation))) {
     throw new PublishError("USER_CANCELLED", "Pull request merge was not approved.");
   }
 
-  const mergePr = await validateMergeCandidate({
+  const { pr: mergePr, checkState } = await validateMergeCandidate({
     gh,
     repo,
     prNumber: displayedPr.number,
     defaultBranch,
     expected: displayedPr,
+    checkMode,
   });
   if (await git.status()) {
     throw new PublishError(
@@ -84,19 +98,51 @@ export async function runMergePrFlow({
     );
   }
 
-  await gh.merge(repo, mergePr.number, {
-    auto: false,
-    headSha: displayedPr.headRefOid,
-  });
-  const verifiedPr = await pollForVerifiedMerge({
-    gh,
-    repo,
-    prNumber: mergePr.number,
-    defaultBranch,
-    attempts: Number(env.PUBLISH_MERGE_POLL_ATTEMPTS || 12),
-    intervalMs: Number(env.PUBLISH_MERGE_POLL_INTERVAL_MS || 5000),
-    sleep,
-  });
+  const enableAutoMerge = options.autoMerge && checkState.pending;
+  try {
+    await gh.merge(repo, mergePr.number, {
+      auto: enableAutoMerge,
+      headSha: displayedPr.headRefOid,
+    });
+  } catch (error) {
+    if (enableAutoMerge) throw autoMergeFailure(error, mergePr.number);
+    throw error;
+  }
+
+  let verifiedPr;
+  if (enableAutoMerge) {
+    const afterRequest = await gh.viewPullRequest(repo, mergePr.number);
+    if (afterRequest.mergedAt && afterRequest.baseRefName === defaultBranch) {
+      verifiedPr = afterRequest;
+    } else if (afterRequest.state === "OPEN") {
+      const currentBranch = await git.branch();
+      const report = {
+        prNumber: afterRequest.number,
+        prUrl: afterRequest.url || displayedPr.url,
+        mergeStatus: "waiting for required checks and reviews",
+        autoMergeStatus: "enabled; GitHub will merge after requirements pass",
+        refreshStatus: "not attempted; PR remains open and local branch is unchanged",
+        currentBranch,
+      };
+      renderMergePrReport(output, report);
+      return { status: "auto-merge-enabled", report };
+    } else {
+      throw new PublishError(
+        "POLICY_BLOCKED",
+        `PR #${afterRequest.number} is ${afterRequest.state} without verified merge into ${defaultBranch} after the auto-merge request.`,
+      );
+    }
+  } else {
+    verifiedPr = await pollForVerifiedMerge({
+      gh,
+      repo,
+      prNumber: mergePr.number,
+      defaultBranch,
+      attempts: Number(env.PUBLISH_MERGE_POLL_ATTEMPTS || 12),
+      intervalMs: Number(env.PUBLISH_MERGE_POLL_INTERVAL_MS || 5000),
+      sleep,
+    });
+  }
 
   if (await git.status()) {
     throw new PublishError(
@@ -117,6 +163,9 @@ export async function runMergePrFlow({
     prNumber: verifiedPr.number,
     prUrl: verifiedPr.url || displayedPr.url,
     mergeStatus: "verified merged",
+    autoMergeStatus: enableAutoMerge
+      ? "requested; GitHub reported the PR already merged"
+      : "not enabled",
     refreshStatus: refresh.refreshed
       ? "refreshed with fast-forward only"
       : "merge succeeded; refresh blocked because fast-forward was unavailable",

@@ -350,6 +350,7 @@ Short command entrypoints:
 pnpm publish:changes
 pnpm publish:pr-only
 pnpm publish:merge-pr
+pnpm publish:merge-pr:auto
 pnpm install:node
 pnpm test
 pnpm test:node
@@ -365,7 +366,8 @@ Maintained workflow tooling boundary:
 
 - `kit/scripts/publish-changes.mjs`, invoked by `pnpm publish:changes`, is
   the maintained publish path.
-- `pnpm publish:pr-only` and `pnpm publish:merge-pr` are explicit modes of the same maintained
+- `pnpm publish:pr-only`, `pnpm publish:merge-pr`, and `pnpm publish:merge-pr:auto` are explicit
+  entrypoints to modes of the same maintained
   Node publish CLI, not separate workflow implementations.
 - `pnpm publish:changes` and `pnpm publish:pr-only` run a lightweight dependency-free
   secret-safety guard against the confirmed publish scope before commit, push, or PR create/update
@@ -452,6 +454,12 @@ Current publish workflow architecture:
 - preserve an existing PR title in PR-only mode unless an explicit second title argument is given
 - use `publish:merge-pr <pr-number>` for explicit squash merge with clean-worktree, base-branch,
   mergeability, required-check, and head-OID verification
+- use `publish:merge-pr:auto <pr-number>` only for explicit PR-level auto-merge authorization;
+  passed checks retain immediate merge, while pending checks request GitHub auto-merge with squash
+  and expected-head protection
+- after an auto-merge request, read the PR once; refresh only if already verified merged, otherwise
+  report the open waiting PR and leave the local branch unchanged
+- treat repository-level Allow auto-merge as permission for the feature, not per-PR enablement
 - treat `--yes` in merge-PR mode as confirmation bypass only, never as safety or branch-protection
   bypass
 - refresh after explicit PR merge only after verified remote merge and with fast-forward-only

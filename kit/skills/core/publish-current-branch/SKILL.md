@@ -99,6 +99,7 @@ node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
 node .codex/scripts/publish-changes.mjs --mode pr-only "Commit message" "PR title"
 node .codex/scripts/publish-changes.mjs --mode merge-pr 123
 node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
+node .codex/scripts/publish-changes.mjs --mode merge-pr --auto-merge 123
 ```
 
 The skill remains responsible for publish judgment, role routing, scope, authorization, and final
@@ -112,16 +113,20 @@ observed paths, stops on drift, preserves an existing PR title unless an explici
 is supplied, and never creates a second open PR for the same branch.
 
 Use `--mode merge-pr <pr-number>` only when the user explicitly requests merging that PR. The mode
-requires a clean worktree, displays and revalidates PR metadata, blocks pending or failing required
-checks, squash-merges with expected-head protection, verifies the completed merge, and refreshes
-the default branch with fast-forward-only behavior. `--yes` skips only its human confirmation; it
-does not bypass repository rules, checks, mergeability, head verification, or merge polling.
+requires a clean worktree, displays and revalidates PR metadata, blocks failing or unknown required
+checks, squash-merges with expected-head protection, verifies a completed merge, and refreshes the
+default branch with fast-forward-only behavior. Pending checks block with wait/rerun guidance
+unless the user explicitly supplies `--auto-merge`; that option requests PR-level squash
+auto-merge and leaves the local branch unchanged while the PR remains open. `--yes` skips only its
+human confirmation. Neither option bypasses repository rules, checks, reviews, mergeability, or
+head verification.
 
 Agents should prefer invoking the installed script instead of reproducing its Git and GitHub
 command sequence. Users may also run the same command directly.
 
 The installer copies the script into `.codex/scripts/`; it does not add or modify a downstream
-`package.json`. Projects may add their own short command alias if desired.
+`package.json`. Projects may manually add their own short command aliases, including an auto-merge
+alias, if desired.
 
 If downstream `yaml` support is absent, the Node CLI must warn and use built-in conservative
 policy defaults rather than depending on an uninstalled package.
@@ -312,6 +317,11 @@ Recommended next workflow: initialize-project-context or GitHub setup check.
 ```
 
 Never bypass branch protection, checks, reviews, or rulesets.
+
+Repository-level **Allow auto-merge** only permits the feature. Each PR still needs auto-merge
+enabled explicitly. The equivalent GitHub CLI operation is
+`gh pr merge <PR_NUMBER> --auto --squash`; it waits for required checks and reviews rather than
+bypassing them.
 
 ## Merge Policy
 
