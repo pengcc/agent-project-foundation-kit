@@ -935,14 +935,15 @@ The catalog is not an installer manifest, package registry, marketplace, generat
 workflow, or downstream-installed runtime file. It defines vocabulary, metadata shape, candidate
 status, and workflow routing for future optional specialist packs.
 
-The first approved source-only optional specialist package is:
+The approved source-only optional specialist packages are:
 
 ```text
 optional-skills/react-component-patterns/
+optional-skills/tanstack-router-query-patterns/
 ```
 
-It provides focused React component and local-state implementation guidance. It is not part of the
-default `kit/` payload and does not add installer behavior.
+They provide focused React component/local-state guidance and focused TanStack Router/Query
+guidance. They are not part of the default `kit/` payload and do not add installer behavior.
 
 Track candidate metadata such as:
 
@@ -969,9 +970,13 @@ Current boundary:
 ```text
 - source-only optional skills remain outside kit/ and require explicit project adoption
 - react-component-patterns is experimental and install-default never
+- tanstack-router-query-patterns is experimental and install-default never
 - no optional pack is installed by default
 - no installer behavior exists yet
-- Next.js, React Server Components, TanStack, shadcn/ui, Tailwind, testing, architecture, and data fetching remain separate
+- React component/local-state guidance, visual design, full frontend architecture, Next.js,
+  React Server Components, TanStack Start and other TanStack libraries, shadcn/ui, Tailwind,
+  backend/API/database/authentication design, and testing remain separate from the TanStack
+  Router/Query specialist
 ```
 
 ---
@@ -1333,9 +1338,9 @@ Phase 6 Architecture Review Refinement is complete. It stayed within existing ar
 review, and audit surfaces.
 
 Phase 7 Optional Skill Catalog and Specialist Packs is complete. It added source-repository
-planning documentation for future optional specialist candidates. A later approved React component
-patterns update adds the first source-only optional package without adding installer, marketplace,
-or auto-install behavior.
+planning documentation for future optional specialist candidates. Later approved React component
+patterns and TanStack Router/Query patterns updates add focused source-only optional packages
+without adding installer, marketplace, or auto-install behavior.
 
 The next recommended implementation areas remain future work and require separate plans:
 

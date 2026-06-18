@@ -215,9 +215,15 @@ Current Optional Skill Catalog boundaries:
 - `optional-skills/react-component-patterns/` is an experimental, install-default-never specialist
   for React component and local-state implementation patterns. It requires explicit project
   adoption and a React project signal.
+- `optional-skills/tanstack-router-query-patterns/` is an experimental,
+  install-default-never specialist for TanStack Router routing/URL state and TanStack Query server
+  state. It requires explicit project adoption plus a matching project signal or explicit request.
 - Optional pack installation remains future work and requires separate planning and approval.
 - React component patterns remain separate from `ui-design-basics`, Next.js, React Server
   Components, TanStack, shadcn/ui, Tailwind, testing, architecture, and data-fetching guidance.
+- TanStack Router/Query patterns remain separate from React component/local-state guidance, visual
+  design, full frontend architecture, Next.js, React Server Components, TanStack Start and other
+  TanStack libraries, backend/API/database/authentication design, and testing strategy.
 - External skill references remain reference candidates until evaluated through
   `docs-first-research` and rewritten for this kit through approved `write-a-skill` and
   `execute-plan` work.
@@ -734,6 +740,10 @@ Completed:
     - added `optional-skills/react-component-patterns/` as source-only, experimental guidance
     - kept default installation, installer behavior, force prompts, and adjacent frontend
       specialist concerns out of scope
+- TanStack Router and Query Patterns optional specialist
+    - added `optional-skills/tanstack-router-query-patterns/` as source-only, experimental guidance
+    - kept default installation, installer behavior, force prompts, other TanStack libraries, and
+      adjacent React/UI/architecture/backend concerns out of scope
 - Consolidation archive Bash apply-theme helper
     - archived `scripts/apply-theme-zip.sh` and `scripts/lib/workflow-common.sh` under
       `archive/legacy-bash-workflows/`

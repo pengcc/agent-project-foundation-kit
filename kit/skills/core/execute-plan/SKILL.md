@@ -108,6 +108,7 @@ skill creation/refinement -> write-a-skill
 external technical facts -> docs-first-research
 concrete UI screen/flow/form implementation -> ui-design-basics
 React component/local-state implementation -> react-component-patterns when installed or explicitly adopted
+TanStack Router/Query implementation -> tanstack-router-query-patterns when installed or explicitly adopted
 durable memory write -> update-project-memory
 concrete diff/PR/package review -> code-review
 repo-wide audit -> codebase-audit

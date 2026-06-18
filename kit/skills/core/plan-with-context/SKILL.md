@@ -132,6 +132,15 @@ visual hierarchy, and UI state presentation in `ui-design-basics`. Route framewo
 routing, server/client boundaries, server state, and data-fetching strategy to the appropriate
 future specialist or `docs-first-research`.
 
+## TanStack Router and Query Guidance
+
+When planning concrete TanStack Router routing or URL-state work, or TanStack Query server-state
+work, apply `tanstack-router-query-patterns` only when it is installed or explicitly adopted. Keep
+React component and local-state concerns in `react-component-patterns`, visual hierarchy and UI
+state presentation in `ui-design-basics`, and product-wide frontend architecture in
+`project-architecture-plan`. Route version-specific TanStack claims through
+`docs-first-research`.
+
 ## Recommendation Requirement
 
 A plan must include a recommendation.

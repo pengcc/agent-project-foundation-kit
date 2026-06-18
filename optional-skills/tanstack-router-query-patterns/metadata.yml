@@ -1,0 +1,10 @@
+name: tanstack-router-query-patterns
+description: Apply focused TanStack Router routing and URL-state patterns or TanStack Query server-state, query-key, mutation, cache, and invalidation patterns in React projects with matching project evidence or an explicit request.
+category: optional
+version: 0.1.0
+triggers:
+  - TanStack Router route patterns
+  - TanStack Router search params or loaders
+  - TanStack Query keys and caching
+  - TanStack Query mutations and invalidation
+  - coordinate TanStack Router and Query

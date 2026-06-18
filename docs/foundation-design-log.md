@@ -2050,3 +2050,60 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## TanStack Router and Query Patterns Source-Only Optional Skill
+
+Accepted patterns:
+
+1. Use one combined specialist because Router and Query have a documented coordination boundary,
+   while keeping their responsibilities in separate sections.
+2. Preserve the project's detected file-based or code-based routing convention and generated-file
+   ownership.
+3. Treat search params as validated URL state and keep loader dependencies limited to values that
+   affect the loader result.
+4. Keep TanStack Query focused on server state, complete query keys, deliberate freshness and
+   retention, targeted invalidation, and bounded optimistic updates.
+5. Reuse one QueryClient when Router loaders coordinate critical Query data; avoid duplicate data
+   ownership.
+6. Keep the package under `optional-skills/` with install default `never`, explicit adoption, and
+   conditional core workflow references.
+
+Rejected patterns / non-goals:
+
+- separate Router and Query skills for the current focused scope
+- core or default-installed TanStack guidance
+- force prompt, installer behavior, or automatic activation
+- copied TanStack documentation or version-specific claims based on model memory
+- routing-style migrations without a project need
+- React component/local-state or visual-design overlap
+- TanStack Table, Form, Virtual, Start, Store, DB, Pacer, AI, or other TanStack libraries
+- Next.js, React Server Components, backend/API/database/authentication design, testing strategy,
+  full frontend architecture, package, runtime, publish, template, test, archive, or generated-file
+  changes
+
+Research basis:
+
+- TanStack Router overview, route trees, file-based routing, navigation, path params, search params,
+  data loading, router context, not-found handling, and external data loading:
+  `https://tanstack.com/router/latest/docs/`
+- TanStack Query React overview, important defaults, queries, query keys, query functions,
+  mutations, invalidation, initial data, placeholder data, and optimistic updates:
+  `https://tanstack.com/query/latest/docs/framework/react/`
+- TanStack Start overview, used only to confirm the full-stack framework boundary:
+  `https://tanstack.com/start/latest`
+
+Resulting files / changes:
+
+```txt
+optional-skills/tanstack-router-query-patterns/SKILL.md
+optional-skills/tanstack-router-query-patterns/metadata.yml
+docs/optional-skill-catalog.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/code-review/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

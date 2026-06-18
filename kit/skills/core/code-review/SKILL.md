@@ -92,6 +92,12 @@ For React component or local-state diffs, apply `react-component-patterns` only 
 or explicitly adopted. Keep findings and the readiness verdict inside `code-review`, and route
 version-specific React claims through `docs-first-research`.
 
+For TanStack Router routing/URL-state diffs or TanStack Query server-state diffs, apply
+`tanstack-router-query-patterns` only when it is installed or explicitly adopted. Keep findings
+and the readiness verdict inside `code-review`; route React local-state concerns to
+`react-component-patterns`, UI state presentation to `ui-design-basics`, and version-specific
+TanStack claims through `docs-first-research`.
+
 ### 2. Plan Alignment Review
 
 Use Plan Alignment Review when the user asks for staged review, architecture review, engineering direction review, plan consistency review, or whether work has drifted from an accepted plan.

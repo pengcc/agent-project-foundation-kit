@@ -1951,3 +1951,49 @@ optional-skills/react-component-patterns/SKILL.md
 optional-skills/react-component-patterns/metadata.yml
 docs/optional-skill-catalog.md
 ```
+
+## Decision: TanStack Router and Query patterns is combined source-only optional guidance
+
+### Status
+
+Accepted
+
+### Context
+
+Upcoming React tool-style projects need focused guidance for route structure, URL/search state,
+loaders, navigation, server-state queries, mutations, caching, and invalidation. TanStack Router
+and TanStack Query have a documented coordination boundary, but adding broad TanStack or frontend
+framework guidance to the default kit would conflict with the minimal-core model.
+
+### Decision
+
+Create `optional-skills/tanstack-router-query-patterns/` as one experimental source-only
+specialist package with install default `never`. Keep Router and Query responsibilities in
+separate sections and apply their integration guidance only when both libraries are confirmed or
+explicitly requested.
+
+Keep `optional-skills/` outside `kit/`; the maintained installer does not copy it. Require explicit
+project adoption plus a matching TanStack Router or Query signal, or an explicit user request,
+before use. Core workflow skills may reference it only with "when installed" or "when explicitly
+adopted" wording. Do not add a force prompt while the skill is not default-installed.
+
+This supersedes only the TanStack Router and Query deferral in the earlier `ui-design-basics` and
+React component-patterns decisions. Keep TanStack Table, Form, Virtual, Start, Store, DB, Pacer,
+AI, and other TanStack libraries; Next.js; React Server Components; backend/API/database/auth
+design; testing strategy; and full frontend architecture out of scope. Keep React component and
+local-state concerns in `react-component-patterns`, visual hierarchy and UI state presentation in
+`ui-design-basics`, and version-specific TanStack claims in `docs-first-research`.
+
+### Impact
+
+The repository gains reusable TanStack Router and Query guidance without changing package,
+runtime, installer, publishing, test, template, archive, generated-file, or default-installed
+behavior. Future optional installation or distribution requires a separate approved plan.
+
+### Related files
+
+```txt
+optional-skills/tanstack-router-query-patterns/SKILL.md
+optional-skills/tanstack-router-query-patterns/metadata.yml
+docs/optional-skill-catalog.md
+```
