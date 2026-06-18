@@ -327,7 +327,8 @@ Purpose: Implement and reason about client-side UI, state, routing, components, 
 
 Focus: component structure, state flow, rendering behavior, accessibility basics, responsive behavior, error/empty/loading states.
 
-Supporting skills: execute-plan, code-review, docs-first-research for framework/API facts.
+Supporting skills: ui-design-basics, execute-plan, code-review, docs-first-research for
+framework/API facts.
 
 Boundaries: does not invent backend API contracts or claim framework-specific expertise without skill/docs.
 
@@ -417,7 +418,7 @@ Purpose: Review type safety, type design, and TypeScript maintainability.
 
 Focus: safe types, narrowing, avoiding unjustified `any`, readable abstractions, compile-time guarantees.
 
-Supporting skills: code-review, docs-first-research.
+Supporting skills: ui-design-basics, code-review, docs-first-research.
 
 Boundaries: does not overcomplicate types for small tasks.
 

@@ -120,6 +120,9 @@ External technical facts / framework behavior / community practice:
 Architecture direction / module boundaries:
   project-architecture-plan
 
+Concrete UI screen / flow / form clarity:
+  ui-design-basics
+
 Feature or implementation planning:
   plan-with-context
 

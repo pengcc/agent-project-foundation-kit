@@ -278,6 +278,10 @@ When adapting external skills:
 - preserve this project's operating contract and memory boundaries
 - cite or mention the external reference in the plan or design log when relevant
 - keep final runtime instructions auditable inside this repo
+- treat external skill discovery platforms as research sources, not adoption or installation
+  approval
+- require explicit user approval before installing an external skill, plugin, MCP server, CLI, or
+  other tooling
 
 If license/provenance or copying risk is unclear, do not copy content verbatim.
 
@@ -321,6 +325,7 @@ planning candidates until a user approves a specific plan.
 Before finalizing a new or refined skill, verify:
 
 ```txt
+- critical runtime and safety contracts appear near the top of SKILL.md
 - purpose, trigger, and when-not-to-use boundaries are clear
 - required context, workflow steps, output, and stop conditions are explicit
 - metadata description supports discovery through trigger / when-to-use wording
@@ -328,6 +333,8 @@ Before finalizing a new or refined skill, verify:
 - prompt support, if present, stays concise and does not duplicate the full SKILL.md
 - workflow separation is preserved for planning, execution, review, publishing, research, and memory updates
 - external references were rewritten for this kit and not copied wholesale
+- boundary-sensitive skills name likely failure modes
+- output-sensitive skills include a short final self-check
 ```
 
 For boundary-sensitive skills, add a misuse and rationalization check:

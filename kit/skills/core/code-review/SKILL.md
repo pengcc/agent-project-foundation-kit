@@ -82,6 +82,9 @@ user flow clarity, visual hierarchy, responsive behavior, accessibility basics, 
 error / disabled / success states, interaction feedback, content clarity, and reuse of existing
 project UI conventions or components.
 
+When installed, apply `ui-design-basics` as bounded supporting guidance for UI-facing diffs. Keep
+the review target, findings, and readiness verdict inside `code-review`.
+
 UI review remains part of `code-review`. Do not turn it into a separate UI workflow, design-system
 package, component library, or technology-specific UI skill.
 

@@ -117,6 +117,13 @@ Use `grill-me` first when the goal, MVP boundary, business rules, scope, constra
 
 Do not use `grill-me` when the answer can be found by inspecting available project sources.
 
+## UI Design Guidance
+
+When planning a concrete UI page, screen, flow, or form, apply `ui-design-basics` as bounded
+supporting guidance. Use it to inspect and reuse the existing UI system, establish one clear UI
+goal, and cover hierarchy, states, content, and accessibility basics without replacing this
+planning workflow or introducing framework-specific rules.
+
 ## Recommendation Requirement
 
 A plan must include a recommendation.
