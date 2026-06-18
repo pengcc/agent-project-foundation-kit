@@ -174,6 +174,17 @@ Current UI Quality Foundation boundaries:
 - It is not a UI workflow, component library, design system package, technology-specific UI skill,
   or professional accessibility audit.
 
+Current engineering quality boundaries:
+
+- `engineering-quality-principles` favors focused units, explicit contracts, visible dependency
+  direction, and extension points only after demonstrated variation or integration needs.
+- Deploy-varying configuration and secrets remain separate from code and use project-approved
+  runtime configuration or secret management.
+- Security-sensitive behavior stays behind small auditable boundaries and favors secure defaults,
+  least privilege, established libraries or patterns, and docs-first verification.
+- This guidance does not prescribe plugin architectures, dependency-injection containers,
+  mandatory layering, microservices, CQRS, or technology-specific patterns.
+
 Current Architecture Review Refinement boundaries:
 
 - Architecture review lives primarily in `code-review` Plan Alignment Review.

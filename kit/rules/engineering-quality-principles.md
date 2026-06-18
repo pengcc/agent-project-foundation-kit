@@ -215,3 +215,26 @@ When a runtime mismatch blocks validation:
 - wait for explicit approval before any mutating command
 
 Do not silently repair global tooling to make a project check pass.
+
+## 19. Composable Boundaries and Extension Seams
+
+Compose focused units through small, explicit inputs, outputs, and contracts. Keep dependency
+direction visible by passing external services, state, and configuration through deliberate
+boundaries instead of hidden globals or cross-layer reach-through.
+
+Add extension points only for demonstrated variation or integration needs. Prefer a later small
+refactor over speculative plugin systems or generalized interfaces. Separate domain decisions from
+adapters or side effects when it improves testability and change isolation; do not impose layers
+mechanically.
+
+## 20. Configuration, Secrets, and Security Boundaries
+
+Separate deploy-varying configuration from code and validate required configuration at an
+appropriate startup or trust boundary. Use project-approved runtime configuration and secret
+management; never hard-code, commit, log, or place real secrets in examples, tests, or project
+memory.
+
+Keep authorization, credential handling, cryptography, destructive operations, and other
+security-sensitive behavior behind small auditable boundaries with consistent enforcement. Prefer
+secure defaults, least privilege, established libraries or patterns, and docs-first verification
+over custom security mechanisms.

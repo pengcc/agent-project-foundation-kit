@@ -1823,3 +1823,39 @@ Agents can scale report detail to task risk and complexity without making small 
 omitting important decisions, validation, or risks. This decision does not change package scripts,
 runtime code, publish workflow behavior, installer behavior, secret-safety behavior, archive
 files, release workflow, deployment workflow, dependencies, tests, or generated artifacts.
+
+## Decision: Engineering quality uses minimal composable and security boundaries
+
+### Status
+
+Accepted
+
+### Context
+
+The engineering quality rule already covered simplicity, premature abstraction, responsibility,
+testability, trust-boundary validation, and project/global tooling separation. Before downstream
+adoption, it needed a concise cross-technology statement about dependency direction,
+deploy-varying configuration, secrets, and security-sensitive implementation boundaries.
+
+### Decision
+
+Keep `engineering-quality-principles` minimal while adding two focused sections:
+
+```txt
+Composable Boundaries and Extension Seams
+Configuration, Secrets, and Security Boundaries
+```
+
+Use explicit contracts and visible dependencies, and add extension points only after demonstrated
+variation or integration needs. Keep configuration and secrets separate from code. Keep
+security-sensitive behavior behind small auditable boundaries and prefer secure defaults, least
+privilege, established libraries or patterns, and docs-first verification.
+
+Do not prescribe plugin architectures, dependency-injection containers, mandatory layering,
+microservices, CQRS, framework-specific composition, or a broad security handbook.
+
+### Impact
+
+Planning, implementation, and review receive stronger reusable boundary guidance without changing
+workflow routing, project templates, runtime behavior, tooling, dependencies, or tests. Further
+optimization should follow concrete downstream project experience.
