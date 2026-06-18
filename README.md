@@ -16,11 +16,25 @@ pnpm publish:merge-pr 123 --yes
 pnpm install:node -- --target /path/to/project
 pnpm test:install
 pnpm test:publish
+pnpm format
+pnpm format:check
+pnpm biome:fix
 pnpm check
 ```
 
 `publish:changes`, `publish:pr-only`, and `publish:merge-pr` run the maintained Node.js 24+ ESM
-publish CLI. `pnpm check` validates the Node publish and installer paths plus whitespace.
+publish CLI. Biome 2.5.0 is a source-repository quality gate: `pnpm format` writes formatting,
+`pnpm format:check` checks formatting, and `pnpm biome:fix` applies Biome safe fixes, including
+formatting, safe lint fixes, and organize-imports assist fixes. `pnpm check` runs `biome check .`
+before the Node publish tests, installer tests, and whitespace validation.
+
+Biome is a source-repo quality gate for the foundation kit, not a downstream installation
+requirement. Source checks cover installable files under `kit/`, including scripts later copied to
+`.codex/scripts/`, before they are published or installed. The installer does not install Biome,
+create Biome configuration, or modify target `package.json`. If a downstream project has no
+formatter/linter, `initialize-project-context` may recommend Biome as a manual setup task; it does
+not require or install it.
+
 `publish:changes` and `publish:pr-only` run a lightweight local secret-safety guard against the
 confirmed publish scope before commit, push, or PR updates. The guard is dependency-free and
 high-confidence only; it can have false positives and false negatives.

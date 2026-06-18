@@ -2142,3 +2142,31 @@ docs/optional-skill-catalog.md
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
+
+## Source-Repository Biome Quality Gate
+
+Accepted decisions:
+
+1. Pin Biome 2.5.0 as a source-repository development dependency.
+2. Use `pnpm format`, `pnpm format:check`, and `pnpm biome:fix` for source formatting/checking and
+   safe Biome fixes, including organize-imports assists.
+3. Run `biome check .` before publish tests, installer tests, and whitespace validation in
+   `pnpm check`.
+4. Apply source checks to installable `kit/` content before it is published or installed.
+5. Do not install Biome, create Biome configuration, or modify `package.json` in downstream
+   projects.
+6. Keep downstream Biome adoption recommendation-only when initialization finds no existing
+   formatter/linter setup.
+
+Resulting files / changes:
+
+```txt
+biome.json
+package.json
+pnpm-lock.yaml
+README.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+docs/foundation-design-log.md
+```

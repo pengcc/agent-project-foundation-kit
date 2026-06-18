@@ -268,6 +268,7 @@ Current known tooling:
 - GitHub CLI expected for PR publishing workflows when available
 - Node.js 24+ for the default source-repository publish workflow
 - pnpm 10.26.2 for local commands and dependency management
+- Biome 2.5.0 for source-repository formatting, linting, and organize-imports checks
 - Vitest for Node publish and installer tests
 - `yaml` for source-repository policy loading, with built-in downstream fallback
 
@@ -354,6 +355,9 @@ pnpm test
 pnpm test:node
 pnpm test:install
 pnpm test:publish
+pnpm format
+pnpm format:check
+pnpm biome:fix
 pnpm check
 ```
 
@@ -376,6 +380,12 @@ Maintained workflow tooling boundary:
   tests covering parse hygiene.
 - Installer tree mapping excludes local OS junk files such as `.DS_Store`, `Thumbs.db`,
   `desktop.ini`, and AppleDouble `._*` files from downstream `.codex/` mappings.
+- Biome 2.5.0 is source-repository tooling configured by `biome.json`. `pnpm format` writes
+  formatting, `pnpm format:check` checks formatting, `pnpm biome:fix` applies safe Biome fixes,
+  and `pnpm check` runs `biome check .` before tests and whitespace validation.
+- Source-repository Biome checks include installable content under `kit/` before publication or
+  installation. The installer does not install Biome, create downstream Biome configuration, or
+  modify target `package.json`; downstream Biome adoption remains an optional manual setup task.
 - Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
   historical reference.
 - Future apply-theme behavior should be planned as a Node.js workflow before being reintroduced.
@@ -479,7 +489,7 @@ Current publish workflow architecture:
 - manual scope-drift testing passed: changes introduced after scope collection were detected and
   publishing aborted before commit, push, or PR actions
 - use `pnpm publish:changes` as the canonical source-repository publish command
-- keep Node publish tests, Node installer tests, and whitespace checks in `pnpm check`
+- keep Biome checks, Node publish tests, Node installer tests, and whitespace checks in `pnpm check`
 - a real post-cutover publish run completed successfully through the then-current
   `pnpm publish:local` alias before the source publish command was consolidated to
   `publish:changes`
@@ -621,7 +631,8 @@ The installer should not copy this repo's own `.codex/project/` into downstream 
 - Check diff stats before commit
 - Verify remote raw GitHub file line counts after push when needed
 - Prefer PR review for high-risk or multi-file theme updates
-- Run `pnpm check` for publish workflow tests, installer tests, and whitespace validation
+- Run `pnpm check` for Biome checks, publish workflow tests, installer tests, and whitespace
+  validation
 - Verify the complete Project Memory Context Gate sequence and status meanings exist only in
   `kit/skills/core/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills contain
   short references only

@@ -2036,3 +2036,34 @@ manual, separately approved setup.
 Existing projects receive a non-zero safety stop before conflict side effects, while intentional
 new-project and explicit-overwrite flows reuse the mature backup/apply machinery. The installer
 remains payload-stable and dependency-free.
+
+## Decision: Biome is a source-repository quality gate, not a downstream requirement
+
+### Status
+
+Accepted
+
+### Context
+
+Installable scripts, documentation, skills, prompts, rules, and templates should be formatted and
+checked consistently before they are published or installed downstream. That source-repository
+quality concern must not silently become target-project tooling policy.
+
+### Decision
+
+Use pinned Biome 2.5.0 and the root `biome.json` for foundation-kit source formatting, linting,
+and organize-imports assists. Expose `format`, `format:check`, and `biome:fix` package scripts, and
+run `biome check .` at the start of `pnpm check`.
+
+Biome covers source files under `kit/`, including scripts that the installer later copies to
+downstream `.codex/scripts/`. The installer does not install Biome, create target Biome
+configuration, modify target `package.json`, or require downstream projects to adopt Biome.
+
+When initialization finds no existing formatter/linter in a downstream project, it may recommend
+Biome as a manual setup candidate through a separate approved plan. Existing project tooling takes
+priority.
+
+### Impact
+
+The source repository gains one consistent quality gate while preserving downstream project
+autonomy and existing installer boundaries.

@@ -18,7 +18,7 @@
     "test:publish:node": "vitest run tests/publish-changes",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "lint:fix": "biome check --write .",
+    "biome:fix": "biome check --write .",
     "check": "biome check . && pnpm test:publish && pnpm test:install && git diff --check"
   },
   "dependencies": {
