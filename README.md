@@ -13,6 +13,7 @@ pnpm publish:changes "Commit message" "PR title"
 pnpm publish:pr-only "Commit message" "PR title"
 pnpm publish:merge-pr 123
 pnpm publish:merge-pr 123 --yes
+pnpm publish:merge-pr:auto 123
 pnpm install:node --target /path/to/project
 pnpm test:install
 pnpm test:publish
@@ -134,6 +135,10 @@ Configure the repository before using the automatic `SMALL_SAFE` path:
 The script never bypasses repository rules. It reports GitHub CLI stderr and does not refresh
 local `main` until GitHub confirms that the pull request was merged.
 
+The repository setting only permits PR-level auto-merge; each PR still needs auto-merge enabled.
+The manual GitHub CLI equivalent is `gh pr merge <PR_NUMBER> --auto --squash`. Auto-merge waits
+for required checks and reviews and never bypasses them.
+
 ### Quick PR-Only and Explicit Merge Commands
 
 `pnpm publish:pr-only` is the non-merging path for quickly publishing review changes from the
@@ -151,6 +156,13 @@ mergeability, and head OID before requesting one squash-merge confirmation. `--y
 that confirmation. It does not bypass repository rules or checks. After GitHub verifies the merge,
 the command refreshes the default branch with fast-forward-only behavior and never hard-resets a
 diverged branch.
+
+`pnpm publish:merge-pr:auto <pr-number>` adds explicit `--auto-merge` authorization. Passed checks
+still use the immediate merge path. Pending checks request PR-level squash auto-merge with
+expected-head protection, then read the PR once: an open PR is reported as waiting and the local
+branch remains unchanged. If GitHub rejects the request, the PR remains open and the command
+reports the original error with guidance to check repository settings, permissions, and PR
+eligibility. Failed or unknown checks still block.
 
 ## Installed Publish Command
 
@@ -172,11 +184,13 @@ node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
 node .codex/scripts/publish-changes.mjs --mode pr-only "Commit message" "PR title"
 node .codex/scripts/publish-changes.mjs --mode merge-pr 123
 node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
+node .codex/scripts/publish-changes.mjs --mode merge-pr --auto-merge 123
 ```
 
 Run these commands from the target project root. Existing projects may add equivalent
 `package.json` aliases manually when they fit local package-manager and script conventions. The
 installer does not add aliases and does not create a `package.json` solely for shortcuts.
+An optional downstream alias equivalent to `publish:merge-pr:auto` is manual setup only.
 
 The source repository uses package-managed `yaml` for policy loading. The installer does not
 create or modify a downstream `package.json`; if `yaml` is unavailable downstream, the Node CLI

@@ -63,6 +63,7 @@ describe("CLI options", () => {
       prTitleExplicit: true,
       prNumber: null,
       yes: false,
+      autoMerge: false,
       showDiff: true,
       verbose: false,
       policyPath: "",
@@ -104,11 +105,12 @@ describe("CLI options", () => {
     });
   });
 
-  it("requires a positive PR number and scopes --yes to merge-pr mode", () => {
-    expect(parseCliOptions(["--mode", "merge-pr", "42", "--yes"])).toMatchObject({
+  it("requires a positive PR number and scopes merge flags to merge-pr mode", () => {
+    expect(parseCliOptions(["--mode", "merge-pr", "42", "--yes", "--auto-merge"])).toMatchObject({
       mode: "merge-pr",
       prNumber: 42,
       yes: true,
+      autoMerge: true,
     });
     expect(() => parseCliOptions(["--mode", "merge-pr"])).toThrow(
       "requires exactly one positive integer PR number",
@@ -118,6 +120,12 @@ describe("CLI options", () => {
     );
     expect(() => parseCliOptions(["--yes", "Commit title"])).toThrow(
       "--yes is supported only with merge-pr mode",
+    );
+    expect(() => parseCliOptions(["--auto-merge", "Commit title"])).toThrow(
+      "--auto-merge is supported only with merge-pr mode",
+    );
+    expect(() => parseCliOptions(["--mode", "pr-only", "--auto-merge"])).toThrow(
+      "--auto-merge is supported only with merge-pr mode",
     );
   });
 });
@@ -132,6 +140,9 @@ describe("source repository package scripts", () => {
     );
     expect(packageJson.scripts["publish:merge-pr"]).toBe(
       "node kit/scripts/publish-changes.mjs --mode merge-pr",
+    );
+    expect(packageJson.scripts["publish:merge-pr:auto"]).toBe(
+      "node kit/scripts/publish-changes.mjs --mode merge-pr --auto-merge",
     );
     expect(packageJson.scripts["publish:bash"]).toBeUndefined();
     expect(packageJson.scripts["apply-theme"]).toBeUndefined();
@@ -702,6 +713,29 @@ describe("command and branch safety", () => {
     const gh = createGhClient(runner, "/repo");
     await expect(gh.requiredChecks("owner/repo", 7)).rejects.toThrow(
       "HTTP 500: check service unavailable",
+    );
+  });
+
+  it("requests squash auto-merge with expected-head protection", async () => {
+    const runner = {
+      run: vi.fn().mockResolvedValue({ ok: true, exitCode: 0, stdout: "", stderr: "" }),
+    };
+    const gh = createGhClient(runner, "/repo");
+    await gh.merge("owner/repo", 7, { auto: true, headSha: "head-sha" });
+    expect(runner.run).toHaveBeenCalledWith(
+      "gh",
+      [
+        "pr",
+        "merge",
+        "7",
+        "--repo",
+        "owner/repo",
+        "--auto",
+        "--squash",
+        "--match-head-commit",
+        "head-sha",
+      ],
+      expect.any(Object),
     );
   });
 

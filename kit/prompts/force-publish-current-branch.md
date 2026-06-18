@@ -45,6 +45,11 @@ Repo-level settings such as ruleset, branch protection, required checks, auto-me
 
 If repo-level settings are unknown in project memory, create/update PR only and recommend `initialize-project-context` or setup check.
 
+For an explicitly requested PR-number merge, use public `--auto-merge` only when pending required
+checks should be waited on by GitHub. Repository-level **Allow auto-merge** only permits this;
+auto-merge must still be enabled per PR, and it never bypasses required checks or reviews. Do not
+enable it for PR-only mode or silently infer it.
+
 Do not release or deploy.
 
 At the end or when pausing, output:

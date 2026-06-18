@@ -9,6 +9,7 @@
     "publish:changes": "node kit/scripts/publish-changes.mjs",
     "publish:pr-only": "node kit/scripts/publish-changes.mjs --mode pr-only",
     "publish:merge-pr": "node kit/scripts/publish-changes.mjs --mode merge-pr",
+    "publish:merge-pr:auto": "node kit/scripts/publish-changes.mjs --mode merge-pr --auto-merge",
     "install:node": "node scripts/install-foundation-kit.mjs",
     "test:install": "pnpm test:install:node",
     "test:install:node": "vitest run tests/install-foundation-kit",

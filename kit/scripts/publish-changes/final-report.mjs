@@ -25,9 +25,10 @@ export function renderPrOnlyReport(output, report) {
 
 export function renderMergePrReport(output, report) {
   output.step("Merge-PR report");
-  output.info(`Merged PR number: ${report.prNumber}`);
+  output.info(`PR number: ${report.prNumber}`);
   output.info(`PR URL: ${report.prUrl}`);
   output.info(`Merge status: ${report.mergeStatus}`);
+  output.info(`Auto-merge status: ${report.autoMergeStatus}`);
   output.info(`Refresh status: ${report.refreshStatus}`);
   output.info(`Current branch: ${report.currentBranch}`);
 }

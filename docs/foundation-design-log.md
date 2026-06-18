@@ -2190,3 +2190,37 @@ README.md
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
+
+## Explicit Auto-Merge for Pending Required Checks
+
+Accepted decisions:
+
+1. Add public `--auto-merge` only to explicit `merge-pr` mode and expose the source alias
+   `pnpm publish:merge-pr:auto -- <PR_NUMBER>`.
+2. Preserve immediate squash merge when required checks pass and continue blocking failed or
+   unknown checks and every existing worktree, PR-state, base, mergeability, and head-OID hazard.
+3. For pending checks with explicit authorization, reuse the GitHub client to request
+   `gh pr merge <PR_NUMBER> --auto --squash --match-head-commit <SHA>`.
+4. Read the PR once after the request. Refresh the local default branch only after verified merge;
+   otherwise report auto-merge enabled and leave the local branch unchanged without polling.
+5. Treat repository-level **Allow auto-merge** as a prerequisite, not per-PR activation. Auto-merge
+   waits for required checks and reviews and never bypasses them.
+6. Preserve PR-only behavior, installer behavior, downstream `package.json`, and optional manual
+   downstream aliases.
+
+Resulting files / changes:
+
+```txt
+kit/scripts/publish-changes/cli-options.mjs
+kit/scripts/publish-changes/merge-pr-flow.mjs
+kit/scripts/publish-changes/final-report.mjs
+kit/scripts/publish-changes/validation.mjs
+package.json
+tests/publish-changes/
+README.md
+kit/skills/core/publish-current-branch/SKILL.md
+kit/prompts/force-publish-current-branch.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
