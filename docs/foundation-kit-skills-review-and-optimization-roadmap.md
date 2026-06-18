@@ -935,6 +935,15 @@ The catalog is not an installer manifest, package registry, marketplace, generat
 workflow, or downstream-installed runtime file. It defines vocabulary, metadata shape, candidate
 status, and workflow routing for future optional specialist packs.
 
+The first approved source-only optional specialist package is:
+
+```text
+optional-skills/react-component-patterns/
+```
+
+It provides focused React component and local-state implementation guidance. It is not part of the
+default `kit/` payload and does not add installer behavior.
+
 Track candidate metadata such as:
 
 ```text
@@ -958,11 +967,11 @@ Track candidate metadata such as:
 Current boundary:
 
 ```text
-- no actual optional packs are implemented
-- no technology-specific skills are added
+- source-only optional skills remain outside kit/ and require explicit project adoption
+- react-component-patterns is experimental and install-default never
 - no optional pack is installed by default
 - no installer behavior exists yet
-- external references remain reference candidates until docs-first-research evaluation
+- Next.js, React Server Components, TanStack, shadcn/ui, Tailwind, testing, architecture, and data fetching remain separate
 ```
 
 ---
@@ -1324,8 +1333,9 @@ Phase 6 Architecture Review Refinement is complete. It stayed within existing ar
 review, and audit surfaces.
 
 Phase 7 Optional Skill Catalog and Specialist Packs is complete. It added source-repository
-planning documentation for future optional specialist candidates without adding actual packs,
-technology-specific skills, installer behavior, marketplace behavior, or auto-install behavior.
+planning documentation for future optional specialist candidates. A later approved React component
+patterns update adds the first source-only optional package without adding installer, marketplace,
+or auto-install behavior.
 
 The next recommended implementation areas remain future work and require separate plans:
 

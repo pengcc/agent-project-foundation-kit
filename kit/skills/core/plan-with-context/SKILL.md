@@ -124,6 +124,14 @@ supporting guidance. Use it to inspect and reuse the existing UI system, establi
 goal, and cover hierarchy, states, content, and accessibility basics without replacing this
 planning workflow or introducing framework-specific rules.
 
+## React Component Guidance
+
+When planning concrete React component or local-state implementation, apply
+`react-component-patterns` only when it is installed or explicitly adopted. Keep screen clarity,
+visual hierarchy, and UI state presentation in `ui-design-basics`. Route framework architecture,
+routing, server/client boundaries, server state, and data-fetching strategy to the appropriate
+future specialist or `docs-first-research`.
+
 ## Recommendation Requirement
 
 A plan must include a recommendation.

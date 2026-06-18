@@ -177,8 +177,9 @@ Current UI Quality Foundation boundaries:
 - `ui-design-basics` is a core supporting skill for bounded baseline guidance on concrete pages,
   screens, flows, forms, layout clarity, UI states, and shadcn-aware reuse of an existing system.
   It is not professional design, brand design, accessibility certification, architecture planning,
-  implementation approval, code review, or a framework specialist skill. React, Next.js, TanStack,
-  and shadcn specialist skills remain deferred and optional.
+  implementation approval, code review, or a framework specialist skill. React component patterns
+  are available only through the source-only optional specialist; Next.js, TanStack, and shadcn
+  specialist skills remain deferred and optional.
 
 Current engineering quality boundaries:
 
@@ -209,9 +210,14 @@ Current Optional Skill Catalog boundaries:
 - It defines vocabulary, candidate metadata shape, status values, and workflow routing.
 - It is not an installer manifest, package registry, marketplace, generated package workflow, or
   downstream-installed runtime file.
-- No optional specialist packs or technology-specific skills are currently implemented through the
-  catalog.
+- `optional-skills/` contains source-only optional specialist packages and remains outside the
+  default installable `kit/` payload.
+- `optional-skills/react-component-patterns/` is an experimental, install-default-never specialist
+  for React component and local-state implementation patterns. It requires explicit project
+  adoption and a React project signal.
 - Optional pack installation remains future work and requires separate planning and approval.
+- React component patterns remain separate from `ui-design-basics`, Next.js, React Server
+  Components, TanStack, shadcn/ui, Tailwind, testing, architecture, and data-fetching guidance.
 - External skill references remain reference candidates until evaluated through
   `docs-first-research` and rewritten for this kit through approved `write-a-skill` and
   `execute-plan` work.
@@ -264,6 +270,7 @@ Important directories:
 
 ```txt
 kit/
+optional-skills/
 kit/project-templates/
 kit/skills/
 kit/prompts/
@@ -281,6 +288,9 @@ dev_locals/
 ```
 
 `kit/` is the installable payload source.
+
+`optional-skills/` is source-only repository content for explicitly adopted specialist skills. It
+is not copied by the maintained installer and must not be treated as default-installed capability.
 
 `.codex/project/` is durable project memory for this repository itself and is not part of the installable `kit/` payload.
 
@@ -720,6 +730,10 @@ Completed:
     - added `docs/optional-skill-catalog.md` as source-repository planning documentation
     - defined optional candidate metadata, status, and workflow routing without adding packs or
       installer behavior
+- React Component Patterns optional specialist
+    - added `optional-skills/react-component-patterns/` as source-only, experimental guidance
+    - kept default installation, installer behavior, force prompts, and adjacent frontend
+      specialist concerns out of scope
 - Consolidation archive Bash apply-theme helper
     - archived `scripts/apply-theme-zip.sh` and `scripts/lib/workflow-common.sh` under
       `archive/legacy-bash-workflows/`

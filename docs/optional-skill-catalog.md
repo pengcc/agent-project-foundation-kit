@@ -43,6 +43,9 @@ Optional specialist packs are future separately approved additions for project-s
 technology-specific, domain-specific, or lifecycle-specific needs. They must not be installed by
 default unless a future approved installer design explicitly supports that behavior.
 
+Approved source-only optional skills live under `optional-skills/`. That directory is outside the
+default installable `kit/` payload and requires explicit project adoption.
+
 Reference candidates are external skills, public workflows, or observed project patterns that may
 inform future kit work after evaluation. A reference candidate is not an approved optional pack.
 
@@ -162,10 +165,12 @@ execution.
 
 Installer support is future work and requires a separate approved plan.
 
-## Initial Catalog
-
-No optional specialist packs are implemented by this phase.
+## Current Catalog
 
 | ID | Name | Category | Maturity | Install default | Adaptation status | Recommended next workflow |
 | --- | --- | --- | --- | --- | --- | --- |
-| _none yet_ | _No optional packs approved_ | _n/a_ | reference | never | reference-only | plan-with-context when a concrete need is approved |
+| react-component-patterns | React Component Patterns | technology / framework | experimental | never | implemented | plan-with-context for explicit project adoption |
+
+`react-component-patterns` requires React dependency or source evidence. It covers component and
+local-state implementation only; Next.js, React Server Components, TanStack, shadcn/ui, Tailwind,
+testing, architecture, and data fetching remain separate concerns.
