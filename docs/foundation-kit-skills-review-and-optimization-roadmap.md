@@ -165,6 +165,10 @@ tooling:
 
 - the Node publish CLI is the maintained publish path
 - the Node installer is the maintained installation path
+- Biome 2.5.0 is the source-repository format/lint/organize-imports quality gate, including for
+  installable `kit/` content before it is shipped
+- Biome is not installed or configured downstream; initialization may only recommend it as a
+  manual setup candidate when no formatter/linter exists
 - Bash apply-theme is archived under `archive/legacy-bash-workflows/` as source-only historical
   reference
 - Bash publish and installer implementations under `archive/legacy-bash-workflows/` are
@@ -1341,6 +1345,19 @@ Phase 7 Optional Skill Catalog and Specialist Packs is complete. It added source
 planning documentation for future optional specialist candidates. Later approved React component
 patterns and TanStack Router/Query patterns updates add focused source-only optional packages
 without adding installer, marketplace, or auto-install behavior.
+
+Downstream installation and first-adoption hardening is complete. The installer now distinguishes
+new and existing project conflict policy through explicit project modes, defaults auto detection
+to existing-like caution when signals or conflicts are present, and requires explicit overwrite
+authorization before established-project conflicts can reach the existing confirmed backup/apply
+path. First-adoption guidance routes successful installs through project-context initialization,
+keeps roadmaps as initialization input, and preserves manual-only boundaries for package aliases,
+optional skills, and formatter/linter adoption.
+
+Source-repository Biome quality gating is complete. Biome 2.5.0 checks the foundation-kit source,
+including installable payload files, before publishing or installation. It remains source-only
+tooling: the installer does not install or configure Biome, and downstream adoption remains an
+optional manual setup decision.
 
 The next recommended implementation areas remain future work and require separate plans:
 

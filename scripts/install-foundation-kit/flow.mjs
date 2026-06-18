@@ -1,16 +1,22 @@
-import { randomUUID } from 'node:crypto';
-import { resolve } from 'node:path';
-import { prepareBackupSnapshots, materializeBackup } from './backup.mjs';
+import { randomUUID } from "node:crypto";
+import { materializeBackup, prepareBackupSnapshots } from "./backup.mjs";
+import { reportConflicts } from "./conflict.mjs";
 import {
   applyStagedPlan,
   cleanupRuntime,
   createRuntimeRoot,
   stageReplacements,
-} from './copier.mjs';
-import { reportConflicts } from './conflict.mjs';
-import { createFinalReport, printFinalReport } from './final-report.mjs';
-import { buildInstallPlan, revalidateInstallPlan } from './planner.mjs';
-import { resolveInstallRoots } from './validation.mjs';
+} from "./copier.mjs";
+import { InstallerError } from "./errors.mjs";
+import { createFinalReport, printBlockedReport, printFinalReport } from "./final-report.mjs";
+import { buildInstallPlan, revalidateInstallPlan } from "./planner.mjs";
+import {
+  conflictOverwriteBlocked,
+  conflictPolicyOutcome,
+  resolveProjectMode,
+} from "./project-mode.mjs";
+import { inspectTargetProject } from "./target-project.mjs";
+import { resolveInstallRoots } from "./validation.mjs";
 
 export async function runInstallerFlow({
   repoRoot,
@@ -24,7 +30,17 @@ export async function runInstallerFlow({
   hooks = {},
 }) {
   const roots = await resolveInstallRoots({ repoRoot, target: options.target });
+  const targetProject = await inspectTargetProject(roots.targetRoot);
   const plan = await buildInstallPlan(roots);
+  const policy = resolveProjectMode({
+    requestedMode: options.projectMode,
+    detectedSignals: targetProject.detectedSignals,
+    conflicts: plan.conflicts,
+  });
+  const conflictPolicy = conflictPolicyOutcome({
+    policy,
+    overwriteConflicts: options.overwriteConflicts,
+  });
   output.info(`Source kit: ${roots.kitRoot}`);
   output.info(`Target root: ${roots.targetRoot}`);
   output.info(
@@ -40,24 +56,46 @@ export async function runInstallerFlow({
   });
 
   if (!options.apply) {
-    output.info('Dry-run only. Re-run with --apply to write files.');
+    output.info("Dry-run only. Re-run with --apply to write files.");
     const report = createFinalReport({
-      mode: 'dry-run',
+      mode: "dry-run",
       plan,
       targetRoot: roots.targetRoot,
+      policy,
+      conflictPolicy,
     });
     printFinalReport(report, output);
     return { report, plan };
   }
 
+  if (conflictOverwriteBlocked({ policy, overwriteConflicts: options.overwriteConflicts })) {
+    const report = createFinalReport({
+      mode: "blocked",
+      plan,
+      targetRoot: roots.targetRoot,
+      policy,
+      conflictPolicy,
+    });
+    printBlockedReport(report, output);
+    throw new InstallerError(
+      "CONFLICT_REVIEW_REQUIRED",
+      "Existing-project conflicts require manual review or --overwrite-conflicts.",
+    );
+  }
+
   if (plan.conflicts) {
+    const context =
+      policy.effectiveMode === "new"
+        ? "Conflicts are treated as starter files or previous-install remnants."
+        : "Conflicts may contain important existing-project context.";
+    output.danger(context);
     output.danger(
-      'Conflicts will be backed up only after explicit authorization and complete preparation.',
+      "Conflicts will be backed up and overwritten only after typed confirmation and complete preparation.",
     );
     await prompts.confirmBackup();
   }
 
-  let runtimeRoot = '';
+  let runtimeRoot = "";
   let materialized = null;
   try {
     runtimeRoot = await createRuntimeRoot(roots.repoRoot, runId);
@@ -98,9 +136,11 @@ export async function runInstallerFlow({
     });
 
     const report = createFinalReport({
-      mode: 'apply',
+      mode: "apply",
       plan,
       targetRoot: roots.targetRoot,
+      policy,
+      conflictPolicy,
       backupRelative: materialized?.backupRelative,
     });
     printFinalReport(report, output);
@@ -108,9 +148,7 @@ export async function runInstallerFlow({
   } catch (error) {
     const completed = error?.completedTargets ?? [];
     if (completed.length) {
-      output.danger(
-        `Partial apply: ${completed.length} mapped file(s) completed before failure.`,
-      );
+      output.danger(`Partial apply: ${completed.length} mapped file(s) completed before failure.`);
     }
     if (materialized?.backupRelative) {
       output.info(`Prepared backup retained at: ${materialized.backupRelative}`);

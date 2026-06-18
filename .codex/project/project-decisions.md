@@ -1997,3 +1997,95 @@ optional-skills/tanstack-router-query-patterns/SKILL.md
 optional-skills/tanstack-router-query-patterns/metadata.yml
 docs/optional-skill-catalog.md
 ```
+
+## Decision: Installer project mode controls conflict policy without changing payload behavior
+
+### Status
+
+Accepted
+
+### Context
+
+The maintained installer previously used one conflict path for both empty starter projects and
+established projects. Existing projects may contain important `AGENTS.md` or `.codex/project/`
+context that should not reach overwrite authorization by default.
+
+### Decision
+
+Add `--project-mode auto|new|existing`, defaulting to `auto`, plus
+`--overwrite-conflicts` for explicit existing-like overwrite authorization.
+
+Auto mode resolves detected project signals or mapped-file conflicts to existing-like caution.
+Existing-like apply with conflicts stops before staging, backup preparation, prompting, or target
+writes unless `--overwrite-conflicts` is present. Explicit overwrite still requires complete
+conflict display, a strong warning, typed `INSTALL_WITH_BACKUP` confirmation, verified backup,
+plan revalidation, and the existing single apply path. New mode retains the same safeguards while
+treating conflicts as starter files or previous-install remnants.
+
+Project mode does not change mappings, optional-skill installation, downstream `package.json`,
+dependencies, formatter/linter installation, project-memory merging, publish behavior, or the
+installed publish runtime.
+
+Successful installation directs users to `force-initialize-project-context`. Existing product
+plans and roadmaps are initialization inputs. Feature implementation waits for initialization and
+approved durable-memory updates. Optional skills, package aliases, and Biome adoption remain
+manual, separately approved setup.
+
+### Impact
+
+Existing projects receive a non-zero safety stop before conflict side effects, while intentional
+new-project and explicit-overwrite flows reuse the mature backup/apply machinery. The installer
+remains payload-stable and dependency-free.
+
+## Decision: Biome is a source-repository quality gate, not a downstream requirement
+
+### Status
+
+Accepted
+
+### Context
+
+Installable scripts, documentation, skills, prompts, rules, and templates should be formatted and
+checked consistently before they are published or installed downstream. That source-repository
+quality concern must not silently become target-project tooling policy.
+
+### Decision
+
+Use pinned Biome 2.5.0 and the root `biome.json` for foundation-kit source formatting, linting,
+and organize-imports assists. Expose `format`, `format:check`, and `biome:fix` package scripts, and
+run `biome check .` at the start of `pnpm check`.
+
+Biome covers source files under `kit/`, including scripts that the installer later copies to
+downstream `.codex/scripts/`. The installer does not install Biome, create target Biome
+configuration, modify target `package.json`, or require downstream projects to adopt Biome.
+
+When initialization finds no existing formatter/linter in a downstream project, it may recommend
+Biome as a manual setup candidate through a separate approved plan. Existing project tooling takes
+priority.
+
+### Impact
+
+The source repository gains one consistent quality gate while preserving downstream project
+autonomy and existing installer boundaries.
+
+## Decision: Generic change-safety lessons are deliberately distilled, not template-copied
+
+### Status
+
+Accepted
+
+### Context
+
+The source lesson history combines reusable principles with foundation-kit-specific context.
+
+### Decision
+
+Keep repository-specific lessons in `.codex/project/lessons-learned.md`. PR #81 distilled the
+generic change-safety subset into `kit/rules/engineering-quality-principles.md` section `Change
+Safety and Evidence`. Keep `kit/project-templates/lessons-learned.md` as a blank downstream
+template. Future promotions require deliberate generalization into a reusable rule, skill, or
+documentation; never copy project memory automatically.
+
+### Impact
+
+Reusable guidance, source history, and downstream memory remain cleanly separated.

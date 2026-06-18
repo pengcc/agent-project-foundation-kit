@@ -334,6 +334,26 @@ Resulting files:
 docs/foundation-design-log.md
 ```
 
+## Lessons-Learned Extraction Completion
+
+PR #81 completed the deliberate extraction of generic change-safety guidance from source project
+memory into `kit/rules/engineering-quality-principles.md` section `Change Safety and Evidence`.
+
+Distilled principles:
+
+- prefer the simplest safe path;
+- preserve mature files unless full replacement is explicitly justified;
+- treat large deletions, line-count drops, and stub replacements as destructive-risk signals;
+- search repository-wide before and after rename/migration work;
+- choose update methods by review safety;
+- verify remote/external facts through authoritative evidence;
+- treat manual confirmation as intent, not external fact;
+- place confirmations at safety boundaries.
+
+Repository-specific history remains in `.codex/project/lessons-learned.md`; the downstream
+`kit/project-templates/lessons-learned.md` remains blank. Future generic lessons require deliberate
+distillation into reusable rules, skills, or documentation rather than automatic copying.
+
 ## Theme 10: Project Architecture Plan
 
 Accepted decisions:
@@ -2105,5 +2125,68 @@ kit/skills/core/code-review/SKILL.md
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-guideline.md
 .codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
+
+## Downstream Installation and First-Adoption Hardening
+
+Accepted decisions:
+
+1. Add installer project modes `auto`, `new`, and `existing`; default to `auto`.
+2. Resolve project signals or conflicts to existing-like caution in auto mode.
+3. Block existing-like conflict apply before staging unless `--overwrite-conflicts` is explicit.
+4. Keep conflict display, strong warning, typed confirmation, verified backup, plan revalidation,
+   apply, and cleanup on the single existing safe path.
+5. Keep mappings, optional-skill installation, downstream package files, dependencies,
+   formatter/linter installation, project-memory merging, and publish runtime behavior unchanged.
+6. Direct successful installations to force project-context initialization and treat roadmaps as
+   initialization input.
+7. Keep `.codex/scripts` as the installed helper location, package aliases as manual setup,
+   optional skills as manually adopted source-only packages, and Biome as recommendation-only.
+8. Promote generic change-safety lessons into the existing engineering quality rule without
+   copying source-repository history into downstream templates.
+
+Resulting files / changes:
+
+```txt
+scripts/install-foundation-kit/
+tests/install-foundation-kit/
+README.md
+kit/prompts/force-initialize-project-context.md
+kit/skills/core/initialize-project-context/SKILL.md
+kit/rules/engineering-quality-principles.md
+optional-skills/README.md
+docs/optional-skill-catalog.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+docs/foundation-design-log.md
+```
+
+## Source-Repository Biome Quality Gate
+
+Accepted decisions:
+
+1. Pin Biome 2.5.0 as a source-repository development dependency.
+2. Use `pnpm format`, `pnpm format:check`, and `pnpm biome:fix` for source formatting/checking and
+   safe Biome fixes, including organize-imports assists.
+3. Run `biome check .` before publish tests, installer tests, and whitespace validation in
+   `pnpm check`.
+4. Apply source checks to installable `kit/` content before it is published or installed.
+5. Do not install Biome, create Biome configuration, or modify `package.json` in downstream
+   projects.
+6. Keep downstream Biome adoption recommendation-only when initialization finds no existing
+   formatter/linter setup.
+
+Resulting files / changes:
+
+```txt
+biome.json
+package.json
+pnpm-lock.yaml
+README.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```

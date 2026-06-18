@@ -238,3 +238,26 @@ Keep authorization, credential handling, cryptography, destructive operations, a
 security-sensitive behavior behind small auditable boundaries with consistent enforcement. Prefer
 secure defaults, least privilege, established libraries or patterns, and docs-first verification
 over custom security mechanisms.
+
+## 21. Change Safety and Evidence
+
+Prefer the simplest safe, reviewable update path. Preserve mature files and make targeted changes
+unless a full replacement is explicitly justified by the approved scope and is easier to verify.
+
+Treat large deletions, major line-count drops, and replacement of mature content with stubs as
+destructive-risk signals. Stop and review the diff before continuing.
+
+Choose the update method by review safety:
+
+- isolated edits: direct patch
+- coordinated changes within one file: full-file replacement only when it is safer to review
+- coordinated multi-file changes: a bounded bundle with complete diff review
+
+For rename or migration work, search repository-wide before and after the change. Classify
+remaining references as current, historical, or stale rather than assuming every match should be
+changed.
+
+Verify external or remote state through authoritative evidence. Manual confirmation expresses
+intent but does not prove external state. Place confirmations at meaningful safety boundaries;
+do not add prompts to every mechanical step when one explicit, scope-visible authorization is
+sufficient.

@@ -16,12 +16,16 @@
     "test:node": "vitest run",
     "test:publish": "pnpm test:publish:node",
     "test:publish:node": "vitest run tests/publish-changes",
-    "check": "pnpm test:publish && pnpm test:install && git diff --check"
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "biome:fix": "biome check --write .",
+    "check": "biome check . && pnpm test:publish && pnpm test:install && git diff --check"
   },
   "dependencies": {
     "yaml": "^2.9.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.0",
     "vitest": "^4.1.8"
   }
 }

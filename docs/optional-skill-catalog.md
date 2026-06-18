@@ -142,6 +142,21 @@ detect need
 
 Do not skip from a missing capability directly to implementation.
 
+For a source-only skill that is already implemented in this repository, manual downstream
+adoption follows this narrower flow:
+
+```txt
+matching project signal or explicit need
+-> project-specific plan
+-> user approval
+-> copy only optional-skills/<skill-name>/ to target .codex/skills/<skill-name>/
+-> validate metadata, content, dependencies, conflicts, and installed-skill routing
+-> update target project memory through update-project-memory
+```
+
+This is a manual, selected-skill copy workflow. It does not authorize installer flags, automatic
+selection, default installation, package-manager changes, or copying the whole optional tree.
+
 ## Workflow Interactions
 
 `initialize-project-context` may identify project signals that suggest future optional specialist
