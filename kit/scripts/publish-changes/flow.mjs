@@ -1,15 +1,5 @@
 import { PublishError } from "../shared/errors.mjs";
 import {
-  chooseClassification,
-  chooseCompletionMode,
-  chooseValidation,
-} from "./prompts.mjs";
-import {
-  recommendClassification,
-  renderScopeSummary,
-} from "./scope-summary.mjs";
-import { detectPublishState } from "./state.mjs";
-import {
   createOrUpdatePullRequest,
   ensureFeatureBranch,
   pollForVerifiedMerge,
@@ -17,12 +7,15 @@ import {
   verifyAndMerge,
 } from "./actions.mjs";
 import { renderFinalReport } from "./final-report.mjs";
-import { assertSecretSafePublishScope } from "./secret-safety.mjs";
+import { chooseClassification, chooseCompletionMode, chooseValidation } from "./prompts.mjs";
 import {
   assertHeadFingerprint,
   collectExactPublishScope,
   commitConfirmedScope,
 } from "./scope-safety.mjs";
+import { recommendClassification, renderScopeSummary } from "./scope-summary.mjs";
+import { assertSecretSafePublishScope } from "./secret-safety.mjs";
+import { detectPublishState } from "./state.mjs";
 
 const LABELS = {
   small_safe: "Small safe",
@@ -56,19 +49,11 @@ export async function runPublishFlow({
   output.info(`Current branch: ${state.branch}`);
   output.info(`Uncommitted changes: ${state.hasUncommitted ? "yes" : "no"}`);
   output.info(`Unpushed commits: ${state.hasUnpushed ? "yes" : "no"}`);
-  output.info(
-    `Current-branch PR: ${state.currentBranchPr?.number ?? "none detected"}`,
-  );
+  output.info(`Current-branch PR: ${state.currentBranchPr?.number ?? "none detected"}`);
 
   if (!state.defaultFresh) {
-    output.warning(
-      `Current HEAD does not include the latest origin/${defaultBranch}.`,
-    );
-    if (
-      !(await prompts.confirm(
-        "Continue publishing from the current branch state?",
-      ))
-    ) {
+    output.warning(`Current HEAD does not include the latest origin/${defaultBranch}.`);
+    if (!(await prompts.confirm("Continue publishing from the current branch state?"))) {
       throw new PublishError(
         "UNSAFE_BRANCH_STATE",
         `Stopped because the current branch is not based on origin/${defaultBranch}.`,
@@ -82,23 +67,13 @@ export async function runPublishFlow({
         .map((pr) => `#${pr.number} ${pr.title} ${pr.url}`)
         .join("; ")}`,
     );
-    if (
-      !(await prompts.confirm(
-        "Continue after reviewing repository open pull requests?",
-      ))
-    ) {
-      throw new PublishError(
-        "USER_CANCELLED",
-        "Stopped after repository pull request review.",
-      );
+    if (!(await prompts.confirm("Continue after reviewing repository open pull requests?"))) {
+      throw new PublishError("USER_CANCELLED", "Stopped after repository pull request review.");
     }
   }
 
   if (!state.hasUncommitted && !state.hasUnpushed) {
-    if (
-      state.currentBranchPr?.mergedAt &&
-      state.currentBranchPr.baseRefName === defaultBranch
-    ) {
+    if (state.currentBranchPr?.mergedAt && state.currentBranchPr.baseRefName === defaultBranch) {
       const approved = await prompts.confirm(
         `Refresh local ${defaultBranch} from verified merged PR?`,
       );
@@ -114,9 +89,7 @@ export async function runPublishFlow({
       return { status: "recovered", state };
     }
     if (state.currentBranchPr?.state === "OPEN") {
-      output.info(
-        `PR #${state.currentBranchPr.number} remains open: ${state.currentBranchPr.url}`,
-      );
+      output.info(`PR #${state.currentBranchPr.number} remains open: ${state.currentBranchPr.url}`);
       return { status: "open-pr", state };
     }
     output.success("Nothing to publish.");
@@ -163,15 +136,8 @@ export async function runPublishFlow({
   });
   const confirmedScope = confirmed.scope;
 
-  if (
-    !(await prompts.confirm(
-      "Does this scope match the intended task boundary?",
-    ))
-  ) {
-    throw new PublishError(
-      "USER_CANCELLED",
-      "Scope consistency was not confirmed.",
-    );
+  if (!(await prompts.confirm("Does this scope match the intended task boundary?"))) {
+    throw new PublishError("USER_CANCELLED", "Scope consistency was not confirmed.");
   }
   await assertHeadFingerprint(
     git,
@@ -185,7 +151,7 @@ export async function runPublishFlow({
     output,
   });
 
-  let branch = await ensureFeatureBranch({
+  const branch = await ensureFeatureBranch({
     state,
     git,
     prompts,
@@ -210,11 +176,7 @@ export async function runPublishFlow({
     actions.push("commit");
   }
 
-  const validation = await chooseValidation(
-    prompts,
-    classification,
-    classificationPolicy,
-  );
+  const validation = await chooseValidation(prompts, classification, classificationPolicy);
   await assertHeadFingerprint(
     git,
     expectedPushHead,
@@ -234,15 +196,10 @@ export async function runPublishFlow({
   });
   actions.push("pull request create/update");
 
-  let mode =
+  const mode =
     classification === "small_safe" && classificationPolicy.allow_auto_merge
       ? "auto"
-      : await chooseCompletionMode(
-          prompts,
-          classification,
-          classificationPolicy,
-          output,
-        );
+      : await chooseCompletionMode(prompts, classification, classificationPolicy, output);
   let refreshStatus = "not requested";
 
   if (mode !== "pr_only") {
@@ -251,25 +208,15 @@ export async function runPublishFlow({
         "Confirm manual PR review and squash merge approval.",
         "I HAVE REVIEWED THE PR AND APPROVE SQUASH MERGE",
       );
-      if (!approved)
-        throw new PublishError(
-          "USER_CANCELLED",
-          "Manual PR review was not approved.",
-        );
+      if (!approved) throw new PublishError("USER_CANCELLED", "Manual PR review was not approved.");
     }
-    if (
-      classification === "significant" &&
-      classificationPolicy.require_typed_confirmation
-    ) {
+    if (classification === "significant" && classificationPolicy.require_typed_confirmation) {
       const approved = await prompts.typed(
         "High-impact merge requires additional approval.",
         "I APPROVE HIGH IMPACT MERGE",
       );
       if (!approved)
-        throw new PublishError(
-          "USER_CANCELLED",
-          "High-impact merge was not approved.",
-        );
+        throw new PublishError("USER_CANCELLED", "High-impact merge was not approved.");
     }
 
     await verifyAndMerge({
@@ -285,15 +232,10 @@ export async function runPublishFlow({
       intervalMs: Number(env.PUBLISH_READINESS_POLL_INTERVAL_MS || 2000),
       sleep,
     });
-    actions.push(
-      mode === "auto" ? "enable auto-merge" : "immediate squash merge",
-    );
+    actions.push(mode === "auto" ? "enable auto-merge" : "immediate squash merge");
 
     let verifiedPr = null;
-    if (
-      mode === "immediate" ||
-      (mode === "auto" && classificationPolicy.poll_after_auto_merge)
-    ) {
+    if (mode === "immediate" || (mode === "auto" && classificationPolicy.poll_after_auto_merge)) {
       verifiedPr = await pollForVerifiedMerge({
         gh,
         repo: state.repo,
@@ -308,10 +250,7 @@ export async function runPublishFlow({
       refreshStatus = "polling disabled by policy";
     }
 
-    if (
-      verifiedPr &&
-      classificationPolicy.refresh_default_branch_after_verified_merge
-    ) {
+    if (verifiedPr && classificationPolicy.refresh_default_branch_after_verified_merge) {
       const result = await refreshDefaultBranch({
         git,
         prompts,
@@ -319,9 +258,7 @@ export async function runPublishFlow({
         defaultBranch,
         verifiedPr,
       });
-      refreshStatus = result.refreshed
-        ? "refreshed after verified merge"
-        : "refresh not completed";
+      refreshStatus = result.refreshed ? "refreshed after verified merge" : "refresh not completed";
       if (result.refreshed) actions.push("default branch refresh");
     } else if (verifiedPr) {
       output.info(manualRefreshInstruction(defaultBranch));

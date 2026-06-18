@@ -1,33 +1,23 @@
-import { mkdir } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import {
-  atomicCopyIntoTarget,
-  copyPreserved,
-  hashFile,
-  removeTree,
-} from './fs-safe.mjs';
-import { InstallerError, throwIfAborted } from './errors.mjs';
-import { updateBackupManifest } from './backup.mjs';
+import { mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+import { updateBackupManifest } from "./backup.mjs";
+import { InstallerError, throwIfAborted } from "./errors.mjs";
+import { atomicCopyIntoTarget, copyPreserved, hashFile, removeTree } from "./fs-safe.mjs";
 
 export async function createRuntimeRoot(repoRoot, runId) {
   const runtimeRoot = resolve(
     repoRoot,
-    'dev_locals',
-    'workflow-tmp',
-    'install-foundation-kit',
+    "dev_locals",
+    "workflow-tmp",
+    "install-foundation-kit",
     runId,
   );
   await mkdir(runtimeRoot, { recursive: true });
   return runtimeRoot;
 }
 
-export async function stageReplacements({
-  plan,
-  kitRoot,
-  runtimeRoot,
-  signal,
-}) {
-  const stagedRoot = resolve(runtimeRoot, 'replacements');
+export async function stageReplacements({ plan, kitRoot, runtimeRoot, signal }) {
+  const stagedRoot = resolve(runtimeRoot, "replacements");
   for (const entry of plan.entries) {
     throwIfAborted(signal);
     const source = resolve(kitRoot, entry.sourceRelative);
@@ -35,7 +25,7 @@ export async function stageReplacements({
     await copyPreserved(source, staged);
     if ((await hashFile(staged)) !== entry.sourceSha256) {
       throw new InstallerError(
-        'STAGING_VERIFICATION_FAILED',
+        "STAGING_VERIFICATION_FAILED",
         `Staged replacement hash mismatch: ${entry.targetRelative}`,
       );
     }
@@ -53,7 +43,7 @@ export async function applyStagedPlan({
 }) {
   const completedTargets = [];
   if (materializedBackup) {
-    await updateBackupManifest(materializedBackup, { status: 'applying' });
+    await updateBackupManifest(materializedBackup, { status: "applying" });
   }
   try {
     for (const entry of plan.entries) {
@@ -68,7 +58,7 @@ export async function applyStagedPlan({
       });
       if ((await hashFile(resolve(targetRoot, entry.targetRelative))) !== entry.sourceSha256) {
         throw new InstallerError(
-          'INSTALL_VERIFICATION_FAILED',
+          "INSTALL_VERIFICATION_FAILED",
           `Installed file hash mismatch: ${entry.targetRelative}`,
         );
       }
@@ -83,7 +73,7 @@ export async function applyStagedPlan({
   } catch (error) {
     if (materializedBackup) {
       await updateBackupManifest(materializedBackup, {
-        status: error?.type === 'INTERRUPTED' ? 'interrupted' : 'failed',
+        status: error?.type === "INTERRUPTED" ? "interrupted" : "failed",
         completedTargets: [...completedTargets],
       });
     }
@@ -92,7 +82,7 @@ export async function applyStagedPlan({
   }
   if (materializedBackup) {
     await updateBackupManifest(materializedBackup, {
-      status: 'completed',
+      status: "completed",
       completedTargets: [...completedTargets],
     });
   }

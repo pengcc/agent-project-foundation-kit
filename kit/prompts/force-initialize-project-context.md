@@ -26,7 +26,7 @@ Read and compare available sources:
 
 ```txt
 - user-provided product specification or product description
-- user-provided project development plan
+- user-provided project development plan or roadmap
 - README.md
 - docs/
 - existing .codex/project/ memory, if present
@@ -40,6 +40,13 @@ Read and compare available sources:
 ```
 
 If product or project planning documents exist, compare them against repo reality.
+
+Treat an existing product plan or roadmap as initialization input, not as a conflict or a file to
+replace. Preserve it, compare it with current code/config/tests, and report any gap.
+
+Detect existing formatter/linter setup from Biome, ESLint, Prettier, package scripts, lockfiles,
+and package-manager indicators. Preserve configured tooling. If none exists, recommend Biome only
+as a Manual Setup Task requiring a separate approved plan; do not install or replace tooling.
 
 Clearly separate:
 
@@ -98,6 +105,9 @@ dev_locals/research-notes/YYYY-MM-DD-project-initialization-report.md
 This report is local-only and is not the long-term source of truth.
 
 Long-term durable facts, decisions, and lessons must be written through `update-project-memory`.
+
+Do not start feature implementation until initialization is complete and required project-memory
+updates have been reviewed and approved.
 
 Classify open questions as:
 

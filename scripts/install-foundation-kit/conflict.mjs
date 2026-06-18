@@ -1,4 +1,4 @@
-import { resolve } from 'node:path';
+import { resolve } from "node:path";
 
 export async function reportConflicts({
   plan,
@@ -8,18 +8,16 @@ export async function reportConflicts({
   showDiff,
   commandRunner,
 }) {
-  const conflicts = plan.entries.filter((entry) => entry.state === 'conflict');
+  const conflicts = plan.entries.filter((entry) => entry.state === "conflict");
   if (!conflicts.length) return;
   output.danger(`Conflict report: ${conflicts.length} existing target file(s).`);
-  output.danger('Existing files require backup-and-replace authorization.');
+  output.danger("Existing files require backup-and-replace authorization.");
 
   for (const entry of conflicts) {
-    output.danger(
-      `${entry.targetRelative} <- ${entry.sourceRelative} (${entry.contentState})`,
-    );
+    output.danger(`${entry.targetRelative} <- ${entry.sourceRelative} (${entry.contentState})`);
     if (!showDiff) continue;
-    const result = await commandRunner.run('diff', [
-      '-u',
+    const result = await commandRunner.run("diff", [
+      "-u",
       resolve(targetRoot, entry.targetRelative),
       resolve(kitRoot, entry.sourceRelative),
     ]);

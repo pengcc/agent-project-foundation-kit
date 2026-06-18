@@ -1,41 +1,34 @@
-import { join } from 'node:path';
-import { walkRegularFiles, relativePosix } from './fs-safe.mjs';
+import { join } from "node:path";
+import { relativePosix, walkRegularFiles } from "./fs-safe.mjs";
 
 export const DIRECT_MAPPINGS = Object.freeze([
-  ['project-templates/AGENTS.md', 'AGENTS.md', 'project-template'],
+  ["project-templates/AGENTS.md", "AGENTS.md", "project-template"],
   [
-    'project-templates/project-guideline.md',
-    '.codex/project/project-guideline.md',
-    'project-template',
+    "project-templates/project-guideline.md",
+    ".codex/project/project-guideline.md",
+    "project-template",
   ],
   [
-    'project-templates/project-decisions.md',
-    '.codex/project/project-decisions.md',
-    'project-template',
+    "project-templates/project-decisions.md",
+    ".codex/project/project-decisions.md",
+    "project-template",
   ],
-  [
-    'project-templates/lessons-learned.md',
-    '.codex/project/lessons-learned.md',
-    'project-template',
-  ],
+  ["project-templates/lessons-learned.md", ".codex/project/lessons-learned.md", "project-template"],
 ]);
 
 export const TREE_MAPPINGS = Object.freeze([
-  ['skills', '.codex/skills', 'skills'],
-  ['prompts', '.codex/prompts', 'prompts'],
-  ['rules', '.codex/rules', 'rules'],
-  ['config', '.codex/config', 'config'],
-  ['github-settings', '.codex/github-settings', 'github-settings'],
-  ['scripts', '.codex/scripts', 'scripts'],
+  ["skills", ".codex/skills", "skills"],
+  ["prompts", ".codex/prompts", "prompts"],
+  ["rules", ".codex/rules", "rules"],
+  ["config", ".codex/config", "config"],
+  ["github-settings", ".codex/github-settings", "github-settings"],
+  ["scripts", ".codex/scripts", "scripts"],
 ]);
 
 export function isLocalOsJunkFile(relativePath) {
-  const name = relativePath.split('/').at(-1);
+  const name = relativePath.split("/").at(-1);
   return (
-    name === '.DS_Store' ||
-    name === 'Thumbs.db' ||
-    name === 'desktop.ini' ||
-    name.startsWith('._')
+    name === ".DS_Store" || name === "Thumbs.db" || name === "desktop.ini" || name.startsWith("._")
   );
 }
 
@@ -59,7 +52,5 @@ export async function buildMappings(kitRoot) {
     }
   }
 
-  return mappings.sort((left, right) =>
-    left.targetRelative.localeCompare(right.targetRelative),
-  );
+  return mappings.sort((left, right) => left.targetRelative.localeCompare(right.targetRelative));
 }

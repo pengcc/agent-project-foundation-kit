@@ -1997,3 +1997,42 @@ optional-skills/tanstack-router-query-patterns/SKILL.md
 optional-skills/tanstack-router-query-patterns/metadata.yml
 docs/optional-skill-catalog.md
 ```
+
+## Decision: Installer project mode controls conflict policy without changing payload behavior
+
+### Status
+
+Accepted
+
+### Context
+
+The maintained installer previously used one conflict path for both empty starter projects and
+established projects. Existing projects may contain important `AGENTS.md` or `.codex/project/`
+context that should not reach overwrite authorization by default.
+
+### Decision
+
+Add `--project-mode auto|new|existing`, defaulting to `auto`, plus
+`--overwrite-conflicts` for explicit existing-like overwrite authorization.
+
+Auto mode resolves detected project signals or mapped-file conflicts to existing-like caution.
+Existing-like apply with conflicts stops before staging, backup preparation, prompting, or target
+writes unless `--overwrite-conflicts` is present. Explicit overwrite still requires complete
+conflict display, a strong warning, typed `INSTALL_WITH_BACKUP` confirmation, verified backup,
+plan revalidation, and the existing single apply path. New mode retains the same safeguards while
+treating conflicts as starter files or previous-install remnants.
+
+Project mode does not change mappings, optional-skill installation, downstream `package.json`,
+dependencies, formatter/linter installation, project-memory merging, publish behavior, or the
+installed publish runtime.
+
+Successful installation directs users to `force-initialize-project-context`. Existing product
+plans and roadmaps are initialization inputs. Feature implementation waits for initialization and
+approved durable-memory updates. Optional skills, package aliases, and Biome adoption remain
+manual, separately approved setup.
+
+### Impact
+
+Existing projects receive a non-zero safety stop before conflict side effects, while intentional
+new-project and explicit-overwrite flows reuse the mature backup/apply machinery. The installer
+remains payload-stable and dependency-free.

@@ -1,10 +1,10 @@
-import { PublishError } from '../shared/errors.mjs';
-import { pollForVerifiedMerge, refreshDefaultBranch } from './actions.mjs';
-import { renderMergePrReport } from './final-report.mjs';
-import { assertMergeReady, evaluateRequiredChecks } from './validation.mjs';
+import { PublishError } from "../shared/errors.mjs";
+import { pollForVerifiedMerge, refreshDefaultBranch } from "./actions.mjs";
+import { renderMergePrReport } from "./final-report.mjs";
+import { assertMergeReady, evaluateRequiredChecks } from "./validation.mjs";
 
 function showPullRequestMetadata(output, pr) {
-  output.step('Pull request metadata');
+  output.step("Pull request metadata");
   output.info(`Number: ${pr.number}`);
   output.info(`Title: ${pr.title}`);
   output.info(`URL: ${pr.url}`);
@@ -12,7 +12,7 @@ function showPullRequestMetadata(output, pr) {
   output.info(`Head SHA/OID: ${pr.headRefOid}`);
   output.info(`Base branch: ${pr.baseRefName}`);
   output.info(`State: ${pr.state}`);
-  output.info(`Draft: ${pr.isDraft ? 'yes' : 'no'}`);
+  output.info(`Draft: ${pr.isDraft ? "yes" : "no"}`);
   output.info(`Mergeability: ${pr.mergeable}`);
 }
 
@@ -26,7 +26,7 @@ async function validateMergeCandidate({ gh, repo, prNumber, defaultBranch, expec
     headSha,
   });
   const checks = await gh.requiredChecks(repo, pr.number);
-  evaluateRequiredChecks(checks, 'immediate');
+  evaluateRequiredChecks(checks, "immediate");
   return pr;
 }
 
@@ -39,19 +39,19 @@ export async function runMergePrFlow({
   env = process.env,
   sleep,
 }) {
-  const defaultBranch = env.DEFAULT_BRANCH || 'main';
+  const defaultBranch = env.DEFAULT_BRANCH || "main";
   await git.repoRoot();
   await git.origin();
   if (await git.status()) {
     throw new PublishError(
-      'UNSAFE_BRANCH_STATE',
-      'Worktree must be clean before merge or default-branch refresh actions.',
+      "UNSAFE_BRANCH_STATE",
+      "Worktree must be clean before merge or default-branch refresh actions.",
     );
   }
   if (!(await gh.authReady())) {
     throw new PublishError(
-      'GH_AUTH_FAILED',
-      'GitHub CLI authentication is required before pull request merge actions.',
+      "GH_AUTH_FAILED",
+      "GitHub CLI authentication is required before pull request merge actions.",
     );
   }
 
@@ -66,11 +66,8 @@ export async function runMergePrFlow({
     expected: displayedPr,
   });
 
-  if (
-    !options.yes &&
-    !(await prompts.confirm(`Squash merge PR #${displayedPr.number}?`))
-  ) {
-    throw new PublishError('USER_CANCELLED', 'Pull request merge was not approved.');
+  if (!options.yes && !(await prompts.confirm(`Squash merge PR #${displayedPr.number}?`))) {
+    throw new PublishError("USER_CANCELLED", "Pull request merge was not approved.");
   }
 
   const mergePr = await validateMergeCandidate({
@@ -82,8 +79,8 @@ export async function runMergePrFlow({
   });
   if (await git.status()) {
     throw new PublishError(
-      'UNSAFE_BRANCH_STATE',
-      'Worktree changed before merge. No merge was attempted.',
+      "UNSAFE_BRANCH_STATE",
+      "Worktree changed before merge. No merge was attempted.",
     );
   }
 
@@ -103,7 +100,7 @@ export async function runMergePrFlow({
 
   if (await git.status()) {
     throw new PublishError(
-      'UNSAFE_BRANCH_STATE',
+      "UNSAFE_BRANCH_STATE",
       `PR #${verifiedPr.number} merged, but the worktree changed before refresh. Local branches were not switched.`,
     );
   }
@@ -119,15 +116,15 @@ export async function runMergePrFlow({
   const report = {
     prNumber: verifiedPr.number,
     prUrl: verifiedPr.url || displayedPr.url,
-    mergeStatus: 'verified merged',
+    mergeStatus: "verified merged",
     refreshStatus: refresh.refreshed
-      ? 'refreshed with fast-forward only'
-      : 'merge succeeded; refresh blocked because fast-forward was unavailable',
+      ? "refreshed with fast-forward only"
+      : "merge succeeded; refresh blocked because fast-forward was unavailable",
     currentBranch,
   };
   renderMergePrReport(output, report);
   return {
-    status: refresh.refreshed ? 'merged-and-refreshed' : 'merged-refresh-blocked',
+    status: refresh.refreshed ? "merged-and-refreshed" : "merged-refresh-blocked",
     report,
   };
 }

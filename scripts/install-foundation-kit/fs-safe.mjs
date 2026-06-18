@@ -1,37 +1,35 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from "node:crypto";
 import {
   chmod,
   copyFile,
   lstat,
   mkdir,
   open,
-  readFile,
   readdir,
+  readFile,
   rename,
   rm,
   stat,
   utimes,
   writeFile,
-} from 'node:fs/promises';
-import { dirname, join, relative, resolve } from 'node:path';
-import { InstallerError, throwIfAborted } from './errors.mjs';
-import {
-  assertInside,
-  assertNoTargetSymlinks,
-  assertRelativePathSafe,
-} from './path-boundary.mjs';
+} from "node:fs/promises";
+import { dirname, join, relative, resolve } from "node:path";
+import { InstallerError, throwIfAborted } from "./errors.mjs";
+import { assertInside, assertNoTargetSymlinks, assertRelativePathSafe } from "./path-boundary.mjs";
 
 export async function pathStats(path) {
   try {
     return await lstat(path);
   } catch (error) {
-    if (error?.code === 'ENOENT') return null;
+    if (error?.code === "ENOENT") return null;
     throw error;
   }
 }
 
 export async function hashFile(path) {
-  return createHash('sha256').update(await readFile(path)).digest('hex');
+  return createHash("sha256")
+    .update(await readFile(path))
+    .digest("hex");
 }
 
 export async function copyPreserved(source, destination) {
@@ -42,17 +40,12 @@ export async function copyPreserved(source, destination) {
   await utimes(destination, sourceStats.atime, sourceStats.mtime);
 }
 
-export async function atomicCopyIntoTarget({
-  source,
-  targetRoot,
-  targetRelative,
-  signal,
-}) {
+export async function atomicCopyIntoTarget({ source, targetRoot, targetRelative, signal }) {
   throwIfAborted(signal);
-  assertRelativePathSafe(targetRelative, 'Target path');
+  assertRelativePathSafe(targetRelative, "Target path");
   await assertNoTargetSymlinks(targetRoot, targetRelative);
   const destination = resolve(targetRoot, targetRelative);
-  assertInside(targetRoot, destination, 'Target path');
+  assertInside(targetRoot, destination, "Target path");
   await mkdir(dirname(destination), { recursive: true });
   await assertNoTargetSymlinks(targetRoot, targetRelative);
   const temporary = `${destination}.foundation-kit-${randomUUID()}.tmp`;
@@ -72,15 +65,15 @@ export async function walkRegularFiles(root, { boundary = root } = {}) {
     entries.sort((left, right) => left.name.localeCompare(right.name));
     for (const entry of entries) {
       const path = join(directory, entry.name);
-      assertInside(boundary, path, 'Source path');
+      assertInside(boundary, path, "Source path");
       if (entry.isSymbolicLink()) {
-        throw new InstallerError('SOURCE_SYMLINK', `Source symlinks are not supported: ${path}`);
+        throw new InstallerError("SOURCE_SYMLINK", `Source symlinks are not supported: ${path}`);
       }
       if (entry.isDirectory()) await visit(path);
       else if (entry.isFile()) files.push(path);
       else {
         throw new InstallerError(
-          'UNSUPPORTED_SOURCE_ENTRY',
+          "UNSUPPORTED_SOURCE_ENTRY",
           `Unsupported source filesystem entry: ${path}`,
         );
       }
@@ -94,7 +87,7 @@ export async function writeJsonAtomic(path, value) {
   await mkdir(dirname(path), { recursive: true });
   const temporary = `${path}.${randomUUID()}.tmp`;
   try {
-    await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+    await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, "utf8");
     await rename(temporary, path);
   } finally {
     await rm(temporary, { force: true });
@@ -110,10 +103,10 @@ export async function removeTree(path) {
 }
 
 export async function assertReadable(path) {
-  const handle = await open(path, 'r');
+  const handle = await open(path, "r");
   await handle.close();
 }
 
 export function relativePosix(base, path) {
-  return relative(base, path).split('\\').join('/');
+  return relative(base, path).split("\\").join("/");
 }

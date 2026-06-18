@@ -35,6 +35,7 @@ The Node.js 24+ ESM installer is maintained source-repository tooling:
 ```bash
 pnpm install:node -- --target /path/to/downstream-project
 pnpm install:node -- --target /path/to/downstream-project --apply
+pnpm install:node -- --target /path/to/downstream-project --project-mode existing
 ```
 
 The installer defaults to dry-run. It reads installable content only from `kit/`
@@ -48,8 +49,39 @@ or piped input. It stages and verifies all replacements and backup snapshots und
 backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` with a
 `manifest.json`. The installer does not create or modify downstream `package.json`.
 
+Project mode controls conflict policy without changing mappings:
+
+- `--project-mode auto` is the default. Existing-project signals or mapped-file conflicts select
+  existing-like caution; no signals and no conflicts select new-like behavior.
+- `--project-mode new` treats conflicts as starter files or previous-install remnants and permits
+  the existing backup-and-overwrite flow after the typed confirmation.
+- `--project-mode existing` treats conflicts as important project context and blocks apply until
+  they are reviewed or `--overwrite-conflicts` is explicitly supplied.
+
+`--overwrite-conflicts` never skips conflict display, the strong warning, typed confirmation,
+backup preparation, plan revalidation, or verified overwrite. It only authorizes the existing-mode
+flow to reach those safeguards. Project mode never changes package files, dependencies, formatter
+or linter tooling, optional-skill installation, project-memory merging, or publish behavior.
+
 Use `--show-diff` for optional `diff -u` previews. A missing `diff` command warns but does not
 block dry-run, apply authorization, backup, installation, or verification.
+
+### After Installation or First Adoption
+
+After a successful apply, ask the agent to run:
+
+```txt
+.codex/prompts/force-initialize-project-context.md
+```
+
+Initialization compares the product plan or roadmap, README and docs, code, configuration, tests,
+Git/GitHub state, and existing project memory. An existing roadmap is input to that comparison,
+not a conflicting replacement target. Do not begin feature implementation until initialization is
+complete and proposed durable-memory updates have been reviewed and approved through
+`update-project-memory`.
+
+The installer does not silently merge installed templates into existing project memory. For
+important conflicting context, use manual review/merge rather than authorizing overwrite.
 
 The Node publish implementation uses a feature branch and pull request. It never pushes directly
 to `main`. At startup it checks default-branch freshness, lists repository-level open PRs, detects
@@ -125,6 +157,10 @@ node .codex/scripts/publish-changes.mjs --mode pr-only "Commit message" "PR titl
 node .codex/scripts/publish-changes.mjs --mode merge-pr 123
 node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
 ```
+
+Run these commands from the target project root. Existing projects may add equivalent
+`package.json` aliases manually when they fit local package-manager and script conventions. The
+installer does not add aliases and does not create a `package.json` solely for shortcuts.
 
 The source repository uses package-managed `yaml` for policy loading. The installer does not
 create or modify a downstream `package.json`; if `yaml` is unavailable downstream, the Node CLI

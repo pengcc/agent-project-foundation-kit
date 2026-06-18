@@ -57,6 +57,7 @@ Completed themes:
 - Requirement clarification gate and ambiguity handling contract
 - AGENTS template and operating contract alignment
 - Report depth levels and final report concision contract
+- Downstream installation and first-adoption hardening
 
 Current canonical core skill names:
 
@@ -509,7 +510,7 @@ Current Node publish test purpose:
 
 Current `install-foundation-kit.mjs` purpose:
 
-- install the reusable `kit/` payload into a new or early-stage downstream project
+- install the reusable `kit/` payload into new or existing downstream projects
 - use a controlled source-to-target boundary exception
 - read only from the current foundation-kit repo's `kit/`
 - write only inside the explicit target project root
@@ -518,6 +519,12 @@ Current `install-foundation-kit.mjs` purpose:
 - block target equal to the foundation-kit repo root
 - default to dry-run
 - require `--apply` before writing files
+- default `--project-mode` to `auto`, resolving project signals or conflicts to existing-like
+  caution and empty conflict-free targets to new-like behavior
+- support explicit `new` and `existing` modes without changing file mappings
+- block existing-like conflict apply before staging unless `--overwrite-conflicts` is supplied
+- keep conflict display, strong warning, typed confirmation, verified backup, plan revalidation,
+  and overwrite mandatory after explicit overwrite authorization
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
 - map project templates to `.codex/project/`
 - map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/config/`,
@@ -528,12 +535,17 @@ Current `install-foundation-kit.mjs` purpose:
 - backup existing files before replacement under `.codex/backups/install-YYYYMMDD-HHMMSS/`
 - never install this repo's own `.codex/project/`, `dev_locals/`, `docs/`, or source-repository `scripts/`
 - never create or modify a downstream `package.json`
+- report first-adoption next steps and direct successful installs to
+  `.codex/prompts/force-initialize-project-context.md`
 
 Current Node installer test purpose:
 
 - run local validation for installer behavior
 - keep test artifacts under `dev_locals/test-runs/install-foundation-kit/`
-- verify explicit target requirement, dry-run, fresh install, complete mapping correctness, conflict detection, no silent overwrite, backup-before-replace, missing-source blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
+- verify explicit target requirement, project-mode parsing/resolution, project-signal detection,
+  dry-run, fresh install, complete mapping correctness, existing-like pre-staging conflict blocking,
+  explicit overwrite safeguards, no silent overwrite, backup-before-replace, missing-source
+  blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
 
 Current `kit/github-settings/` purpose:
 
@@ -547,6 +559,7 @@ Current `kit/scripts/` purpose:
 
 - provide installable mechanical workflow executors for downstream projects
 - install under `.codex/scripts/`
+- run from the downstream project root; package aliases remain optional manual setup
 - provide a Node.js 24+ ESM publish default with modular Git, GitHub, output, prompt, policy,
   state, action, and final-report boundaries
 - install publish policy under `.codex/config/`

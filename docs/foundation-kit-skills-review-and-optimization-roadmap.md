@@ -1342,6 +1342,14 @@ planning documentation for future optional specialist candidates. Later approved
 patterns and TanStack Router/Query patterns updates add focused source-only optional packages
 without adding installer, marketplace, or auto-install behavior.
 
+Downstream installation and first-adoption hardening is complete. The installer now distinguishes
+new and existing project conflict policy through explicit project modes, defaults auto detection
+to existing-like caution when signals or conflicts are present, and requires explicit overwrite
+authorization before established-project conflicts can reach the existing confirmed backup/apply
+path. First-adoption guidance routes successful installs through project-context initialization,
+keeps roadmaps as initialization input, and preserves manual-only boundaries for package aliases,
+optional skills, and formatter/linter adoption.
+
 The next recommended implementation areas remain future work and require separate plans:
 
 ```text

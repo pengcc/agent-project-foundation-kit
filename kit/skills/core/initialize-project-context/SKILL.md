@@ -148,7 +148,7 @@ Do not claim to have read a file, document, source, skill, or official documenta
 Read and compare available sources in this order:
 
 1. User-provided product specification or product description
-2. User-provided project development plan
+2. User-provided project development plan or roadmap
 3. `README.md`
 4. Product, architecture, planning, or design documents under `docs/`
 5. Existing project memory under `.codex/project/`, if present
@@ -160,6 +160,10 @@ Read and compare available sources in this order:
 11. Git state and GitHub state
 
 Do not infer the full product only from code if product or planning documents exist. Code may be incomplete, experimental, stale, or inconsistent with the plan.
+
+An existing product plan or roadmap is an input to initialization, not a conflicting replacement
+target. Preserve it as product-direction evidence, compare it with repo reality, and surface gaps
+or stale assumptions without silently replacing either the document or project memory.
 
 ## Product / Plan vs Repo Reality Check
 
@@ -181,6 +185,26 @@ Examples:
 - Product plan says Vercel deployment, but repo has no deployment config: mark as setup task.
 - Product plan is silent, but repo uses Prisma: report repo fact and ask whether Prisma is the confirmed choice.
 - Product plan says Next.js, and package.json confirms Next.js: record as confirmed repo fact.
+
+## Formatter and Linter Readiness
+
+During the Scripts and Validation Check, inspect existing project conventions before recommending
+tooling. Check at least:
+
+```txt
+biome.json / biome.jsonc
+eslint.config.* / .eslintrc*
+prettier.config.* / .prettierrc*
+package.json format and lint scripts
+lockfiles and package-manager indicators
+```
+
+If Biome, ESLint, Prettier, or project-specific tooling exists, preserve it and report only
+confirmed conflicts, gaps, or missing scripts. Do not replace or combine tools by default.
+
+If no formatter or linter setup exists, add a Manual Setup Task that recommends Biome as the
+default candidate. Biome adoption requires a separate approved plan. Initialization must not
+install Biome, add dependencies, edit configuration, or change package scripts.
 
 ## Internal Project Facts vs External Technical Facts
 
@@ -325,6 +349,9 @@ dev_locals/research-notes/YYYY-MM-DD-project-initialization-report.md
 The report is local-only. It is not committed. It is not a long-term source of truth.
 
 Long-term facts, decisions, and lessons must be written to `.codex/project/` via `update-project-memory`.
+
+Do not start feature implementation until initialization is complete and the user has approved any
+required durable project-memory updates.
 
 Saving is required when:
 

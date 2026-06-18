@@ -2107,3 +2107,38 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Downstream Installation and First-Adoption Hardening
+
+Accepted decisions:
+
+1. Add installer project modes `auto`, `new`, and `existing`; default to `auto`.
+2. Resolve project signals or conflicts to existing-like caution in auto mode.
+3. Block existing-like conflict apply before staging unless `--overwrite-conflicts` is explicit.
+4. Keep conflict display, strong warning, typed confirmation, verified backup, plan revalidation,
+   apply, and cleanup on the single existing safe path.
+5. Keep mappings, optional-skill installation, downstream package files, dependencies,
+   formatter/linter installation, project-memory merging, and publish runtime behavior unchanged.
+6. Direct successful installations to force project-context initialization and treat roadmaps as
+   initialization input.
+7. Keep `.codex/scripts` as the installed helper location, package aliases as manual setup,
+   optional skills as manually adopted source-only packages, and Biome as recommendation-only.
+8. Promote generic change-safety lessons into the existing engineering quality rule without
+   copying source-repository history into downstream templates.
+
+Resulting files / changes:
+
+```txt
+scripts/install-foundation-kit/
+tests/install-foundation-kit/
+README.md
+kit/prompts/force-initialize-project-context.md
+kit/skills/core/initialize-project-context/SKILL.md
+kit/rules/engineering-quality-principles.md
+optional-skills/README.md
+docs/optional-skill-catalog.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+docs/foundation-design-log.md
+```
