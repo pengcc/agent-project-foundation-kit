@@ -71,6 +71,7 @@ Current canonical core skill names:
 - `project-architecture-plan`
 - `code-review`
 - `codebase-audit`
+- `ui-design-basics`
 
 Current canonical core rules:
 
@@ -173,6 +174,11 @@ Current UI Quality Foundation boundaries:
   existing design system or UI library reuse, maintainability, and avoiding speculative redesign.
 - It is not a UI workflow, component library, design system package, technology-specific UI skill,
   or professional accessibility audit.
+- `ui-design-basics` is a core supporting skill for bounded baseline guidance on concrete pages,
+  screens, flows, forms, layout clarity, UI states, and shadcn-aware reuse of an existing system.
+  It is not professional design, brand design, accessibility certification, architecture planning,
+  implementation approval, code review, or a framework specialist skill. React, Next.js, TanStack,
+  and shadcn specialist skills remain deferred and optional.
 
 Current engineering quality boundaries:
 

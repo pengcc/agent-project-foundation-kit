@@ -418,7 +418,7 @@ Purpose: Review type safety, type design, and TypeScript maintainability.
 
 Focus: safe types, narrowing, avoiding unjustified `any`, readable abstractions, compile-time guarantees.
 
-Supporting skills: ui-design-basics, code-review, docs-first-research.
+Supporting skills: code-review, docs-first-research.
 
 Boundaries: does not overcomplicate types for small tasks.
 

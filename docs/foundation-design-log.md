@@ -1964,3 +1964,42 @@ kit/rules/engineering-quality-principles.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## UI Design Basics Core Supporting Skill
+
+Accepted patterns:
+
+1. Reuse an existing shadcn/ui system when repository evidence confirms it; do not make shadcn/ui
+   mandatory.
+2. Use Anthropic frontend-design material as process inspiration only, without adopting a strong
+   visual persona.
+3. Use the last30days pattern of a top-loaded contract, named failure modes, and a final
+   self-check.
+4. Treat external skill discovery platforms as research sources, not installation approval.
+
+Rejected patterns / non-goals:
+
+- professional design system
+- full accessibility audit
+- strong or bold default aesthetic
+- copied external skill content
+- automatic external skill, plugin, MCP, or tool installation
+- React, Next.js, or TanStack specialist skills in this theme
+
+Resulting files / changes:
+
+```txt
+kit/prompts/force-ui-design-basics.md
+kit/rules/agent-operating-contract.md
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/code-review/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/ui-design-basics/SKILL.md
+kit/skills/core/ui-design-basics/metadata.yml
+kit/skills/core/write-a-skill/SKILL.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
