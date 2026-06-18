@@ -1902,3 +1902,52 @@ kit/skills/core/ui-design-basics/metadata.yml
 kit/prompts/force-ui-design-basics.md
 kit/skills/core/agent-roles-and-capabilities/SKILL.md
 ```
+
+## Decision: React component patterns is source-only optional guidance
+
+### Status
+
+Accepted
+
+### Context
+
+React projects repeatedly need focused guidance for component responsibility, state ownership,
+derived values, controlled boundaries, Effects, refs, custom Hooks, and memoization. These concerns
+are too framework-specific for the core kit, while `ui-design-basics` intentionally owns visual
+and flow clarity rather than React implementation behavior.
+
+The maintained installer copies the complete `kit/skills/` tree. Placing a React specialist there
+would make it default-installed and conflict with the optional-skill model.
+
+### Decision
+
+Create `optional-skills/react-component-patterns/` as an experimental source-only specialist
+package with install default `never`. Keep `optional-skills/` outside `kit/`; it is not copied by
+the installer and requires explicit project adoption before use.
+
+This supersedes only the React-specific deferral in the earlier `ui-design-basics` decision.
+Next.js, TanStack, and shadcn specialist skills remain deferred and optional.
+
+Core workflow skills may reference `react-component-patterns` only with "when installed" or "when
+explicitly adopted" wording. Do not add a force prompt while the skill is not default-installed.
+
+Keep the skill limited to React component and local-state implementation patterns. Keep
+`ui-design-basics`, Next.js, React Server Components, TanStack Query, TanStack Router, shadcn/ui,
+Tailwind, testing, frontend architecture, state-library selection, and data-fetching strategy as
+separate concerns. Use official React documentation through `docs-first-research` for React
+version-specific or API-specific claims.
+
+### Impact
+
+The repository gains reusable React implementation guidance without assuming React for downstream
+projects or changing package, runtime, installer, publishing, test, template, or archive behavior.
+Future optional installation or distribution requires a separate approved plan.
+
+### Related files
+
+```txt
+optional-skills/README.md
+optional-skills/react-component-patterns/SKILL.md
+optional-skills/react-component-patterns/metadata.yml
+docs/optional-skill-catalog.md
+```

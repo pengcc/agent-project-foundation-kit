@@ -88,6 +88,10 @@ the review target, findings, and readiness verdict inside `code-review`.
 UI review remains part of `code-review`. Do not turn it into a separate UI workflow, design-system
 package, component library, or technology-specific UI skill.
 
+For React component or local-state diffs, apply `react-component-patterns` only when it is installed
+or explicitly adopted. Keep findings and the readiness verdict inside `code-review`, and route
+version-specific React claims through `docs-first-research`.
+
 ### 2. Plan Alignment Review
 
 Use Plan Alignment Review when the user asks for staged review, architecture review, engineering direction review, plan consistency review, or whether work has drifted from an accepted plan.

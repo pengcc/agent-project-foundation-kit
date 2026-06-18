@@ -2003,3 +2003,50 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## React Component Patterns Source-Only Optional Skill
+
+Accepted patterns:
+
+1. Use official React documentation as the primary technical source.
+2. Decompose components around responsibility and data flow rather than arbitrary size limits.
+3. Keep state minimal, derived values out of state, and one owner for each state value.
+4. Treat Effects and refs as escape hatches, custom Hooks as reusable stateful logic boundaries,
+   and memoization as an evidence-based performance tool.
+5. Keep the package under `optional-skills/` with install default `never` and explicit adoption.
+6. Let planning, execution, and review invoke it only when installed or explicitly adopted.
+
+Rejected patterns / non-goals:
+
+- core or default-installed React guidance
+- force prompt or installer behavior
+- copied React documentation
+- visual design overlap with `ui-design-basics`
+- Next.js, React Server Components, TanStack Query, TanStack Router, shadcn/ui, Tailwind, form
+  libraries, state-management libraries, testing, frontend architecture, or data-fetching strategy
+- package, runtime, publish, template, test, or archive changes
+
+Research basis:
+
+- React Learn: `https://react.dev/learn/thinking-in-react`, `describing-the-ui`,
+  `adding-interactivity`, and `managing-state`
+- React Learn: `escape-hatches`, `you-might-not-need-an-effect`,
+  `referencing-values-with-refs`, and `reusing-logic-with-custom-hooks`
+- React API reference: `https://react.dev/reference/react/memo`, `useMemo`, and `useCallback`
+
+Resulting files / changes:
+
+```txt
+optional-skills/README.md
+optional-skills/react-component-patterns/SKILL.md
+optional-skills/react-component-patterns/metadata.yml
+kit/skills/core/agent-roles-and-capabilities/SKILL.md
+kit/skills/core/plan-with-context/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/code-review/SKILL.md
+docs/optional-skill-catalog.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
