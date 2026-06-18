@@ -334,6 +334,26 @@ Resulting files:
 docs/foundation-design-log.md
 ```
 
+## Lessons-Learned Extraction Completion
+
+PR #81 completed the deliberate extraction of generic change-safety guidance from source project
+memory into `kit/rules/engineering-quality-principles.md` section `Change Safety and Evidence`.
+
+Distilled principles:
+
+- prefer the simplest safe path;
+- preserve mature files unless full replacement is explicitly justified;
+- treat large deletions, line-count drops, and stub replacements as destructive-risk signals;
+- search repository-wide before and after rename/migration work;
+- choose update methods by review safety;
+- verify remote/external facts through authoritative evidence;
+- treat manual confirmation as intent, not external fact;
+- place confirmations at safety boundaries.
+
+Repository-specific history remains in `.codex/project/lessons-learned.md`; the downstream
+`kit/project-templates/lessons-learned.md` remains blank. Future generic lessons require deliberate
+distillation into reusable rules, skills, or documentation rather than automatic copying.
+
 ## Theme 10: Project Architecture Plan
 
 Accepted decisions:

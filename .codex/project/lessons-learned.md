@@ -710,3 +710,33 @@ or current package scripts, stop and request user review rather than choosing th
 - mark superseded artifacts as superseded, deprecated, or archived
 - move obsolete artifacts to an archive path when relocation improves clarity without losing
   useful history
+
+## Keep: Deliberately distill generic lessons while retaining source history
+
+### Context
+
+PR #81 reviewed foundation-kit development lessons in this file and deliberately distilled the
+generic change-safety subset into `kit/rules/engineering-quality-principles.md` section
+`Change Safety and Evidence`, while retaining repository-specific history here.
+
+### Pattern
+
+Keep repository-specific context and history in this source-repository memory. Promote only the
+general principles that are useful across downstream projects:
+
+- prefer the simplest safe path;
+- preserve mature files unless full replacement is explicitly justified;
+- treat large deletions, line-count drops, and stub replacements as destructive-risk signals;
+- search repository-wide before and after rename or migration work;
+- choose the update method by review safety;
+- verify remote or external facts through authoritative evidence;
+- treat manual confirmation as intent, not proof of external fact;
+- place confirmations at safety boundaries rather than every mechanical step.
+
+`kit/project-templates/lessons-learned.md` remains a blank downstream template and was not
+prefilled with this repository's history.
+
+### Reuse guidance
+
+Future generic lessons should be reviewed, generalized, and deliberately distilled into the
+appropriate reusable rule, skill, or documentation. Do not copy project memory automatically.

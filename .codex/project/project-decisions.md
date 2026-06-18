@@ -2067,3 +2067,25 @@ priority.
 
 The source repository gains one consistent quality gate while preserving downstream project
 autonomy and existing installer boundaries.
+
+## Decision: Generic change-safety lessons are deliberately distilled, not template-copied
+
+### Status
+
+Accepted
+
+### Context
+
+The source lesson history combines reusable principles with foundation-kit-specific context.
+
+### Decision
+
+Keep repository-specific lessons in `.codex/project/lessons-learned.md`. PR #81 distilled the
+generic change-safety subset into `kit/rules/engineering-quality-principles.md` section `Change
+Safety and Evidence`. Keep `kit/project-templates/lessons-learned.md` as a blank downstream
+template. Future promotions require deliberate generalization into a reusable rule, skill, or
+documentation; never copy project memory automatically.
+
+### Impact
+
+Reusable guidance, source history, and downstream memory remain cleanly separated.
