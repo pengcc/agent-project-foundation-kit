@@ -2252,3 +2252,50 @@ kit/skills/core/
 optional-skills/
 tests/install-foundation-kit/core.test.mjs
 ```
+
+## Decision: Explicit repository target verification belongs to the agent operating contract
+
+### Status
+
+Accepted
+
+### Context
+
+The physical meta skill migration left active references aligned, but the repository lacked one
+general contract requiring agents to verify concrete skill, rule, prompt, template, and installed
+`.codex/` paths before relying on them. Existing metadata tests and missing-skill handling covered
+only parts of that risk.
+
+### Decision
+
+Define the complete Explicit Target Reference Guardrail in
+`kit/rules/agent-operating-contract.md`. Root and downstream AGENTS entrypoints,
+`skill-invocation-and-dependency-boundaries`, and `initialize-project-context` use concise pointers
+without restating the full semantics.
+
+Verify existing concrete targets before treating them as evidence, authoritative instructions,
+workflow inputs, dependencies, or change/review targets. Report missing, stale, obsolete, or
+category-inconsistent targets without silently guessing replacements. Stop when a required target
+blocks correctness, scope, safety, or workflow authority; otherwise continue only after marking
+the reference unavailable, stale, or historical and explaining the limited impact.
+
+Prospective outputs, placeholders, marked examples, and clearly historical records are classified
+separately. Historical paths may remain unchanged and do not override current sources. This
+guardrail does not authorize installer cleanup, migration, deletion, movement, backup, target
+creation, or historical rewriting.
+
+### Impact
+
+Future renames and migrations have a shared behavioral and test boundary for active references
+without adding a new skill or changing installer and workflow responsibilities.
+
+### Related files
+
+```txt
+AGENTS.md
+kit/project-templates/AGENTS.md
+kit/rules/agent-operating-contract.md
+kit/rules/skill-invocation-and-dependency-boundaries.md
+kit/skills/meta/initialize-project-context/SKILL.md
+tests/install-foundation-kit/core.test.mjs
+```

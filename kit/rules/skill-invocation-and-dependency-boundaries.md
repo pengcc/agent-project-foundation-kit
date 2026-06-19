@@ -13,6 +13,9 @@ Physical source paths must match metadata category: current meta skills live und
 `optional-skills/`. Meta and core skills remain default-installed; optional skills require explicit
 adoption.
 
+Apply the Explicit Target Reference Guardrail in `agent-operating-contract` when an explicit skill
+path is missing, obsolete, or inconsistent with its metadata category.
+
 ## Invocation
 
 - `user`: a user explicitly starts the workflow; keep wrappers thin.

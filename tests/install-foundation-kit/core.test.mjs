@@ -224,6 +224,90 @@ describe("source repository metadata hygiene", () => {
   });
 });
 
+describe("source repository reference hygiene", () => {
+  it("keeps the explicit target reference guardrail canonical with concise pointers", async () => {
+    const paths = [
+      "AGENTS.md",
+      "kit/project-templates/AGENTS.md",
+      "kit/rules/agent-operating-contract.md",
+      "kit/rules/skill-invocation-and-dependency-boundaries.md",
+      "kit/skills/meta/initialize-project-context/SKILL.md",
+    ];
+    const documents = Object.fromEntries(
+      await Promise.all(paths.map(async (path) => [path, await readFile(path, "utf8")])),
+    );
+    const heading = "Explicit Target Reference Guardrail";
+
+    expect(
+      documents["kit/rules/agent-operating-contract.md"].match(
+        /^## Explicit Target Reference Guardrail$/gm,
+      ),
+    ).toHaveLength(1);
+    expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
+      "Stop and ask for direction when the target is required",
+    );
+    expect(documents["kit/rules/agent-operating-contract.md"]).toContain("For prospective output");
+    expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
+      "unless the reference is clearly historical",
+    );
+    expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
+      "The installer does not automatically clean obsolete installed paths",
+    );
+    expect(documents["AGENTS.md"]).toContain(
+      "Explicit Target Reference Guardrail in\n`kit/rules/agent-operating-contract.md`",
+    );
+    expect(documents["kit/project-templates/AGENTS.md"]).toContain(heading);
+    expect(documents["kit/project-templates/AGENTS.md"]).toContain(
+      ".codex/rules/agent-operating-contract.md",
+    );
+    expect(documents["kit/rules/skill-invocation-and-dependency-boundaries.md"]).toContain(heading);
+    expect(documents["kit/skills/meta/initialize-project-context/SKILL.md"]).toContain(heading);
+  });
+
+  it("keeps active surfaces free of obsolete meta skill paths", async () => {
+    const activePaths = new Set([
+      "AGENTS.md",
+      "README.md",
+      "kit/project-templates/AGENTS.md",
+      ".codex/project/project-guideline.md",
+      "docs/foundation-kit-skills-review-and-optimization-roadmap.md",
+    ]);
+    for (const pattern of [
+      "kit/skills/**/*.md",
+      "kit/prompts/**/*.md",
+      "kit/rules/**/*.md",
+      "tests/**/*.mjs",
+      "scripts/**/*.mjs",
+    ]) {
+      for await (const path of glob(pattern)) activePaths.add(path);
+    }
+
+    const metaSkillNames = [
+      "agent-roles-and-capabilities",
+      "docs-first-research",
+      "grilling",
+      "grill-me",
+      "handoff",
+      "initialize-project-context",
+      "plan-with-context",
+      "project-memory",
+      "update-project-memory",
+      "writing-great-skills",
+    ];
+    const obsoleteReferences = metaSkillNames.flatMap((name) => [
+      ["kit", "skills", "core", name].join("/"),
+      [".codex", "skills", "core", name].join("/"),
+    ]);
+
+    for (const path of [...activePaths].sort()) {
+      const text = await readFile(path, "utf8");
+      for (const reference of obsoleteReferences) {
+        expect(text, `${path}: obsolete active reference ${reference}`).not.toContain(reference);
+      }
+    }
+  });
+});
+
 describe("mapping and boundaries", () => {
   it("maps templates and complete installable trees deterministically", async () => {
     const fixture = await workspace("mapping");

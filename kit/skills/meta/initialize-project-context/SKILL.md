@@ -142,6 +142,9 @@ Workflow:
 
 If required sources are missing, state that clearly.
 
+Apply the Explicit Target Reference Guardrail from `agent-operating-contract` when an explicit
+project target is missing, stale, obsolete, or inconsistent with its expected location.
+
 Do not claim to have read a file, document, source, skill, or official documentation unless it was actually read.
 
 ## Source Priority
