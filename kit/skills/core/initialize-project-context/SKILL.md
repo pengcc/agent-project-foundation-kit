@@ -39,7 +39,8 @@ AGENTS.md
 
 Initialization must therefore be role-routed, not only file-scanning. It should identify the best next workflow after initialization, such as `update-project-memory`, `grill-me`, `docs-first-research`, `project-architecture-plan`, or `plan-with-context`.
 
-If goals, scope, requirements, constraints, or decision branches remain unclear after reading available project context, recommend `grill-me` as the next workflow. If `grill-me` is not installed yet, state that it is a planned productivity skill instead of pretending it exists.
+If goals, scope, requirements, constraints, or decision branches remain unclear after reading
+available project context, recommend `grill-me` as the next workflow.
 
 Pass the Project Memory Context Gate defined in the `project-memory` skill before the
 initialization report. As a context-diagnosis workflow, follow the central gate's continuation
@@ -368,6 +369,9 @@ For a tiny project with a short initialization, conversation-only output is acce
 ## Gap and Question Handling
 
 When information is missing, first classify gaps and questions.
+
+Apply the shared `grilling` discipline so questions remain evidence-first, priority-ordered,
+recommendation-led, and limited to blocking ambiguity.
 
 Use these categories:
 

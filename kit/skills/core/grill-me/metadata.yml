@@ -1,9 +1,10 @@
 name: grill-me
 description: Relentlessly clarify unclear goals, requirements, scope, constraints, and decision branches before planning or execution.
-category: core
+category: meta
 required: true
 invocation: user
-depends_on: []
+depends_on:
+  - grilling
 version: 0.1.0
 triggers:
   - grill me

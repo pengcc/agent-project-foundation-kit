@@ -110,6 +110,11 @@ Use a plan, handoff, initialization report, or other local process artifact only
 active task identifies it as relevant, and only after the Project Memory Context Gate freshness
 check.
 
+## Clarification Discipline
+
+Apply the shared `grilling` discipline when product or architecture ambiguity blocks planning.
+Use the user-facing `grill-me` workflow when resolving that ambiguity requires user interaction.
+
 ## Product / Project Blueprint Requirement
 
 A formal Project Architecture Plan requires a product/project blueprint.

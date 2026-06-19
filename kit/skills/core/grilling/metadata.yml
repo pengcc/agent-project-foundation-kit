@@ -1,0 +1,7 @@
+name: grilling
+description: Resolve blocking ambiguity through evidence-first, recommendation-led questions one decision branch at a time.
+category: meta
+required: true
+invocation: support
+depends_on: []
+version: 0.1.0

@@ -5,4 +5,5 @@ required: true
 invocation: user
 depends_on:
   - project-memory
+  - grilling
 description: Creates a project-level architecture and roadmap plan after initialization and before feature-level planning.

@@ -76,6 +76,8 @@ The current conceptual meta skills are:
 ```text
 agent-roles-and-capabilities
 docs-first-research
+grill-me
+grilling
 handoff
 initialize-project-context
 plan-with-context
@@ -90,7 +92,6 @@ The current core workflows and supporting skills are:
 code-review
 codebase-audit
 execute-plan
-grill-me
 project-architecture-plan
 publish-current-branch
 ui-design-basics
@@ -99,6 +100,10 @@ ui-design-basics
 Optional specialists remain source-only under `optional-skills/` and require explicit adoption.
 Meta and core categories are metadata concepts; both remain physically under `kit/skills/core/`
 until a separately reviewed directory migration.
+
+`grilling` is the support-only shared clarification discipline. `grill-me` is its user-facing
+wrapper, while planning, initialization, and architecture planning depend on the same primitive
+without changing their workflow outputs or approval boundaries.
 
 The current kit is already beyond a prompt collection. It has a real operating structure:
 
