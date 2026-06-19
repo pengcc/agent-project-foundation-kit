@@ -8,9 +8,10 @@ Use this rule when creating, refining, routing, or reviewing foundation-kit skil
 - `core`: default-installed engineering and project workflows.
 - `optional`: explicitly adopted specialist capabilities outside the default install.
 
-Category is conceptual. Physical directory migration requires separate review of installer and
-downstream mapping behavior. Meta and core skills remain default-installed; optional skills require
-explicit adoption.
+Physical source paths must match metadata category: current meta skills live under
+`kit/skills/meta/`, core workflows under `kit/skills/core/`, and optional skills under
+`optional-skills/`. Meta and core skills remain default-installed; optional skills require explicit
+adoption.
 
 ## Invocation
 

@@ -82,6 +82,21 @@ describe("installer flow", () => {
       "agent instructions\n",
     );
     expect(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/skills/meta/meta-example/SKILL.md"),
+        "utf8",
+      ),
+    ).toBe("meta skill\n");
+    expect(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/skills/core/core-example/SKILL.md"),
+        "utf8",
+      ),
+    ).toBe("core skill\n");
+    await expect(
+      lstat(resolve(fixture.targetRoot, ".codex/skills/optional-example/SKILL.md")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    expect(
       (await lstat(resolve(fixture.targetRoot, ".codex/scripts/publish-changes.mjs"))).mode & 0o111,
     ).not.toBe(0);
     expect(await readFile(resolve(fixture.targetRoot, "package.json"), "utf8")).toBe(

@@ -34,7 +34,8 @@ export async function createFixtureKit(repoRoot) {
     "project-templates/project-guideline.md": "guideline\n",
     "project-templates/project-decisions.md": "decisions\n",
     "project-templates/lessons-learned.md": "lessons\n",
-    "skills/core/example/SKILL.md": "skill\n",
+    "skills/meta/meta-example/SKILL.md": "meta skill\n",
+    "skills/core/core-example/SKILL.md": "core skill\n",
     "prompts/example.md": "prompt\n",
     "prompts/force-initialize-project-context.md": "initialize\n",
     "rules/example.md": "rule\n",
@@ -49,6 +50,9 @@ export async function createFixtureKit(repoRoot) {
     await mkdir(resolve(path, ".."), { recursive: true });
     await writeFile(path, contents, "utf8");
   }
+  const optionalSkill = resolve(repoRoot, "optional-skills/optional-example/SKILL.md");
+  await mkdir(resolve(optionalSkill, ".."), { recursive: true });
+  await writeFile(optionalSkill, "optional skill\n", "utf8");
   await chmod(resolve(kitRoot, "scripts/publish-changes.mjs"), 0o755);
   return kitRoot;
 }

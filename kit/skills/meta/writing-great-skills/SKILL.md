@@ -92,7 +92,7 @@ Then inspect task-relevant sources as available:
 ```txt
 kit/rules/agent-operating-contract.md
 kit/rules/engineering-quality-principles.md
-existing related skills under kit/skills/core/
+existing related skills under kit/skills/meta/ and kit/skills/core/
 existing prompts under kit/prompts/
 docs/foundation-design-log.md
 ```
@@ -163,24 +163,25 @@ semantics in individual skills.
 
 ## Skill File Structure
 
-Required files for an installable core skill:
+Required files for an installable meta or core skill:
 
 ```txt
-kit/skills/core/<skill-name>/SKILL.md
-kit/skills/core/<skill-name>/metadata.yml
+kit/skills/<category>/<skill-name>/SKILL.md
+kit/skills/<category>/<skill-name>/metadata.yml
 ```
 
 Optional support files:
 
 ```txt
 kit/prompts/force-<skill-name>.md
-kit/skills/core/<skill-name>/REFERENCE.md
-kit/skills/core/<skill-name>/EXAMPLES.md
-kit/skills/core/<skill-name>/scripts/
+kit/skills/<category>/<skill-name>/REFERENCE.md
+kit/skills/<category>/<skill-name>/EXAMPLES.md
+kit/skills/<category>/<skill-name>/scripts/
 ```
 
 Rules:
 
+- `<category>` must be `meta` or `core` and match `metadata.yml`.
 - `SKILL.md` holds core runtime instructions.
 - `metadata.yml` supports routing and discovery.
 - `force-<skill-name>.md` triggers the skill without duplicating all runtime instructions.

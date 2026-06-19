@@ -17,6 +17,8 @@ This repository develops the kit; it is not a downstream project with the kit in
 
 Use these source files as the intended installed behavior:
 
+- `kit/skills/meta/*/SKILL.md`
+- `kit/skills/meta/*/metadata.yml`
 - `kit/skills/core/*/SKILL.md`
 - `kit/skills/core/*/metadata.yml`
 - `kit/rules/*`
@@ -145,7 +147,7 @@ and result. If a possible out-of-project change is discovered, report it explici
 Use `.codex/project/` as this repository's durable development memory.
 
 Before project-state planning, implementation, review, documentation, or publishing, pass the
-Project Memory Context Gate defined in `kit/skills/core/project-memory/SKILL.md`. Use the
+Project Memory Context Gate defined in `kit/skills/meta/project-memory/SKILL.md`. Use the
 source-repository path defined there and report the gate result before context-dependent output or
 mutation.
 
