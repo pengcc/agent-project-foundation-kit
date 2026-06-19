@@ -146,13 +146,17 @@ describe("source repository package scripts", () => {
 });
 
 describe("source repository metadata hygiene", () => {
-  it("keeps core skill metadata files as single YAML documents", async () => {
+  it("keeps skill metadata parseable and enforces taxonomy boundaries", async () => {
     const paths = [];
     for await (const path of glob("kit/skills/core/*/metadata.yml")) {
       paths.push(path);
     }
+    for await (const path of glob("optional-skills/*/metadata.yml")) {
+      paths.push(path);
+    }
     expect(paths.length).toBeGreaterThan(0);
 
+    const metadataByName = new Map();
     for (const path of paths.sort()) {
       const text = await readFile(path, "utf8");
       const documents = YAML.parseAllDocuments(text);
@@ -164,8 +168,29 @@ describe("source repository metadata hygiene", () => {
         name: expect.any(String),
         description: expect.any(String),
         category: expect.any(String),
+        invocation: expect.any(String),
+        required: expect.any(Boolean),
+        depends_on: expect.any(Array),
         version: expect.any(String),
       });
+      expect(metadata.name, path).toBe(path.split("/").at(-2));
+      expect(["meta", "core", "optional"], path).toContain(metadata.category);
+      expect(["user", "model", "support"], path).toContain(metadata.invocation);
+      expect(metadata.required, path).toBe(metadata.category !== "optional");
+      metadataByName.set(metadata.name, { ...metadata, path });
+    }
+
+    for (const metadata of metadataByName.values()) {
+      for (const dependency of metadata.depends_on) {
+        const target = metadataByName.get(dependency);
+        expect(target, `${metadata.path}: unknown dependency ${dependency}`).toBeDefined();
+        if (metadata.category === "meta") {
+          expect(target.category, `${metadata.path}: meta dependency ${dependency}`).toBe("meta");
+        }
+        if (metadata.category === "core") {
+          expect(target.category, `${metadata.path}: core dependency ${dependency}`).toBe("meta");
+        }
+      }
     }
   });
 });

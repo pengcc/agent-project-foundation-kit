@@ -1,6 +1,10 @@
 name: codebase-audit
 description: Run a read-only repository survey that identifies evidence-backed defects, risks, opportunities, and direction suggestions, prioritizes findings, and routes selected findings into plan-with-context.
 category: core
+required: true
+invocation: user
+depends_on:
+  - project-memory
 version: 0.1.0
 triggers:
   - codebase audit

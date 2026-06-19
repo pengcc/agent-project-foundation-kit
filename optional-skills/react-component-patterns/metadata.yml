@@ -1,6 +1,9 @@
 name: react-component-patterns
 description: Apply focused React component and state implementation patterns when a project uses React and requests component decomposition, state ownership, Effect, ref, custom Hook, or memoization guidance.
 category: optional
+required: false
+invocation: model
+depends_on: []
 version: 0.1.0
 triggers:
   - React component patterns

@@ -98,7 +98,7 @@ adaptation. It does not install, adapt, or copy external skills.
 
 Check source URL, provenance, license/copying risk, trigger fit, boundary fit, workflow conflict,
 ecosystem-specific assumptions, tool assumptions, file/network/mutation permissions, secret
-handling risk, source freshness, and whether adaptation should route to `write-a-skill`.
+handling risk, source freshness, and whether adaptation should route to `writing-great-skills`.
 
 Use this compact output when evaluating an external skill:
 

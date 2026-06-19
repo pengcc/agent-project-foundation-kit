@@ -2,6 +2,9 @@
 
 This directory contains source-only optional specialist skills for explicit project adoption.
 
+Optional metadata and dependency direction follow
+`kit/rules/skill-invocation-and-dependency-boundaries.md`.
+
 Optional skills here are not part of the default installable `kit/` payload. The foundation-kit
 installer does not copy this directory, and catalog presence does not authorize installation or
 activation.

@@ -1,6 +1,9 @@
 name: ui-design-basics
-description: Apply practical, framework-agnostic UI design guidance for concrete pages, screens, flows, forms, layouts, and shadcn-aware UI work while preserving the project's existing design system and workflow boundaries.
+description: Apply baseline UI design guidance when concrete pages, screens, flows, forms, or layouts need design support.
 category: core
+required: true
+invocation: model
+depends_on: []
 version: 0.1.0
 triggers:
   - UI design basics

@@ -1,0 +1,15 @@
+name: writing-great-skills
+description: Create or refine a reusable skill when authoring, adaptation, or token-load design is required.
+category: meta
+required: true
+invocation: model
+depends_on:
+  - project-memory
+version: 0.1.0
+triggers:
+  - writing great skills
+  - create skill
+  - refine skill
+  - skill authoring
+  - adapt skill
+  - new agent skill

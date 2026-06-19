@@ -1,6 +1,6 @@
-# Force Write a Skill
+# Force Writing Great Skills
 
-Use the `write-a-skill` skill.
+Use the `writing-great-skills` skill.
 
 Create or refine an agent skill for this foundation kit.
 

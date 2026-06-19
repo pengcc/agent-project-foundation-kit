@@ -2118,3 +2118,48 @@ modes. Downstream package aliases remain optional manual setup; the installer do
 
 Users can explicitly delegate the wait for required checks and reviews to GitHub without adding a
 second merge implementation or weakening merge safety.
+
+## Decision: Skill taxonomy separates reusable disciplines, default workflows, and optional capabilities
+
+### Status
+
+Accepted
+
+### Context
+
+The physical `kit/skills/core/` tree contains both reusable agent disciplines and default
+engineering workflows, while `optional-skills/` contains explicitly adopted specialists. Category
+and invocation intent were implicit, which made routing, dependency review, and metadata token
+load harder to evaluate consistently.
+
+### Decision
+
+Use conceptual categories `meta`, `core`, and `optional`, plus invocation types `user`, `model`,
+and `support`. Metadata descriptions are invocation logic: model-invoked descriptions stay short
+and trigger-focused, user wrappers stay thin, and shared behavior has one canonical meta skill or
+rule. `depends_on` records hard skill dependencies only.
+
+Meta skills may depend only on meta skills or support references. Core skills may depend on meta
+skills. Meta and core skills must remain functional without optional skills. Optional skills may
+depend on meta skills; optional-to-optional dependencies must be explicit, and optional use of a
+core workflow must be documented and justified.
+
+Rename `write-a-skill` to `writing-great-skills` inside `kit/skills/core/`, including its force
+prompt and active references. Preserve mature skill content. Defer physical migration to
+`kit/skills/meta/`; do not change installer mappings, downstream installation, optional-skill
+installation, or publish behavior in this theme.
+
+### Impact
+
+Routing and dependency intent become machine-checkable without changing the installed payload
+shape. Future directory migration remains a separate reviewed theme.
+
+### Related files
+
+```txt
+kit/rules/skill-invocation-and-dependency-boundaries.md
+kit/skills/core/*/metadata.yml
+kit/skills/core/writing-great-skills/
+optional-skills/*/metadata.yml
+tests/install-foundation-kit/core.test.mjs
+```

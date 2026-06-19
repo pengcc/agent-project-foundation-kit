@@ -1,6 +1,10 @@
 name: handoff
 description: Compact current project/session context into a local handoff document so another session or agent can continue safely.
-category: core
+category: meta
+required: true
+invocation: user
+depends_on:
+  - project-memory
 version: 0.1.0
 triggers:
   - handoff

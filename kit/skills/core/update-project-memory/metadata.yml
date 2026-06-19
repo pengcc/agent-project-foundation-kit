@@ -1,5 +1,8 @@
 name: update-project-memory
 version: 0.1.0
-category: core
+category: meta
 required: true
-description: Updates durable project memory across guideline, decisions, and lessons learned.
+invocation: user
+depends_on:
+  - project-memory
+description: Update confirmed durable project facts, decisions, or reusable lessons.

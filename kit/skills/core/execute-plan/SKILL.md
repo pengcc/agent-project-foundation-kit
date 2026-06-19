@@ -104,7 +104,7 @@ Before each step group, classify whether an installed supporting skill applies t
 substep:
 
 ```txt
-skill creation/refinement -> write-a-skill
+skill creation/refinement -> writing-great-skills
 external technical facts -> docs-first-research
 concrete UI screen/flow/form implementation -> ui-design-basics
 React component/local-state implementation -> react-component-patterns when installed or explicitly adopted

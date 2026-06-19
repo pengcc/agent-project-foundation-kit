@@ -2224,3 +2224,37 @@ kit/prompts/force-publish-current-branch.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Skill Taxonomy and Token-Load Boundaries
+
+Accepted decisions:
+
+1. Use conceptual `meta`, `core`, and `optional` categories without moving existing meta
+   candidates out of `kit/skills/core/` in this theme.
+2. Declare `invocation: user | model | support`, `required`, and hard `depends_on` relationships in
+   every current skill metadata file.
+3. Keep meta dependencies within meta; allow core and optional skills to depend on meta; keep meta
+   and core functional without optional skills; require explicit optional-to-optional dependencies.
+4. Treat metadata descriptions as invocation logic, keep model descriptions trigger-focused, keep
+   user wrappers thin, and keep shared behavior behind one canonical meta skill or rule.
+5. Rename `write-a-skill` to `writing-great-skills` inside `kit/skills/core/` while preserving its
+   mature content and updating its force prompt and active references.
+6. Add metadata-policy validation without changing installer mappings, optional installation,
+   downstream package behavior, publish workflows, or unrelated scripts.
+7. Defer physical `kit/skills/meta/` migration to a separately reviewed theme.
+
+Resulting files / changes:
+
+```txt
+README.md
+kit/rules/skill-invocation-and-dependency-boundaries.md
+kit/rules/engineering-quality-principles.md
+kit/skills/core/*/metadata.yml
+kit/skills/core/writing-great-skills/
+kit/prompts/force-writing-great-skills.md
+optional-skills/*/metadata.yml
+tests/install-foundation-kit/core.test.mjs
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
