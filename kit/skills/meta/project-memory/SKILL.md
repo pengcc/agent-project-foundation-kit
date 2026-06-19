@@ -66,7 +66,7 @@ Use this gate before producing context-dependent output or modifying project sta
 For a downstream project, use:
 
 ```txt
-.codex/skills/core/project-memory/SKILL.md
+.codex/skills/meta/project-memory/SKILL.md
 .codex/project/project-decisions.md
 .codex/project/project-guideline.md
 .codex/project/lessons-learned.md
@@ -76,7 +76,7 @@ For the foundation-kit source repository, use:
 
 ```txt
 root AGENTS.md
-kit/skills/core/project-memory/SKILL.md
+kit/skills/meta/project-memory/SKILL.md
 .codex/project/project-guideline.md
 .codex/project/project-decisions.md
 .codex/project/lessons-learned.md

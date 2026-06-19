@@ -148,11 +148,14 @@ describe("source repository package scripts", () => {
 describe("source repository metadata hygiene", () => {
   it("keeps skill metadata parseable and enforces taxonomy boundaries", async () => {
     const paths = [];
-    for await (const path of glob("kit/skills/core/*/metadata.yml")) {
-      paths.push(path);
-    }
-    for await (const path of glob("optional-skills/*/metadata.yml")) {
-      paths.push(path);
+    for (const pattern of [
+      "kit/skills/meta/*/metadata.yml",
+      "kit/skills/core/*/metadata.yml",
+      "optional-skills/*/metadata.yml",
+    ]) {
+      for await (const path of glob(pattern)) {
+        paths.push(path);
+      }
     }
     expect(paths.length).toBeGreaterThan(0);
 
@@ -176,7 +179,14 @@ describe("source repository metadata hygiene", () => {
       expect(metadata.name, path).toBe(path.split("/").at(-2));
       expect(["meta", "core", "optional"], path).toContain(metadata.category);
       expect(["user", "model", "support"], path).toContain(metadata.invocation);
-      expect(metadata.required, path).toBe(metadata.category !== "optional");
+      const expectedCategory = path.startsWith("kit/skills/meta/")
+        ? "meta"
+        : path.startsWith("kit/skills/core/")
+          ? "core"
+          : "optional";
+      expect(metadata.category, path).toBe(expectedCategory);
+      expect(metadata.required, path).toBe(expectedCategory !== "optional");
+      expect(metadataByName.has(metadata.name), `${path}: duplicate skill name`).toBe(false);
       metadataByName.set(metadata.name, { ...metadata, path });
     }
 
@@ -235,6 +245,14 @@ describe("mapping and boundaries", () => {
           sourceRelative: "scripts/publish-changes.mjs",
           targetRelative: ".codex/scripts/publish-changes.mjs",
         }),
+        expect.objectContaining({
+          sourceRelative: "skills/meta/meta-example/SKILL.md",
+          targetRelative: ".codex/skills/meta/meta-example/SKILL.md",
+        }),
+        expect.objectContaining({
+          sourceRelative: "skills/core/core-example/SKILL.md",
+          targetRelative: ".codex/skills/core/core-example/SKILL.md",
+        }),
       ]),
     );
     expect(mappings.some((entry) => entry.sourceRelative.startsWith("scripts/install-"))).toBe(
@@ -242,6 +260,9 @@ describe("mapping and boundaries", () => {
     );
     expect(mappings.some((entry) => entry.sourceRelative.endsWith(".sh"))).toBe(false);
     expect(mappings.some((entry) => entry.sourceRelative.startsWith("archive/"))).toBe(false);
+    expect(mappings.some((entry) => entry.sourceRelative.startsWith("optional-skills/"))).toBe(
+      false,
+    );
     expect(mappings.some((entry) => entry.targetRelative === "package.json")).toBe(false);
   });
 

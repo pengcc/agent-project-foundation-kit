@@ -11,9 +11,10 @@ Foundation-kit skills use three conceptual categories:
 - `optional`: explicitly adopted specialist capabilities outside the default install
 
 Metadata also declares `invocation: user | model | support`, `required`, and hard `depends_on`
-relationships. Category does not imply a physical directory: meta candidates remain under
-`kit/skills/core/` until a separately approved migration reviews installer and downstream mapping
-impact. Meta and core remain default-installed; optional skills remain explicit-adoption only. See
+relationships. Physical source paths match metadata category: meta skills live under
+`kit/skills/meta/`, core workflows under `kit/skills/core/`, and optional skills under
+`optional-skills/`. The installer copies the complete `kit/skills/` tree, so meta and core remain
+default-installed while optional skills remain explicit-adoption only. See
 `kit/rules/skill-invocation-and-dependency-boundaries.md` for the canonical boundaries.
 
 ## Local Commands
