@@ -98,8 +98,9 @@ ui-design-basics
 ```
 
 Optional specialists remain source-only under `optional-skills/` and require explicit adoption.
-Meta and core categories are metadata concepts; both remain physically under `kit/skills/core/`
-until a separately reviewed directory migration.
+Meta skills now live under `kit/skills/meta/`, core skills remain under `kit/skills/core/`, and
+optional skills remain outside `kit/`. The installer retains its complete-tree `kit/skills/`
+mapping, so fresh default installs include meta and core while optional skills remain excluded.
 
 `grilling` is the support-only shared clarification discipline. `grill-me` is its user-facing
 wrapper, while planning, initialization, and architecture planning depend on the same primitive
@@ -253,7 +254,7 @@ The role routing direction is correct. Roles are working perspectives, not job t
 
 `project-memory` is now the unified context gate for workflows that touch project state.
 
-Phase 1 defined the complete gate in `kit/skills/core/project-memory/SKILL.md` and kept other
+Phase 1 defined the complete gate in `kit/skills/meta/project-memory/SKILL.md` and kept other
 entrypoints, rules, and workflow skills to short references.
 
 Theme 19 completed the light alignment of nearby foundation boundaries without redefining the gate:
@@ -536,7 +537,7 @@ They are not part of Phase 1.
 ### 7.4 Canonical Definition
 
 The complete gate sequence, source selection, reporting interface, continuation rules, and status
-meanings belong only in `kit/skills/core/project-memory/SKILL.md`. Entrypoints, rules, and workflow
+meanings belong only in `kit/skills/meta/project-memory/SKILL.md`. Entrypoints, rules, and workflow
 skills should contain short references and must not create competing definitions.
 
 ### 7.5 Implementation Approach
@@ -548,7 +549,7 @@ Use central definition plus short references.
 Add the full definition to:
 
 ```text
-kit/skills/core/project-memory/SKILL.md
+kit/skills/meta/project-memory/SKILL.md
 ```
 
 #### Global Operating Reference
@@ -566,15 +567,15 @@ kit/rules/agent-operating-contract.md
 Add short references to relevant workflow skills:
 
 ```text
-kit/skills/core/plan-with-context/SKILL.md
+kit/skills/meta/plan-with-context/SKILL.md
 kit/skills/core/execute-plan/SKILL.md
 kit/skills/core/code-review/SKILL.md
 kit/skills/core/project-architecture-plan/SKILL.md
-kit/skills/core/initialize-project-context/SKILL.md
-kit/skills/core/update-project-memory/SKILL.md
-kit/skills/core/handoff/SKILL.md
+kit/skills/meta/initialize-project-context/SKILL.md
+kit/skills/meta/update-project-memory/SKILL.md
+kit/skills/meta/handoff/SKILL.md
 kit/skills/core/publish-current-branch/SKILL.md
-kit/skills/core/writing-great-skills/SKILL.md
+kit/skills/meta/writing-great-skills/SKILL.md
 ```
 
 #### Source-Repository Memory and Design Record
@@ -1023,7 +1024,7 @@ Scope:
 
 ```text
 Add central gate definition:
-- kit/skills/core/project-memory/SKILL.md
+- kit/skills/meta/project-memory/SKILL.md
 
 Add required entrypoint references:
 - root AGENTS.md
@@ -1033,15 +1034,15 @@ Add global operating reference:
 - kit/rules/agent-operating-contract.md
 
 Add short references:
-- kit/skills/core/initialize-project-context/SKILL.md
-- kit/skills/core/plan-with-context/SKILL.md
+- kit/skills/meta/initialize-project-context/SKILL.md
+- kit/skills/meta/plan-with-context/SKILL.md
 - kit/skills/core/execute-plan/SKILL.md
 - kit/skills/core/code-review/SKILL.md
 - kit/skills/core/project-architecture-plan/SKILL.md
-- kit/skills/core/update-project-memory/SKILL.md
-- kit/skills/core/handoff/SKILL.md
+- kit/skills/meta/update-project-memory/SKILL.md
+- kit/skills/meta/handoff/SKILL.md
 - kit/skills/core/publish-current-branch/SKILL.md
-- kit/skills/core/writing-great-skills/SKILL.md
+- kit/skills/meta/writing-great-skills/SKILL.md
 
 Add context-repair special handling:
 - initialize-project-context may report incomplete or stale memory while diagnosing context
@@ -1368,6 +1369,12 @@ Source-repository Biome quality gating is complete. Biome 2.5.0 checks the found
 including installable payload files, before publishing or installation. It remains source-only
 tooling: the installer does not install or configure Biome, and downstream adoption remains an
 optional manual setup decision.
+
+Physical meta skill directory migration is complete. Meta skills now live under
+`kit/skills/meta/`, core workflows remain under `kit/skills/core/`, and optional skills remain
+source-only under `optional-skills/`. The installer complete-tree mapping remains unchanged; it
+does not delete or migrate obsolete skill paths in existing downstream projects, whose cleanup is
+manual or separately planned.
 
 The next recommended implementation areas remain future work and require separate plans:
 

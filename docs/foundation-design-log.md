@@ -2333,3 +2333,26 @@ kit/skills/core/publish-current-branch/metadata.yml
 .codex/project/project-guideline.md
 docs/foundation-design-log.md
 ```
+
+## Physical Meta Skill Directory Migration — Completed Stages B and C
+
+Accepted implementation result:
+
+1. Move the ten meta skill directories to `kit/skills/meta/` while keeping the six core workflow
+   directories under `kit/skills/core/`.
+2. Keep optional skills source-only under `optional-skills/` and outside default installation.
+3. Preserve the installer complete-tree `kit/skills/` mapping so fresh installs include both meta
+   and core skills without separate mappings.
+4. Do not add downstream obsolete-path detection, deletion, backup, movement, or automatic cleanup;
+   existing downstream cleanup remains manual or separately planned.
+5. Preserve historical pre-migration path references as historical records while using
+   category-aligned paths in current and forward-looking documentation.
+
+Resulting current-state records:
+
+```txt
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+docs/foundation-design-log.md
+```

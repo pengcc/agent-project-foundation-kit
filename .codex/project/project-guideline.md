@@ -89,9 +89,10 @@ Optional:
 - `react-component-patterns`
 - `tanstack-router-query-patterns`
 
-The categories are metadata concepts. Meta and core skills remain physically under
-`kit/skills/core/`; directory migration to `kit/skills/meta/` is deferred. Optional skills remain
-source-only under `optional-skills/` and are not installed automatically.
+The categories now match the source layout: meta skills live under `kit/skills/meta/`, core skills
+remain under `kit/skills/core/`, and optional skills remain source-only under `optional-skills/`.
+The installer still copies the complete `kit/skills/` tree, so fresh default installs include meta
+and core skills while optional skills are not installed automatically.
 
 Skill metadata declares `invocation: user | model | support`, `required`, and hard `depends_on`
 relationships. The canonical taxonomy, dependency, and context-load rules live in
@@ -106,7 +107,7 @@ Current canonical core rules:
 
 Current project-memory context control:
 
-- `kit/skills/core/project-memory/SKILL.md` is the single canonical definition of the Project
+- `kit/skills/meta/project-memory/SKILL.md` is the single canonical definition of the Project
   Memory Context Gate.
 - `project-memory` owns durable memory reading/applying; `update-project-memory` owns confirmed
   durable writes.
@@ -664,10 +665,10 @@ The installer should not copy this repo's own `.codex/project/` into downstream 
 - Run `pnpm check` for Biome checks, publish workflow tests, installer tests, and whitespace
   validation
 - Verify the complete Project Memory Context Gate sequence and status meanings exist only in
-  `kit/skills/core/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills contain
+  `kit/skills/meta/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills contain
   short references only
 - Verify the complete Missing Specialist Skill Policy exists only in
-  `kit/skills/core/agent-roles-and-capabilities/SKILL.md`
+  `kit/skills/meta/agent-roles-and-capabilities/SKILL.md`
 - For Theme 19-style docs-only alignment, confirm no scripts, package commands, installer files,
   dependencies, runtime behavior, tests, or archive files changed
 - For Theme 20-style plan/execute/review hardening, confirm no new workflows, prompts, metadata,
@@ -737,10 +738,10 @@ Completed:
     - first-run routing integration in `initialize-project-context` and `update-project-memory`
     - `apply-theme-zip.sh` post-PR / cleanup bug fixes
 - Theme 14 `grill-me`
-    - `kit/skills/core/grill-me`
+    - `kit/skills/meta/grill-me`
     - `kit/prompts/force-grill-me.md`
 - Extract Grilling Primitive
-    - added `kit/skills/core/grilling` as a meta/support skill
+    - added `kit/skills/meta/grilling` as a meta/support skill
     - reclassified `grill-me` as a meta/user wrapper over `grilling`
     - added explicit `grilling` dependencies to planning, initialization, and architecture planning
     - preserved physical paths, installer mappings, output formats, and workflow boundaries
@@ -749,14 +750,19 @@ Completed:
     - replaced duplicate taxonomy prose in `writing-great-skills` with the canonical rule pointer
 - Skill Token-Load Pruning, bounded second pass
     - tightened only the `publish-current-branch` metadata description
+- Physical Meta Skill Directory Migration
+    - moved all ten meta skill directories to `kit/skills/meta/`
+    - kept all six core workflow directories under `kit/skills/core/`
+    - preserved the installer complete-tree mapping and default meta-plus-core installation
+    - left existing downstream obsolete-path cleanup manual and separately planned
 - Theme 15 `handoff`
-    - `kit/skills/core/handoff`
+    - `kit/skills/meta/handoff`
     - `kit/prompts/force-handoff.md`
 - Theme 16 skill authoring workflow, now `writing-great-skills`
-    - `kit/skills/core/writing-great-skills`
+    - `kit/skills/meta/writing-great-skills`
     - `kit/prompts/force-writing-great-skills.md`
 - Phase 1 Project Memory Context Gate
-    - canonical definition in `kit/skills/core/project-memory/SKILL.md`
+    - canonical definition in `kit/skills/meta/project-memory/SKILL.md`
     - concise references in entrypoints, the operating contract, and scoped workflows
 - Theme 19 core foundation alignment
     - clarified `project-memory` / `update-project-memory` ownership
