@@ -107,6 +107,9 @@ Trigger `docs-first-research` when planning involves technical judgment, APIs, v
 
 Before planning, decide whether clarification is required.
 
+Apply the shared `grilling` discipline to resolve blocking ambiguity. Route to the user-facing
+`grill-me` workflow when an answer requires user interaction.
+
 Apply the Requirement Clarification Gate from `agent-operating-contract`: after checking available
 repo docs, code, config, tests, package files, and project memory, do not create a plan from
 materially ambiguous scope, safety, file, architecture, data, Git/publish, external-side-effect,

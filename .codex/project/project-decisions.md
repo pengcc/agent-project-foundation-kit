@@ -2163,3 +2163,51 @@ kit/skills/core/writing-great-skills/
 optional-skills/*/metadata.yml
 tests/install-foundation-kit/core.test.mjs
 ```
+
+## Decision: Grilling is the shared support primitive for blocking clarification
+
+### Status
+
+Accepted
+
+### Context
+
+`grill-me`, planning, initialization, and architecture planning repeated the same evidence-first,
+one-question-at-a-time, recommendation-led clarification discipline. The accepted taxonomy favors
+one meta source of truth for reusable behavior and thin user-facing wrappers.
+
+### Decision
+
+Add `grilling` under `kit/skills/core/grilling/` with `category: meta`, `required: true`,
+`invocation: support`, and no hard dependencies. It owns only the shared discipline: inspect
+available evidence before asking, resolve blocking ambiguity one dependency-ordered branch at a
+time, include a recommended direction, and return when the caller can continue or is blocked on
+user input.
+
+Reclassify `grill-me` as a meta/user workflow and make it depend on `grilling`. Keep `grill-me` as
+the user-facing deep clarification workflow with its existing role routing, workflow boundaries,
+output modes, stop conditions, relationship routing, and memory follow-up.
+
+Make `plan-with-context`, `initialize-project-context`, and `project-architecture-plan` depend on
+`grilling` and reference it only at their clarification boundaries. The calling workflows retain
+their context gates, outputs, approvals, persistence, and execution boundaries.
+
+Do not add a force prompt for `grilling`, move files to `kit/skills/meta/`, or change installer,
+downstream mapping, optional installation, publish, release, deployment, or memory-write behavior.
+
+### Impact
+
+Clarification mechanics have one reusable support source while user routing and mature workflow
+contracts remain stable. The metadata graph makes the dependency explicit without changing default
+installation.
+
+### Related files
+
+```txt
+kit/skills/core/grilling/
+kit/skills/core/grill-me/
+kit/skills/core/plan-with-context/
+kit/skills/core/initialize-project-context/
+kit/skills/core/project-architecture-plan/
+tests/install-foundation-kit/core.test.mjs
+```

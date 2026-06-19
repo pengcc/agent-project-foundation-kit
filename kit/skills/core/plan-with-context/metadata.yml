@@ -5,4 +5,5 @@ required: true
 invocation: user
 depends_on:
   - project-memory
+  - grilling
 description: Create a bounded implementation plan when project work needs planning before execution.

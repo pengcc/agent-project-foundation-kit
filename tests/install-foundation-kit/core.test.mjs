@@ -192,6 +192,25 @@ describe("source repository metadata hygiene", () => {
         }
       }
     }
+
+    expect(metadataByName.get("grilling")).toMatchObject({
+      category: "meta",
+      required: true,
+      invocation: "support",
+      depends_on: [],
+    });
+    expect(metadataByName.get("grill-me")).toMatchObject({
+      category: "meta",
+      invocation: "user",
+      depends_on: ["grilling"],
+    });
+    for (const name of [
+      "plan-with-context",
+      "initialize-project-context",
+      "project-architecture-plan",
+    ]) {
+      expect(metadataByName.get(name)?.depends_on, name).toEqual(["project-memory", "grilling"]);
+    }
   });
 });
 

@@ -26,6 +26,9 @@ Do not claim `agent-roles-and-capabilities` was used unless it was actually read
 
 `grill-me` resolves blocking ambiguity.
 
+It applies the required `grilling` support skill as its shared evidence-first, recommendation-led
+interview discipline while keeping this user-facing workflow's routing and output contract.
+
 It is a dependency-style productivity skill. Other current and future workflows may route to it when unclear goals, requirements, scope, constraints, tradeoffs, or decision branches block safe progress.
 
 The lightweight Requirement Clarification Gate lives in `agent-operating-contract`. Use this
@@ -33,17 +36,6 @@ skill when that lightweight gate is not enough because ambiguity is broad, branc
 decision-heavy, or requires systematic requirement discovery.
 
 `grill-me` should stay useful even when other skills are added, renamed, removed, or replaced.
-
-Core behavior:
-
-```txt
-unclear decision
--> inspect available context
--> ask the smallest useful question
--> recommend an answer
--> wait for the user
--> continue or route back to the appropriate workflow
-```
 
 Brainstorming is allowed only as clarification. Use it to explore alternatives, ask focused
 questions, recommend a direction, and then route back to `plan-with-context` or
@@ -92,41 +84,14 @@ This workflow must not:
 - ask questions that available project context can answer
 - turn into an unbounded interview
 
-## Core Principle
+## Shared Grilling Discipline
 
-Ask the smallest number of high-leverage questions needed to unblock the next workflow.
+Apply `grilling` before asking the user. It owns the evidence-first check, blocking-only focus,
+dependency-ordered branch traversal, one-question default, recommended answer, and continue-or-
+blocked stop decision.
 
-Prefer one question at a time.
-
-A tight group of related questions is allowed only when they belong to the same decision and answering them together reduces friction.
-
-Do not ask generic discovery questionnaires by default.
-
-## Required Context Check Before Asking
-
-Before asking the user a question, inspect available context as relevant:
-
-```txt
-AGENTS.md
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-README.md
-docs/
-package.json
-lockfile
-.env.example
-config files
-source files
-tests
-provided plan or prompt
-previous related plans in dev_locals/plans/
-handoffs in dev_locals/handoffs/
-```
-
-If the uncertainty depends on external technical facts, official behavior, framework versions, APIs, deployment behavior, or high-quality community practice, use `docs-first-research` before asking the user.
-
-If the answer is available from context, do not ask the user. State the found answer and cite the project source when useful.
+If uncertainty depends on external technical facts, official behavior, framework versions, APIs,
+deployment behavior, or high-quality community practice, use `docs-first-research` before asking.
 
 ## Question Style
 
@@ -149,7 +114,8 @@ Rules:
 
 ## Decision Tree Handling
 
-When there are several possible paths, walk down the decision tree one branch at a time.
+When there are several possible paths, use `grilling` to walk down the decision tree one branch at
+a time.
 
 Use this format:
 

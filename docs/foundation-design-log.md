@@ -2258,3 +2258,40 @@ tests/install-foundation-kit/core.test.mjs
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Extract Grilling Primitive
+
+Accepted decisions:
+
+1. Add `grilling` under `kit/skills/core/` as a concise `meta` / `support` skill with no triggers,
+   force prompt, or dependencies.
+2. Make the shared primitive own evidence-first questioning, blocking-only persistence,
+   dependency-ordered branch traversal, one-question default, recommended answers, and the
+   continue-or-blocked stop decision.
+3. Keep `grill-me` as the user-facing clarification workflow, reclassify it as `meta`, and declare
+   its dependency on `grilling`.
+4. Add short `grilling` references and hard dependencies to `plan-with-context`,
+   `initialize-project-context`, and `project-architecture-plan` only at their clarification
+   boundaries.
+5. Preserve all mature output formats, role routing, approval/execution boundaries, relationship
+   routing, stop conditions, and project-memory ownership.
+6. Strengthen metadata regression tests for the primitive and consumer graph.
+7. Keep physical paths under `kit/skills/core/`; do not change installer mappings, optional skill
+   installation, publish behavior, or deferred skill themes.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/grilling/SKILL.md
+kit/skills/core/grilling/metadata.yml
+kit/skills/core/grill-me/SKILL.md
+kit/skills/core/grill-me/metadata.yml
+kit/skills/core/plan-with-context/{SKILL.md,metadata.yml}
+kit/skills/core/initialize-project-context/{SKILL.md,metadata.yml}
+kit/skills/core/project-architecture-plan/{SKILL.md,metadata.yml}
+tests/install-foundation-kit/core.test.mjs
+docs/foundation-kit-skills-review-and-optimization-roadmap.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

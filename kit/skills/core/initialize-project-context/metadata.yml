@@ -5,4 +5,5 @@ required: true
 invocation: user
 depends_on:
   - project-memory
+  - grilling
 description: Initialize project context when a project is new, newly adopted, or missing verified setup state.

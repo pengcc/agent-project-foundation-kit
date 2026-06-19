@@ -58,6 +58,7 @@ Completed themes:
 - AGENTS template and operating contract alignment
 - Report depth levels and final report concision contract
 - Downstream installation and first-adoption hardening
+- Extract Grilling Primitive
 
 Current conceptual skill taxonomy:
 
@@ -71,6 +72,8 @@ Meta:
 - `agent-roles-and-capabilities`
 - `writing-great-skills`
 - `handoff`
+- `grilling`
+- `grill-me`
 
 Core:
 
@@ -80,7 +83,6 @@ Core:
 - `code-review`
 - `codebase-audit`
 - `ui-design-basics`
-- `grill-me`
 
 Optional:
 
@@ -131,6 +133,10 @@ Current foundation alignment boundaries:
 - Low-risk reversible assumptions may proceed only when explicitly stated. `grill-me` remains the
   deep clarification workflow for broad, branching, decision-heavy, or systematic requirement
   discovery.
+- `grilling` owns the shared evidence-first, recommendation-led, one-branch-at-a-time clarification
+  discipline. It is support-only; `grill-me` remains the user-facing deep clarification workflow.
+  `plan-with-context`, `initialize-project-context`, and `project-architecture-plan` depend on the
+  shared primitive without changing their output or approval boundaries.
 - `docs-first-research` passes the Project Memory Context Gate for project-impacting research and
   may state the gate is not applicable for pure external fact lookup.
 - External skills are reference candidates only; patterns require evaluation and rewriting before
@@ -733,6 +739,11 @@ Completed:
 - Theme 14 `grill-me`
     - `kit/skills/core/grill-me`
     - `kit/prompts/force-grill-me.md`
+- Extract Grilling Primitive
+    - added `kit/skills/core/grilling` as a meta/support skill
+    - reclassified `grill-me` as a meta/user wrapper over `grilling`
+    - added explicit `grilling` dependencies to planning, initialization, and architecture planning
+    - preserved physical paths, installer mappings, output formats, and workflow boundaries
 - Theme 15 `handoff`
     - `kit/skills/core/handoff`
     - `kit/prompts/force-handoff.md`
