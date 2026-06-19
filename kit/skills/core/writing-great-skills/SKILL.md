@@ -158,17 +158,8 @@ Prefer narrowly useful skills over broad assistant personas.
 ## Taxonomy and Invocation
 
 Apply `kit/rules/skill-invocation-and-dependency-boundaries.md` as the single source of truth for
-`meta`, `core`, and `optional` categories; `user`, `model`, and `support` invocation; dependency
-direction; and context-load design.
-
-Choose metadata by runtime behavior:
-
-- `user` skills are explicit workflows with thin wrappers.
-- `model` skills use short, trigger-focused descriptions.
-- `support` skills expose shared behavior without a standalone user workflow.
-
-Record only hard skill dependencies in `depends_on`. Meta and core skills must remain functional
-without optional skills, and optional-to-optional dependencies must be explicit.
+category, invocation, dependency direction, and context-load design. Do not restate those shared
+semantics in individual skills.
 
 ## Skill File Structure
 

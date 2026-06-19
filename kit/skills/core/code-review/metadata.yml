@@ -1,5 +1,5 @@
 name: code-review
-description: Review code changes, PR diffs, local diffs, commits, branches, or generated packages; supports Change Review and Plan Alignment Review with structured review reports.
+description: Review a PR, diff, commit, branch, or generated package for defects, safety, and plan alignment.
 version: 0.1.0
 category: core
 required: true

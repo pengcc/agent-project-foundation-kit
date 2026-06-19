@@ -1,5 +1,5 @@
 name: codebase-audit
-description: Run a read-only repository survey that identifies evidence-backed defects, risks, opportunities, and direction suggestions, prioritizes findings, and routes selected findings into plan-with-context.
+description: Audit a repository for evidence-backed defects, risks, opportunities, and improvement priorities without changing files.
 category: core
 required: true
 invocation: user

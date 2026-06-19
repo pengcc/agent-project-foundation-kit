@@ -744,6 +744,9 @@ Completed:
     - reclassified `grill-me` as a meta/user wrapper over `grilling`
     - added explicit `grilling` dependencies to planning, initialization, and architecture planning
     - preserved physical paths, installer mappings, output formats, and workflow boundaries
+- Skill Token-Load Pruning, bounded first pass
+    - tightened two metadata descriptions
+    - replaced duplicate taxonomy prose in `writing-great-skills` with the canonical rule pointer
 - Theme 15 `handoff`
     - `kit/skills/core/handoff`
     - `kit/prompts/force-handoff.md`
