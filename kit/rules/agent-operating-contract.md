@@ -29,6 +29,36 @@ Context Gate defined in the installed `project-memory` skill. Use its source sel
 reporting interface, and continuation rules rather than redefining them in this contract or in
 individual workflow skills.
 
+## Explicit Target Reference Guardrail
+
+Before treating a concrete repository path as evidence, authoritative instructions, a workflow
+input, a required dependency, or a target to inspect, modify, review, or validate:
+
+1. resolve it against the current project or source layout;
+2. verify that it exists as the expected file or directory;
+3. compare it with current sources and known renames or migrations when locations conflict;
+4. for skill packages, verify that the physical root matches `metadata.yml` category when
+   relevant; and
+5. classify the reference as current, unavailable, stale or obsolete, inconsistent, prospective,
+   or historical.
+
+Do not treat a path as a missing existing target when it is explicitly a new output to create, a
+wildcard or placeholder, a clearly marked example, or part of a clearly historical decision,
+design log, completed plan, or research report. For prospective output, verify its intended
+parent, scope, and creation authority instead of requiring the final target to exist.
+
+If a required existing target is missing, stale, or inconsistent, report the referenced path,
+expected role, and observed state. Do not silently substitute a guessed path or claim the target
+was read or applied. Stop and ask for direction when the target is required for correctness,
+scope, safety, or workflow authority. If it is non-blocking, continue only after marking the
+reference unavailable, stale, or historical and explaining the limited impact.
+
+Installed meta skills use `.codex/skills/meta/<meta-skill>` and installed core skills use
+`.codex/skills/core/<core-skill>`. A meta skill referenced under `.codex/skills/core/` is stale
+unless the reference is clearly historical. Verification does not authorize creating, editing,
+moving, deleting, backing up, migrating, or cleaning targets; those actions require the active
+approved workflow. The installer does not automatically clean obsolete installed paths.
+
 ## Requirement Clarification Gate
 
 Do not assume a user request is clear, complete, or scope-stable.

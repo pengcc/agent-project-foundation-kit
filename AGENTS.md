@@ -30,6 +30,9 @@ memory and owns the context gate, `update-project-memory` owns confirmed durable
 `docs-first-research` owns external fact verification, and `agent-roles-and-capabilities` owns
 role routing and missing-specialist fallback.
 
+Before relying on a concrete repository path, apply the Explicit Target Reference Guardrail in
+`kit/rules/agent-operating-contract.md`.
+
 ## Working Style
 
 Work professionally, efficiently, and concisely.

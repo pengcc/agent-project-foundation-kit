@@ -123,6 +123,11 @@ Current foundation alignment boundaries:
 - `kit/project-templates/AGENTS.md` remains a short downstream entrypoint. It points agents to
   `.codex/rules/agent-operating-contract.md` for detailed operating rules, including Requirement
   Clarification and concise-output behavior, without duplicating full rule text.
+- `agent-operating-contract` owns the Explicit Target Reference Guardrail. Agents verify concrete
+  existing repository targets before relying on them, report missing, stale, obsolete, or
+  inconsistent targets, stop when a required target blocks safe work, and distinguish prospective
+  or historical paths without rewriting history. Entrypoints, taxonomy, and initialization use
+  short pointers rather than duplicate the full contract.
 - `agent-operating-contract` owns Report Depth Levels for Brief, Standard, and Detailed reports.
   High-output workflows reference those levels briefly without duplicating the full convention.
   Concise output must still preserve decisions, validation status, risks or blockers when present,
@@ -755,6 +760,11 @@ Completed:
     - kept all six core workflow directories under `kit/skills/core/`
     - preserved the installer complete-tree mapping and default meta-plus-core installation
     - left existing downstream obsolete-path cleanup manual and separately planned
+- Explicit Target Reference Guardrail
+    - centralized concrete target verification in `agent-operating-contract`
+    - added short source, downstream, taxonomy, and initialization pointers
+    - added active stale-meta-path and canonical ownership regression checks
+    - preserved installer, historical-record, and workflow boundaries
 - Theme 15 `handoff`
     - `kit/skills/meta/handoff`
     - `kit/prompts/force-handoff.md`

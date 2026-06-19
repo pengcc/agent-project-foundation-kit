@@ -82,12 +82,14 @@ Prefer small, reviewable, reversible changes. Do not silently perform meaningful
 
 ## Agent Operating Contract
 
-Detailed first-run, skill routing, Requirement Clarification, concise output, durable memory,
-evidence-first research, and safety rules live in:
+Detailed first-run, skill routing, Requirement Clarification, explicit target reference
+verification, concise output, durable memory, evidence-first research, and safety rules live in:
 
 ```txt
 .codex/rules/agent-operating-contract.md
 ```
+
+Apply its Explicit Target Reference Guardrail before relying on a concrete repository path.
 
 Do not guess through material ambiguity. Use the installed Requirement Clarification Gate when
 scope, safety, files, architecture, data, Git/publish, external side effects, irreversible

@@ -2356,3 +2356,33 @@ Resulting current-state records:
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
 docs/foundation-design-log.md
 ```
+
+## Explicit Target Reference Guardrail
+
+Accepted implementation result:
+
+1. Make `kit/rules/agent-operating-contract.md` the single canonical owner for verifying concrete
+   repository targets before relying on them.
+2. Require missing, stale, obsolete, or category-inconsistent targets to be reported; stop when a
+   required target blocks safe work and mark non-blocking unavailable or historical references
+   before continuing.
+3. Classify prospective outputs, placeholders, examples, and historical records separately so the
+   guardrail does not create false missing-target failures or rewrite history.
+4. Keep root/downstream entrypoints, taxonomy, and initialization to concise pointers.
+5. Add focused canonical-ownership and active stale-meta-path regression checks.
+6. Preserve installer runtime and mapping, downstream cleanup boundaries, metadata, prompts,
+   optional skills, package scripts, physical directories, and mature workflow contracts.
+
+Resulting files / changes:
+
+```txt
+AGENTS.md
+kit/project-templates/AGENTS.md
+kit/rules/agent-operating-contract.md
+kit/rules/skill-invocation-and-dependency-boundaries.md
+kit/skills/meta/initialize-project-context/SKILL.md
+tests/install-foundation-kit/core.test.mjs
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
