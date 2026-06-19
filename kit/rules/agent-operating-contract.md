@@ -139,7 +139,7 @@ Cross-session / cross-agent continuation:
   handoff
 
 Skill creation / skill refinement:
-  write-a-skill
+  writing-great-skills
 
 Durable memory update:
   update-project-memory

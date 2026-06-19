@@ -35,6 +35,18 @@ After the bounded substep, return to the primary workflow.
 Supporting skills do not bypass the Project Memory Context Gate, approved-plan boundaries, safety
 rules, or the Missing Specialist Skill Policy.
 
+## Skill Taxonomy Routing
+
+Apply `kit/rules/skill-invocation-and-dependency-boundaries.md` when routing skills by category,
+invocation type, or hard dependency.
+
+- Meta skills provide reusable disciplines shared by workflows.
+- Core skills provide default engineering and project workflows.
+- Optional skills are available only after explicit adoption.
+
+Do not infer installed capability from category metadata alone. Meta and core routing must remain
+functional when optional skills are absent.
+
 ## Bootstrap-Safe Routing Invariant
 
 This skill may be used for initial role/workflow routing without first passing the Project Memory
@@ -534,7 +546,7 @@ Purpose: Produce clear project or technical documentation.
 
 Focus: accuracy, structure, audience, current source of truth.
 
-Supporting skills: update-project-memory, handoff, write-a-skill.
+Supporting skills: update-project-memory, handoff, writing-great-skills.
 
 Boundaries: does not invent project facts.
 
@@ -544,7 +556,7 @@ Purpose: Write or refine agent skills.
 
 Focus: clear triggers, boundaries, steps, outputs, truthfulness, composability.
 
-Supporting skills: write-a-skill, docs-first-research when skill facts depend on external docs.
+Supporting skills: writing-great-skills, docs-first-research when skill facts depend on external docs.
 
 Boundaries: does not implement unrelated project changes.
 

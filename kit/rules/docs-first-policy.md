@@ -80,7 +80,7 @@ Do not copy wholesale. Before adapting any external skill pattern, evaluate:
 - secret handling risk
 - stale or abandoned source risk
 - whether official docs or repository evidence are needed first
-- whether adaptation belongs in `write-a-skill`
+- whether adaptation belongs in `writing-great-skills`
 
 Accepted patterns must be rewritten for this kit and preserve this repository's AGENTS, project
 memory, workflow, safety, and tooling boundaries.

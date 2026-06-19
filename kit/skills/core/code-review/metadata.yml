@@ -2,6 +2,10 @@ name: code-review
 description: Review code changes, PR diffs, local diffs, commits, branches, or generated packages; supports Change Review and Plan Alignment Review with structured review reports.
 version: 0.1.0
 category: core
+required: true
+invocation: user
+depends_on:
+  - project-memory
 triggers:
   - code review
   - review changes

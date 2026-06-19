@@ -28,7 +28,7 @@ This document does not:
 - create technology-specific skills
 - approve external skills for copying or adaptation
 - change installer behavior
-- replace `docs-first-research`, `write-a-skill`, `plan-with-context`, or `execute-plan`
+- replace `docs-first-research`, `writing-great-skills`, `plan-with-context`, or `execute-plan`
 
 External skills and public examples remain reference candidates only until they are evaluated
 through `docs-first-research` and rewritten for this kit through an approved plan.
@@ -71,7 +71,10 @@ Use this shape when evaluating a future optional skill or specialist pack:
 ```txt
 id:
 name:
-category:
+category: optional
+invocation: user | model | support
+required: false
+depends_on:
 maturity: stable | experimental | reference
 install default: never | prompt | project-template-specific
 dependencies:
@@ -90,7 +93,11 @@ Field guidance:
 
 - `id`: stable local identifier for discussion and planning.
 - `name`: human-readable candidate name.
-- `category`: broad capability area.
+- `category`: always `optional` for implemented optional skill metadata; candidate capability area
+  belongs in catalog prose.
+- `invocation`: whether a user, model, or supporting workflow invokes the skill.
+- `required`: always `false`; optional skills require explicit adoption.
+- `depends_on`: hard skill dependencies only; optional-to-optional dependencies must be explicit.
 - `maturity`: readiness level for this kit, not upstream popularity.
 - `install default`: default stance for downstream installation.
 - `dependencies`: required core skills, rules, prompts, tools, or project conditions.
@@ -103,7 +110,7 @@ Field guidance:
 - `license / copying risk`: copying and attribution considerations.
 - `adaptation status`: current candidate state.
 - `recommended next workflow`: usually `docs-first-research`, `plan-with-context`, or
-  `write-a-skill`.
+  `writing-great-skills`.
 
 ## Candidate Status Values
 
@@ -135,7 +142,7 @@ detect need
 -> evaluate trigger, boundary, workflow fit, safety, dependencies, and conflicts
 -> classify as core, optional, project-specific, reference-only, or rejected
 -> create a self-contained plan with plan-with-context
--> author or refine the skill with write-a-skill
+-> author or refine the skill with writing-great-skills
 -> implement only through execute-plan after explicit approval
 -> update project memory or design log when durable facts or decisions change
 ```
@@ -169,7 +176,7 @@ candidate without claiming the candidate is installed.
 `docs-first-research` verifies external source facts, provenance, license/copying risk, and
 technical claims before adaptation.
 
-`write-a-skill` authors or refines approved optional skills after the evaluation and planning
+`writing-great-skills` authors or refines approved optional skills after the evaluation and planning
 steps are complete.
 
 `plan-with-context` plans actual optional pack additions, metadata, installer support, or catalog

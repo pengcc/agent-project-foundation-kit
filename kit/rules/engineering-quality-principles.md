@@ -247,6 +247,9 @@ unless a full replacement is explicitly justified by the approved scope and is e
 Treat large deletions, major line-count drops, and replacement of mature content with stubs as
 destructive-risk signals. Stop and review the diff before continuing.
 
+For skill metadata, invocation, dependency, and context-load design, apply
+`skill-invocation-and-dependency-boundaries.md` rather than duplicating those rules here.
+
 Choose the update method by review safety:
 
 - isolated edits: direct patch

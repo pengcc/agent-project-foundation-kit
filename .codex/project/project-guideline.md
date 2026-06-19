@@ -30,7 +30,7 @@ Completed themes:
 - Theme 13: first-run agent operating contract and durable memory loop
 - Theme 14: `grill-me`
 - Theme 15: `handoff`
-- Theme 16: `write-a-skill`
+- Theme 16: `write-a-skill` (renamed to `writing-great-skills`)
 - Theme 16.1: local publish workflow entrypoint and safety hardening
 - Theme 16.3: downstream AGENTS template operating contract
 - Theme 17: reusable GitHub repository settings package
@@ -59,33 +59,48 @@ Completed themes:
 - Report depth levels and final report concision contract
 - Downstream installation and first-adoption hardening
 
-Current canonical core skill names:
+Current conceptual skill taxonomy:
+
+Meta:
 
 - `project-memory`
 - `docs-first-research`
 - `plan-with-context`
-- `execute-plan`
 - `update-project-memory`
-- `publish-current-branch`
 - `initialize-project-context`
 - `agent-roles-and-capabilities`
+- `writing-great-skills`
+- `handoff`
+
+Core:
+
+- `execute-plan`
+- `publish-current-branch`
 - `project-architecture-plan`
 - `code-review`
 - `codebase-audit`
 - `ui-design-basics`
+- `grill-me`
+
+Optional:
+
+- `react-component-patterns`
+- `tanstack-router-query-patterns`
+
+The categories are metadata concepts. Meta and core skills remain physically under
+`kit/skills/core/`; directory migration to `kit/skills/meta/` is deferred. Optional skills remain
+source-only under `optional-skills/` and are not installed automatically.
+
+Skill metadata declares `invocation: user | model | support`, `required`, and hard `depends_on`
+relationships. The canonical taxonomy, dependency, and context-load rules live in
+`kit/rules/skill-invocation-and-dependency-boundaries.md`.
 
 Current canonical core rules:
 
 - `agent-operating-contract`
 - `docs-first-policy`
 - `engineering-quality-principles`
-
-
-Current canonical productivity skill names:
-
-- `grill-me`
-- `handoff`
-- `write-a-skill`
+- `skill-invocation-and-dependency-boundaries`
 
 Current project-memory context control:
 
@@ -121,14 +136,15 @@ Current foundation alignment boundaries:
 - External skills are reference candidates only; patterns require evaluation and rewriting before
   adoption.
 - Third-party skill adoption safety lives in the existing `docs-first-policy`,
-  `docs-first-research`, and `write-a-skill` surfaces. It evaluates source URL, provenance,
+  `docs-first-research`, and `writing-great-skills` surfaces. It evaluates source URL, provenance,
   license/copying risk, trigger and boundary fit, workflow conflict, ecosystem assumptions,
   tool/mutation/network permissions, secret handling, source freshness, and rewrite requirements
   before adaptation.
 - Kit evolution and reusable lesson promotion live in existing `update-project-memory`,
-  `write-a-skill`, and `agent-operating-contract` surfaces. Project experience must be recorded in
-  local memory first, then generalized as a reusable lesson candidate with user confirmation and an
-  approved plan before any foundation-kit rule, skill, template, or documentation change.
+  `writing-great-skills`, and `agent-operating-contract` surfaces. Project experience must be
+  recorded in local memory first, then generalized as a reusable lesson candidate with user
+  confirmation and an approved plan before any foundation-kit rule, skill, template, or
+  documentation change.
 - `agent-roles-and-capabilities` owns the Missing Specialist Skill Policy.
 - `grill-me` may use Brainstorming Mode only for clarification before routing back to planning or
   architecture workflows.
@@ -150,8 +166,8 @@ Current plan/execute/review quality boundaries:
 - `code-review` remains review-only and advisory. Reviews distinguish findings introduced by the
   change from pre-existing issues, check generated package/theme zip safety, and perform plan-hunk
   alignment when an approved plan exists.
-- `write-a-skill` includes generic authoring verification for trigger clarity, boundary clarity,
-  workflow separation, concise force prompts, and misuse/rationalization checks.
+- `writing-great-skills` includes generic authoring verification for trigger clarity, boundary
+  clarity, workflow separation, concise force prompts, and misuse/rationalization checks.
 - Initial role/workflow routing may use `agent-roles-and-capabilities` before the Project Memory
   Context Gate. If routing depends on project-specific facts, use `project-memory` as supporting
   context before making project-state decisions.
@@ -226,7 +242,7 @@ Current Optional Skill Catalog boundaries:
   design, full frontend architecture, Next.js, React Server Components, TanStack Start and other
   TanStack libraries, backend/API/database/authentication design, and testing strategy.
 - External skill references remain reference candidates until evaluated through
-  `docs-first-research` and rewritten for this kit through approved `write-a-skill` and
+  `docs-first-research` and rewritten for this kit through approved `writing-great-skills` and
   `execute-plan` work.
 
 Current roadmap and stage-review status:
@@ -656,7 +672,7 @@ The installer should not copy this repo's own `.codex/project/` into downstream 
   remain `code-review`, and no scripts, package commands, installer files, dependencies, tests,
   archive files, or runtime behavior changed
 - For Theme 21.1-style supporting-skill hardening, confirm `execute-plan` remains the primary
-  workflow, supporting skills stay bounded, `write-a-skill` verification remains generic and not
+  workflow, supporting skills stay bounded, `writing-great-skills` verification remains generic and not
   external-tool-specific, and no scripts, package commands, installer files, dependencies, tests,
   archive files, or runtime behavior changed
 
@@ -720,9 +736,9 @@ Completed:
 - Theme 15 `handoff`
     - `kit/skills/core/handoff`
     - `kit/prompts/force-handoff.md`
-- Theme 16 `write-a-skill`
-    - `kit/skills/core/write-a-skill`
-    - `kit/prompts/force-write-a-skill.md`
+- Theme 16 skill authoring workflow, now `writing-great-skills`
+    - `kit/skills/core/writing-great-skills`
+    - `kit/prompts/force-writing-great-skills.md`
 - Phase 1 Project Memory Context Gate
     - canonical definition in `kit/skills/core/project-memory/SKILL.md`
     - concise references in entrypoints, the operating contract, and scoped workflows
@@ -744,7 +760,7 @@ Completed:
 - Theme 21.1 supporting skill invocation and skill authoring verification
     - clarified bounded supporting skill activation during `execute-plan`
     - added the Supporting Skill Invocation concept to role routing
-    - strengthened generic `write-a-skill` authoring verification
+    - strengthened generic `writing-great-skills` authoring verification
 - Theme 22.0 stage review, inventory, and roadmap refresh
     - refreshed long-term roadmap current-state inventory and next-step guidance
     - corrected current canonical rule inventory in project memory

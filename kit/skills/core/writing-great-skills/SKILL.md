@@ -1,4 +1,4 @@
-# Write a Skill
+# Writing Great Skills
 
 Use this skill to create or refine reusable agent skills for this foundation kit.
 
@@ -14,7 +14,7 @@ Then output a concise Role Routing Header using this default routing:
 Role Routing:
 - Primary role: Skill Author
 - Supporting roles: Documentation Writer, Project Memory Curator, Tooling Reviewer, Requirement Clarifier as needed
-- Workflow: write-a-skill
+- Workflow: writing-great-skills
 - Maturity expectation: concise, composable skill design with strong trigger and boundary discipline
 - Technical specialist skill: no technology-specific skill assumed; use docs-first-research for external technical claims
 - Quality rule: engineering-quality-principles applies when a skill affects engineering workflows, scripts, validation, review, or execution
@@ -24,7 +24,8 @@ Do not claim `agent-roles-and-capabilities` was used unless it was actually read
 
 ## Purpose
 
-`write-a-skill` helps turn repeated work, reusable workflows, or external skill patterns into project-ready skills.
+`writing-great-skills` helps turn repeated work, reusable workflows, or external skill patterns
+into project-ready skills.
 
 It should help define:
 
@@ -154,6 +155,21 @@ mixing planning, execution, review, and publishing boundaries in one skill
 
 Prefer narrowly useful skills over broad assistant personas.
 
+## Taxonomy and Invocation
+
+Apply `kit/rules/skill-invocation-and-dependency-boundaries.md` as the single source of truth for
+`meta`, `core`, and `optional` categories; `user`, `model`, and `support` invocation; dependency
+direction; and context-load design.
+
+Choose metadata by runtime behavior:
+
+- `user` skills are explicit workflows with thin wrappers.
+- `model` skills use short, trigger-focused descriptions.
+- `support` skills expose shared behavior without a standalone user workflow.
+
+Record only hard skill dependencies in `depends_on`. Meta and core skills must remain functional
+without optional skills, and optional-to-optional dependencies must be explicit.
+
 ## Skill File Structure
 
 Required files for an installable core skill:
@@ -189,19 +205,21 @@ Metadata should include:
 name:
 description:
 category:
+invocation:
+required:
+depends_on:
 version:
 triggers:
 ```
 
 Description rules:
 
-- prioritize trigger and when-to-use wording
-- describe the task, situation, or user request that should activate the skill
-- include trigger language
-- avoid summarizing the full workflow in the description
-- avoid vague descriptions
+- treat the description as invocation logic, not documentation
+- front-load the main trigger and keep only distinct trigger branches
+- keep model-invoked descriptions short and trigger-focused
+- avoid synonyms that repeat the same meaning
+- keep workflow detail in `SKILL.md`
 - avoid claiming unavailable capabilities
-- avoid long implementation detail
 
 Trigger rules:
 
@@ -235,6 +253,10 @@ Split into additional files when:
 - external reference summaries are too large
 
 Do not split just for structure if it makes the skill harder to use.
+
+Apply the no-op test to every instruction: if removing it would not change agent behavior, delete
+it or replace it with a stronger leading word. Keep one source of truth for shared behavior and use
+clear context pointers for branch-specific references.
 
 ## Script Rules
 
@@ -378,7 +400,7 @@ For a skill authoring plan or draft, use:
 ```txt
 Workflow:
 - Role: Skill Author
-- Skill: write-a-skill
+- Skill: writing-great-skills
 - Context:
 - Mode:
 

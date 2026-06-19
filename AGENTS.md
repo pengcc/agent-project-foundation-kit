@@ -55,7 +55,7 @@ Use the relevant kit source skills as workflow guidance. Commonly relevant skill
 - `plan-with-context`
 - `execute-plan`
 - `code-review`
-- `write-a-skill`
+- `writing-great-skills`
 - `handoff`
 - `update-project-memory`
 

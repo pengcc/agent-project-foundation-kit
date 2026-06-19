@@ -1,5 +1,8 @@
 name: plan-with-context
 version: 0.1.0
-category: core
+category: meta
 required: true
-description: Creates bounded, context-aware implementation plans without executing changes.
+invocation: user
+depends_on:
+  - project-memory
+description: Create a bounded implementation plan when project work needs planning before execution.

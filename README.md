@@ -2,6 +2,20 @@
 
 Source repository for the Codex Project Foundation Kit.
 
+## Skill Taxonomy
+
+Foundation-kit skills use three conceptual categories:
+
+- `meta`: reusable agent disciplines shared across workflows
+- `core`: default-installed engineering and project workflows
+- `optional`: explicitly adopted specialist capabilities outside the default install
+
+Metadata also declares `invocation: user | model | support`, `required`, and hard `depends_on`
+relationships. Category does not imply a physical directory: meta candidates remain under
+`kit/skills/core/` until a separately approved migration reviews installer and downstream mapping
+impact. Meta and core remain default-installed; optional skills remain explicit-adoption only. See
+`kit/rules/skill-invocation-and-dependency-boundaries.md` for the canonical boundaries.
+
 ## Local Commands
 
 This repository uses a private `package.json` as a short command façade:

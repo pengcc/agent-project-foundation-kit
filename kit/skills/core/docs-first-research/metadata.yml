@@ -1,5 +1,7 @@
 name: docs-first-research
 version: 0.1.0
-category: core
+category: meta
 required: true
-description: Requires agents to verify technical facts with official documentation and project files before relying on model memory.
+invocation: model
+depends_on: []
+description: Verify consequential technical claims against project evidence and authoritative documentation.

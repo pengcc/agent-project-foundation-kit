@@ -69,32 +69,36 @@ The intended source-of-truth split is:
 
 This distinction is critical. Foundation-kit-specific development history should not be copied into downstream templates unless it has been deliberately distilled into generic reusable guidance.
 
-### 3.2 Current Installed Skills
+### 3.2 Current Skill Taxonomy
 
-The current core workflow, context, and supporting skills are:
+The current conceptual meta skills are:
 
 ```text
 agent-roles-and-capabilities
-code-review
-codebase-audit
 docs-first-research
-execute-plan
+handoff
 initialize-project-context
 plan-with-context
-project-architecture-plan
 project-memory
-publish-current-branch
-ui-design-basics
 update-project-memory
+writing-great-skills
 ```
 
-The current productivity skills are:
+The current core workflows and supporting skills are:
 
 ```text
+code-review
+codebase-audit
+execute-plan
 grill-me
-handoff
-write-a-skill
+project-architecture-plan
+publish-current-branch
+ui-design-basics
 ```
+
+Optional specialists remain source-only under `optional-skills/` and require explicit adoption.
+Meta and core categories are metadata concepts; both remain physically under `kit/skills/core/`
+until a separately reviewed directory migration.
 
 The current kit is already beyond a prompt collection. It has a real operating structure:
 
@@ -118,13 +122,14 @@ The current core rules are still relatively small:
 agent-operating-contract.md
 docs-first-policy.md
 engineering-quality-principles.md
+skill-invocation-and-dependency-boundaries.md
 ```
 
 This is good for keeping the kit lean. Several earlier rule-level gaps are now covered by existing
 rule and skill surfaces:
 
 - kit evolution loop and reusable lesson promotion policy are covered through `update-project-memory`,
-  `write-a-skill`, and `agent-operating-contract`
+  `writing-great-skills`, and `agent-operating-contract`
 - UI quality / design system reuse principles are covered through `engineering-quality-principles`
   and existing planning, audit, architecture, and review workflows
 - report depth levels and concise-output guidance are covered through `agent-operating-contract`
@@ -155,7 +160,7 @@ force-initialize-project-context.md
 force-plan-with-context.md
 force-project-architecture-plan.md
 force-publish-current-branch.md
-force-write-a-skill.md
+force-writing-great-skills.md
 ```
 
 ### 3.5 Maintained Workflow Tooling Boundary
@@ -278,7 +283,7 @@ Current boundary:
 ```text
 docs-first-policy -> concise evaluation rule
 docs-first-research -> external source verification and evaluation report
-write-a-skill -> adaptation of approved patterns into this kit
+writing-great-skills -> adaptation of approved patterns into this kit
 ```
 
 External skills remain reference candidates only. Accepted patterns must be evaluated for source,
@@ -516,7 +521,7 @@ execute-plan
 code-review
 handoff
 publish-current-branch
-write-a-skill
+writing-great-skills
 update-project-memory
 ```
 
@@ -564,7 +569,7 @@ kit/skills/core/initialize-project-context/SKILL.md
 kit/skills/core/update-project-memory/SKILL.md
 kit/skills/core/handoff/SKILL.md
 kit/skills/core/publish-current-branch/SKILL.md
-kit/skills/core/write-a-skill/SKILL.md
+kit/skills/core/writing-great-skills/SKILL.md
 ```
 
 #### Source-Repository Memory and Design Record
@@ -1031,7 +1036,7 @@ Add short references:
 - kit/skills/core/update-project-memory/SKILL.md
 - kit/skills/core/handoff/SKILL.md
 - kit/skills/core/publish-current-branch/SKILL.md
-- kit/skills/core/write-a-skill/SKILL.md
+- kit/skills/core/writing-great-skills/SKILL.md
 
 Add context-repair special handling:
 - initialize-project-context may report incomplete or stale memory while diagnosing context
@@ -1186,7 +1191,7 @@ Goal:
 
 ```text
 Clarify bounded supporting-skill invocation during approved-plan execution and strengthen
-write-a-skill authoring verification.
+writing-great-skills authoring verification.
 ```
 
 Boundaries:
@@ -1194,7 +1199,7 @@ Boundaries:
 ```text
 - execute-plan remains the primary workflow for approved-plan execution
 - supporting skills are bounded substep guidance only
-- write-a-skill verification remains generic and not external-tool-specific
+- writing-great-skills verification remains generic and not external-tool-specific
 - no new workflows, scripts, package commands, installer behavior, dependencies, tests, archive
   changes, generated package workflow, or runtime behavior
 ```
@@ -1237,7 +1242,7 @@ Status: implemented/current.
 
 Theme 22.1 defines a lightweight external-skill evaluation boundary before adapting external
 skills into this kit. It uses existing `docs-first-policy`, `docs-first-research`, and
-`write-a-skill` surfaces rather than adding a dedicated workflow, catalog, or policy file.
+`writing-great-skills` surfaces rather than adding a dedicated workflow, catalog, or policy file.
 
 Theme 22.2:
 
@@ -1248,9 +1253,9 @@ Kit Evolution and Reusable Lesson Promotion Loop
 Status: implemented/current.
 
 Theme 22.2 defines how project experience becomes reusable foundation-kit guidance without
-polluting installable templates. It uses existing `update-project-memory`, `write-a-skill`, and
-`agent-operating-contract` surfaces rather than adding a dedicated kit-evolution workflow or rule
-file.
+polluting installable templates. It uses existing `update-project-memory`,
+`writing-great-skills`, and `agent-operating-contract` surfaces rather than adding a dedicated
+kit-evolution workflow or rule file.
 
 ### Phase 5: UI Quality Foundation
 
@@ -1326,7 +1331,7 @@ Theme 22.1 Third-Party Skill Adoption Safety is complete. It remained lightweigh
 ```text
 - evaluate external skills as reference candidates only
 - verify source, provenance, license/copying risk, fit, safety, and workflow conflict
-- route adaptation through write-a-skill after docs-first source evaluation
+- route adaptation through writing-great-skills after docs-first source evaluation
 - do not copy external skills wholesale
 - avoid scripts, package commands, installer, dependency, runtime, tests, and archive changes
 - avoid a broad external marketplace or catalog

@@ -1,5 +1,7 @@
 name: project-memory
 version: 0.1.0
-category: core
+category: meta
 required: true
-description: Reads and applies durable project memory across guideline, decisions, and lessons.
+invocation: support
+depends_on: []
+description: Read and apply durable project memory before project-state work.
