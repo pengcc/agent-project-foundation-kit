@@ -2316,3 +2316,20 @@ kit/skills/core/writing-great-skills/SKILL.md
 .codex/project/project-guideline.md
 docs/foundation-design-log.md
 ```
+
+## Skill Token-Load Pruning — Bounded Second Pass
+
+Accepted implementation scope:
+
+1. Tighten only the `publish-current-branch` metadata description so it states the invocation
+   purpose without documenting publish mechanics.
+2. Preserve the complete publish workflow, safety boundaries, installer behavior, mappings,
+   optional installation behavior, tests, prompts, rules, package scripts, and skill directories.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/publish-current-branch/metadata.yml
+.codex/project/project-guideline.md
+docs/foundation-design-log.md
+```
