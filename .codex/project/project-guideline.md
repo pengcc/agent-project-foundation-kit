@@ -747,6 +747,8 @@ Completed:
 - Skill Token-Load Pruning, bounded first pass
     - tightened two metadata descriptions
     - replaced duplicate taxonomy prose in `writing-great-skills` with the canonical rule pointer
+- Skill Token-Load Pruning, bounded second pass
+    - tightened only the `publish-current-branch` metadata description
 - Theme 15 `handoff`
     - `kit/skills/core/handoff`
     - `kit/prompts/force-handoff.md`
