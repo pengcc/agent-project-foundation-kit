@@ -2295,3 +2295,24 @@ docs/foundation-kit-skills-review-and-optimization-roadmap.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Skill Token-Load Pruning — Bounded First Pass
+
+Accepted implementation scope:
+
+1. Tighten only the `code-review` and `codebase-audit` metadata descriptions so they focus on
+   invocation rather than workflow documentation.
+2. Replace duplicated taxonomy, invocation, and dependency prose in `writing-great-skills` with a
+   concise pointer to the canonical rule.
+3. Preserve all workflow structures, safety boundaries, installer behavior, mappings, optional
+   installation behavior, tests, prompts, rules, and physical skill directories.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/code-review/metadata.yml
+kit/skills/core/codebase-audit/metadata.yml
+kit/skills/core/writing-great-skills/SKILL.md
+.codex/project/project-guideline.md
+docs/foundation-design-log.md
+```
