@@ -2211,3 +2211,44 @@ kit/skills/core/initialize-project-context/
 kit/skills/core/project-architecture-plan/
 tests/install-foundation-kit/core.test.mjs
 ```
+
+## Decision: Physical skill paths match meta and core categories
+
+### Status
+
+Accepted
+
+### Context
+
+The taxonomy originally classified reusable disciplines as meta while keeping them physically
+under `kit/skills/core/`. The separately reviewed source migration has now been completed and
+merged.
+
+### Decision
+
+Store meta skills under `kit/skills/meta/` and core workflows under `kit/skills/core/`. Keep
+optional skills under `optional-skills/`, outside the default installable payload.
+
+Preserve the installer's complete-tree `kit/skills/` mapping so fresh default installs continue to
+receive both meta and core skills. Do not add automatic deletion, movement, backup, or cleanup of
+obsolete meta-skill paths in existing downstream projects; that maintenance remains manual or
+requires a separate approved plan.
+
+This supersedes only the prior deferral of physical `kit/skills/meta/` migration. Earlier taxonomy,
+invocation, dependency, workflow-boundary, and optional-adoption decisions remain accepted, and
+their historical path references remain historical records.
+
+### Impact
+
+Current source paths communicate category directly without changing installer mapping or optional
+installation behavior. Existing downstream projects may retain old installed paths until they are
+maintained separately.
+
+### Related files
+
+```txt
+kit/skills/meta/
+kit/skills/core/
+optional-skills/
+tests/install-foundation-kit/core.test.mjs
+```
