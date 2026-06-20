@@ -19,6 +19,12 @@ export function renderPrOnlyReport(output, report) {
   output.info(`PR number: ${report.prNumber}`);
   output.info(`PR URL: ${report.prUrl}`);
   output.info(`PR changes: ${report.prChangesUrl}`);
+  if (report.latestCommitChangesUrl) {
+    output.info(`Latest commit changes: ${report.latestCommitChangesUrl}`);
+  } else if (report.latestHeadCommit) {
+    output.info(`Latest head commit: ${report.latestHeadCommit}`);
+  }
+  output.info(`Next Step After Review: ${report.nextStep}`);
   output.info(`Branch: ${report.branch}`);
   output.info(`Action: ${report.action}`);
 }

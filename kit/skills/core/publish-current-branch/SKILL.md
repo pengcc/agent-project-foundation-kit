@@ -110,16 +110,21 @@ merge handling, required-check inspection, and verified default-branch refresh.
 Use `--mode pr-only` for a quick create-or-update PR operation that must not classify, validate,
 merge, or refresh the default branch. It requires an existing feature branch, stages only the
 observed paths, stops on drift, preserves an existing PR title unless an explicit second argument
-is supplied, and never creates a second open PR for the same branch.
+is supplied, and never creates a second open PR for the same branch. Its report keeps the general
+PR Files changed link, adds a neutral latest-commit review link only when the re-read PR head
+matches the verified pushed head, falls back to the verified pushed SHA when they differ, and
+prints a copyable `publish:merge-pr` next step.
 
 Use `--mode merge-pr <pr-number>` only when the user explicitly requests merging that PR. The mode
 requires a clean worktree, displays and revalidates PR metadata, blocks failing or unknown required
 checks, squash-merges with expected-head protection, verifies a completed merge, and refreshes the
-default branch with fast-forward-only behavior. Pending checks block with wait/rerun guidance
-unless the user explicitly supplies `--auto-merge`; that option requests PR-level squash
-auto-merge and leaves the local branch unchanged while the PR remains open. `--yes` skips only its
-human confirmation. Neither option bypasses repository rules, checks, reviews, mergeability, or
-head verification.
+default branch with fast-forward-only behavior. The explicit command and PR number authorize the
+normal immediate merge attempt, so it does not add another confirmation prompt. Pending checks
+block with wait/rerun guidance unless the user explicitly supplies `--auto-merge`; that option
+requests PR-level squash auto-merge and leaves the local branch unchanged while the PR remains
+open. Auto-merge retains its human confirmation unless `--yes` is supplied, and `--yes` remains
+accepted for compatibility. Neither option bypasses repository rules, checks, reviews,
+mergeability, or head verification.
 
 Agents should prefer invoking the installed script instead of reproducing its Git and GitHub
 command sequence. Users may also run the same command directly.

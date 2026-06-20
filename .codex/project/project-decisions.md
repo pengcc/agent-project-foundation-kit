@@ -2603,3 +2603,44 @@ kit/skills/core/to-work-items/SKILL.md
 kit/skills/core/execute-plan/SKILL.md
 docs/foundation-design-log.md
 ```
+
+## Decision: Publish review handoff uses verified PR head and explicit merge authorization
+
+### Status
+
+Accepted
+
+### Context
+
+Repeated updates to an open pull request needed a direct review handoff for the newly pushed head,
+while the normal `publish:merge-pr` confirmation repeated authorization already expressed by the
+explicit command and PR number. Any optimization still had to preserve required checks,
+mergeability, expected-head enforcement, squash semantics, merge verification, auto-merge
+authorization, and fast-forward-only refresh.
+
+### Decision
+
+`publish:pr-only` continues to report the general PR Files changed URL. After creating or updating
+the PR, it compares re-read PR metadata with the verified pushed head. Only a match permits the
+neutral `Latest commit changes` URL using `/changes/<head-sha>`; a mismatch reports the verified
+pushed SHA instead. The report also prints a copyable `publish:merge-pr <pr-number>` next step.
+
+The explicit normal `publish:merge-pr <pr-number>` command authorizes the existing immediate
+squash-merge attempt without a second confirmation. All technical validation and revalidation
+remain unchanged. The distinct auto-merge path keeps its confirmation unless `--yes` is supplied,
+and `--yes` remains accepted for compatibility.
+
+### Impact
+
+Reviewers can move directly from a repeated PR update to the relevant head and then to the explicit
+merge command. Normal merge has less redundant interaction without bypassing GitHub checks,
+reviews, branch rules, head verification, or local refresh safety. No installer, package script,
+dependency, runtime, or unrelated publish-mode behavior changes.
+
+### Related Files
+
+- `kit/scripts/publish-changes/pr-only-flow.mjs`
+- `kit/scripts/publish-changes/final-report.mjs`
+- `kit/scripts/publish-changes/merge-pr-flow.mjs`
+- `tests/publish-changes/modes.test.mjs`
+- `kit/skills/core/publish-current-branch/SKILL.md`

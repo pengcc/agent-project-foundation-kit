@@ -151,6 +151,9 @@ export async function runPrOnlyFlow({ git, gh, prompts, output, options, env = p
     prNumber: pr.number,
     prUrl: pr.url,
     prChangesUrl: `${pr.url}/files`,
+    latestCommitChangesUrl: pr.headRefOid === headSha ? `${pr.url}/changes/${headSha}` : null,
+    latestHeadCommit: pr.headRefOid === headSha ? null : headSha,
+    nextStep: `pnpm publish:merge-pr ${pr.number}`,
     branch: state.branch,
     action,
   };

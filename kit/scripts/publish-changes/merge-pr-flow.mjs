@@ -76,10 +76,8 @@ export async function runMergePrFlow({
     checkMode,
   });
 
-  const confirmation = options.autoMerge
-    ? `Complete PR #${displayedPr.number} with squash merge now if ready, or enable auto-merge if required checks are pending?`
-    : `Squash merge PR #${displayedPr.number}?`;
-  if (!options.yes && !(await prompts.confirm(confirmation))) {
+  const confirmation = `Complete PR #${displayedPr.number} with squash merge now if ready, or enable auto-merge if required checks are pending?`;
+  if (options.autoMerge && !options.yes && !(await prompts.confirm(confirmation))) {
     throw new PublishError("USER_CANCELLED", "Pull request merge was not approved.");
   }
 

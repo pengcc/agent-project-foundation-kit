@@ -2534,3 +2534,34 @@ kit/skills/core/execute-plan/SKILL.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Publish Script Review Link and Merge Prompt Optimization
+
+Accepted implementation result:
+
+1. Keep the general PR Files changed URL in `publish:pr-only` reports.
+2. Add a neutral `/changes/<head-sha>` latest-commit link only when re-read PR metadata matches the
+   verified pushed head; otherwise report the pushed SHA without claiming a PR-specific view.
+3. Add a copyable `pnpm publish:merge-pr <pr-number>` next step after review links.
+4. Treat the explicit normal merge command and PR number as authorization for the existing
+   immediate squash-merge attempt, removing only its duplicate confirmation prompt.
+5. Preserve required-check handling, mergeability validation, expected-head matching,
+   post-decision revalidation, squash semantics, merge verification, and fast-forward-only refresh.
+6. Preserve the separate auto-merge confirmation unless `--yes` is supplied, and keep `--yes`
+   accepted for compatibility.
+7. Keep package scripts, installer behavior, dependencies, runtime requirements, and unrelated
+   publish modes unchanged.
+
+Resulting files / changes:
+
+```txt
+kit/scripts/publish-changes/pr-only-flow.mjs
+kit/scripts/publish-changes/final-report.mjs
+kit/scripts/publish-changes/merge-pr-flow.mjs
+tests/publish-changes/modes.test.mjs
+README.md
+kit/skills/core/publish-current-branch/SKILL.md
+.codex/project/project-guideline.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
