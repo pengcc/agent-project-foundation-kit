@@ -514,8 +514,9 @@ Current publish workflow architecture:
 - after an auto-merge request, read the PR once; refresh only if already verified merged, otherwise
   report the open waiting PR and leave the local branch unchanged
 - treat repository-level Allow auto-merge as permission for the feature, not per-PR enablement
-- treat `--yes` in merge-PR mode as confirmation bypass only, never as safety or branch-protection
-  bypass
+- treat an explicit normal `publish:merge-pr <pr-number>` command as authorization for its
+  immediate squash-merge attempt without a second prompt; retain the auto-merge confirmation
+  unless `--yes` is supplied, and keep `--yes` accepted for compatibility
 - refresh after explicit PR merge only after verified remote merge and with fast-forward-only
   behavior; never hard-reset in merge-PR mode
 - show final staged scope for uncommitted changes and commit/diff scope for unpushed commits
@@ -565,7 +566,9 @@ Current publish workflow architecture:
 - dispatch explicit PR-only and merge-PR modes without loading the classification policy used by
   the default publish flow
 - keep PR-only deterministic and non-interactive except for a missing required commit message
-- report PR-only results as created, updated, or unchanged with the PR files URL
+- report PR-only results as created, updated, or unchanged with the general PR Files changed URL,
+  a neutral `/changes/<head-sha>` latest-commit link only when re-read PR metadata matches the
+  verified pushed head, a pushed-SHA fallback when it does not, and a copyable merge next step
 - report merge-PR partial success when GitHub merged the PR but local default-branch refresh cannot
   fast-forward
 
@@ -576,9 +579,11 @@ Current Node publish test purpose:
 - avoid real pushes, PR creation, merges, and network access
 - cover scope-confirmation ordering, numbered classification, recommendations, repository/current-branch PR handling, late-merge recovery, required-check states, GitHub CLI errors, merge modes, and verified post-merge refresh
 - cover PR-only default-branch blocking, title preservation, duplicate prevention, observed-path
-  staging, drift protection, and created/updated/unchanged reporting
+  staging, drift protection, created/updated/unchanged reporting, verified-head review links, and
+  mismatched-head fallback reporting
 - cover explicit PR-number validation, clean-worktree enforcement, required checks, head changes,
-  confirmation-only `--yes`, verified merge, and fast-forward-only refresh
+  non-interactive normal merge, retained auto-merge confirmation, compatible `--yes`, verified
+  merge, and fast-forward-only refresh
 
 Current `install-foundation-kit.mjs` purpose:
 

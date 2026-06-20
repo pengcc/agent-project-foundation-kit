@@ -183,13 +183,17 @@ validation, scope-confirmation, completion-mode, or merge questions. It blocks o
 branch instead of creating a feature branch automatically.
 
 An existing PR keeps its title unless the optional second argument is explicitly supplied. The
-result reports the PR number, PR URL, files URL, branch, and whether the PR was created, updated,
-or unchanged.
+result reports the PR number, PR URL, general Files changed URL, and a neutral latest-commit
+review link only when the re-read PR head matches the verified pushed head. If those heads cannot
+be reconciled, it reports the verified pushed SHA instead. It also prints the copyable next step
+`pnpm publish:merge-pr <pr-number>`, the branch, and whether the PR was created, updated, or
+unchanged.
 
 `pnpm publish:merge-pr <pr-number>` reads and validates the named PR, required checks, base branch,
-mergeability, and head OID before requesting one squash-merge confirmation. `--yes` skips only
-that confirmation. It does not bypass repository rules or checks. After GitHub verifies the merge,
-the command refreshes the default branch with fast-forward-only behavior and never hard-resets a
+mergeability, and head OID. The explicit command and PR number authorize the immediate squash-merge
+attempt, so this mode does not add a second confirmation prompt. `--yes` remains accepted for
+compatibility. The command does not bypass repository rules or checks. After GitHub verifies the
+merge, it refreshes the default branch with fast-forward-only behavior and never hard-resets a
 diverged branch.
 
 `pnpm publish:merge-pr:auto <pr-number>` adds explicit `--auto-merge` authorization. Passed checks
@@ -262,6 +266,6 @@ relying on changed `gh` behavior, use a disposable low-risk branch and verify:
 
 1. PR creation and existing-PR publish-record comments.
 2. Required-check reporting for no checks, passing, pending, failing, and GitHub CLI error cases.
-3. Squash auto-merge and immediate squash merge confirmation wording.
+3. Squash auto-merge confirmation and non-interactive immediate squash merge behavior.
 4. Default-branch refresh only after GitHub reports the PR as merged.
 5. Diverged-main recovery creates a backup branch and requires `RESET_MAIN_TO_ORIGIN`.

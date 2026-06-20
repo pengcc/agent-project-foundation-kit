@@ -93,8 +93,8 @@ function createPrOnlyHarness({
       if (args.includes("--head")) return pr ? [{ number: pr.number }] : [];
       return pr ? [pr] : [];
     },
-    viewPullRequest: async () =>
-      pr || {
+    viewPullRequest: async () => {
+      const viewedPr = pr || {
         number: 18,
         title: "New PR",
         url: "https://example.test/pr/18",
@@ -102,7 +102,12 @@ function createPrOnlyHarness({
         baseRefName: "main",
         headRefName: branch,
         headRefOid: head,
-      },
+      };
+      return {
+        ...viewedPr,
+        headRefOid: existingPr?.headRefOid ?? head,
+      };
+    },
     createPullRequest: async (_repo, input) => calls.push(`create-pr:${input.title}`),
     commentPullRequest: async (_repo, number) => calls.push(`comment-pr:${number}`),
     updatePullRequestTitle: async (_repo, number, title) =>
@@ -147,9 +152,20 @@ describe("PR-only flow", () => {
     expect(result.report).toMatchObject({
       prNumber: 18,
       prChangesUrl: "https://example.test/pr/18/files",
+      latestCommitChangesUrl: "https://example.test/pr/18/changes/committed-head",
+      latestHeadCommit: null,
+      nextStep: "pnpm publish:merge-pr 18",
       branch: "feature/quick-pr",
       action: "created",
     });
+    expect(harness.output.messages).toContainEqual([
+      "INFO",
+      "Latest commit changes: https://example.test/pr/18/changes/committed-head",
+    ]);
+    expect(harness.output.messages).toContainEqual([
+      "INFO",
+      "Next Step After Review: pnpm publish:merge-pr 18",
+    ]);
     expect(harness.calls).toEqual([
       "fetch",
       "add:package.json",
@@ -179,9 +195,29 @@ describe("PR-only flow", () => {
       env: {},
     });
     expect(result.report.action).toBe("updated");
+    expect(result.report.latestCommitChangesUrl).toBe(
+      "https://example.test/pr/17/changes/committed-head",
+    );
     expect(harness.calls).toContain("comment-pr:17");
     expect(harness.calls.some((call) => call.startsWith("create-pr:"))).toBe(false);
     expect(harness.calls.some((call) => call.startsWith("title-pr:"))).toBe(false);
+  });
+
+  it("falls back to the pushed head SHA when current PR metadata does not match", async () => {
+    const harness = createPrOnlyHarness({
+      existingPr: { headRefOid: "stale-remote-head" },
+    });
+    const result = await runPrOnlyFlow({
+      ...harness,
+      options: prOnlyOptions(),
+      env: {},
+    });
+    expect(result.report).toMatchObject({
+      latestCommitChangesUrl: null,
+      latestHeadCommit: "committed-head",
+      nextStep: "pnpm publish:merge-pr 17",
+    });
+    expect(harness.output.messages).toContainEqual(["INFO", "Latest head commit: committed-head"]);
   });
 
   it("updates an existing title only when the second argument was explicit", async () => {
@@ -372,14 +408,15 @@ function createMergeHarness({
 }
 
 describe("merge-PR flow", () => {
-  it("shows metadata, confirms, verifies the merge, and refreshes main", async () => {
+  it("shows metadata, verifies the merge without prompting, and refreshes main", async () => {
     const harness = createMergeHarness();
     const result = await runMergePrFlow({
       ...harness,
       env: {},
       sleep: async () => {},
     });
-    expect(harness.promptEvents).toEqual(["confirm:Squash merge PR #23?"]);
+    expect(harness.promptEvents).toEqual([]);
+    expect(harness.gh.requiredChecks).toHaveBeenCalledTimes(2);
     expect(harness.calls).toEqual([
       "merge:23:reviewed-head:false",
       "fetch",
@@ -396,7 +433,7 @@ describe("merge-PR flow", () => {
     expect(harness.output.messages.flat().join("\n")).toContain("Head SHA/OID: reviewed-head");
   });
 
-  it("--yes skips only the human confirmation", async () => {
+  it("keeps --yes compatible with the non-interactive immediate merge path", async () => {
     const harness = createMergeHarness({ yes: true });
     await runMergePrFlow({
       ...harness,
