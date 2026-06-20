@@ -2594,3 +2594,29 @@ kit/skills/meta/writing-great-skills/SKILL.md
 dev_locals/research-notes/2026-06-20-writing-great-skills-compression-pilot-note.md
 docs/foundation-design-log.md
 ```
+
+## Agent Roles and Capabilities Capability-Preserving Compression Pilot
+
+Accepted implementation result:
+
+1. Apply a second bounded compression pilot to `agent-roles-and-capabilities` under the
+   `skill-and-output-efficiency` standard without using line count as an acceptance criterion.
+2. Tighten introductory, core-principle, supporting-skill, generic-category, maturity,
+   user-specified-role, and future-role prose without changing routing decisions.
+3. Preserve the complete truthfulness contract, bootstrap-safe routing, taxonomy and optional
+   adoption boundaries, Missing Specialist Skill Policy, engineering-quality rule, and all
+   task-to-role routing defaults.
+4. Preserve the Role Routing and Missing Specialist Skill output schemas, every role profile, and
+   the final routing self-check.
+5. Leave high-risk workflow skills, rules, prompts, metadata, tests, installer, package, runtime,
+   publish, downstream-template, archive, release, and deployment behavior unchanged.
+6. Validate the focused diff with a protected-behavior inventory, before/after semantic review,
+   Biome formatting, publish and installer tests, and whitespace checks.
+
+Resulting files / changes:
+
+```txt
+kit/skills/meta/agent-roles-and-capabilities/SKILL.md
+dev_locals/research-notes/2026-06-21-agent-roles-capabilities-compression-pilot-note.md
+docs/foundation-design-log.md
+```

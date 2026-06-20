@@ -1,8 +1,7 @@
 # Agent Roles and Capabilities Skill
 
-Use this skill to route a task to the right agent role, capability boundary, maturity expectation, workflow, and supporting skills.
-
-This skill does not directly implement features. It is a role routing and capability boundary skill used by other workflows.
+Use this skill to route a task to the right role, capability boundary, maturity expectation,
+workflow, and supporting skills. It does not implement features.
 
 ## Required Truthfulness
 
@@ -16,21 +15,13 @@ Do not use role titles to imply human credentials, certifications, or job senior
 
 ## Core Principle
 
-Roles are working perspectives, not job titles.
-
-Workflows define process boundaries.
-
-A workflow may use multiple roles.
-
-A role may be used by multiple workflows.
+Roles are working perspectives, not job titles; workflows define process boundaries. A workflow
+may use multiple roles, and a role may support multiple workflows.
 
 ## Supporting Skill Invocation
 
-The primary workflow remains active while a supporting skill is used for a bounded substep.
-
-Do not claim a supporting skill was used unless its instructions were read and applied.
-
-After the bounded substep, return to the primary workflow.
+The primary workflow remains active during a bounded supporting-skill substep; return to it after
+the substep. Claim supporting-skill use only when its instructions were read and applied.
 
 Supporting skills do not bypass the Project Memory Context Gate, approved-plan boundaries, safety
 rules, or the Missing Specialist Skill Policy.
@@ -96,9 +87,7 @@ The generic role categories for full-stack JS/Web projects are:
 8. Tooling / Build / DevOps / Delivery
 9. Documentation / Memory / Handoff
 
-These categories cover HTML, CSS, JavaScript, React, Next.js, Vue, TanStack, TypeScript, Node.js, NestJS, lint/format/build tools, common databases/ORMs, testing, security, performance, accessibility, delivery, documentation, and memory.
-
-Theme 9 defines generic roles only.
+These categories cover common full-stack JavaScript and web concerns, but remain generic roles.
 
 Technology-specific expert skills such as Next.js, Vue, NestJS, SFCC, Adyen, Prisma, Drizzle,
 PostgreSQL, SQLite, or MongoDB remain future skills. TanStack Router and Query guidance is
@@ -134,19 +123,9 @@ candidates only unless the referenced skill is actually installed and used.
 
 ## Expected Maturity
 
-Role titles do not use `Senior` by default.
-
-However, role profiles must apply senior-level engineering judgment for:
-
-- architecture
-- planning
-- code review
-- security
-- data model decisions
-- integration design
-- deployment strategy
-- cross-system decisions
-- high-risk implementation
+Role titles do not use `Senior` by default. Apply senior-level engineering judgment to
+architecture, planning, code review, security, data models, integrations, deployment,
+cross-system decisions, and high-risk implementation.
 
 For small bounded tasks, stay pragmatic and avoid overengineering.
 
@@ -259,13 +238,9 @@ Workflow: publish-current-branch
 
 ## User-Specified Roles
 
-The user may explicitly request a primary or supporting role.
-
-Respect the request if it fits the task and workflow boundary.
-
-If the requested role does not fit, explain the mismatch and recommend correct routing.
-
-User-specified roles cannot bypass workflow boundaries.
+Honor a user-specified primary or supporting role when it fits the task and workflow boundary.
+Otherwise explain the mismatch and recommend correct routing. User-specified roles cannot bypass
+workflow boundaries.
 
 ## Core Role Profiles
 
@@ -572,9 +547,7 @@ Boundaries: does not treat handoff as project source of truth.
 
 ## Future-Facing Roles
 
-These roles may be referenced as future-facing roles only.
-
-They do not imply current workflow support exists.
+These roles are future-facing only and do not imply current workflow support:
 
 - Deployment Coordinator: plans or reviews deployment readiness and strategy. Does not deploy unless a deployment workflow exists and user explicitly requests it.
 - Release Coordinator: plans or reviews release readiness. Does not release unless a release workflow exists and user explicitly requests it.
