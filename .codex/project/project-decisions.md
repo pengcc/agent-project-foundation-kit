@@ -2384,3 +2384,44 @@ tests/install-foundation-kit/
 README.md
 docs/optional-skill-catalog.md
 ```
+
+## Decision: Execute-plan readiness checks require a visible pre-execution status boundary
+
+### Status
+
+Accepted
+
+### Context
+
+`execute-plan` already required plan approval, project-memory alignment, repository preflight, and
+plan completeness checks, but it did not require one consolidated user-visible readiness update
+before implementation began. Agents could therefore perform the checks without making their
+result, unknowns, staged approach, or stop conditions clear to the user.
+
+### Decision
+
+After applicable checks and before branch creation or another execution mutation, `execute-plan`
+must emit a concise Pre-Execution Status Update. It reports the approved plan source and readiness,
+project-memory alignment, relevant repository and PR state, branch strategy, plan- or
+project-required runtime/tooling alignment, staged implementation groups, and stop conditions.
+
+Unavailable or irrelevant checks must be identified as not checkable or not applicable rather
+than reported as passed. This is an observability contract over existing requirements, not a new
+universal requirement for clean synchronized `main`, GitHub checks, or runtime checks.
+
+Local branch creation may remain part of local execution setup. It does not authorize push, PR
+creation, merge, release, deployment, or another publish action. Push, PR, and merge remain behind
+an explicit `publish-current-branch` workflow switch.
+
+### Impact
+
+Approved-plan execution starts with a consistent, truthful readiness boundary while preserving
+the existing execution, project-memory, branch, and publishing responsibilities.
+
+### Related files
+
+```txt
+kit/skills/core/execute-plan/SKILL.md
+.codex/project/lessons-learned.md
+docs/foundation-design-log.md
+```

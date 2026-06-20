@@ -2423,3 +2423,18 @@ excluded by default. Collision checks are limited to kit-managed core, meta, and
 namespaces. Project-local `.codex/skills/project/` content remains outside installer inspection and
 ownership. Historical root-level optional-skill references above remain chronology, not current
 source-path guidance.
+
+## Execute Plan Pre-Execution Status Update
+
+`execute-plan` now requires one concise user-visible readiness update after applicable preflight
+checks and before branch creation, file changes, or another execution mutation. The update covers
+the approved plan and readiness state, project-memory alignment, relevant repository and PR state,
+branch strategy, conditionally required runtime/tooling alignment, staged implementation groups,
+and stop conditions. Checks that are not applicable or not checkable must be identified honestly.
+
+This is a reporting contract over existing execution requirements. It does not introduce universal
+GitHub, clean-default-branch, runtime, or tooling checks; alter plan approval or validation; or
+change installer, script, prompt, metadata, package, dependency, or test behavior. Local branch
+creation remains local setup only. Push, PR creation, merge, release, deployment, and publish
+actions remain outside `execute-plan`, with push/PR/merge behind an explicit
+`publish-current-branch` workflow switch.

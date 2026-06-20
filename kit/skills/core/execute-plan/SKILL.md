@@ -175,6 +175,31 @@ If any critical section is missing, stop and recommend `plan-with-context`.
 
 Do not execute plans marked `incomplete draft` or `blocked`.
 
+## Pre-Execution Status Update
+
+After completing the applicable pre-execution checks, emit one concise user-visible status update
+before creating a branch, changing files, or performing another execution mutation. Do not require
+one fixed sentence. Cover:
+
+- the approved plan source;
+- whether the plan is complete, current, and explicitly approved;
+- the Project Memory Context Gate result and plan/memory alignment;
+- the relevant repository state;
+- the intended branch strategy;
+- repository-level and current-branch PR state when relevant and checkable;
+- runtime/tooling alignment when the plan or project workflow specifies it;
+- the staged implementation groups derived from the plan;
+- the active stop conditions.
+
+State briefly when a check is not applicable or not checkable, including any material impact. Do
+not claim a check passed when it was not performed. This reporting requirement does not make clean
+synchronized `main`, PR checks, or runtime checks universal; apply them only when required by the
+approved plan or project workflow.
+
+Local branch creation may be part of local execution setup. It does not authorize push, PR
+creation, merge, release, deployment, or any publish workflow. Push, PR, and merge remain behind
+an explicit switch to `publish-current-branch` after execution.
+
 ## Stepwise Execution
 
 Execute the approved plan in stages.
