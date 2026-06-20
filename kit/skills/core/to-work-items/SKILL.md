@@ -6,6 +6,9 @@ agent-ready execution steps, vertical slices, or work items for focused `execute
 This is a plan-slicing workflow. It does not implement the work, create GitHub Issues in v1, or
 replace `plan-with-context`.
 
+It is the canonical decomposition workflow for approved plans that are too broad or
+review-hostile for one focused `execute-plan` run.
+
 ## Role Routing Integration
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
@@ -31,8 +34,9 @@ Use `to-work-items` to:
 - confirm the source plan and approved delivery boundary;
 - identify the smallest meaningful end-to-end delivery path;
 - split large work into independently understandable vertical slices;
-- define dependencies, acceptance criteria, and validation commands;
-- identify likely files or areas without pretending certainty; and
+- define dependencies, mutation boundaries, acceptance criteria, STOP conditions, review
+  boundaries, and validation commands;
+- identify expected files or areas without pretending certainty; and
 - save or present work items suitable for focused `execute-plan` runs.
 
 ## Non-Goals
@@ -99,14 +103,17 @@ verifiable, and necessary before any vertical slice can proceed.
 
 Make each item understandable without hidden conversation context. Include:
 
-- one concrete goal;
+- an ID/name and one concrete goal;
 - the vertical path it covers;
-- likely files or areas, marked as likely rather than guaranteed;
-- dependencies and blocked conditions;
+- expected files or areas, marked as expected rather than guaranteed;
+- allowed mutation type and explicit non-goals;
+- dependency order and blocked conditions;
 - observable acceptance criteria;
 - exact validation commands taken from the source plan or current repository sources;
 - suggested workflow; and
-- relevant risks, assumptions, and stop conditions.
+- relevant risks, assumptions, and STOP conditions;
+- the review boundary; and
+- whether the item should be one PR or part of a larger reviewed PR.
 
 Keep each item small enough for one focused `execute-plan` run. Split an item further when it has
 multiple independent outcomes, unrelated validation loops, or materially different risk profiles.
@@ -146,13 +153,21 @@ execution.
 
 ### Vertical Slice
 
-### Likely Files / Areas
+### Expected Files / Areas
+
+### Allowed Mutation
+
+### Non-Goals
 
 ### Dependencies
 
 ### Acceptance Criteria
 
 ### Validation Commands
+
+### STOP Conditions
+
+### Review Boundary / PR Recommendation
 
 ### Suggested Workflow
 
@@ -177,9 +192,11 @@ Before finalizing, verify:
 - every item preserves the source scope and non-goals;
 - slices are vertical unless a horizontal prerequisite is justified;
 - every item is independently understandable and focused;
+- every item names expected file/area scope, allowed mutation, and non-goals;
 - dependencies and blocked conditions are explicit;
 - acceptance criteria are observable;
 - validation commands come from current repository sources or the approved plan;
-- likely files are not presented as certainty;
+- STOP conditions and the review/PR boundary are explicit;
+- expected files are not presented as certainty;
 - no item implements work or creates GitHub Issues; and
 - execution still requires an explicit `execute-plan` workflow.

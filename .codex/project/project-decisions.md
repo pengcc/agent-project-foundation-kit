@@ -2556,3 +2556,50 @@ kit/skills/core/execute-plan/SKILL.md
 kit/rules/skill-and-output-efficiency.md
 docs/foundation-design-log.md
 ```
+
+## Decision: Broad plans require reviewable work items before execution
+
+### Status
+
+Accepted
+
+### Context
+
+Self-contained plans can still be too broad for one focused execution pass. Without an explicit
+reviewability decision, one approved plan may combine independently reviewable outcomes, vague
+file scope, or incompatible validation loops and produce a review-hostile change set.
+
+### Decision
+
+`plan-with-context` classifies every non-trivial plan as one focused execution pass, embedded
+reviewable work items, or a required handoff to `to-work-items`. The decision uses expected
+file/area scope, validation boundaries, independent outcomes, safety boundaries, and reviewability
+rather than numeric-only size thresholds.
+
+`to-work-items` remains the canonical decomposition workflow. Each item defines its goal,
+dependency order, expected file/area scope, allowed mutation, non-goals, validation, acceptance
+criteria, STOP conditions, and review/PR boundary. Decomposition does not authorize execution.
+
+Before mutation, `execute-plan` verifies the approved current slice is focused, scoped, validated,
+and reviewable. Broad or review-hostile plans without the required approved work items must stop
+and return to `plan-with-context` or `to-work-items`. The executor must not invent decomposition or
+silently continue. When approved work items exist, execution is limited to the approved current
+slice unless the user explicitly approves multiple slices together with visible combined scope.
+
+Push, PR, and merge remain owned by `publish-current-branch`. Durable memory writes remain owned by
+`update-project-memory`.
+
+### Impact
+
+Planning and execution now protect reviewability as an execution-readiness property while keeping
+small focused work lightweight and preserving existing approval, validation, memory, and publish
+boundaries.
+
+### Related files
+
+```txt
+kit/skills/meta/plan-with-context/SKILL.md
+kit/skills/core/to-work-items/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+docs/foundation-design-log.md
+```
