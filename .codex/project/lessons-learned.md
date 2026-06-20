@@ -768,3 +768,28 @@ project-owned namespaces outside installer ownership rather than broadening coll
 - preserve identical files as safe skips, not conflicts
 - keep collision checks bounded to paths the tool actually manages
 - enforce no-replace semantics again at the final filesystem write
+
+## Keep: Make pre-execution readiness observable before mutation
+
+### Context
+
+An execution workflow can complete its internal approval, memory, repository, PR, and tooling
+checks without giving the user a concise account of what was verified and how implementation will
+proceed.
+
+### Lesson
+
+Checks that are not surfaced are difficult to verify and easy to misinterpret as skipped. Before
+execution mutates repository state, report the approved source, readiness result, relevant unknowns,
+planned implementation groups, and stop conditions. Report unavailable or irrelevant checks
+truthfully instead of filling gaps with assumptions.
+
+The report is an observability boundary, not authorization for publishing or unrelated actions.
+
+### Reuse guidance
+
+- summarize readiness rather than dumping the full checklist
+- distinguish verified, not applicable, and not checkable states
+- derive staged groups and stop conditions from the approved plan
+- keep project-specific branch, PR, and runtime requirements conditional
+- separate local execution setup from push, PR, merge, release, and deployment authority
