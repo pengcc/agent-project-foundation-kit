@@ -170,6 +170,46 @@ describe("installer flow", () => {
     ]);
   });
 
+  it("safe apply preserves differing workflow scripts and reports merge review", async () => {
+    const fixture = await workspace("safe-workflow-script");
+    const output = createOutput();
+    const script = resolve(fixture.targetRoot, ".codex/scripts/publish-changes.mjs");
+    await mkdir(resolve(script, ".."), { recursive: true });
+    await writeFile(script, "project-specific publish workflow\n");
+
+    const result = await run(fixture, {
+      options: { apply: true, skipConflicts: true },
+      output,
+      prompts: {
+        confirmBackup: async () => {
+          throw new Error("safe apply must not prompt");
+        },
+      },
+    });
+
+    expect(result.report).toMatchObject({
+      conflictPolicy: "safe-new-files-only",
+      backupRelative: "",
+      scriptMergeFiles: 1,
+    });
+    expect(await readFile(script, "utf8")).toBe("project-specific publish workflow\n");
+    await expect(
+      lstat(resolve(fixture.targetRoot, ".codex/scripts/shared/command-runner.mjs")),
+    ).resolves.toBeTruthy();
+    await expect(lstat(resolve(fixture.targetRoot, ".codex/backups"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    expect(output.messages).toContainEqual([
+      "WARNING",
+      "[SCRIPT-MERGE] .codex/scripts/publish-changes.mjs differs; target scripts may contain project-specific workflow, publish, CI, or local automation changes.",
+    ]);
+    expect(
+      output.messages.some(
+        ([level, message]) => level === "SUCCESS" && message.includes("1 script merge"),
+      ),
+    ).toBe(true);
+  });
+
   it("safe apply skips identical files without classifying them as danger", async () => {
     const fixture = await workspace("safe-identical");
     const output = createOutput();
@@ -355,6 +395,9 @@ describe("installer flow", () => {
     const output = createOutput();
     let prompted = false;
     await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "existing\n");
+    const script = resolve(fixture.targetRoot, ".codex/scripts/publish-changes.mjs");
+    await mkdir(resolve(script, ".."), { recursive: true });
+    await writeFile(script, "project-specific publish workflow\n");
     const result = await run(fixture, {
       options: {
         apply: true,
@@ -380,9 +423,24 @@ describe("installer flow", () => {
       "DANGER",
       "Conflicts may contain important existing-project context.",
     ]);
+    expect(output.messages).toContainEqual([
+      "DANGER",
+      "[SCRIPT-MERGE] .codex/scripts/publish-changes.mjs differs; target scripts may contain project-specific workflow, publish, CI, or local automation changes.",
+    ]);
+    expect(
+      await readFile(
+        resolve(
+          fixture.targetRoot,
+          result.report.backupRelative,
+          ".codex/scripts/publish-changes.mjs",
+        ),
+        "utf8",
+      ),
+    ).toBe("project-specific publish workflow\n");
     expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe(
       "agent instructions\n",
     );
+    expect(await readFile(script, "utf8")).toBe('console.log("publish");\n');
   });
 
   it("reports auto resolution and review choices during a zero-write conflict dry-run", async () => {

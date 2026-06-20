@@ -518,6 +518,39 @@ describe("mapping and boundaries", () => {
     });
   });
 
+  it("classifies workflow scripts by content state without changing new-file behavior", async () => {
+    const fixture = await workspace("workflow-script-classification");
+    const targetRelative = ".codex/scripts/publish-changes.mjs";
+    const target = resolve(fixture.targetRoot, targetRelative);
+    const source = resolve(fixture.kitRoot, "scripts/publish-changes.mjs");
+
+    let plan = await buildInstallPlan(fixture);
+    expect(plan.entries.find((entry) => entry.targetRelative === targetRelative)).toMatchObject({
+      contentState: "new",
+      ownership: "workflow-script",
+      action: "write",
+    });
+
+    await mkdir(resolve(target, ".."), { recursive: true });
+    await writeFile(target, await readFile(source));
+    plan = await buildInstallPlan(fixture);
+    expect(plan.entries.find((entry) => entry.targetRelative === targetRelative)).toMatchObject({
+      contentState: "existing-identical",
+      ownership: "workflow-script",
+      action: "skip-identical",
+    });
+
+    await writeFile(target, "project-specific publish workflow\n");
+    plan = await buildInstallPlan(fixture);
+    expect(plan.entries.find((entry) => entry.targetRelative === targetRelative)).toMatchObject({
+      contentState: "existing-different",
+      ownership: "workflow-script",
+      action: "script-merge",
+    });
+    expect(plan.scriptMergeFiles).toBe(1);
+    expect(plan.reviewItems).toBe(1);
+  });
+
   it("flags only kit-managed optional-skill namespace collisions", async () => {
     const fixture = await workspace("optional-collisions");
     await mkdir(resolve(fixture.targetRoot, ".codex/skills/project/optional-example"), {

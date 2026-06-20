@@ -2438,3 +2438,17 @@ change installer, script, prompt, metadata, package, dependency, or test behavio
 creation remains local setup only. Push, PR creation, merge, release, deployment, and publish
 actions remain outside `execute-plan`, with push/PR/merge behind an explicit
 `publish-current-branch` workflow switch.
+
+## Existing-Project Workflow-Script Merge Safety
+
+The installer now classifies mapped `.codex/scripts/*` files as `workflow-script` ownership.
+Existing-different scripts become `script-merge` review items and receive a `[SCRIPT-MERGE]`
+warning that calls out possible project-specific workflow, publish, CI, or local automation
+changes. Final reports surface script-merge counts separately.
+
+New scripts still install normally, identical scripts remain no-ops, and
+`--apply --skip-conflicts` still writes only safe new entries with no target overwrite or backup
+prompt. Explicit overwrite retains its existing verified backup, typed confirmation, and plan
+revalidation behavior. No script auto-merge/migration, `.codex/skills/project/` handling,
+installer redesign, dependency/runtime change, or publish/push/PR/merge/release/deploy behavior
+was added.
