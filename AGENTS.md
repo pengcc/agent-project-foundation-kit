@@ -21,6 +21,8 @@ Use these source files as the intended installed behavior:
 - `kit/skills/meta/*/metadata.yml`
 - `kit/skills/core/*/SKILL.md`
 - `kit/skills/core/*/metadata.yml`
+- `kit/optional-skills/*/SKILL.md`
+- `kit/optional-skills/*/metadata.yml`
 - `kit/rules/*`
 - `kit/prompts/*`
 - `kit/project-templates/*`

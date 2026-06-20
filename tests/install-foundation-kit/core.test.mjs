@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { glob, mkdir, readFile, symlink, writeFile } from "node:fs/promises";
+import { glob, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { PassThrough } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
@@ -63,6 +63,8 @@ describe("installer CLI", () => {
       showDiff: true,
       projectMode: "existing",
       overwriteConflicts: true,
+      skipConflicts: false,
+      includeOptional: [],
       verbose: true,
       help: false,
     });
@@ -80,6 +82,58 @@ describe("installer CLI", () => {
     );
     expect(() => parseCliOptions([])).toThrow("--target is required");
     expect(() => parseCliOptions(["--target", "/tmp/x", "--unknown"])).toThrow("Unknown option");
+  });
+
+  it("parses safe apply and repeatable optional skill selections directly", () => {
+    expect(
+      parseCliOptions([
+        "--target",
+        "/tmp/x",
+        "--apply",
+        "--skip-conflicts",
+        "--include-optional",
+        "optional-example",
+        "--include-optional",
+        "optional-example",
+      ]),
+    ).toMatchObject({
+      apply: true,
+      skipConflicts: true,
+      overwriteConflicts: false,
+      includeOptional: ["optional-example"],
+    });
+    expect(usage()).toContain(
+      "pnpm install:node --target /path/to/project --apply --skip-conflicts",
+    );
+  });
+
+  it("rejects invalid safe apply combinations and an extra argument separator", () => {
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--skip-conflicts"])).toThrow(
+      "--skip-conflicts requires --apply",
+    );
+    expect(() =>
+      parseCliOptions([
+        "--target",
+        "/tmp/x",
+        "--apply",
+        "--skip-conflicts",
+        "--overwrite-conflicts",
+      ]),
+    ).toThrow("mutually exclusive");
+    expect(() =>
+      parseCliOptions([
+        "--target",
+        "/tmp/x",
+        "--apply",
+        "--skip-conflicts",
+        "--project-mode",
+        "new",
+      ]),
+    ).toThrow("cannot be combined");
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--include-optional"])).toThrow(
+      "--include-optional requires a skill name",
+    );
+    expect(() => parseCliOptions(["--", "--target", "/tmp/x"])).toThrow("Unknown option: --");
   });
 });
 
@@ -151,7 +205,7 @@ describe("source repository metadata hygiene", () => {
     for (const pattern of [
       "kit/skills/meta/*/metadata.yml",
       "kit/skills/core/*/metadata.yml",
-      "optional-skills/*/metadata.yml",
+      "kit/optional-skills/*/metadata.yml",
     ]) {
       for await (const path of glob(pattern)) {
         paths.push(path);
@@ -344,10 +398,53 @@ describe("mapping and boundaries", () => {
     );
     expect(mappings.some((entry) => entry.sourceRelative.endsWith(".sh"))).toBe(false);
     expect(mappings.some((entry) => entry.sourceRelative.startsWith("archive/"))).toBe(false);
-    expect(mappings.some((entry) => entry.sourceRelative.startsWith("optional-skills/"))).toBe(
-      false,
-    );
+    expect(mappings.some((entry) => entry.category === "optional")).toBe(false);
     expect(mappings.some((entry) => entry.targetRelative === "package.json")).toBe(false);
+  });
+
+  it("installs selected optional skills only into the engineering namespace", async () => {
+    const fixture = await workspace("optional-mapping");
+    const mappings = await buildMappings(fixture.kitRoot, {
+      includeOptional: ["optional-example"],
+    });
+    const optionalMappings = mappings.filter((entry) => entry.category === "optional");
+
+    expect(optionalMappings).toHaveLength(2);
+    expect(optionalMappings.every((entry) => entry.optionalName === "optional-example")).toBe(true);
+    expect(optionalMappings.map((entry) => entry.targetRelative)).toEqual([
+      ".codex/skills/engineering/optional-example/metadata.yml",
+      ".codex/skills/engineering/optional-example/SKILL.md",
+    ]);
+    expect(
+      optionalMappings.some((entry) =>
+        [
+          ".codex/skills/optional/",
+          ".codex/skills/project/",
+          ".codex/skills/optional-example/",
+        ].some((prefix) => entry.targetRelative.startsWith(prefix)),
+      ),
+    ).toBe(false);
+    const plan = await buildInstallPlan({
+      ...fixture,
+      includeOptional: ["optional-example"],
+    });
+    expect(plan.optionalSelectedFiles).toBe(2);
+  });
+
+  it("rejects unknown optional skills and malformed optional metadata", async () => {
+    const unknown = await workspace("optional-unknown");
+    await expect(
+      buildMappings(unknown.kitRoot, { includeOptional: ["missing-skill"] }),
+    ).rejects.toThrow("Unknown optional skill: missing-skill");
+
+    const malformed = await workspace("optional-malformed");
+    await writeFile(
+      resolve(malformed.kitRoot, "optional-skills", "optional-example/metadata.yml"),
+      "name: wrong-name\ncategory: optional\nrequired: false\n",
+    );
+    await expect(
+      buildMappings(malformed.kitRoot, { includeOptional: ["optional-example"] }),
+    ).rejects.toThrow("metadata must match its directory");
   });
 
   it("excludes local OS junk files from installable tree mappings", async () => {
@@ -364,7 +461,7 @@ describe("mapping and boundaries", () => {
     expect(mappings.some((entry) => entry.sourceRelative.includes("desktop.ini"))).toBe(false);
   });
 
-  it("treats identical existing files as conflicts", async () => {
+  it("treats identical existing files as safe skips", async () => {
     const fixture = await workspace("identical");
     await writeFile(
       resolve(fixture.targetRoot, "AGENTS.md"),
@@ -373,8 +470,94 @@ describe("mapping and boundaries", () => {
     const plan = await buildInstallPlan(fixture);
     const agents = plan.entries.find((entry) => entry.targetRelative === "AGENTS.md");
     expect(agents).toMatchObject({
-      state: "conflict",
-      contentState: "identical",
+      contentState: "existing-identical",
+      action: "skip-identical",
+    });
+    expect(plan.conflicts).toBe(0);
+  });
+
+  it("treats identical project memory as a safe skip", async () => {
+    const fixture = await workspace("identical-memory");
+    const target = resolve(fixture.targetRoot, ".codex/project/project-guideline.md");
+    await mkdir(resolve(target, ".."), { recursive: true });
+    await writeFile(
+      target,
+      await readFile(resolve(fixture.kitRoot, "project-templates/project-guideline.md")),
+    );
+    const plan = await buildInstallPlan(fixture);
+    expect(
+      plan.entries.find((entry) => entry.targetRelative.endsWith("project-guideline.md")),
+    ).toMatchObject({
+      contentState: "existing-identical",
+      ownership: "project-memory",
+      action: "skip-identical",
+    });
+  });
+
+  it("classifies project memory and AGENTS.md separately from reusable files", async () => {
+    const fixture = await workspace("ownership-classification");
+    await mkdir(resolve(fixture.targetRoot, ".codex/project"), { recursive: true });
+    await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "local agents\n");
+    await writeFile(
+      resolve(fixture.targetRoot, ".codex/project/project-guideline.md"),
+      "local memory\n",
+    );
+    const plan = await buildInstallPlan(fixture);
+
+    expect(plan.entries.find((entry) => entry.targetRelative === "AGENTS.md")).toMatchObject({
+      contentState: "existing-different",
+      ownership: "entrypoint",
+      action: "manual-merge",
+    });
+    expect(
+      plan.entries.find((entry) => entry.targetRelative === ".codex/project/project-guideline.md"),
+    ).toMatchObject({
+      contentState: "existing-different",
+      ownership: "project-memory",
+      action: "preserve",
+    });
+  });
+
+  it("flags only kit-managed optional-skill namespace collisions", async () => {
+    const fixture = await workspace("optional-collisions");
+    await mkdir(resolve(fixture.targetRoot, ".codex/skills/project/optional-example"), {
+      recursive: true,
+    });
+    let plan = await buildInstallPlan({
+      ...fixture,
+      includeOptional: ["optional-example"],
+    });
+    expect(plan.entries.filter((entry) => entry.optionalName === "optional-example")).toEqual(
+      expect.arrayContaining([expect.objectContaining({ action: "write", collisionPath: "" })]),
+    );
+
+    await mkdir(resolve(fixture.targetRoot, ".codex/skills/core/optional-example"), {
+      recursive: true,
+    });
+    plan = await buildInstallPlan({ ...fixture, includeOptional: ["optional-example"] });
+    expect(plan.entries.filter((entry) => entry.optionalName === "optional-example")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "migration-review",
+          collisionPath: ".codex/skills/core/optional-example",
+        }),
+      ]),
+    );
+  });
+
+  it("flags legacy core locations for required meta skills", async () => {
+    const fixture = await workspace("meta-collision");
+    await mkdir(resolve(fixture.targetRoot, ".codex/skills/core/meta-example"), {
+      recursive: true,
+    });
+    const plan = await buildInstallPlan(fixture);
+    expect(
+      plan.entries.find(
+        (entry) => entry.targetRelative === ".codex/skills/meta/meta-example/SKILL.md",
+      ),
+    ).toMatchObject({
+      action: "migration-review",
+      collisionPath: ".codex/skills/core/meta-example",
     });
   });
 
@@ -404,6 +587,16 @@ describe("mapping and boundaries", () => {
     await expect(
       resolveInstallRoots({ repoRoot: fixture.repoRoot, target: fixture.kitRoot }),
     ).rejects.toThrow("source kit");
+  });
+
+  it("requires the optional-skill source boundary to remain a real directory", async () => {
+    const fixture = await workspace("optional-source-boundary");
+    const optionalRoot = resolve(fixture.kitRoot, "optional-skills");
+    await rm(optionalRoot, { recursive: true });
+    await writeFile(optionalRoot, "not a directory\n");
+    await expect(
+      resolveInstallRoots({ repoRoot: fixture.repoRoot, target: fixture.targetRoot }),
+    ).rejects.toThrow("must be a directory: optional-skills");
   });
 });
 

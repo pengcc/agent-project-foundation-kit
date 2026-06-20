@@ -2408,3 +2408,18 @@ parallel `CONTEXT.md` system.
 External skills from Matt Pocock's public skills repository were used only as inspiration. The
 update deliberately avoids copying external text, introducing a second memory system, adding issue
 tracker automation, or broadly rewriting mature skills.
+
+## Existing-Project Safe Upgrade and Optional-Skill Source Migration
+
+The maintained installer now separates content state, ownership, and bounded migration state.
+`--apply --skip-conflicts` writes only genuinely new safe entries and uses a no-replace final write;
+identical files are skipped, while differences, project memory, differing `AGENTS.md`, and legacy
+skill collisions remain review items. The established explicit backup-and-overwrite workflow is
+unchanged.
+
+The active optional-skill source moved into `kit/optional-skills/`. Exact repeatable
+`--include-optional <name>` selections map only to `.codex/skills/engineering/<name>/` and remain
+excluded by default. Collision checks are limited to kit-managed core, meta, and engineering
+namespaces. Project-local `.codex/skills/project/` content remains outside installer inspection and
+ownership. Historical root-level optional-skill references above remain chronology, not current
+source-path guidance.

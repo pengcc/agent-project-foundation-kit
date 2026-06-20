@@ -24,6 +24,8 @@ function options(target, overrides = {}) {
     showDiff: false,
     projectMode: "auto",
     overwriteConflicts: false,
+    skipConflicts: false,
+    includeOptional: [],
     verbose: false,
     help: false,
     ...overrides,
@@ -120,6 +122,156 @@ describe("installer flow", () => {
     await expect(lstat(resolve(fixture.targetRoot, "archive"))).rejects.toMatchObject({
       code: "ENOENT",
     });
+  });
+
+  it("safe apply writes only new files and preserves every existing byte", async () => {
+    const fixture = await workspace("safe-apply");
+    const output = createOutput();
+    await mkdir(resolve(fixture.targetRoot, ".codex/project"), { recursive: true });
+    await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "local agents\n");
+    await writeFile(
+      resolve(fixture.targetRoot, ".codex/project/project-guideline.md"),
+      "local memory\n",
+    );
+
+    const result = await run(fixture, {
+      options: { apply: true, skipConflicts: true },
+      output,
+      prompts: {
+        confirmBackup: async () => {
+          throw new Error("safe apply must not prompt");
+        },
+      },
+    });
+
+    expect(result.report).toMatchObject({
+      mode: "apply",
+      conflictPolicy: "safe-new-files-only",
+      backupRelative: "",
+      preservedFiles: 1,
+      mergeFiles: 1,
+    });
+    expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe("local agents\n");
+    expect(
+      await readFile(resolve(fixture.targetRoot, ".codex/project/project-guideline.md"), "utf8"),
+    ).toBe("local memory\n");
+    expect(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/skills/core/core-example/SKILL.md"),
+        "utf8",
+      ),
+    ).toBe("core skill\n");
+    await expect(lstat(resolve(fixture.targetRoot, ".codex/backups"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    expect(output.messages).toContainEqual([
+      "WARNING",
+      "Partial adoption: safe new files were installed; existing differences and migration items were preserved for review.",
+    ]);
+  });
+
+  it("safe apply skips identical files without classifying them as danger", async () => {
+    const fixture = await workspace("safe-identical");
+    const output = createOutput();
+    await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "agent instructions\n");
+    const result = await run(fixture, {
+      options: { apply: true, skipConflicts: true },
+      output,
+    });
+
+    expect(result.report.identicalFiles).toBe(1);
+    expect(result.report.conflicts).toBe(0);
+    expect(output.messages.some(([level]) => level === "DANGER")).toBe(false);
+    expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe(
+      "agent instructions\n",
+    );
+  });
+
+  it("installs selected optional skills only under engineering", async () => {
+    const fixture = await workspace("optional-apply");
+    const result = await run(fixture, {
+      options: {
+        apply: true,
+        skipConflicts: true,
+        includeOptional: ["optional-example"],
+      },
+    });
+
+    expect(result.report.selectedOptionalSkills).toEqual(["optional-example"]);
+    expect(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/skills/engineering/optional-example/SKILL.md"),
+        "utf8",
+      ),
+    ).toBe("optional skill\n");
+    for (const forbidden of [
+      ".codex/skills/optional/optional-example/SKILL.md",
+      ".codex/skills/project/optional-example/SKILL.md",
+      ".codex/skills/optional-example/SKILL.md",
+    ]) {
+      await expect(lstat(resolve(fixture.targetRoot, forbidden))).rejects.toMatchObject({
+        code: "ENOENT",
+      });
+    }
+  });
+
+  it("safe apply preserves a differing selected optional skill", async () => {
+    const fixture = await workspace("optional-preserve");
+    const target = resolve(
+      fixture.targetRoot,
+      ".codex/skills/engineering/optional-example/SKILL.md",
+    );
+    await mkdir(resolve(target, ".."), { recursive: true });
+    await writeFile(target, "local optional skill\n");
+
+    const result = await run(fixture, {
+      options: {
+        apply: true,
+        skipConflicts: true,
+        includeOptional: ["optional-example"],
+      },
+    });
+
+    expect(result.report.differentFiles).toBeGreaterThan(0);
+    expect(await readFile(target, "utf8")).toBe("local optional skill\n");
+  });
+
+  it("safe apply leaves optional migration collisions for review", async () => {
+    const fixture = await workspace("optional-migration-review");
+    await mkdir(resolve(fixture.targetRoot, ".codex/skills/meta/optional-example"), {
+      recursive: true,
+    });
+    const result = await run(fixture, {
+      options: {
+        apply: true,
+        skipConflicts: true,
+        includeOptional: ["optional-example"],
+      },
+    });
+
+    expect(result.report.migrationReviews).toBe(2);
+    await expect(
+      lstat(resolve(fixture.targetRoot, ".codex/skills/engineering/optional-example")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("safe apply cannot overwrite a target created after revalidation", async () => {
+    const fixture = await workspace("safe-race");
+    let lateTarget = "";
+    await expect(
+      run(fixture, {
+        options: { apply: true, skipConflicts: true },
+        hooks: {
+          beforeCopy: async ({ entry, completedTargets }) => {
+            if (completedTargets.length > 0) return;
+            lateTarget = resolve(fixture.targetRoot, entry.targetRelative);
+            await mkdir(resolve(lateTarget, ".."), { recursive: true });
+            await writeFile(lateTarget, "created during apply\n");
+          },
+        },
+      }),
+    ).rejects.toMatchObject({ type: "TARGET_ALREADY_EXISTS" });
+    expect(await readFile(lateTarget, "utf8")).toBe("created during apply\n");
   });
 
   it("cancels conflicts before runtime staging or target writes", async () => {

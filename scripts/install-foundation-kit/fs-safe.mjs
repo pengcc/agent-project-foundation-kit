@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import {
   chmod,
   copyFile,
+  link,
   lstat,
   mkdir,
   open,
@@ -40,7 +41,13 @@ export async function copyPreserved(source, destination) {
   await utimes(destination, sourceStats.atime, sourceStats.mtime);
 }
 
-export async function atomicCopyIntoTarget({ source, targetRoot, targetRelative, signal }) {
+export async function atomicCopyIntoTarget({
+  source,
+  targetRoot,
+  targetRelative,
+  signal,
+  overwrite = true,
+}) {
   throwIfAborted(signal);
   assertRelativePathSafe(targetRelative, "Target path");
   await assertNoTargetSymlinks(targetRoot, targetRelative);
@@ -52,7 +59,20 @@ export async function atomicCopyIntoTarget({ source, targetRoot, targetRelative,
   try {
     await copyPreserved(source, temporary);
     throwIfAborted(signal);
-    await rename(temporary, destination);
+    if (overwrite) await rename(temporary, destination);
+    else {
+      try {
+        await link(temporary, destination);
+      } catch (error) {
+        if (error?.code === "EEXIST") {
+          throw new InstallerError(
+            "TARGET_ALREADY_EXISTS",
+            `Safe apply refused to overwrite target created after planning: ${targetRelative}`,
+          );
+        }
+        throw error;
+      }
+    }
   } finally {
     await rm(temporary, { force: true });
   }

@@ -13,8 +13,9 @@ Foundation-kit skills use three conceptual categories:
 Metadata also declares `invocation: user | model | support`, `required`, and hard `depends_on`
 relationships. Physical source paths match metadata category: meta skills live under
 `kit/skills/meta/`, core workflows under `kit/skills/core/`, and optional skills under
-`optional-skills/`. The installer copies the complete `kit/skills/` tree, so meta and core remain
-default-installed while optional skills remain explicit-adoption only. See
+`kit/optional-skills/`. The installer copies the complete `kit/skills/` tree, so meta and core
+remain default-installed. Optional skills remain excluded unless selected explicitly and install
+under `.codex/skills/engineering/<name>/`. See
 `kit/rules/skill-invocation-and-dependency-boundaries.md` for the canonical boundaries.
 
 ## Local Commands
@@ -65,6 +66,8 @@ The Node.js 24+ ESM installer is maintained source-repository tooling:
 ```bash
 pnpm install:node --target /path/to/downstream-project
 pnpm install:node --target /path/to/downstream-project --apply
+pnpm install:node --target /path/to/downstream-project --apply --skip-conflicts
+pnpm install:node --target /path/to/downstream-project --include-optional react-component-patterns
 pnpm install:node --target /path/to/downstream-project --project-mode existing
 ```
 
@@ -90,10 +93,21 @@ Project mode controls conflict policy without changing mappings:
 - `--project-mode existing` treats conflicts as important project context and blocks apply until
   they are reviewed or `--overwrite-conflicts` is explicitly supplied.
 
+`--apply --skip-conflicts` is the zero-overwrite existing-project path. It writes only mapped
+targets classified as genuinely new, safely skips byte-identical targets, and preserves differing
+files, existing project memory, differing `AGENTS.md`, and skill migration collisions for review.
+It is mutually exclusive with `--overwrite-conflicts` and explicit `--project-mode new`.
+
+Use repeatable `--include-optional <name>` flags to select packages from
+`kit/optional-skills/<name>/`. Selected packages install only under
+`.codex/skills/engineering/<name>/`; they are never installed under `.codex/skills/optional/`,
+`.codex/skills/project/`, or a flat `.codex/skills/<name>/` path. Project-owned
+`.codex/skills/project/` content is outside installer inspection and collision handling.
+
 `--overwrite-conflicts` never skips conflict display, the strong warning, typed confirmation,
 backup preparation, plan revalidation, or verified overwrite. It only authorizes the existing-mode
 flow to reach those safeguards. Project mode never changes package files, dependencies, formatter
-or linter tooling, optional-skill installation, project-memory merging, or publish behavior.
+or linter tooling, optional-skill selection, project-memory merging, or publish behavior.
 
 Use `--show-diff` for optional `diff -u` previews. A missing `diff` command warns but does not
 block dry-run, apply authorization, backup, installation, or verification.

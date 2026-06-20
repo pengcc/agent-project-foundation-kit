@@ -12,15 +12,61 @@ function planFingerprint(entries) {
       targetRelative: entry.targetRelative,
       sourceSha256: entry.sourceSha256,
       targetSha256: entry.targetSha256,
-      state: entry.state,
       contentState: entry.contentState,
+      ownership: entry.ownership,
+      migrationState: entry.migrationState,
+      collisionPath: entry.collisionPath,
+      action: entry.action,
+      optionalName: entry.optionalName ?? "",
     })),
   );
 }
 
-export async function buildInstallPlan({ kitRoot, targetRoot }) {
+function ownershipFor(mapping) {
+  if (mapping.category === "optional") return "optional";
+  if (mapping.targetRelative === "AGENTS.md") return "entrypoint";
+  if (mapping.targetRelative.startsWith(".codex/project/")) return "project-memory";
+  return "reusable";
+}
+
+async function firstExistingPath(targetRoot, candidates) {
+  for (const candidate of candidates) {
+    if (await pathStats(resolve(targetRoot, candidate))) return candidate;
+  }
+  return "";
+}
+
+async function migrationCollisionFor(mapping, targetRoot, contentState) {
+  if (contentState !== "new") return "";
+  if (mapping.category === "optional") {
+    const name = mapping.optionalName;
+    return firstExistingPath(targetRoot, [
+      `.codex/skills/core/${name}`,
+      `.codex/skills/meta/${name}`,
+    ]);
+  }
+
+  const match = mapping.targetRelative.match(/^\.codex\/skills\/meta\/([^/]+)\//);
+  if (!match) return "";
+  const name = match[1];
+  const candidates = [`.codex/skills/core/${name}`];
+  if (name === "writing-great-skills") candidates.push(".codex/skills/core/write-a-skill");
+  return firstExistingPath(targetRoot, candidates);
+}
+
+function actionFor({ contentState, ownership, migrationState }) {
+  if (contentState === "new") {
+    return migrationState === "legacy-path-collision" ? "migration-review" : "write";
+  }
+  if (contentState === "existing-identical") return "skip-identical";
+  if (ownership === "project-memory") return "preserve";
+  if (ownership === "entrypoint") return "manual-merge";
+  return "review";
+}
+
+export async function buildInstallPlan({ kitRoot, targetRoot, includeOptional = [] }) {
   const entries = [];
-  for (const mapping of await buildMappings(kitRoot)) {
+  for (const mapping of await buildMappings(kitRoot, { includeOptional })) {
     assertRelativePathSafe(mapping.sourceRelative, "Source path");
     assertRelativePathSafe(mapping.targetRelative, "Target path");
     const sourcePath = resolve(kitRoot, mapping.sourceRelative);
@@ -43,11 +89,21 @@ export async function buildInstallPlan({ kitRoot, targetRoot }) {
     }
     const sourceSha256 = await hashFile(sourcePath);
     const targetSha256 = targetStats ? await hashFile(targetPath) : "";
+    const contentState = targetStats
+      ? targetSha256 === sourceSha256
+        ? "existing-identical"
+        : "existing-different"
+      : "new";
+    const ownership = ownershipFor(mapping);
+    const collisionPath = await migrationCollisionFor(mapping, targetRoot, contentState);
+    const migrationState = collisionPath ? "legacy-path-collision" : "none";
     entries.push({
       ...mapping,
-      risk: "DANGER",
-      state: targetStats ? "conflict" : "new",
-      contentState: targetStats && targetSha256 === sourceSha256 ? "identical" : "different",
+      contentState,
+      ownership,
+      migrationState,
+      collisionPath,
+      action: actionFor({ contentState, ownership, migrationState }),
       sourceSha256,
       targetSha256,
     });
@@ -57,13 +113,31 @@ export async function buildInstallPlan({ kitRoot, targetRoot }) {
     entries: Object.freeze(frozenEntries),
     fingerprint: planFingerprint(frozenEntries),
     total: frozenEntries.length,
-    conflicts: frozenEntries.filter((entry) => entry.state === "conflict").length,
-    newFiles: frozenEntries.filter((entry) => entry.state === "new").length,
+    newFiles: frozenEntries.filter((entry) => entry.contentState === "new").length,
+    writableNewFiles: frozenEntries.filter((entry) => entry.action === "write").length,
+    identicalFiles: frozenEntries.filter((entry) => entry.contentState === "existing-identical")
+      .length,
+    differentFiles: frozenEntries.filter((entry) => entry.contentState === "existing-different")
+      .length,
+    conflicts: frozenEntries.filter((entry) => entry.contentState === "existing-different").length,
+    preservedFiles: frozenEntries.filter((entry) => entry.action === "preserve").length,
+    mergeFiles: frozenEntries.filter((entry) => entry.action === "manual-merge").length,
+    migrationReviews: frozenEntries.filter((entry) => entry.action === "migration-review").length,
+    optionalSelectedFiles: frozenEntries.filter((entry) => entry.ownership === "optional").length,
+    reviewItems: frozenEntries.filter((entry) =>
+      ["review", "manual-merge", "migration-review"].includes(entry.action),
+    ).length,
+    selectedOptionalSkills: Object.freeze([...new Set(includeOptional)].sort()),
   });
 }
 
-export async function revalidateInstallPlan({ expected, kitRoot, targetRoot }) {
-  const current = await buildInstallPlan({ kitRoot, targetRoot });
+export async function revalidateInstallPlan({
+  expected,
+  kitRoot,
+  targetRoot,
+  includeOptional = [],
+}) {
+  const current = await buildInstallPlan({ kitRoot, targetRoot, includeOptional });
   if (current.fingerprint !== expected.fingerprint) {
     throw new InstallerError(
       "PLAN_DRIFT",

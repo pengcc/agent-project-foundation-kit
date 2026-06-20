@@ -31,21 +31,20 @@ export async function runInstallerFlow({
 }) {
   const roots = await resolveInstallRoots({ repoRoot, target: options.target });
   const targetProject = await inspectTargetProject(roots.targetRoot);
-  const plan = await buildInstallPlan(roots);
+  const plan = await buildInstallPlan({ ...roots, includeOptional: options.includeOptional });
   const policy = resolveProjectMode({
     requestedMode: options.projectMode,
     detectedSignals: targetProject.detectedSignals,
     conflicts: plan.conflicts,
+    reviewItems: plan.reviewItems,
   });
   const conflictPolicy = conflictPolicyOutcome({
     policy,
     overwriteConflicts: options.overwriteConflicts,
+    skipConflicts: options.skipConflicts,
   });
   output.info(`Source kit: ${roots.kitRoot}`);
   output.info(`Target root: ${roots.targetRoot}`);
-  output.info(
-    `Plan: ${plan.newFiles} new, ${plan.conflicts} conflict, ${plan.total} total mapped file(s).`,
-  );
   await reportConflicts({
     plan,
     kitRoot: roots.kitRoot,
@@ -53,6 +52,7 @@ export async function runInstallerFlow({
     output,
     showDiff: options.showDiff,
     commandRunner,
+    overwriteConflicts: options.overwriteConflicts,
   });
 
   if (!options.apply) {
@@ -68,7 +68,13 @@ export async function runInstallerFlow({
     return { report, plan };
   }
 
-  if (conflictOverwriteBlocked({ policy, overwriteConflicts: options.overwriteConflicts })) {
+  if (
+    conflictOverwriteBlocked({
+      policy,
+      overwriteConflicts: options.overwriteConflicts,
+      skipConflicts: options.skipConflicts,
+    })
+  ) {
     const report = createFinalReport({
       mode: "blocked",
       plan,
@@ -79,11 +85,11 @@ export async function runInstallerFlow({
     printBlockedReport(report, output);
     throw new InstallerError(
       "CONFLICT_REVIEW_REQUIRED",
-      "Existing-project conflicts require manual review or --overwrite-conflicts.",
+      "Existing-project differences or migration items require manual review, safe apply, or --overwrite-conflicts.",
     );
   }
 
-  if (plan.conflicts) {
+  if (plan.conflicts && !options.skipConflicts) {
     const context =
       policy.effectiveMode === "new"
         ? "Conflicts are treated as starter files or previous-install remnants."
@@ -98,16 +104,20 @@ export async function runInstallerFlow({
   let runtimeRoot = "";
   let materialized = null;
   try {
+    const entriesToApply = options.skipConflicts
+      ? plan.entries.filter((entry) => entry.action === "write")
+      : plan.entries.filter((entry) => entry.contentState !== "existing-identical");
+    const applyPlan = { ...plan, entries: entriesToApply };
     runtimeRoot = await createRuntimeRoot(roots.repoRoot, runId);
     const stagedRoot = await stageReplacements({
-      plan,
+      plan: applyPlan,
       kitRoot: roots.kitRoot,
       runtimeRoot,
       signal,
     });
     await hooks.afterStaging?.({ plan, roots, runtimeRoot, stagedRoot });
     const preparedBackup = await prepareBackupSnapshots({
-      plan,
+      plan: applyPlan,
       targetRoot: roots.targetRoot,
       runtimeRoot,
       now,
@@ -115,7 +125,11 @@ export async function runInstallerFlow({
     });
     await hooks.afterBackupPrepared?.({ plan, roots, preparedBackup });
 
-    await revalidateInstallPlan({ expected: plan, ...roots });
+    await revalidateInstallPlan({
+      expected: plan,
+      ...roots,
+      includeOptional: options.includeOptional,
+    });
     await hooks.beforeBackupMaterialization?.({ plan, roots, preparedBackup });
     materialized = await materializeBackup({
       prepared: preparedBackup,
@@ -124,15 +138,20 @@ export async function runInstallerFlow({
     });
     await hooks.afterBackupMaterialized?.({ plan, roots, materialized });
 
-    await revalidateInstallPlan({ expected: plan, ...roots });
+    await revalidateInstallPlan({
+      expected: plan,
+      ...roots,
+      includeOptional: options.includeOptional,
+    });
     await hooks.beforeApply?.({ plan, roots, materialized });
-    await applyStagedPlan({
-      plan,
+    const completedTargets = await applyStagedPlan({
+      plan: applyPlan,
       stagedRoot,
       targetRoot: roots.targetRoot,
       materializedBackup: materialized,
       signal,
       hooks,
+      allowOverwrite: !options.skipConflicts,
     });
 
     const report = createFinalReport({
@@ -142,6 +161,7 @@ export async function runInstallerFlow({
       policy,
       conflictPolicy,
       backupRelative: materialized?.backupRelative,
+      completedTargets,
     });
     printFinalReport(report, output);
     return { report, plan };

@@ -5,13 +5,25 @@ export function createFinalReport({
   policy,
   conflictPolicy,
   backupRelative = "",
+  completedTargets = [],
 }) {
   return {
     mode,
     targetRoot,
     total: plan.total,
     newFiles: plan.newFiles,
+    writableNewFiles: plan.writableNewFiles,
+    identicalFiles: plan.identicalFiles,
+    differentFiles: plan.differentFiles,
     conflicts: plan.conflicts,
+    preservedFiles: plan.preservedFiles,
+    mergeFiles: plan.mergeFiles,
+    migrationReviews: plan.migrationReviews,
+    optionalSelectedFiles: plan.optionalSelectedFiles,
+    reviewItems: plan.reviewItems,
+    selectedOptionalSkills: [...plan.selectedOptionalSkills],
+    completedTargets: [...completedTargets],
+    completedFiles: completedTargets.length,
     requestedProjectMode: policy.requestedMode,
     effectiveProjectMode: policy.effectiveMode,
     detectedSignals: [...policy.detectedSignals],
@@ -27,6 +39,7 @@ function printPolicySummary(report, output) {
     `Detected project signals: ${report.detectedSignals.length ? report.detectedSignals.join(", ") : "none"}`,
   );
   output.info(`Conflict count: ${report.conflicts}`);
+  output.info(`Review item count: ${report.reviewItems}`);
   output.info(`Conflict policy: ${report.conflictPolicy}`);
 }
 
@@ -46,7 +59,9 @@ export function printConflictReviewChoices(report, output) {
 }
 
 export function printBlockedReport(report, output) {
-  output.danger("Install blocked: existing-project conflicts require an explicit next step.");
+  output.danger(
+    "Install blocked: existing-project differences or migration items require an explicit next step.",
+  );
   output.info(`Target root: ${report.targetRoot}`);
   printPolicySummary(report, output);
   printConflictReviewChoices(report, output);
@@ -55,12 +70,18 @@ export function printBlockedReport(report, output) {
 export function printFinalReport(report, output) {
   output.success(
     `${report.mode === "apply" ? "Install completed" : "Dry-run completed"}: ` +
-      `${report.newFiles} new, ${report.conflicts} conflict, ${report.total} total.`,
+      `${report.writableNewFiles} safe new, ${report.identicalFiles} identical, ` +
+      `${report.differentFiles} different, ${report.migrationReviews} migration review, ${report.total} total.`,
   );
   output.info(`Target root: ${report.targetRoot}`);
   printPolicySummary(report, output);
   if (report.backupRelative) {
     output.info(`Backups: ${report.backupRelative}`);
+  }
+  if (report.selectedOptionalSkills.length) {
+    output.info(
+      `Selected optional skills: ${report.selectedOptionalSkills.join(", ")} (${report.optionalSelectedFiles} mapped file(s))`,
+    );
   }
   if (report.mode === "dry-run") {
     if (report.conflictPolicy === "manual-review-required") {
@@ -69,6 +90,11 @@ export function printFinalReport(report, output) {
       output.info("Next step: rerun with --apply when the plan and project mode are correct.");
     }
     return;
+  }
+  if (report.conflictPolicy === "safe-new-files-only" && report.reviewItems) {
+    output.warning(
+      "Partial adoption: safe new files were installed; existing differences and migration items were preserved for review.",
+    );
   }
   output.info("Next steps:");
   output.info("1. Run .codex/prompts/force-initialize-project-context.md with your agent.");

@@ -43,8 +43,9 @@ Optional specialist packs are future separately approved additions for project-s
 technology-specific, domain-specific, or lifecycle-specific needs. They must not be installed by
 default unless a future approved installer design explicitly supports that behavior.
 
-Approved source-only optional skills live under `optional-skills/`. That directory is outside the
-default installable `kit/` payload and requires explicit project adoption.
+Approved optional skills live under `kit/optional-skills/`, inside the installable source boundary
+but outside the default mapping. They require exact explicit selection and are never installed by
+default.
 
 Reference candidates are external skills, public workflows, or observed project patterns that may
 inform future kit work after evaluation. A reference candidate is not an approved optional pack.
@@ -149,20 +150,23 @@ detect need
 
 Do not skip from a missing capability directly to implementation.
 
-For a source-only skill that is already implemented in this repository, manual downstream
-adoption follows this narrower flow:
+For an optional skill already implemented in this repository, downstream adoption follows this
+narrower flow:
 
 ```txt
 matching project signal or explicit need
 -> project-specific plan
 -> user approval
--> copy only optional-skills/<skill-name>/ to target .codex/skills/<skill-name>/
+-> select only kit/optional-skills/<skill-name>/ with --include-optional <skill-name>
+-> install only to target .codex/skills/engineering/<skill-name>/
 -> validate metadata, content, dependencies, conflicts, and installed-skill routing
 -> update target project memory through update-project-memory
 ```
 
-This is a manual, selected-skill copy workflow. It does not authorize installer flags, automatic
-selection, default installation, package-manager changes, or copying the whole optional tree.
+This is an explicit selected-skill installer workflow. It does not authorize automatic selection,
+default installation, package-manager changes, copying the whole optional tree, or installation
+under `.codex/skills/optional/`, `.codex/skills/project/`, or flat `.codex/skills/<name>/` paths.
+Project-owned `.codex/skills/project/` content is outside this installer workflow.
 
 ## Workflow Interactions
 
@@ -185,7 +189,9 @@ changes.
 `execute-plan` implements only an approved plan and must not expand optional pack scope during
 execution.
 
-Installer support is future work and requires a separate approved plan.
+The maintained installer supports exact optional-skill selection. Broader pack resolution,
+automatic recommendation, and full skill-taxonomy migration remain future work requiring a
+separate approved plan.
 
 ## Current Catalog
 
