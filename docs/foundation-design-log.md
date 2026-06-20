@@ -2503,3 +2503,34 @@ kit/skills/core/execute-plan/SKILL.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Reviewable Work-Item Planning
+
+Accepted implementation result:
+
+1. Require `plan-with-context` to classify non-trivial work as one focused execution pass,
+   embedded reviewable work items, or a route to `to-work-items`.
+2. Add the reviewability decision to the saved-plan structure and require a brief single-pass
+   justification or explicit decomposition route.
+3. Keep `to-work-items` as the canonical non-executing decomposition workflow and add expected
+   file/area scope, allowed mutation, non-goals, STOP conditions, and review/PR boundaries to each
+   work item.
+4. Require `execute-plan` to verify the approved current slice is scoped, validated, and
+   reviewable before mutation.
+5. Stop and route broad or review-hostile plans back to planning or decomposition; do not silently
+   split and continue execution.
+6. Execute only the approved current slice unless the user explicitly approves multiple slices
+   together after their combined scope and reviewability are visible.
+7. Preserve planning/execution approval, validation, project-memory, and publish boundaries.
+8. Leave `engineering-quality-principles` unchanged because its existing Small Focused Changes
+   and Change Safety sections already establish the general quality principle.
+
+Resulting files / changes:
+
+```txt
+kit/skills/meta/plan-with-context/SKILL.md
+kit/skills/core/to-work-items/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

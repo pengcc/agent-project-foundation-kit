@@ -168,6 +168,38 @@ Do not rely on hidden chat context, unstated assumptions, or phrases such as "as
 Keep small plans proportional, but include enough context for safe execution without the original
 conversation.
 
+## Reviewability and Work-Item Decision
+
+For every non-trivial plan, decide whether the requested work is one focused execution pass or
+requires reviewable work items.
+
+Use a single focused pass only when the plan has one coherent outcome, a plausible expected
+file/area scope, one compatible validation loop, and a change set that should remain understandable
+and reviewable as one unit. State the reason briefly.
+
+Treat the plan as broad or review-hostile when it has multiple independently reviewable outcomes,
+crosses unrelated concerns or safety boundaries, mixes behavior with tooling/runtime/publish work,
+cannot state a plausible file/area scope or validation per slice, or would likely produce a PR that
+is difficult to review as one unit. Do not rely on a numeric-only file or line threshold.
+
+For broad work, either:
+
+1. include reviewable work items directly in the saved plan; or
+2. stop the plan at the approved overall boundary and route decomposition to `to-work-items`.
+
+`to-work-items` is the canonical decomposition workflow. Embedded work items must follow the same
+minimum contract: ID/name, goal, dependency order, expected file/area scope, allowed mutation,
+non-goals, validation, acceptance criteria, STOP conditions, and review/PR boundary. Planning and
+decomposition do not authorize execution.
+
+Every saved plan must include one of:
+
+```txt
+Reviewability decision: single focused pass — <brief justification>
+Reviewability decision: decomposed work items required — <embedded item IDs>
+Reviewability decision: route to to-work-items — <reason>
+```
+
 ## Plan Persistence
 
 Save the plan to `dev_locals/plans/` when it is multi-step, executable, cross-session, affects multiple files/modules, affects architecture/dependencies/configuration/deployment/tests/workflows, or is explicitly requested.
@@ -228,15 +260,17 @@ Saved plans must use this structure:
 
 ## 7. Recommendation
 
-## 8. Implementation Steps
+## 8. Reviewability Decision
 
-## 9. Validation Plan
+## 9. Implementation Steps
 
-## 10. Risks and Rollback
+## 10. Validation Plan
 
-## 11. Project Memory Updates Needed
+## 11. Risks and Rollback
 
-## 12. Execution Status
+## 12. Project Memory Updates Needed
+
+## 13. Execution Status
 ```
 
 ## Project Memory Updates Needed

@@ -175,6 +175,29 @@ If any critical section is missing, stop and recommend `plan-with-context`.
 
 Do not execute plans marked `incomplete draft` or `blocked`.
 
+## Reviewable Execution Readiness
+
+Before mutation, verify that the approved plan is reviewable and execution-ready:
+
+- it identifies one focused execution pass or contains approved work items;
+- the approved current slice is explicit;
+- expected file/area scope is specific enough to detect drift;
+- validation and acceptance criteria exist for the current slice; and
+- the slice should remain understandable and reviewable as one change set.
+
+If approved work items exist, execute only the approved current slice. Execute multiple slices in
+one run only when the user explicitly approves those slices together after their combined scope
+and reviewability are visible.
+
+STOP and route to `plan-with-context` or `to-work-items` when a broad or review-hostile plan lacks
+required work items, file/area boundaries, validation per slice, or an explicit approval covering
+the proposed current scope. Do not invent work items, silently decompose the plan, or continue on
+the basis that the user approved the broader goal.
+
+For a clearly small plan created before reviewability decisions were required, state the focused
+single-pass judgment in the pre-execution update. If reviewability is uncertain, stop rather than
+assuming the plan is focused.
+
 ## Pre-Execution Status Update
 
 After completing the applicable pre-execution checks, emit one concise user-visible status update
@@ -189,6 +212,7 @@ one fixed sentence. Cover:
 - repository-level and current-branch PR state when relevant and checkable;
 - runtime/tooling alignment when the plan or project workflow specifies it;
 - the staged implementation groups derived from the plan;
+- the reviewability decision and approved current slice;
 - the active stop conditions.
 
 State briefly when a check is not applicable or not checkable, including any material impact. Do
