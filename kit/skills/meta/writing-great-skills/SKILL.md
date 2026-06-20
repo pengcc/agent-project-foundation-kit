@@ -281,15 +281,10 @@ When adapting external skills:
 
 - require prior external skill evaluation through `docs-first-research` when source facts,
   provenance, license/copying risk, safety, or workflow fit are not already verified
-- inspect the external reference
-- extract patterns
-- evaluate trigger and boundary fit
-- preserve workflow separation between research, planning, execution, review, publishing, and
-  memory updates
-- reject ecosystem-specific assumptions that do not fit this kit
-- rewrite for this kit
-- do not copy wholesale
-- preserve this project's operating contract and memory boundaries
+- inspect the reference, extract patterns, and evaluate trigger and boundary fit
+- reject ecosystem-specific assumptions; rewrite for this kit instead of copying wholesale
+- preserve the operating contract, memory boundaries, and workflow separation between research,
+  planning, execution, review, publishing, and memory updates
 - cite or mention the external reference in the plan or design log when relevant
 - keep final runtime instructions auditable inside this repo
 - treat external skill discovery platforms as research sources, not adoption or installation
@@ -339,15 +334,16 @@ planning candidates until a user approves a specific plan.
 Before finalizing a new or refined skill, verify:
 
 ```txt
-- critical runtime and safety contracts appear near the top of SKILL.md
-- purpose, trigger, and when-not-to-use boundaries are clear
-- required context, workflow steps, output, and stop conditions are explicit
-- metadata description supports discovery through trigger / when-to-use wording
-- metadata triggers are specific and not broader than the skill boundary
-- prompt support, if present, stays concise and does not duplicate the full SKILL.md
+- critical runtime and safety contracts appear near the top of SKILL.md; purpose, trigger,
+  when-not-to-use, context, workflow, output, and stop conditions are clear
+- metadata descriptions support discovery; triggers are specific and no broader than the skill
+- prompt support is justified, concise, and does not duplicate SKILL.md
+- examples and references are justified; scripts are deterministic, bounded, documented, and validated
 - workflow separation is preserved for planning, execution, review, publishing, research, and memory updates
 - external references were rewritten for this kit and not copied wholesale
-- boundary-sensitive skills name likely failure modes
+- unavailable future capabilities are not presented as current; project-root and destructive-action
+  boundaries remain explicit; durable facts route to update-project-memory without silent writes
+- boundary-sensitive skills name likely failure modes and address misuse or rationalization paths
 - output-sensitive skills include a short final self-check
 ```
 
@@ -362,28 +358,6 @@ For boundary-sensitive skills, add a misuse and rationalization check:
 Use static self-checks, manual scenario checks, or targeted review. Do not require mandatory
 delegated-agent tests, test-driven authoring, or tool-specific process mechanics unless this
 project explicitly adopts them later.
-
-## Review Checklist
-
-Before finalizing a skill, check:
-
-```txt
-- Is the trigger clear?
-- Is the boundary clear?
-- Is the workflow relationship clear?
-- Does it avoid pretending future skills exist?
-- Does it say when not to use the skill?
-- Does it avoid silent memory updates?
-- Does it avoid destructive actions?
-- Are metadata triggers accurate?
-- Is a force prompt needed?
-- Are examples or references justified?
-- Are scripts justified, deterministic, and validated?
-- Does it preserve project root boundaries?
-- Does it route durable facts, decisions, or lessons to update-project-memory?
-- Does it pass the skill authoring verification checks?
-- Do boundary-sensitive skills address likely misuse or rationalization paths?
-```
 
 ## Output Format
 
@@ -421,14 +395,6 @@ Project memory update needed:
 
 ## Project Memory Follow-Up
 
-If a new or refined skill creates durable project facts, long-term decisions, or reusable lessons, recommend `update-project-memory`.
-
-Classify memory targets:
-
-```txt
-Current facts -> .codex/project/project-guideline.md
-Long-term decisions -> .codex/project/project-decisions.md
-Lessons and reusable patterns -> .codex/project/lessons-learned.md
-```
-
-Do not silently update memory.
+If a new or refined skill creates durable facts, decisions, or reusable lessons, recommend
+`update-project-memory` and use its canonical fact/decision/lesson classification. Do not silently
+update memory.

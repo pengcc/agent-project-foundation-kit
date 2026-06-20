@@ -2565,3 +2565,32 @@ kit/skills/core/publish-current-branch/SKILL.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Writing Great Skills Capability-Preserving Compression Pilot
+
+Accepted implementation result:
+
+1. Apply the first bounded compression pilot to `writing-great-skills` under the
+   `skill-and-output-efficiency` standard without using line count as an acceptance criterion.
+2. Consolidate overlapping external-reference actions while preserving provenance, copying-risk,
+   workflow-separation, auditability, and explicit installation-approval requirements.
+3. Merge duplicate authoring-verification and review checklists into one semantic union that keeps
+   trigger, boundary, metadata, prompt, example, script, root/destructive-action, memory,
+   failure-mode, misuse, and output checks.
+4. Replace repeated memory-classification text with a concise pointer to the canonical
+   `update-project-memory` classification while retaining the local trigger and no-silent-write
+   boundary.
+5. Preserve skill package structures, concrete examples, output schemas, project-experience and
+   optional-skill safeguards, and all planning/execution/review/research/publish boundaries.
+6. Leave rules, high-risk workflow skills, prompts, metadata, tests, installer, package, runtime,
+   publish, downstream-template, archive, release, and deployment behavior unchanged.
+7. Validate the focused diff with semantic inventory/regression review, Biome formatting,
+   publish and installer tests, and whitespace checks.
+
+Resulting files / changes:
+
+```txt
+kit/skills/meta/writing-great-skills/SKILL.md
+dev_locals/research-notes/2026-06-20-writing-great-skills-compression-pilot-note.md
+docs/foundation-design-log.md
+```
