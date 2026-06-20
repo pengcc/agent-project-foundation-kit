@@ -2468,3 +2468,50 @@ scripts/install-foundation-kit/final-report.mjs
 tests/install-foundation-kit/
 README.md
 ```
+
+## Decision: Skill and output efficiency must preserve capability and safety
+
+### Status
+
+Accepted
+
+### Context
+
+High-frequency skills, rules, entrypoints, and reports can accumulate duplicated rationale and
+success-path output. Optimizing them only for line or token count can remove context gates,
+validation, STOP conditions, workflow boundaries, uncertainty, or failure evidence that carries
+real capability and safety value.
+
+### Decision
+
+Use `kit/rules/skill-and-output-efficiency.md` as the compact standard for future efficiency work.
+
+The primary constraint is to preserve intelligence, capability, and safety. Preserve the safety
+kernel: context, approval, clarification, and external-verification gates; mutation and workflow
+boundaries; validation; STOP and rollback behavior; uncertainty and evidence; final-report facts;
+and complete warnings, blockers, and errors.
+
+Compress routine success-path progress, repeated rationale, decorative prose, duplicate examples,
+and behavior-neutral wording. Deduplicate shared guidance only after identifying a canonical owner
+and confirming that boundary-local safeguards remain equally visible and enforceable.
+
+Mature content requires a small pilot, semantic inventory, and applicable regression scenarios
+before broader compression. First-phase work is limited to the new standard, a local read-only P1
+audit, and durable records. It does not modify existing P1 content or change installer, mapping,
+publish, package, dependency, runtime, prompt, metadata, test, archive, release, or deployment
+behavior.
+
+### Impact
+
+Future efficiency work has an explicit semantic-preservation gate and can reduce low-value output
+without using line count as a proxy for quality. The first audit recommends `writing-great-skills`
+as a possible later pilot and keeps reviewable work-item decomposition as a separate future
+workflow-quality theme.
+
+### Related files
+
+```txt
+kit/rules/skill-and-output-efficiency.md
+dev_locals/research-notes/2026-06-20-capability-preserving-skill-efficiency-audit.md
+docs/foundation-design-log.md
+```

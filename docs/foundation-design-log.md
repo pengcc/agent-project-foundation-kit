@@ -2452,3 +2452,31 @@ prompt. Explicit overwrite retains its existing verified backup, typed confirmat
 revalidation behavior. No script auto-merge/migration, `.codex/skills/project/` handling,
 installer redesign, dependency/runtime change, or publish/push/PR/merge/release/deploy behavior
 was added.
+
+## Capability-Preserving Skill Efficiency — First Phase
+
+Accepted implementation result:
+
+1. Add one compact installable standard for skill/rule/output efficiency with the primary
+   constraint that intelligence, capability, and safety must not be reduced.
+2. Preserve context and approval gates, validation, STOP conditions, workflow and publish
+   boundaries, uncertainty, failure evidence, and required final-report facts.
+3. Allow terse success-path progress and canonical-owner deduplication only when behavior and
+   boundary visibility remain unchanged.
+4. Create a local read-only audit of the 12 P1 artifacts with a canonical owner map, preservation
+   criteria, regression scenarios, one later pilot recommendation, and rollback guidance.
+5. Record reviewable work-item decomposition as a separate future-work candidate involving
+   `plan-with-context`, `to-work-items`, `execute-plan`, and potentially
+   `engineering-quality-principles`; do not modify those files in this phase.
+6. Preserve all existing P1 content and installer, mapping, publish, package, dependency, runtime,
+   prompt, metadata, test, archive, release, and deployment behavior.
+
+Resulting files / changes:
+
+```txt
+kit/rules/skill-and-output-efficiency.md
+dev_locals/research-notes/2026-06-20-capability-preserving-skill-efficiency-audit.md
+.codex/project/project-decisions.md
+.codex/project/lessons-learned.md
+docs/foundation-design-log.md
+```
