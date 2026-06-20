@@ -15,6 +15,7 @@ const REQUIRED_KIT_PATHS = [
   "config",
   "github-settings",
   "scripts",
+  "optional-skills",
 ];
 
 export function sourceRepositoryRoot(importMetaUrl) {
@@ -54,6 +55,12 @@ export async function validateRequiredKitPaths(kitRoot) {
       throw new InstallerError(
         "INVALID_SOURCE",
         `Required kit source is missing or is a symlink: ${relativePath}`,
+      );
+    }
+    if (relativePath === "optional-skills" && !stats.isDirectory()) {
+      throw new InstallerError(
+        "INVALID_SOURCE",
+        "Required kit source must be a directory: optional-skills",
       );
     }
   }

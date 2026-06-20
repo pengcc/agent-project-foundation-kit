@@ -10,8 +10,9 @@ Use this rule when creating, refining, routing, or reviewing foundation-kit skil
 
 Physical source paths must match metadata category: current meta skills live under
 `kit/skills/meta/`, core workflows under `kit/skills/core/`, and optional skills under
-`optional-skills/`. Meta and core skills remain default-installed; optional skills require explicit
-adoption.
+`kit/optional-skills/`. Meta and core skills remain default-installed. Optional skills require
+exact explicit selection and install into the downstream engineering namespace at
+`.codex/skills/engineering/<name>/`; catalog presence alone is not adoption approval.
 
 Apply the Explicit Target Reference Guardrail in `agent-operating-contract` when an explicit skill
 path is missing, obsolete, or inconsistent with its metadata category.

@@ -747,3 +747,24 @@ appropriate reusable rule, skill, or documentation. Do not copy project memory a
   wholesale.
 - Debugging workflows need an explicit feedback loop before proposing fixes.
 - Large plans benefit from vertical work-item slicing before execution.
+
+## Keep: Classify migration collisions before treating new paths as safe
+
+### Context
+
+Installer planning can see a missing destination while the same logical skill already exists in a
+legacy kit-managed namespace.
+
+### Lesson
+
+New-by-path is not automatically safe. Before writing a newly mapped skill destination, check the
+bounded kit-managed legacy namespaces and surface collisions for migration review. Keep
+project-owned namespaces outside installer ownership rather than broadening collision scans.
+
+### Reuse guidance
+
+- distinguish byte state, ownership, and migration state
+- make zero-overwrite apply filter on an explicit safe-write action
+- preserve identical files as safe skips, not conflicts
+- keep collision checks bounded to paths the tool actually manages
+- enforce no-replace semantics again at the final filesystem write

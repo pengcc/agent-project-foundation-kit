@@ -2338,3 +2338,49 @@ kit/skills/core/to-work-items/
 kit/rules/engineering-quality-principles.md
 kit/skills/meta/update-project-memory/SKILL.md
 ```
+
+## Decision: Existing-project safe apply and selected optional-skill installation
+
+### Status
+
+Accepted
+
+### Context
+
+Existing downstream projects need a bounded installer path that can adopt newly introduced kit
+files without replacing project-owned context. Optional specialists also need an exact,
+source-boundary-safe installation path after their source migration into `kit/`.
+
+### Decision
+
+- Move the active optional-skill source from repo-root historical locations to
+  `kit/optional-skills/<name>/`; earlier decisions describing a root-level active source are
+  superseded.
+- Keep optional skills excluded from default installation. Exact repeatable
+  `--include-optional <name>` selections install only to `.codex/skills/engineering/<name>/`.
+- Treat `.codex/skills/project/` as project-owned and outside installer inspection, validation,
+  migration, and collision handling.
+- Add `--apply --skip-conflicts` as a zero-overwrite mode. It writes only genuinely new mapped
+  files, skips identical files, and preserves every existing target.
+- Classify existing project memory as preserved and differing `AGENTS.md` as a manual merge
+  candidate in safe mode.
+- Treat legacy-name collisions in kit-managed core, meta, and engineering namespaces as migration
+  review items rather than safe new files.
+- Retain the established explicit overwrite path, including backup, typed confirmation, and plan
+  revalidation. This decision does not create a broader skill-taxonomy migration.
+
+### Impact
+
+Existing projects can partially adopt safe additions without target-file replacement, while
+optional skill ownership and destination paths remain explicit. A new destination path alone is
+not proof that a skill write is safe.
+
+### Related files
+
+```txt
+kit/optional-skills/
+scripts/install-foundation-kit/
+tests/install-foundation-kit/
+README.md
+docs/optional-skill-catalog.md
+```

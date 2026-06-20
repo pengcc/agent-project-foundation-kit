@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { relativePosix, walkRegularFiles } from "./fs-safe.mjs";
+import { buildOptionalSkillMappings } from "./optional-skills.mjs";
 
 export const DIRECT_MAPPINGS = Object.freeze([
   ["project-templates/AGENTS.md", "AGENTS.md", "project-template"],
@@ -32,7 +33,7 @@ export function isLocalOsJunkFile(relativePath) {
   );
 }
 
-export async function buildMappings(kitRoot) {
+export async function buildMappings(kitRoot, { includeOptional = [] } = {}) {
   const mappings = DIRECT_MAPPINGS.map(([sourceRelative, targetRelative, category]) => ({
     sourceRelative,
     targetRelative,
@@ -51,6 +52,8 @@ export async function buildMappings(kitRoot) {
       });
     }
   }
+
+  mappings.push(...(await buildOptionalSkillMappings(kitRoot, includeOptional)));
 
   return mappings.sort((left, right) => left.targetRelative.localeCompare(right.targetRelative));
 }

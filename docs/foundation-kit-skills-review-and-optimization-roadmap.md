@@ -97,10 +97,10 @@ publish-current-branch
 ui-design-basics
 ```
 
-Optional specialists remain source-only under `optional-skills/` and require explicit adoption.
-Meta skills now live under `kit/skills/meta/`, core skills remain under `kit/skills/core/`, and
-optional skills remain outside `kit/`. The installer retains its complete-tree `kit/skills/`
-mapping, so fresh default installs include meta and core while optional skills remain excluded.
+Optional specialists live under `kit/optional-skills/` and require explicit adoption. Meta skills
+now live under `kit/skills/meta/`, core skills remain under `kit/skills/core/`, and optional skills
+remain excluded from the default mapping. Exact selected optional packages install only under
+`.codex/skills/engineering/<name>/`.
 
 `grilling` is the support-only shared clarification discipline. `grill-me` is its user-facing
 wrapper, while planning, initialization, and architecture planning depend on the same primitive
@@ -953,8 +953,8 @@ status, and workflow routing for future optional specialist packs.
 The approved source-only optional specialist packages are:
 
 ```text
-optional-skills/react-component-patterns/
-optional-skills/tanstack-router-query-patterns/
+kit/optional-skills/react-component-patterns/
+kit/optional-skills/tanstack-router-query-patterns/
 ```
 
 They provide focused React component/local-state guidance and focused TanStack Router/Query
@@ -983,11 +983,11 @@ Track candidate metadata such as:
 Current boundary:
 
 ```text
-- source-only optional skills remain outside kit/ and require explicit project adoption
+- optional skills live under kit/optional-skills/ and require exact explicit project adoption
 - react-component-patterns is experimental and install-default never
 - tanstack-router-query-patterns is experimental and install-default never
 - no optional pack is installed by default
-- no installer behavior exists yet
+- selected optional skills install only under .codex/skills/engineering/<name>/
 - React component/local-state guidance, visual design, full frontend architecture, Next.js,
   React Server Components, TanStack Start and other TanStack libraries, shadcn/ui, Tailwind,
   backend/API/database/authentication design, and testing remain separate from the TanStack
@@ -1371,10 +1371,11 @@ tooling: the installer does not install or configure Biome, and downstream adopt
 optional manual setup decision.
 
 Physical meta skill directory migration is complete. Meta skills now live under
-`kit/skills/meta/`, core workflows remain under `kit/skills/core/`, and optional skills remain
-source-only under `optional-skills/`. The installer complete-tree mapping remains unchanged; it
-does not delete or migrate obsolete skill paths in existing downstream projects, whose cleanup is
-manual or separately planned.
+`kit/skills/meta/`, core workflows remain under `kit/skills/core/`, and optional skills live under
+`kit/optional-skills/`. The default complete-tree mapping remains unchanged; exact selected
+optional packages map only to `.codex/skills/engineering/<name>/`. The installer does not delete
+or migrate obsolete skill paths in existing downstream projects, whose cleanup is manual or
+separately planned.
 
 The next recommended implementation areas remain future work and require separate plans:
 

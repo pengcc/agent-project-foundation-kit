@@ -9,6 +9,8 @@ export function parseCliOptions(argv) {
     showDiff: false,
     projectMode: "auto",
     overwriteConflicts: false,
+    skipConflicts: false,
+    includeOptional: [],
     verbose: false,
     help: false,
   };
@@ -40,6 +42,15 @@ export function parseCliOptions(argv) {
       options.projectMode = mode;
     } else if (value === "--overwrite-conflicts") {
       options.overwriteConflicts = true;
+    } else if (value === "--skip-conflicts") {
+      options.skipConflicts = true;
+    } else if (value === "--include-optional") {
+      index += 1;
+      const name = argv[index];
+      if (!name || name.startsWith("--")) {
+        throw new InstallerError("INVALID_ARGUMENT", "--include-optional requires a skill name.");
+      }
+      options.includeOptional.push(name);
     } else if (value === "--verbose") {
       options.verbose = true;
     } else if (value === "--help" || value === "-h") {
@@ -52,6 +63,22 @@ export function parseCliOptions(argv) {
   if (!options.help && !options.target) {
     throw new InstallerError("INVALID_ARGUMENT", "--target is required.");
   }
+  if (options.skipConflicts && !options.apply) {
+    throw new InstallerError("INVALID_ARGUMENT", "--skip-conflicts requires --apply.");
+  }
+  if (options.skipConflicts && options.overwriteConflicts) {
+    throw new InstallerError(
+      "INVALID_ARGUMENT",
+      "--skip-conflicts and --overwrite-conflicts are mutually exclusive.",
+    );
+  }
+  if (options.skipConflicts && options.projectMode === "new") {
+    throw new InstallerError(
+      "INVALID_ARGUMENT",
+      "--skip-conflicts cannot be combined with --project-mode new.",
+    );
+  }
+  options.includeOptional = [...new Set(options.includeOptional)];
   return options;
 }
 
@@ -67,8 +94,14 @@ export function usage() {
     "  --apply                   Apply the prepared install plan",
     "  --project-mode MODE       auto (default), new, or existing",
     "  --overwrite-conflicts     Authorize existing-mode conflict replacement; backup and typed confirmation remain required",
+    "  --skip-conflicts          With --apply, write safe new files and preserve every existing target",
+    "  --include-optional NAME   Include one optional skill; repeat to select more",
     "  --show-diff               Preview conflicts with diff -u when available; does not authorize overwrite",
     "  --verbose                 Print DEBUG output",
     "  -h, --help                Show this help",
+    "",
+    "Direct pnpm examples (no extra -- separator):",
+    "  pnpm install:node --target /path/to/project --apply --skip-conflicts",
+    "  pnpm install:node --target /path/to/project --include-optional react-component-patterns",
   ].join("\n");
 }

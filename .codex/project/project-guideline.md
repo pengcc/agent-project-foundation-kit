@@ -93,9 +93,10 @@ Optional:
 - `tanstack-router-query-patterns`
 
 The categories now match the source layout: meta skills live under `kit/skills/meta/`, core skills
-remain under `kit/skills/core/`, and optional skills remain source-only under `optional-skills/`.
+remain under `kit/skills/core/`, and optional skills live under `kit/optional-skills/`.
 The installer still copies the complete `kit/skills/` tree, so fresh default installs include meta
-and core skills while optional skills are not installed automatically.
+and core skills. Optional skills now live under `kit/optional-skills/`, remain excluded by default,
+and install only to `.codex/skills/engineering/<name>/` after exact selection.
 
 Skill metadata declares `invocation: user | model | support`, `required`, and hard `depends_on`
 relationships. The canonical taxonomy, dependency, and context-load rules live in
@@ -255,15 +256,15 @@ Current Optional Skill Catalog boundaries:
 - It defines vocabulary, candidate metadata shape, status values, and workflow routing.
 - It is not an installer manifest, package registry, marketplace, generated package workflow, or
   downstream-installed runtime file.
-- `optional-skills/` contains source-only optional specialist packages and remains outside the
-  default installable `kit/` payload.
-- `optional-skills/react-component-patterns/` is an experimental, install-default-never specialist
+- `kit/optional-skills/` contains optional specialist packages inside the source boundary but
+  outside the default mapping.
+- `kit/optional-skills/react-component-patterns/` is an experimental, install-default-never specialist
   for React component and local-state implementation patterns. It requires explicit project
   adoption and a React project signal.
-- `optional-skills/tanstack-router-query-patterns/` is an experimental,
+- `kit/optional-skills/tanstack-router-query-patterns/` is an experimental,
   install-default-never specialist for TanStack Router routing/URL state and TanStack Query server
   state. It requires explicit project adoption plus a matching project signal or explicit request.
-- Optional pack installation remains future work and requires separate planning and approval.
+- Exact optional-skill selection is supported; broader pack/taxonomy work remains future work.
 - React component patterns remain separate from `ui-design-basics`, Next.js, React Server
   Components, TanStack, shadcn/ui, Tailwind, testing, architecture, and data-fetching guidance.
 - TanStack Router/Query patterns remain separate from React component/local-state guidance, visual
@@ -291,7 +292,9 @@ Future planned themes:
 
 ## 3. Non-Goals
 
-v0.1 does not aim to solve full technology-specific expertise, release/deploy workflows, GitHub settings automation, or safe migration for existing non-empty `.codex/` installations.
+v0.1 does not aim to solve full technology-specific expertise, release/deploy workflows, GitHub
+settings automation, or automatic cleanup/migration of obsolete paths in existing `.codex/`
+installations.
 
 Full role routing is now available at the generic level through `agent-roles-and-capabilities`, but framework-specific or provider-specific expert skills remain future work.
 
@@ -322,7 +325,7 @@ Important directories:
 
 ```txt
 kit/
-optional-skills/
+kit/optional-skills/
 kit/project-templates/
 kit/skills/
 kit/prompts/
@@ -341,8 +344,8 @@ dev_locals/
 
 `kit/` is the installable payload source.
 
-`optional-skills/` is source-only repository content for explicitly adopted specialist skills. It
-is not copied by the maintained installer and must not be treated as default-installed capability.
+`kit/optional-skills/` is source content for explicitly adopted specialist skills. It is excluded
+from default mapping and selected packages install only under `.codex/skills/engineering/<name>/`.
 
 `.codex/project/` is durable project memory for this repository itself and is not part of the installable `kit/` payload.
 
@@ -422,6 +425,13 @@ Maintained workflow tooling boundary:
 - `pnpm publish:merge-pr` does not perform remote PR diff secret scanning.
 - `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
   installation path.
+- The installer supports repeatable exact `--include-optional <name>` selection from
+  `kit/optional-skills/`, with selected packages mapped only to `.codex/skills/engineering/`.
+- `--apply --skip-conflicts` writes only genuinely new mapped files and never overwrites an
+  existing target; identical files are skipped and differences remain review items.
+- Existing project memory is preserved and differing `AGENTS.md` remains a manual merge candidate
+  in safe mode. Project-owned `.codex/skills/project/` is outside installer inspection and
+  collision handling.
 - Skill `metadata.yml` files should remain single YAML metadata documents, with source-repository
   tests covering parse hygiene.
 - Installer tree mapping excludes local OS junk files such as `.DS_Store`, `Thumbs.db`,
@@ -585,6 +595,13 @@ Current `install-foundation-kit.mjs` purpose:
   caution and empty conflict-free targets to new-like behavior
 - support explicit `new` and `existing` modes without changing file mappings
 - block existing-like conflict apply before staging unless `--overwrite-conflicts` is supplied
+- support `--apply --skip-conflicts` as a zero-overwrite new-files-only apply path
+- classify mapped files as `new`, `existing-identical`, or `existing-different`, with separate
+  ownership handling for project memory, `AGENTS.md`, reusable files, and selected optional skills
+- select optional packages exactly from `kit/optional-skills/` and install them only under
+  `.codex/skills/engineering/<name>/`
+- collision-check selected optional skills only against kit-managed core, meta, and engineering
+  paths; never inspect or collision-check `.codex/skills/project/`
 - keep conflict display, strong warning, typed confirmation, verified backup, plan revalidation,
   and overwrite mandatory after explicit overwrite authorization
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
@@ -836,11 +853,11 @@ Completed:
     - defined optional candidate metadata, status, and workflow routing without adding packs or
       installer behavior
 - React Component Patterns optional specialist
-    - added `optional-skills/react-component-patterns/` as source-only, experimental guidance
+    - added `kit/optional-skills/react-component-patterns/` as source-only, experimental guidance
     - kept default installation, installer behavior, force prompts, and adjacent frontend
       specialist concerns out of scope
 - TanStack Router and Query Patterns optional specialist
-    - added `optional-skills/tanstack-router-query-patterns/` as source-only, experimental guidance
+    - added `kit/optional-skills/tanstack-router-query-patterns/` as source-only, experimental guidance
     - kept default installation, installer behavior, force prompts, other TanStack libraries, and
       adjacent React/UI/architecture/backend concerns out of scope
 - Consolidation archive Bash apply-theme helper

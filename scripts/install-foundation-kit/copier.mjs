@@ -40,6 +40,7 @@ export async function applyStagedPlan({
   materializedBackup,
   signal,
   hooks = {},
+  allowOverwrite = true,
 }) {
   const completedTargets = [];
   if (materializedBackup) {
@@ -55,6 +56,7 @@ export async function applyStagedPlan({
         targetRoot,
         targetRelative: entry.targetRelative,
         signal,
+        overwrite: allowOverwrite,
       });
       if ((await hashFile(resolve(targetRoot, entry.targetRelative))) !== entry.sourceSha256) {
         throw new InstallerError(

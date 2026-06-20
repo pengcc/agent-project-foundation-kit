@@ -29,6 +29,7 @@ export async function createTestWorkspace(name) {
 
 export async function createFixtureKit(repoRoot) {
   const kitRoot = resolve(repoRoot, "kit");
+  const optionalSkillsDirectory = "optional-skills";
   const files = {
     "project-templates/AGENTS.md": "agent instructions\n",
     "project-templates/project-guideline.md": "guideline\n",
@@ -44,15 +45,23 @@ export async function createFixtureKit(repoRoot) {
     "scripts/publish-changes.mjs": 'console.log("publish");\n',
     "scripts/shared/command-runner.mjs": "export function createCommandRunner() {}\n",
     "scripts/shared/git-client.mjs": "export function createGitClient() {}\n",
+    [`${optionalSkillsDirectory}/optional-example/SKILL.md`]: "optional skill\n",
+    [`${optionalSkillsDirectory}/optional-example/metadata.yml`]: [
+      "name: optional-example",
+      "description: Optional fixture skill.",
+      "category: optional",
+      "required: false",
+      "invocation: model",
+      "depends_on: []",
+      "version: 0.1.0",
+      "",
+    ].join("\n"),
   };
   for (const [relative, contents] of Object.entries(files)) {
     const path = resolve(kitRoot, relative);
     await mkdir(resolve(path, ".."), { recursive: true });
     await writeFile(path, contents, "utf8");
   }
-  const optionalSkill = resolve(repoRoot, "optional-skills/optional-example/SKILL.md");
-  await mkdir(resolve(optionalSkill, ".."), { recursive: true });
-  await writeFile(optionalSkill, "optional skill\n", "utf8");
   await chmod(resolve(kitRoot, "scripts/publish-changes.mjs"), 0o755);
   return kitRoot;
 }
