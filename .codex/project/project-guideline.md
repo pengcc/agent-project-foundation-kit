@@ -107,6 +107,7 @@ Current canonical core rules:
 - `agent-operating-contract`
 - `docs-first-policy`
 - `engineering-quality-principles`
+- `skill-and-output-efficiency`
 - `skill-invocation-and-dependency-boundaries`
 
 Current project-memory context control:
