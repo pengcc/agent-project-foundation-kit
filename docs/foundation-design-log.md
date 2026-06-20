@@ -2480,3 +2480,26 @@ dev_locals/research-notes/2026-06-20-capability-preserving-skill-efficiency-audi
 .codex/project/lessons-learned.md
 docs/foundation-design-log.md
 ```
+
+## Execute Plan Output Noise Control
+
+Accepted implementation result:
+
+1. Add a compact `Output Noise Control` section to `execute-plan`.
+2. Preserve the required pre-execution status update and all approval, scope, validation, drift,
+   mutation, STOP, memory, commit, and publish boundaries.
+3. Prefer terse checkpoints for routine successful progress.
+4. Keep warnings, blockers, skipped checks, validation failures, and scope drift complete with
+   reason, evidence, impact, and next action when relevant.
+5. Keep final reports complete while permitting changed-file count/category summaries when Git or
+   the UI already exposes exact paths; retain exact paths when review or safe follow-up needs them.
+6. Do not change planning, work-item slicing, publishing, installer, mapping, package, dependency,
+   runtime, prompt, metadata, test, archive, release, or deployment behavior.
+
+Resulting files / changes:
+
+```txt
+kit/skills/core/execute-plan/SKILL.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```
