@@ -98,6 +98,12 @@ targets classified as genuinely new, safely skips byte-identical targets, and pr
 files, existing project memory, differing `AGENTS.md`, and skill migration collisions for review.
 It is mutually exclusive with `--overwrite-conflicts` and explicit `--project-mode new`.
 
+In existing projects, differing `.codex/scripts/*` files are reported as workflow-script merge
+items because installed scripts may contain project-specific workflow, publish, CI, or local
+automation changes. New scripts still install normally, identical scripts are skipped, and safe
+apply preserves differing scripts. Explicit overwrite remains available only through the existing
+backup and typed-confirmation path; the installer does not auto-merge or migrate target scripts.
+
 Use repeatable `--include-optional <name>` flags to select packages from
 `kit/optional-skills/<name>/`. Selected packages install only under
 `.codex/skills/engineering/<name>/`; they are never installed under `.codex/skills/optional/`,

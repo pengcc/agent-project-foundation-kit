@@ -18,6 +18,7 @@ export function createFinalReport({
     conflicts: plan.conflicts,
     preservedFiles: plan.preservedFiles,
     mergeFiles: plan.mergeFiles,
+    scriptMergeFiles: plan.scriptMergeFiles,
     migrationReviews: plan.migrationReviews,
     optionalSelectedFiles: plan.optionalSelectedFiles,
     reviewItems: plan.reviewItems,
@@ -71,7 +72,8 @@ export function printFinalReport(report, output) {
   output.success(
     `${report.mode === "apply" ? "Install completed" : "Dry-run completed"}: ` +
       `${report.writableNewFiles} safe new, ${report.identicalFiles} identical, ` +
-      `${report.differentFiles} different, ${report.migrationReviews} migration review, ${report.total} total.`,
+      `${report.differentFiles} different, ${report.scriptMergeFiles} script merge, ` +
+      `${report.migrationReviews} migration review, ${report.total} total.`,
   );
   output.info(`Target root: ${report.targetRoot}`);
   printPolicySummary(report, output);

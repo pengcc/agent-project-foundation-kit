@@ -11,7 +11,8 @@ export async function reportConflicts({
 }) {
   output.info(
     `Plan: ${plan.writableNewFiles} safe new, ${plan.identicalFiles} identical, ` +
-      `${plan.differentFiles} different, ${plan.migrationReviews} migration review, ${plan.total} total mapped file(s).`,
+      `${plan.differentFiles} different, ${plan.scriptMergeFiles} script merge, ` +
+      `${plan.migrationReviews} migration review, ${plan.total} total mapped file(s).`,
   );
   for (const entry of plan.entries) {
     if (entry.action === "skip-identical") {
@@ -22,6 +23,12 @@ export async function reportConflicts({
       output.info(`[PRESERVE] ${entry.targetRelative} (project-owned memory)`);
     } else if (entry.action === "manual-merge") {
       output.warning(`[MERGE] ${entry.targetRelative} differs; manual merge required.`);
+    } else if (entry.action === "script-merge") {
+      const message =
+        `[SCRIPT-MERGE] ${entry.targetRelative} differs; target scripts may contain ` +
+        "project-specific workflow, publish, CI, or local automation changes.";
+      if (overwriteConflicts) output.danger(message);
+      else output.warning(message);
     } else if (entry.action === "migration-review") {
       output.warning(
         `[MIGRATE] ${entry.targetRelative} conflicts with legacy kit-managed path ${entry.collisionPath}.`,

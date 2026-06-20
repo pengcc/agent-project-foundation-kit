@@ -597,7 +597,11 @@ Current `install-foundation-kit.mjs` purpose:
 - block existing-like conflict apply before staging unless `--overwrite-conflicts` is supplied
 - support `--apply --skip-conflicts` as a zero-overwrite new-files-only apply path
 - classify mapped files as `new`, `existing-identical`, or `existing-different`, with separate
-  ownership handling for project memory, `AGENTS.md`, reusable files, and selected optional skills
+  ownership handling for project memory, `AGENTS.md`, workflow scripts, reusable files, and
+  selected optional skills
+- report existing-different `.codex/scripts/*` as workflow-script merge items while preserving
+  new-script installation, identical skips, safe apply zero-overwrite, and explicit overwrite
+  safeguards
 - select optional packages exactly from `kit/optional-skills/` and install them only under
   `.codex/skills/engineering/<name>/`
 - collision-check selected optional skills only against kit-managed core, meta, and engineering

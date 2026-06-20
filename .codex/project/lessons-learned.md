@@ -793,3 +793,25 @@ The report is an observability boundary, not authorization for publishing or unr
 - derive staged groups and stop conditions from the approved plan
 - keep project-specific branch, PR, and runtime requirements conditional
 - separate local execution setup from push, PR, merge, release, and deployment authority
+
+## Keep: Treat installed workflow scripts as project automation after customization
+
+### Context
+
+A downstream project may adapt an installed helper script to its own repository, CI, validation,
+or publishing conventions. The source kit can no longer assume a differing installed copy is an
+ordinary reusable file.
+
+### Lesson
+
+Installation origin does not permanently determine ownership. When a mapped script differs in an
+existing project, preserve it and surface a manual merge/review boundary. A new or byte-identical
+script can still use normal installation behavior.
+
+### Reuse guidance
+
+- classify content state separately from workflow ownership
+- distinguish customized automation from ordinary reusable-file differences
+- preserve differing scripts in zero-overwrite modes
+- keep destructive replacement behind existing backup and explicit confirmation safeguards
+- do not confuse installer script classification with authorization to publish or change remote state

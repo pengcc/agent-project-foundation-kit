@@ -26,6 +26,7 @@ function ownershipFor(mapping) {
   if (mapping.category === "optional") return "optional";
   if (mapping.targetRelative === "AGENTS.md") return "entrypoint";
   if (mapping.targetRelative.startsWith(".codex/project/")) return "project-memory";
+  if (mapping.targetRelative.startsWith(".codex/scripts/")) return "workflow-script";
   return "reusable";
 }
 
@@ -61,6 +62,7 @@ function actionFor({ contentState, ownership, migrationState }) {
   if (contentState === "existing-identical") return "skip-identical";
   if (ownership === "project-memory") return "preserve";
   if (ownership === "entrypoint") return "manual-merge";
+  if (ownership === "workflow-script") return "script-merge";
   return "review";
 }
 
@@ -122,10 +124,11 @@ export async function buildInstallPlan({ kitRoot, targetRoot, includeOptional = 
     conflicts: frozenEntries.filter((entry) => entry.contentState === "existing-different").length,
     preservedFiles: frozenEntries.filter((entry) => entry.action === "preserve").length,
     mergeFiles: frozenEntries.filter((entry) => entry.action === "manual-merge").length,
+    scriptMergeFiles: frozenEntries.filter((entry) => entry.action === "script-merge").length,
     migrationReviews: frozenEntries.filter((entry) => entry.action === "migration-review").length,
     optionalSelectedFiles: frozenEntries.filter((entry) => entry.ownership === "optional").length,
     reviewItems: frozenEntries.filter((entry) =>
-      ["review", "manual-merge", "migration-review"].includes(entry.action),
+      ["review", "manual-merge", "script-merge", "migration-review"].includes(entry.action),
     ).length,
     selectedOptionalSkills: Object.freeze([...new Set(includeOptional)].sort()),
   });

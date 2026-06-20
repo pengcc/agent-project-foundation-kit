@@ -2425,3 +2425,46 @@ kit/skills/core/execute-plan/SKILL.md
 .codex/project/lessons-learned.md
 docs/foundation-design-log.md
 ```
+
+## Decision: Existing-project scripts are workflow-script merge items when different
+
+### Status
+
+Accepted
+
+### Context
+
+Scripts installed from `kit/scripts/` begin as reusable workflow executors, but downstream
+projects may customize their installed `.codex/scripts/` copies for repository-specific publish,
+CI, validation, safety, or local automation behavior. Reporting those differences as ordinary
+reusable-file conflicts under-communicates the risk of replacing project workflow automation.
+
+### Decision
+
+Classify mapped `.codex/scripts/*` files as `workflow-script` ownership. New scripts retain normal
+safe-write behavior, and identical scripts remain safe skips. Existing-different scripts use the
+distinct `script-merge` action and `[SCRIPT-MERGE]` reporting so users review or manually merge
+project-specific automation.
+
+Safe apply continues to write only `action === "write"` and therefore preserves every existing
+script without backup prompts. Explicit overwrite remains available through the established
+backup, typed-confirmation, and revalidation path; the installer does not auto-merge or migrate
+target scripts.
+
+This classification does not authorize or change push, PR, merge, release, deployment, or publish
+workflow behavior.
+
+### Impact
+
+Existing-project upgrades make customized script risk visible while preserving fresh-install,
+identical-file, safe-apply, and explicit-overwrite semantics.
+
+### Related files
+
+```txt
+scripts/install-foundation-kit/planner.mjs
+scripts/install-foundation-kit/conflict.mjs
+scripts/install-foundation-kit/final-report.mjs
+tests/install-foundation-kit/
+README.md
+```
