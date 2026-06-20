@@ -49,6 +49,7 @@ Completed themes:
 - Theme 22.0.1: dependency invariant and publish handoff clarification
 - Theme 22.1: third-party skill adoption safety
 - Theme 22.2: kit evolution and reusable lesson promotion loop
+- Theme 23: diagnosis and work item slicing
 - Phase 5: UI Quality Foundation
 - Phase 6: Architecture Review Refinement
 - Phase 7: Optional Skill Catalog and Specialist Packs
@@ -77,11 +78,13 @@ Meta:
 
 Core:
 
+- `diagnose`
 - `execute-plan`
 - `publish-current-branch`
 - `project-architecture-plan`
 - `code-review`
 - `codebase-audit`
+- `to-work-items`
 - `ui-design-basics`
 
 Optional:
@@ -183,6 +186,19 @@ Current plan/execute/review quality boundaries:
 - Initial role/workflow routing may use `agent-roles-and-capabilities` before the Project Memory
   Context Gate. If routing depends on project-specific facts, use `project-memory` as supporting
   context before making project-state decisions.
+
+Current diagnosis and work-item slicing boundaries:
+
+- Theme 23 adds core skills `diagnose` and `to-work-items`.
+- `diagnose` owns evidence-first investigation when the cause of a bug, failing test, regression,
+  unexpected behavior, production-like symptom, or performance issue is unknown. It establishes a
+  red-capable feedback loop before recommending a fix and routes implementation to
+  `execute-plan` or `plan-with-context` based on scope and risk.
+- `to-work-items` converts approved or sufficiently clear plans into local-first, agent-ready
+  vertical slices with dependencies, acceptance criteria, and validation commands. It does not
+  create GitHub Issues in v1 or authorize execution.
+- Domain vocabulary remains inside the existing project-memory structure; Theme 23 does not add a
+  parallel `CONTEXT.md` source of truth.
 
 Current codebase-audit boundaries:
 
@@ -806,6 +822,9 @@ Completed:
 - Theme 22.2 kit evolution and reusable lesson promotion loop
     - kept project experience promotion behind local memory, generalization, user confirmation,
       approved planning, and execution
+- Theme 23 diagnosis and work item slicing
+    - added core `diagnose` and `to-work-items` workflows
+    - added concise module-depth, seam, domain-vocabulary, and durable-decision guidance
 - Phase 5 UI Quality Foundation
     - added lightweight UI quality guidance through existing engineering-quality and workflow
       surfaces

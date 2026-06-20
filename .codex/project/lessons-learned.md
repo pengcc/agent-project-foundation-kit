@@ -740,3 +740,10 @@ prefilled with this repository's history.
 
 Future generic lessons should be reviewed, generalized, and deliberately distilled into the
 appropriate reusable rule, skill, or documentation. Do not copy project memory automatically.
+
+## Theme 23 Lessons
+
+- External skills should be distilled into native foundation-kit workflows instead of copied
+  wholesale.
+- Debugging workflows need an explicit feedback loop before proposing fixes.
+- Large plans benefit from vertical work-item slicing before execution.
