@@ -815,3 +815,38 @@ script can still use normal installation behavior.
 - preserve differing scripts in zero-overwrite modes
 - keep destructive replacement behind existing backup and explicit confirmation safeguards
 - do not confuse installer script classification with authorization to publish or change remote state
+
+## Keep: Optimize boundary density, not line count
+
+### Context
+
+A first-phase audit of high-frequency skills, rules, and the downstream AGENTS entrypoint found
+both short canonical files and long boundary-heavy files. Length alone did not distinguish
+low-value repetition from instructions that preserve routing, validation, mutation authority, or
+safe failure handling.
+
+### Lesson
+
+Evaluate instruction efficiency by behavioral value. Compress routine success output and
+duplicated rationale, but preserve complete gates, validation, STOP conditions, workflow
+handoffs, uncertainty, and actionable failure evidence.
+
+Repeated wording at an exact mutation or safety boundary may be necessary even when the canonical
+concept lives elsewhere. Deduplicate only after confirming that a short reference preserves
+availability, timing, ownership, and enforcement.
+
+### Reuse guidance
+
+- treat line and token counts as diagnostics, not acceptance criteria
+- inventory safety-critical and capability-critical behavior before editing mature content
+- identify the canonical owner before removing duplicated explanations
+- compare semantics and regression scenarios before and after a small pilot
+- keep warnings and blockers complete even when normal progress is terse
+- stop when a smaller file makes a decision or failure path less explicit
+
+### Related files
+
+```txt
+kit/rules/skill-and-output-efficiency.md
+dev_locals/research-notes/2026-06-20-capability-preserving-skill-efficiency-audit.md
+```
