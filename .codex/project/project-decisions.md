@@ -2515,3 +2515,44 @@ kit/rules/skill-and-output-efficiency.md
 dev_locals/research-notes/2026-06-20-capability-preserving-skill-efficiency-audit.md
 docs/foundation-design-log.md
 ```
+
+## Decision: Execute-plan compresses routine progress while preserving boundary output
+
+### Status
+
+Accepted
+
+### Context
+
+`execute-plan` must keep approval, readiness, scope, validation, drift, mutation, memory, STOP, and
+publish boundaries visible. Routine successful progress and repeated changed-file paths can still
+create output noise without improving user decisions or execution safety.
+
+### Decision
+
+Apply the capability-preserving efficiency standard inside `execute-plan` output:
+
+- keep pre-execution status, warnings, blockers, skipped checks, validation failures, scope drift,
+  permission or publish boundaries, and final reports complete but concise;
+- require reason, evidence, impact, and next action when they are relevant to a warning, blocker,
+  error, or failed boundary;
+- prefer terse checkpoints for routine successful progress; and
+- allow final reports to summarize changed files by count and category when Git or the UI already
+  exposes exact paths, while retaining exact paths when review, ambiguity, or safe follow-up needs
+  them.
+
+This changes output guidance only. It does not change approval, execution, validation, commit,
+memory, publish, release, deployment, or STOP semantics.
+
+### Impact
+
+Normal successful execution becomes easier to scan while failure paths and decision boundaries
+remain complete and actionable.
+
+### Related files
+
+```txt
+kit/skills/core/execute-plan/SKILL.md
+kit/rules/skill-and-output-efficiency.md
+docs/foundation-design-log.md
+```

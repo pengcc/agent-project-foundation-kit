@@ -208,6 +208,45 @@ After each reasonable step group, run relevant validation and report the result.
 
 Pause on blockers, failed validation, scope drift, or risky unknowns.
 
+## Output Noise Control
+
+Apply the `skill-and-output-efficiency` rule without replacing this skill's execution, validation,
+STOP, memory, or publish boundaries.
+
+- **Boundary output:** Keep the pre-execution status update, warnings, blockers, skipped checks,
+  validation failures, scope drift, permission or publish boundaries, and final report complete
+  but concise. When relevant, include reason, evidence, impact, and next action.
+- **Routine success progress:** Prefer terse checkpoints such as `Group 1/3: done`,
+  `Validation: running`, or `Scope check: passed`. Explain successful mechanics only when they
+  affect a user decision, residual risk, or the next execution step.
+- **Warnings, blockers, and errors:** Do not compress away evidence or recovery guidance. Use at
+  least:
+
+  ```txt
+  BLOCKED: <reason>
+  Evidence: <file, command, or observed result>
+  Impact: <why safe continuation is not possible>
+  Next: <recommended action or workflow>
+  ```
+
+- **Final report:** Retain the approved plan, completed scope, changed-file summary, validation,
+  risks or blockers, memory/docs status, Git/publish status, external/global actions, and next
+  workflow when applicable. When Git or the UI already exposes exact paths, prefer a file count
+  and category summary; list exact paths when they are needed for review, ambiguity resolution, or
+  safe follow-up. Group publish recommendations near the end as one compact line:
+
+  ```txt
+  Publish changes recommendation: type: <update type>; message: <commit message>; PR title: <PR title>
+  ```
+
+  When the project defines a common fast PR command, the final summary may include one explicit
+  `Fast PR:` command immediately after `Recommended next workflow`. This is reporting guidance
+  only; it does not authorize executing the command or performing push, PR, merge, release, or
+  deployment actions from `execute-plan`.
+
+Concision never authorizes omitting failed validation, skipped checks, uncertainty, scope drift,
+or an execution boundary.
+
 ## Technical Assumptions
 
 Do not rely on model memory for technical decisions during execution.
@@ -292,9 +331,6 @@ Execution Summary:
 - Plan:
 - Execution mode:
 - Completed:
-- Recommended update type:
-- Recommended commit message:
-- Recommended PR title:
 - Changed files:
 - Validation:
 - Commit:
@@ -304,11 +340,16 @@ Execution Summary:
 - Quality / Constraints Followed:
 - Project memory update check:
 - External / global actions:
+- Publish changes recommendation: type: <update type>; message: <commit message>; PR title: <PR title>
 - Recommended next workflow:
+- Fast PR: <project's common fast PR command, when available and useful>
 ```
 
 If a local commit was created, report the commit hash.
 
 If publish is recommended, recommend `publish-current-branch`.
+
+Do not run a reported `Fast PR` command from `execute-plan`; publishing requires explicit user
+authorization and the matching publish workflow.
 
 If project memory updates are needed, recommend `update-project-memory`.
