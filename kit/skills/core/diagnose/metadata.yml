@@ -1,0 +1,18 @@
+name: diagnose
+description: Diagnose bugs, failing tests, regressions, unexpected behavior, performance issues, or broken builds before implementation.
+category: core
+required: true
+invocation: model
+depends_on:
+  - project-memory
+version: 0.1.0
+triggers:
+  - diagnose bug
+  - failing test
+  - regression
+  - unexpected behavior
+  - production issue
+  - performance problem
+  - flaky behavior
+  - broken build
+  - confusing error

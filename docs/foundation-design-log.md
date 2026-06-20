@@ -2386,3 +2386,25 @@ tests/install-foundation-kit/core.test.mjs
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Theme 23: Diagnosis and Work Item Slicing
+
+Theme 23 adds two core engineering workflow skills: `diagnose` and `to-work-items`.
+
+`diagnose` introduces an evidence-first debugging workflow for bugs, failing tests, regressions,
+unexpected behavior, production-like symptoms, flaky behavior, broken builds, and performance
+issues. It requires a tight red-capable feedback loop, explicit hypotheses, targeted evidence
+collection, and validation against the same signal after an approved fix.
+
+`to-work-items` converts approved or sufficiently clear plans into small, agent-ready vertical
+slices with dependencies, acceptance criteria, validation commands, and suggested workflow
+routing. It is local-first under `dev_locals/plans/` and does not create GitHub Issues directly in
+this version.
+
+The theme also adds concise module-depth and seam vocabulary to engineering quality principles and
+clarifies that stable domain vocabulary belongs inside existing project memory rather than a
+parallel `CONTEXT.md` system.
+
+External skills from Matt Pocock's public skills repository were used only as inspiration. The
+update deliberately avoids copying external text, introducing a second memory system, adding issue
+tracker automation, or broadly rewriting mature skills.

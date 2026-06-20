@@ -2299,3 +2299,42 @@ kit/rules/skill-invocation-and-dependency-boundaries.md
 kit/skills/meta/initialize-project-context/SKILL.md
 tests/install-foundation-kit/core.test.mjs
 ```
+
+## Theme 23: Diagnosis and Work Item Slicing
+
+### Status
+
+Accepted
+
+### Context
+
+The kit already plans, executes, reviews, and audits work, but it lacks a dedicated evidence-first
+workflow for unknown causes and a standard bridge from large approved plans to focused execution
+passes.
+
+### Decision
+
+- `diagnose` is a core skill, not a meta skill, because it supports day-to-day downstream project
+  debugging and regression investigation.
+- `to-work-items` is a core skill, not a meta skill, because it bridges approved plans into
+  execution-ready downstream engineering work.
+- Work-item output is local-first under `dev_locals/plans/`; Theme 23 does not create GitHub Issues
+  directly.
+- The kit will not introduce a parallel `CONTEXT.md` domain-model source of truth. Stable domain
+  vocabulary belongs inside the existing project-memory structure.
+- Matt Pocock's skills are external inspiration only. Foundation-kit guidance is rewritten in the
+  kit's native style and preserves its workflow and safety boundaries.
+
+### Impact
+
+Downstream projects gain explicit evidence-first diagnosis and vertical work-item slicing without
+new dependencies, runtime behavior, issue-tracker automation, or a second memory system.
+
+### Related files
+
+```txt
+kit/skills/core/diagnose/
+kit/skills/core/to-work-items/
+kit/rules/engineering-quality-principles.md
+kit/skills/meta/update-project-memory/SKILL.md
+```

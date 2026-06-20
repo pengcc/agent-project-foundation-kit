@@ -264,3 +264,15 @@ Verify external or remote state through authoritative evidence. Manual confirmat
 intent but does not prove external state. Place confirmations at meaningful safety boundaries;
 do not add prompts to every mechanical step when one explicit, scope-visible authorization is
 sufficient.
+
+## 22. Module Depth and Seams
+
+- Prefer deep modules: a small, stable interface with meaningful implementation behind it.
+- Avoid shallow pass-through abstractions unless they isolate an external boundary, volatile
+  dependency, or genuinely repeated pattern.
+- Introduce seams where behavior genuinely varies or an external system needs an adapter.
+- Keep adapters at external boundaries such as APIs, databases, file systems, queues, and payment
+  providers.
+- Test through the same interface real callers use instead of coupling tests to private details.
+- Favor locality so related behavior is easy to find and change together.
+- Architecture should increase leverage and reduce future cost, not add ceremony.

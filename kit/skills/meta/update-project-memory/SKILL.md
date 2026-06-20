@@ -275,6 +275,26 @@ Do not store:
 - Large logs
 - `dev_locals/` scratch content without durable value
 
+## Domain Vocabulary and Durable Decisions
+
+Project memory may include a lightweight domain vocabulary when stable terms affect
+implementation, review, onboarding, or future planning. Keep it inside the existing project-memory
+structure. Do not create a parallel `CONTEXT.md` or second source of truth unless the project has
+explicitly adopted one.
+
+Record durable decisions sparingly. A decision belongs in `project-decisions.md` when it is hard to
+reverse, surprising without context, based on a real tradeoff, or likely to affect future
+implementation or review. Do not turn every implementation detail into an ADR-like entry.
+
+Use the existing memory split:
+
+- `project-guideline.md` for stable project overview, conventions, vocabulary, and workflow
+  context.
+- `project-decisions.md` for durable architectural, product, workflow, or policy decisions.
+- `lessons-learned.md` for reusable lessons from incidents, bugs, migrations, or reviews.
+- `dev_locals/` for temporary plans, research notes, work items, and local-only analysis unless the
+  repository convention says otherwise.
+
 ## Post-Update Output
 
 After updating, report:
