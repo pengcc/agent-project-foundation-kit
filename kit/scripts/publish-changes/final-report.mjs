@@ -24,7 +24,7 @@ export function renderPrOnlyReport(output, report) {
   } else if (report.latestHeadCommit) {
     output.info(`Latest head commit: ${report.latestHeadCommit}`);
   }
-  output.info(`Next Step After Review: ${report.nextStep}`);
+  output.command("Next Step After Review:", report.nextStep);
   output.info(`Branch: ${report.branch}`);
   output.info(`Action: ${report.action}`);
 }

@@ -9,6 +9,7 @@ function createOutput() {
     messages,
     step: (message) => messages.push(["STEP", message]),
     info: (message) => messages.push(["INFO", message]),
+    command: (label, command) => messages.push(["INFO", `${label} ${command}`]),
     warning: (message) => messages.push(["WARNING", message]),
     danger: (message) => messages.push(["DANGER", message]),
     success: (message) => messages.push(["SUCCESS", message]),

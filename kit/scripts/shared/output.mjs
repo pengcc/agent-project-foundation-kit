@@ -2,6 +2,8 @@ import { ansiColor, DEFAULT_OUTPUT_THEME, OUTPUT_LEVELS } from "./output-theme.m
 
 export { OUTPUT_LEVELS } from "./output-theme.mjs";
 
+const COMMAND_COLOR = [171, 156, 89];
+
 export function createOutput({
   stdout = process.stdout,
   stderr = process.stderr,
@@ -26,9 +28,18 @@ export function createOutput({
     const stream = streamFor(level);
     stream.write(`${format(level, message, stream)}\n`);
   };
+  const command = (label, commandText) => {
+    const stream = streamFor("INFO");
+    const styledCommand =
+      stream.isTTY && env.NO_COLOR === undefined
+        ? `\u001B[${ansiColor(COMMAND_COLOR)}m${commandText}\u001B[0m`
+        : commandText;
+    stream.write(`${format("INFO", `${label} ${styledCommand}`, stream)}\n`);
+  };
 
   return Object.fromEntries([
     ...OUTPUT_LEVELS.map((level) => [level.toLowerCase(), (message) => write(level, message)]),
+    ["command", command],
     ["write", write],
     ["format", format],
   ]);
