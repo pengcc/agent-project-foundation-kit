@@ -22,9 +22,10 @@ export function renderPrOnlyReport(output, report) {
   if (report.latestCommitChangesUrl) {
     output.info(`Latest commit changes: ${report.latestCommitChangesUrl}`);
   } else if (report.latestHeadCommit) {
-    output.info(`Latest head commit: ${report.latestHeadCommit}`);
+    output.info(`Latest head commit changes: ${report.prUrl}/files/${report.latestHeadCommit}`);
+    //output.info(`Latest head commit: ${report.latestHeadCommit}`);
   }
-  output.info(`Next Step After Review: ${report.nextStep}`);
+  output.command("Next Step After Review:", report.nextStep);
   output.info(`Branch: ${report.branch}`);
   output.info(`Action: ${report.action}`);
 }

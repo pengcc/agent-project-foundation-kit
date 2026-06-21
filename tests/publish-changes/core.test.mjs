@@ -256,6 +256,36 @@ describe("interactive prompts and output", () => {
     expect(skipped).not.toContain("38;2;243;156;18");
   });
 
+  it("styles command text without changing informational output", () => {
+    const tty = { isTTY: true, write: vi.fn() };
+    const plain = { isTTY: false, write: vi.fn() };
+    const noColor = { isTTY: true, write: vi.fn() };
+
+    createOutput({ stdout: tty, env: {} }).command(
+      "Next Step After Review:",
+      "pnpm publish:merge-pr 18",
+    );
+    createOutput({ stdout: plain, env: {} }).command(
+      "Next Step After Review:",
+      "pnpm publish:merge-pr 18",
+    );
+    createOutput({ stdout: noColor, env: { NO_COLOR: "1" } }).command(
+      "Next Step After Review:",
+      "pnpm publish:merge-pr 18",
+    );
+
+    expect(tty.write).toHaveBeenCalledWith(
+      "\u001B[1;96m[INFO]\u001B[0m Next Step After Review: " +
+        "\u001B[38;2;28;112;230mpnpm publish:merge-pr 18\u001B[0m\n",
+    );
+    expect(plain.write).toHaveBeenCalledWith(
+      "[INFO] Next Step After Review: pnpm publish:merge-pr 18\n",
+    );
+    expect(noColor.write).toHaveBeenCalledWith(
+      "[INFO] Next Step After Review: pnpm publish:merge-pr 18\n",
+    );
+  });
+
   it("disables every ANSI style when NO_COLOR is set", () => {
     const tty = { isTTY: true, write: vi.fn() };
     const output = createOutput({

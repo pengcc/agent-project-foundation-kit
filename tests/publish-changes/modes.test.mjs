@@ -9,6 +9,7 @@ function createOutput() {
     messages,
     step: (message) => messages.push(["STEP", message]),
     info: (message) => messages.push(["INFO", message]),
+    command: (label, command) => messages.push(["INFO", `${label} ${command}`]),
     warning: (message) => messages.push(["WARNING", message]),
     danger: (message) => messages.push(["DANGER", message]),
     success: (message) => messages.push(["SUCCESS", message]),
@@ -217,7 +218,10 @@ describe("PR-only flow", () => {
       latestHeadCommit: "committed-head",
       nextStep: "pnpm publish:merge-pr 17",
     });
-    expect(harness.output.messages).toContainEqual(["INFO", "Latest head commit: committed-head"]);
+    expect(harness.output.messages).toContainEqual([
+      "INFO",
+      "Latest head commit changes: https://example.test/pr/17/files/committed-head",
+    ]);
   });
 
   it("updates an existing title only when the second argument was explicit", async () => {

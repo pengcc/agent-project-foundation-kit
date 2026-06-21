@@ -12,3 +12,5 @@ for (const level of OUTPUT_LEVELS) {
   const label = level[0] + level.slice(1).toLowerCase();
   output.write(level, `${label} label color preview`);
 }
+
+output.command("Command helper preview:", "pnpm publish:merge-pr 101");
