@@ -1,16 +1,14 @@
 # Docs-First Policy
 
-This policy defines the global source priority for technical work.
+This policy owns global source priority, policy-level conflict handling, and external-source and
+external-skill safety rules for technical work. `docs-first-research` owns the concrete research
+workflow that applies this policy.
 
 ## Core Principle
 
 Official documentation and project files are the primary sources of truth.
 
 Model memory can support reasoning, but must not override official documentation or project reality.
-
-For research that may affect project planning, implementation, review, workflow, tooling, or
-project memory, pass the Project Memory Context Gate first. For pure external fact lookup that has
-no project impact, state that the gate is not applicable.
 
 ## Source Priority
 
@@ -51,15 +49,11 @@ If official docs conflict with model memory, official docs win.
 
 If official docs conflict with project files, report the conflict and recommend a resolution. Do not silently choose one.
 
-## Degraded Mode
+## Research Workflow Boundary
 
-If official documentation cannot be accessed, the agent must say so.
-
-For high-impact technical decisions, the agent must request user confirmation before continuing.
-
-For local low-impact documentation or workflow cleanup, the agent may recommend continuing after explaining that the impact is limited and official docs are not required for the current step.
-
-Project memory updates still require the `update-project-memory` workflow and its required update summary.
+Use `docs-first-research` for concrete research and external-skill evaluation. That workflow owns
+Project Memory Context Gate application, degraded research mode, workflow interactions, output
+expectations, and project-memory handoff. This policy does not redefine those procedures.
 
 ## External Skill References
 
