@@ -2620,3 +2620,29 @@ kit/skills/meta/agent-roles-and-capabilities/SKILL.md
 dev_locals/research-notes/2026-06-21-agent-roles-capabilities-compression-pilot-note.md
 docs/foundation-design-log.md
 ```
+
+## Docs-First Policy vs Workflow Boundary Review
+
+Accepted implementation result:
+
+1. Confirm `docs-first-policy` as the canonical owner of global source priority, model-memory
+   precedence, official/project conflict handling, and external-source/external-skill safety rules.
+2. Confirm `docs-first-research` as the concrete owner of research triggers, Project Memory
+   Context Gate application, degraded research mode, workflow interactions, external-skill
+   evaluation procedure/report, output expectations, and project-memory handoff.
+3. Replace policy-level copies of context/degraded workflow mechanics with an explicit research
+   workflow boundary pointer.
+4. Make the research workflow explicitly apply the policy for source order, conflicts, and every
+   external-skill safety criterion while retaining local source/conflict reporting requirements.
+5. Preserve all source-order, conflict, degraded-mode, external-evaluation, memory, interaction,
+   uncertainty, and output behavior.
+6. Leave unrelated skills/rules, prompts, metadata, tests, installer, package, runtime, publish,
+   downstream-template, archive, release, and deployment behavior unchanged.
+
+Resulting files / changes:
+
+```txt
+kit/rules/docs-first-policy.md
+kit/skills/meta/docs-first-research/SKILL.md
+docs/foundation-design-log.md
+```

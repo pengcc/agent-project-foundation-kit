@@ -96,9 +96,9 @@ wholesale; evaluate fit, safety, and workflow conflict before adapting any patte
 Use this workflow to verify external source facts and evaluate external skill patterns before any
 adaptation. It does not install, adapt, or copy external skills.
 
-Check source URL, provenance, license/copying risk, trigger fit, boundary fit, workflow conflict,
-ecosystem-specific assumptions, tool assumptions, file/network/mutation permissions, secret
-handling risk, source freshness, and whether adaptation should route to `writing-great-skills`.
+Apply every external-skill safety criterion in `docs-first-policy`. Record the evidence, accepted
+and rejected patterns, project-specific rewrite needs, risks, and next workflow; route approved
+adaptation to `writing-great-skills`.
 
 Use this compact output when evaluating an external skill:
 
@@ -134,18 +134,11 @@ Workflow:
 - Mode: degraded research mode
 ```
 
-## Source Priority
+## Policy Application
 
-Use sources in this order:
-
-1. Official sources
-2. Project sources
-3. High-quality secondary sources
-4. Model knowledge, only for concepts and hypotheses
-
-Official documentation and project files win over model memory.
-
-If official documentation conflicts with project files, report the conflict instead of silently choosing.
+Apply the source order, model-memory precedence, conflict handling, and external-source safety
+rules in `docs-first-policy`. Record the sources used and report official/project conflicts instead
+of silently resolving them.
 
 ## Degraded Research Mode
 
