@@ -2,7 +2,7 @@ import { ansiColor, DEFAULT_OUTPUT_THEME, OUTPUT_LEVELS } from "./output-theme.m
 
 export { OUTPUT_LEVELS } from "./output-theme.mjs";
 
-const COMMAND_COLOR = [171, 156, 89];
+const COMMAND_COLOR = [28, 112, 230];
 
 export function createOutput({
   stdout = process.stdout,
