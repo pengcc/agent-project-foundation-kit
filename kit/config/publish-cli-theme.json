@@ -10,7 +10,7 @@
       "fullLine": false
     },
     "WARNING": {
-      "color": [243, 156, 18],
+      "color": [253, 219, 83],
       "fullLine": true
     },
     "ERROR": {
@@ -30,11 +30,11 @@
       "fullLine": false
     },
     "SKIPPED": {
-      "color": [221, 151, 108],
+      "color": [110, 17, 82],
       "fullLine": true
     },
     "DEBUG": {
-      "color": "90",
+      "color": [116, 114, 11],
       "fullLine": false
     }
   }
