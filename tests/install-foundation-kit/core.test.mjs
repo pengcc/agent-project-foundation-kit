@@ -489,7 +489,8 @@ describe("mapping and boundaries", () => {
       plan.entries.find((entry) => entry.targetRelative.endsWith("project-guideline.md")),
     ).toMatchObject({
       contentState: "existing-identical",
-      ownership: "project-memory",
+      ownership: "project-owned",
+      kind: "project-memory",
       action: "skip-identical",
     });
   });
@@ -506,14 +507,18 @@ describe("mapping and boundaries", () => {
 
     expect(plan.entries.find((entry) => entry.targetRelative === "AGENTS.md")).toMatchObject({
       contentState: "existing-different",
-      ownership: "entrypoint",
+      ownership: "mixed",
+      kind: "entrypoint",
+      resultCategory: "BLOCKED_MANUAL",
       action: "manual-merge",
     });
     expect(
       plan.entries.find((entry) => entry.targetRelative === ".codex/project/project-guideline.md"),
     ).toMatchObject({
       contentState: "existing-different",
-      ownership: "project-memory",
+      ownership: "project-owned",
+      kind: "project-memory",
+      resultCategory: "PROJECT_OWNED",
       action: "preserve",
     });
   });
@@ -527,7 +532,10 @@ describe("mapping and boundaries", () => {
     let plan = await buildInstallPlan(fixture);
     expect(plan.entries.find((entry) => entry.targetRelative === targetRelative)).toMatchObject({
       contentState: "new",
-      ownership: "workflow-script",
+      ownership: "kit-managed",
+      kind: "workflow-script",
+      risk: "manual",
+      resultCategory: "SAFE_ADD",
       action: "write",
     });
 
@@ -536,7 +544,8 @@ describe("mapping and boundaries", () => {
     plan = await buildInstallPlan(fixture);
     expect(plan.entries.find((entry) => entry.targetRelative === targetRelative)).toMatchObject({
       contentState: "existing-identical",
-      ownership: "workflow-script",
+      ownership: "kit-managed",
+      kind: "workflow-script",
       action: "skip-identical",
     });
 
@@ -544,7 +553,9 @@ describe("mapping and boundaries", () => {
     plan = await buildInstallPlan(fixture);
     expect(plan.entries.find((entry) => entry.targetRelative === targetRelative)).toMatchObject({
       contentState: "existing-different",
-      ownership: "workflow-script",
+      ownership: "kit-managed",
+      kind: "workflow-script",
+      resultCategory: "BLOCKED_MANUAL",
       action: "script-merge",
     });
     expect(plan.scriptMergeFiles).toBe(1);

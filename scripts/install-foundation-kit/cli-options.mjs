@@ -93,7 +93,7 @@ export function usage() {
     "  --target PATH             Required downstream project root",
     "  --apply                   Apply the prepared install plan",
     "  --project-mode MODE       auto (default), new, or existing",
-    "  --overwrite-conflicts     Authorize existing-mode conflict replacement; backup and typed confirmation remain required",
+    "  --overwrite-conflicts     Retained for new-project workflows; existing-project replacement is blocked in WI-1",
     "  --skip-conflicts          With --apply, write safe new files and preserve every existing target",
     "  --include-optional NAME   Include one optional skill; repeat to select more",
     "  --show-diff               Preview conflicts with diff -u when available; does not authorize overwrite",
