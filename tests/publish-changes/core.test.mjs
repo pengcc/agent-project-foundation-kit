@@ -276,7 +276,7 @@ describe("interactive prompts and output", () => {
 
     expect(tty.write).toHaveBeenCalledWith(
       "\u001B[1;96m[INFO]\u001B[0m Next Step After Review: " +
-        "\u001B[38;2;171;156;89mpnpm publish:merge-pr 18\u001B[0m\n",
+        "\u001B[38;2;28;112;230mpnpm publish:merge-pr 18\u001B[0m\n",
     );
     expect(plain.write).toHaveBeenCalledWith(
       "[INFO] Next Step After Review: pnpm publish:merge-pr 18\n",

@@ -218,7 +218,10 @@ describe("PR-only flow", () => {
       latestHeadCommit: "committed-head",
       nextStep: "pnpm publish:merge-pr 17",
     });
-    expect(harness.output.messages).toContainEqual(["INFO", "Latest head commit: committed-head"]);
+    expect(harness.output.messages).toContainEqual([
+      "INFO",
+      "Latest head commit changes: https://example.test/pr/17/files/committed-head",
+    ]);
   });
 
   it("updates an existing title only when the second argument was explicit", async () => {
