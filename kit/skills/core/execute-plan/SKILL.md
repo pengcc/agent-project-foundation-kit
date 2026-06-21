@@ -19,7 +19,8 @@ Role Routing:
 Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
 
 
-Use this skill to execute an approved plan safely, in bounded steps, with validation.
+Use this skill to execute an approved plan or eligible Scoped Task Execution Brief safely, in
+bounded steps, with validation.
 
 This is an execution workflow. It does not create a new plan.
 
@@ -31,12 +32,13 @@ When using this skill, act as:
 Implementation Executor
 ```
 
-The Implementation Executor reads an approved plan, verifies that it is executable, executes it in controlled batches, validates changes, pauses on risk or scope drift, and reports the final result.
+The Implementation Executor verifies an approved execution input, executes it in controlled
+batches, validates changes, pauses on risk or scope drift, and reports the final result.
 
 ## Core Boundary
 
 ```txt
-execute-plan = execute approved plan
+execute-plan = execute approved plan or eligible scoped task brief
 plan-with-context = create plan
 docs-first-research = verify technical assumptions
 update-project-memory = update durable project memory
@@ -48,40 +50,73 @@ publish-current-branch = push / PR / merge workflow
 ## Project Memory Context Gate
 
 Before execution, pass the Project Memory Context Gate defined in the `project-memory` skill and
-include its report in the execution context. Confirm that the approved plan still matches current
-project memory and repository evidence. If material drift invalidates the plan, stop and return to
-`plan-with-context`; do not redefine the gate here.
+include its report in the execution context. Confirm that the approved execution input still
+matches current project memory and repository evidence. If material drift invalidates it, stop and
+return to `plan-with-context`; do not redefine the gate here.
 
 ## Required Approval
 
-`execute-plan` only executes an approved plan.
+`execute-plan` requires one of two explicitly approved execution inputs:
 
-Default input should be a plan file path, usually:
+1. an execution-complete saved plan or complete current-conversation plan; or
+2. an eligible Scoped Task Execution Brief.
+
+The default input for normal implementation work is a plan file path, usually:
 
 ```txt
 dev_locals/plans/<plan-file>.md
 ```
 
 A current-conversation plan may also be executed only if it is complete and explicitly approved.
+Do not replace normal planning with a scoped brief merely because a proposed diff appears short.
+Apply `task-execution-classification.md` for scoped-brief eligibility, hard exclusions, and
+reclassification. Normal implementation continues to require a complete approved plan.
 
-If no approved plan exists, stop and recommend:
+If neither approved input exists, stop and recommend:
 
 ```txt
 Suggested workflow: plan-with-context
 ```
 
-## Approved Plan Contract
+## Scoped Task Execution Brief
 
-Treat the approved plan as the execution contract.
+A Scoped Task Execution Brief is a lightweight planning artifact and strict execution contract,
+not planless execution. Accept a saved brief or assemble one inline only when every gate in
+`task-execution-classification.md` passes.
+
+The brief must contain and expose before mutation:
+
+- Goal;
+- Authorization;
+- Allowed Scope;
+- Non-Goals;
+- Validation;
+- Risk and Rollback;
+- STOP Conditions; and
+- Execution Status.
+
+The agent may assemble an inline brief only from explicit authorization for the exact task and
+verified repository facts. A complete current request does not need duplicate confirmation, but
+the brief must still be user-visible in the pre-execution status. Do not invent missing terms,
+silently narrow or expand scope, split hidden work, or use examples or apparent diff size to bypass
+the shared gate.
+
+If any field or eligibility condition is false, ambiguous, unverified, or becomes invalid, stop and
+route to clarification, `docs-first-research`, `plan-with-context`, or `to-work-items` as directed by
+the shared rule. Do not reclassify and continue silently.
+
+## Approved Execution Contract
+
+Treat the approved plan or Scoped Task Execution Brief as the execution contract.
 
 Every changed hunk must map to one of:
 
-- a plan implementation step
-- a plan validation step
+- an approved implementation step or allowed mutation
+- an approved validation step
 - an approved project memory or design-log update
 
-If a needed change is outside the approved plan, pause and ask the user whether to revise the plan
-with `plan-with-context`.
+If a needed change is outside the approved execution contract, pause and ask the user whether to
+revise or create a plan with `plan-with-context`.
 
 If an out-of-scope agent-made change was introduced during execution and can be isolated safely,
 revert that agent-made change before continuing. Do not revert user or pre-existing changes without
@@ -90,15 +125,15 @@ explicit approval.
 Material drift in scope, baseline, validation, architecture, dependencies, risk, file ownership, or
 repository state returns to `plan-with-context`.
 
-If execution reveals material ambiguity in plan interpretation, user intent, scope, safety, files,
-architecture, data, Git/publish, external side effects, irreversible actions, or acceptance
+If execution reveals material ambiguity in contract interpretation, user intent, scope, safety,
+files, architecture, data, Git/publish, external side effects, irreversible actions, or acceptance
 criteria, stop instead of guessing. State the ambiguity, recommend the next interpretation or
 decision, and return to clarification or `plan-with-context`. Use `grill-me` only when ambiguity is
 broad, branching, or decision-heavy.
 
 ## Supporting Skill Activation
 
-`execute-plan` remains the primary workflow during approved-plan execution.
+`execute-plan` remains the primary workflow during approved execution.
 
 Before each step group, classify whether an installed supporting skill applies to a bounded
 substep:
@@ -122,9 +157,9 @@ used, then return to `execute-plan`.
 Do not run publish-current-branch as an internal execution substep. Push, PR, and merge require
 an explicit workflow switch after execution.
 
-Supporting skills must not expand, replace, or override the approved plan boundary. If a supporting
-skill reveals material drift in scope, steps, risk, validation, dependency, configuration,
-architecture, or repository state, pause and return to `plan-with-context`.
+Supporting skills must not expand, replace, or override the approved execution contract. If a
+supporting skill reveals material drift in scope, steps, risk, validation, dependency,
+configuration, architecture, or repository state, pause and return to `plan-with-context`.
 
 ## Generic Codex Mode Boundary
 
@@ -140,7 +175,7 @@ If the user only confirms a generic Codex plan, the agent must restate before ch
 Workflow:
 - Role: Implementation Executor
 - Skill: execute-plan
-- Approved plan:
+- Approved execution input:
 - Scope:
 - Stop conditions:
 ```
@@ -153,7 +188,8 @@ Default mode is:
 strict
 ```
 
-Use `autonomous-within-plan` only when the user explicitly authorizes it.
+Use `autonomous-within-plan` only for an approved plan when the user explicitly authorizes it.
+Scoped Task Execution Briefs always use strict mode.
 
 In autonomous-within-plan mode, the agent may execute inside approved scope, run planned validation, and trigger `docs-first-research` for unverified technical assumptions inside approved scope.
 
@@ -161,7 +197,7 @@ The agent must still pause for scope, risk, step, dependency, configuration, arc
 
 ## Pre-Execution Checklist
 
-Before changing files, read the approved plan and check whether it contains:
+For an approved plan, check before changing files that it contains:
 
 - Goal
 - Scope
@@ -175,9 +211,13 @@ If any critical section is missing, stop and recommend `plan-with-context`.
 
 Do not execute plans marked `incomplete draft` or `blocked`.
 
+For a Scoped Task Execution Brief, verify every eligibility condition and emit every brief field
+before mutation. Missing, ambiguous, or unverified content requires the safer route defined by
+`task-execution-classification.md`.
+
 ## Reviewable Execution Readiness
 
-Before mutation, verify that the approved plan is reviewable and execution-ready:
+Before mutation, verify that the approved execution input is reviewable and execution-ready:
 
 - it identifies one focused execution pass or contains approved work items;
 - the approved current slice is explicit;
@@ -198,27 +238,31 @@ For a clearly small plan created before reviewability decisions were required, s
 single-pass judgment in the pre-execution update. If reviewability is uncertain, stop rather than
 assuming the plan is focused.
 
+A Scoped Task Execution Brief must always be one focused execution pass. It cannot contain or
+replace work items. If decomposition is needed, stop and route to `plan-with-context` or
+`to-work-items`.
+
 ## Pre-Execution Status Update
 
 After completing the applicable pre-execution checks, emit one concise user-visible status update
 before creating a branch, changing files, or performing another execution mutation. Do not require
 one fixed sentence. Cover:
 
-- the approved plan source;
-- whether the plan is complete, current, and explicitly approved;
-- the Project Memory Context Gate result and plan/memory alignment;
+- the approved execution input and authorization source;
+- whether the plan is complete or the brief is eligible, current, and explicitly approved;
+- the Project Memory Context Gate result and execution-input/memory alignment;
 - the relevant repository state;
 - the intended branch strategy;
 - repository-level and current-branch PR state when relevant and checkable;
 - runtime/tooling alignment when the plan or project workflow specifies it;
-- the staged implementation groups derived from the plan;
+- the staged implementation groups derived from the approved input;
 - the reviewability decision and approved current slice;
 - the active stop conditions.
 
 State briefly when a check is not applicable or not checkable, including any material impact. Do
 not claim a check passed when it was not performed. This reporting requirement does not make clean
 synchronized `main`, PR checks, or runtime checks universal; apply them only when required by the
-approved plan or project workflow.
+approved execution input or project workflow.
 
 Local branch creation may be part of local execution setup. It does not authorize push, PR
 creation, merge, release, deployment, or any publish workflow. Push, PR, and merge remain behind
@@ -226,7 +270,7 @@ an explicit switch to `publish-current-branch` after execution.
 
 ## Stepwise Execution
 
-Execute the approved plan in stages.
+Execute the approved contract in stages.
 
 After each reasonable step group, run relevant validation and report the result.
 
@@ -253,7 +297,7 @@ STOP, memory, or publish boundaries.
   Next: <recommended action or workflow>
   ```
 
-- **Final report:** Retain the approved plan, completed scope, changed-file summary, validation,
+- **Final report:** Retain the approved execution input, completed scope, changed-file summary, validation,
   risks or blockers, memory/docs status, Git/publish status, external/global actions, and next
   workflow when applicable. When Git or the UI already exposes exact paths, prefer a file count
   and category summary; list exact paths when they are needed for review, ambiguity resolution, or
@@ -279,9 +323,14 @@ Pause and use `docs-first-research` when uncertain about APIs, versions, depende
 
 If research changes scope, steps, risk, validation, dependency, configuration, or architecture, return to `plan-with-context`.
 
+For a Scoped Task Execution Brief, discovering that external technical research is needed
+invalidates eligibility. Stop and route to `docs-first-research`, then require reclassification and
+approval through `plan-with-context` before execution resumes. Do not research opportunistically
+and continue under the original brief.
+
 ## Validation
 
-Run validation specified by the approved plan.
+Run validation specified by the approved execution contract.
 
 Do not invent validation commands.
 
@@ -300,7 +349,8 @@ project root without explicit user approval.
 
 ## Local Commit Policy
 
-`execute-plan` may create a local commit only when the approved plan explicitly includes a commit step or the user explicitly requested commit as part of execution.
+`execute-plan` may create a local commit only when the approved plan explicitly includes a commit
+step or the user explicitly requested commit as part of the approved execution contract.
 
 `execute-plan` must not push, create PR, merge, release, or deploy.
 
@@ -352,7 +402,7 @@ When execution finishes or pauses, output:
 
 ```txt
 Execution Summary:
-- Plan:
+- Execution input:
 - Execution mode:
 - Completed:
 - Changed files:
