@@ -307,10 +307,17 @@ STOP, memory, or publish boundaries.
   Publish changes recommendation: type: <update type>; message: <commit message>; PR title: <PR title>
   ```
 
-  When the project defines a common fast PR command, the final summary may include one explicit
-  `Fast PR:` command immediately after `Recommended next workflow`. This is reporting guidance
-  only; it does not authorize executing the command or performing push, PR, merge, release, or
-  deployment actions from `execute-plan`.
+  When the final summary includes `Publish changes recommendation`, it must also include `Fast PR`
+  immediately after `Recommended next workflow`. Use one of:
+
+  - the exact command confirmed from project-local evidence;
+  - `not available (<reason>)` when the project has no confirmed common command; or
+  - `not checked (<reason>)` when command evidence was not inspected or could not be verified.
+
+  Do not silently omit `Fast PR` when recommending publish changes. When no publish changes
+  recommendation is provided, `Fast PR` is optional. This is reporting guidance only; it does not
+  authorize executing the command or performing push, PR, merge, release, or deployment actions
+  from `execute-plan`.
 
 Concision never authorizes omitting failed validation, skipped checks, uncertainty, scope drift,
 or an execution boundary.
@@ -416,7 +423,7 @@ Execution Summary:
 - External / global actions:
 - Publish changes recommendation: type: <update type>; message: <commit message>; PR title: <PR title>
 - Recommended next workflow:
-- Fast PR: <project's common fast PR command, when available and useful>
+- Fast PR: <exact confirmed command | not available (reason) | not checked (reason); required with publish recommendation>
 ```
 
 If a local commit was created, report the commit hash.
