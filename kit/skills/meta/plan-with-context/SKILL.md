@@ -19,7 +19,8 @@ Role Routing:
 Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
 
 
-Use this skill to create bounded, executable implementation plans based on real project context.
+Use this skill to classify planning needs and create bounded, executable planning artifacts based
+on real project context.
 
 This is a planning-only workflow. It does not implement changes.
 
@@ -31,7 +32,9 @@ When using this skill, act as:
 Project Planner
 ```
 
-The Project Planner clarifies scope, checks project context, verifies technical assumptions, compares options when needed, recommends the smallest useful path, and produces a plan that can later be executed by `execute-plan`.
+The Project Planner clarifies scope, checks project context, verifies technical assumptions,
+compares options when needed, recommends the smallest useful path, and produces the proportionate
+artifact or routing decision required for safe execution.
 
 ## Required Workflow Chain
 
@@ -150,6 +153,30 @@ A plan must include a recommendation.
 
 Default to the smallest useful, verifiable, reversible option unless project memory or the user goal clearly requires a heavier solution.
 
+## Task Execution Classification
+
+Apply `task-execution-classification.md` after required context, clarification, and research checks
+and before choosing the output artifact. Report one outcome:
+
+1. Direct Answer / No Mutation;
+2. Scoped Task Execution Brief;
+3. Full Saved Plan; or
+4. Work Items through `to-work-items`.
+
+Do not classify by line or file count alone. Use the shared rule's complete scope, risk,
+reviewability, validation, rollback, side-effect, and hard-exclusion gates.
+
+- For Direct Answer / No Mutation, provide the answer and explain that no implementation artifact
+  is needed. Do not mutate files.
+- For a Scoped Task Execution Brief, produce the complete brief structure below. It is lightweight
+  planning, not planless execution.
+- For a Full Saved Plan, retain the complete 13-section structure below.
+- For Work Items, establish the approved overall boundary and route decomposition to
+  `to-work-items`; do not decompose or execute implicitly.
+
+If classification is uncertain, use clarification or `docs-first-research`, then reclassify. Prefer
+the safer heavier artifact when uncertainty remains.
+
 ## Self-Contained Plan Quality
 
 Plans must be executable by a fresh agent that did not see the original conversation.
@@ -170,14 +197,14 @@ conversation.
 
 ## Reviewability and Work-Item Decision
 
-For every non-trivial plan, decide whether the requested work is one focused execution pass or
-requires reviewable work items.
+Apply the shared task-execution classification first. For every non-trivial mutation artifact,
+decide whether the requested work is one focused execution pass or requires reviewable work items.
 
 Use a single focused pass only when the plan has one coherent outcome, a plausible expected
 file/area scope, one compatible validation loop, and a change set that should remain understandable
 and reviewable as one unit. State the reason briefly.
 
-Treat the plan as broad or review-hostile when it has multiple independently reviewable outcomes,
+Treat work as broad or review-hostile when it has multiple independently reviewable outcomes,
 crosses unrelated concerns or safety boundaries, mixes behavior with tooling/runtime/publish work,
 cannot state a plausible file/area scope or validation per slice, or would likely produce a PR that
 is difficult to review as one unit. Do not rely on a numeric-only file or line threshold.
@@ -192,7 +219,7 @@ minimum contract: ID/name, goal, dependency order, expected file/area scope, all
 non-goals, validation, acceptance criteria, STOP conditions, and review/PR boundary. Planning and
 decomposition do not authorize execution.
 
-Every saved plan must include one of:
+Every full saved plan must include one of:
 
 ```txt
 Reviewability decision: single focused pass — <brief justification>
@@ -200,9 +227,11 @@ Reviewability decision: decomposed work items required — <embedded item IDs>
 Reviewability decision: route to to-work-items — <reason>
 ```
 
-## Plan Persistence
+## Planning Artifact Persistence
 
-Save the plan to `dev_locals/plans/` when it is multi-step, executable, cross-session, affects multiple files/modules, affects architecture/dependencies/configuration/deployment/tests/workflows, or is explicitly requested.
+Save a planning artifact to `dev_locals/plans/` when it is multi-step, executable, cross-session,
+affects multiple files/modules, affects architecture/dependencies/configuration/deployment/tests/
+workflows, or is explicitly requested.
 
 Default filename:
 
@@ -210,9 +239,13 @@ Default filename:
 dev_locals/plans/YYYY-MM-DD-short-topic.md
 ```
 
-Plans are local-only and must not be committed.
+Scoped briefs may be presented inline for immediate review. Save them when the user requests
+persistence, cross-session execution is likely, or the active planning workflow already requires a
+saved artifact. A `-brief.md` filename suffix is recommended but not required.
 
-Plans are not continuously maintained after execution.
+Planning artifacts are local-only and must not be committed.
+
+Planning artifacts are not continuously maintained after execution.
 
 Durable results belong in project memory and must be updated through `update-project-memory`.
 
@@ -234,14 +267,44 @@ When planning from a `code-review` report:
 - treat the review report as the primary problem statement
 - read the original PR, diff, commit, branch, package, or reviewed target when available
 - read relevant project memory, architecture, previous plan, or baseline context
-- classify findings into tiny isolated fixes, grouped fixes, and re-plan-required issues
-- recommend direct `execute-plan` only for tiny isolated low-risk fixes after user confirmation
-- use full `plan-with-context` for multi-file, architectural, data, security, migration, workflow, or scope-affecting fixes
+- classify findings with `task-execution-classification.md`
+- use a Scoped Task Execution Brief only when every shared eligibility gate passes
+- use a Full Saved Plan or Work Items for normal, risky, broad, architectural, data, security,
+  migration, workflow, or otherwise excluded work
 - ask user approval before turning review findings into an executable plan
 
-## Saved Plan Structure
+## Planning Artifact Structures
 
-Saved plans must use this structure:
+### Scoped Task Execution Brief
+
+Use this structure only when every shared scoped-brief gate passes:
+
+```md
+# Scoped Task Execution Brief: <title>
+
+## Goal
+
+## Authorization
+
+## Allowed Scope
+
+## Non-Goals
+
+## Validation
+
+## Risk and Rollback
+
+## STOP Conditions
+
+## Execution Status
+```
+
+The brief must be self-contained for a fresh executor, visible before mutation, and explicitly
+approved for execution. Examples never override the shared eligibility gate.
+
+### Full Saved Plan
+
+Full saved plans must use this structure:
 
 ```md
 # Plan: <title>
@@ -305,8 +368,9 @@ execution has not been approved.
 
 ## Output Expectations
 
-When responding, include workflow header, plan status, saved path only if it was actually saved,
-recommendation, blocking questions if any, execution status, and a review-oriented next action.
+When responding, include workflow header, classification outcome, artifact type/status, saved path
+only if it was actually saved, recommendation, blocking questions if any, execution status, and a
+review-oriented next action.
 
 Use the Report Depth Levels from `agent-operating-contract`. Keep simple planning responses brief,
 and use more detail only when scope, risk, ambiguity, or validation complexity requires it.

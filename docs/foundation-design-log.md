@@ -2646,3 +2646,36 @@ kit/rules/docs-first-policy.md
 kit/skills/meta/docs-first-research/SKILL.md
 docs/foundation-design-log.md
 ```
+
+## Task Execution Scale and Scoped Briefs
+
+Accepted implementation result:
+
+1. Add `task-execution-classification.md` as the canonical owner of four outcomes: Direct Answer /
+   No Mutation, Scoped Task Execution Brief, Full Saved Plan, and Work Items.
+2. Classify by scope clarity, risk, reviewability, validation, rollback, side effects, ambiguity,
+   and external-fact needs; never use line/file count or example categories as deciding rules.
+3. Make `plan-with-context` select no artifact, the complete eight-section scoped brief, the
+   existing 13-section full plan, or a route to `to-work-items`.
+4. Make `execute-plan` validate approved full plans and saved/inline scoped briefs against the
+   shared rule while preserving visible pre-execution contracts and strict hunk-to-scope execution.
+5. Keep `to-work-items` canonical for broad/review-hostile decomposition without duplicating the
+   classification taxonomy or gaining execution authority.
+6. Keep scoped briefs unavailable for feature, architecture, broad-refactor, installer,
+   publish/merge/release/deploy, package/dependency/runtime/CI/CD, prompt/metadata,
+   auth/security/permission, data/persistence, external-service, destructive, production, and
+   downstream-template work regardless of size.
+7. Reclassify or stop when scope, risk, assumptions, side effects, validation, or reviewability
+   changes; preserve clarification, docs-first research, project-memory, validation, commit,
+   publish, release, deployment, and STOP boundaries.
+
+Resulting files / changes:
+
+```txt
+kit/rules/task-execution-classification.md
+kit/skills/meta/plan-with-context/SKILL.md
+kit/skills/core/execute-plan/SKILL.md
+kit/skills/core/to-work-items/SKILL.md
+.codex/project/project-decisions.md
+docs/foundation-design-log.md
+```

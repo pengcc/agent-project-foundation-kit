@@ -2644,3 +2644,65 @@ dependency, runtime, or unrelated publish-mode behavior changes.
 - `kit/scripts/publish-changes/merge-pr-flow.mjs`
 - `tests/publish-changes/modes.test.mjs`
 - `kit/skills/core/publish-current-branch/SKILL.md`
+
+## Decision: Task execution uses one shared proportional classification
+
+### Status
+
+Accepted
+
+### Context
+
+Requiring a full saved plan for every mutation adds disproportionate overhead to small, explicit,
+low-risk work, while adding scoped-brief support only to `execute-plan` leaves planning itself too
+heavy. Apparent size cannot be the shortcut: a one-line change may affect installer, publish,
+security, data, permission, runtime, deployment, or destructive side-effect boundaries.
+
+### Decision
+
+Use `kit/rules/task-execution-classification.md` as the canonical task-scale and reviewability
+classification shared by `plan-with-context`, `execute-plan`, and `to-work-items`. It defines four
+outcomes:
+
+1. Direct Answer / No Mutation;
+2. Scoped Task Execution Brief;
+3. Full Saved Plan; and
+4. Work Items.
+
+`plan-with-context` applies the shared model before selecting its output. It may provide no
+implementation artifact, create the complete eight-section Scoped Task Execution Brief, retain the
+current 13-section full plan, or route broad/review-hostile work to `to-work-items`.
+
+`execute-plan` accepts an explicitly approved full plan or scoped brief. It may assemble an inline
+brief only from exact user authorization and verified repository facts, must expose it before
+mutation, and must not invent missing contract terms or silently research, reclassify, decompose,
+or expand the task.
+
+`to-work-items` consumes the shared Work Items outcome and remains the canonical decomposition
+workflow. It does not maintain a separate scale taxonomy, create scoped briefs, execute, publish,
+or update project memory.
+
+Eligibility is semantic and risk-based; line and file counts are supporting evidence only. Feature,
+architecture, broad-refactor, installer, publish/merge/release/deploy, package/dependency/runtime/
+CI/CD, prompt/metadata, auth/security/permission, data/persistence, external-service, destructive,
+production, and downstream-template changes do not qualify regardless of size. Ambiguous scope,
+unknown validation or rollback, or unverified technical assumptions require clarification,
+`docs-first-research`, a full plan, or work items as appropriate.
+
+Scoped briefs remain strict planning artifacts and execution contracts, not planless execution.
+Existing Project Memory Context Gate, clarification, research, project-memory, validation, commit,
+publish, release, deployment, and supporting-skill boundaries remain unchanged.
+
+### Impact
+
+Planning and execution overhead is proportional to verified task scope while high-risk, uncertain,
+or broad work retains full planning or decomposition. One shared owner prevents the three workflows
+from drifting into competing classification models.
+
+### Related Files
+
+- `kit/rules/task-execution-classification.md`
+- `kit/skills/meta/plan-with-context/SKILL.md`
+- `kit/skills/core/execute-plan/SKILL.md`
+- `kit/skills/core/to-work-items/SKILL.md`
+- `docs/foundation-design-log.md`

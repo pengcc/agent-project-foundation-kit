@@ -6,8 +6,8 @@ agent-ready execution steps, vertical slices, or work items for focused `execute
 This is a plan-slicing workflow. It does not implement the work, create GitHub Issues in v1, or
 replace `plan-with-context`.
 
-It is the canonical decomposition workflow for approved plans that are too broad or
-review-hostile for one focused `execute-plan` run.
+It is the canonical decomposition workflow for work classified as broad or review-hostile by
+`task-execution-classification.md`.
 
 ## Role Routing Integration
 
@@ -57,6 +57,10 @@ Before slicing, pass the Project Memory Context Gate defined in the `project-mem
 include its report in the work-item context. Read the complete source plan and verify its status,
 scope, non-goals, baseline, stop conditions, and validation strategy against current repository
 evidence.
+
+Confirm that the source is classified as Work Items under `task-execution-classification.md`.
+Classification belongs to the shared rule; this skill owns decomposition only. Do not maintain a
+second scale taxonomy or turn scoped-brief/full-plan decisions into work-item logic here.
 
 If requirements, acceptance criteria, or architecture choices are materially ambiguous, return to
 `plan-with-context`. Use `docs-first-research` only when slicing depends on unverified external or
@@ -179,10 +183,11 @@ than one item.
 
 ## Workflow Relationships
 
-Use `to-work-items` after `plan-with-context` when a plan is too large for one focused execution
-pass. Each resulting work item should be suitable input for `execute-plan`. Route unclear or
-disputed requirements back to `plan-with-context`. Use `code-review` after one or more work items
-are implemented when review is warranted.
+Use `to-work-items` after `plan-with-context` when the shared classification selects Work Items.
+Each resulting work item should be suitable input for `execute-plan`. Route unclear or disputed
+requirements back to `plan-with-context`; route unverified technical facts to
+`docs-first-research`. Use `code-review` after one or more work items are implemented when review
+is warranted.
 
 ## Quality Checklist
 
