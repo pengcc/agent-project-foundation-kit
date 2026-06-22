@@ -20,6 +20,7 @@ import {
 } from "../../kit/scripts/publish-changes/prompts.mjs";
 import {
   buildScopeSummary,
+  compareScopeSummaries,
   recommendClassification,
   renderScopeSummary,
 } from "../../kit/scripts/publish-changes/scope-summary.mjs";
@@ -562,6 +563,52 @@ describe("scope and validation", () => {
     renderScopeSummary(summary, output);
     expect(messages.join("\n")).toContain("? new file.txt");
     expect(messages.join("\n")).toContain("M tracked.txt");
+  });
+
+  it("compares normalized scope data and bounds difference samples", () => {
+    const preliminary = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "M\told.md\nM\tstatus.md\nM\tline.md",
+      numstat: "1\t0\told.md\n2\t0\tstatus.md\n3\t0\tline.md",
+    });
+    const exact = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "A\tstatus.md\nM\tline.md\nA\tkit/scripts/new-a.mjs\nA\tkit/scripts/new-b.mjs",
+      numstat:
+        "2\t0\tstatus.md\n5\t1\tline.md\n1\t0\tkit/scripts/new-a.mjs\n1\t0\tkit/scripts/new-b.mjs",
+    });
+
+    const comparison = compareScopeSummaries(preliminary, exact, { sampleLimit: 2 });
+
+    expect(comparison.matches).toBe(false);
+    expect(comparison.differences).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("File set differs:"),
+        expect.stringContaining("Status differs:"),
+        expect.stringContaining("Classification totals differ:"),
+        expect.stringContaining("Line summary differs:"),
+        expect.stringContaining("High-risk hints differ:"),
+      ]),
+    );
+    expect(comparison.differences.join("\n")).toContain("more)");
+  });
+
+  it("treats staging an observed untracked file as the same semantic scope", () => {
+    const preliminary = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "?\tnew.md\nM\ttracked.md",
+      numstat: "2\t1\ttracked.md",
+    });
+    const exact = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "A\tnew.md\nM\ttracked.md",
+      numstat: "4\t0\tnew.md\n2\t1\ttracked.md",
+    });
+
+    expect(compareScopeSummaries(preliminary, exact)).toEqual({
+      matches: true,
+      differences: [],
+    });
   });
 
   it("rejects failed and pending checks for immediate merge", () => {
