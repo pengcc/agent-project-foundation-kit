@@ -711,6 +711,30 @@ or current package scripts, stop and request user review rather than choosing th
 - move obsolete artifacts to an archive path when relocation improves clarity without losing
   useful history
 
+## Avoid: Continuing a plan after its objective is satisfied
+
+### Context
+
+The existing-project upgrade initiative reached its safety objective after WI-1/WI-2 and
+downstream validation, but planning continued into optional runtime architecture because later
+items remained in the original plan.
+
+### Lesson
+
+A multi-work-item plan is not a completion checklist. Before continuing a deferred item, compare
+the original objective and non-goals with completed evidence. If the objective is already
+satisfied, close out or re-scope. Continue only for a concrete unresolved gap with clear value.
+
+### Reuse guidance
+
+For old or multi-work-item plans:
+
+- summarize completed evidence;
+- classify remaining work as must-have, nice-to-have, or future;
+- treat architecture, automation, and convenience work as optional unless evidence makes it
+  necessary;
+- use relevant lessons as stop conditions before planning the next slice.
+
 ## Keep: Deliberately distill generic lessons while retaining source history
 
 ### Context
