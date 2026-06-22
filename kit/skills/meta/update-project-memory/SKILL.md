@@ -311,7 +311,14 @@ Validation:
 
 External / global actions:
 - None
+
+Publish changes recommendation: <shared-contract value>
+Recommended next workflow: publish-current-branch
+Fast PR: <shared-contract value>
 ```
+
+When at least one project-memory file changed, apply the Publishable Change Handoff from
+`agent-operating-contract`. The no-update output below does not trigger that handoff.
 
 If no update is needed, say:
 

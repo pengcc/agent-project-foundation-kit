@@ -393,6 +393,8 @@ Recommended next workflow:
 Project memory update needed:
 ```
 
+For a completed publishable skill package, apply the Publishable Change Handoff from `agent-operating-contract`; drafts, plans, examples, local notes, and `dev_locals/**` work do not trigger it.
+
 ## Project Memory Follow-Up
 
 If a new or refined skill creates durable facts, decisions, or reusable lessons, recommend

@@ -325,6 +325,63 @@ describe("source repository metadata hygiene", () => {
 });
 
 describe("source repository reference hygiene", () => {
+  it("keeps the publishable change handoff canonical with concise workflow pointers", async () => {
+    const paths = [
+      "AGENTS.md",
+      "kit/rules/agent-operating-contract.md",
+      "kit/skills/core/execute-plan/SKILL.md",
+      "kit/skills/core/publish-current-branch/SKILL.md",
+      "kit/skills/meta/update-project-memory/SKILL.md",
+      "kit/skills/meta/writing-great-skills/SKILL.md",
+    ];
+    const documents = Object.fromEntries(
+      await Promise.all(paths.map(async (path) => [path, await readFile(path, "utf8")])),
+    );
+    const contract = documents["kit/rules/agent-operating-contract.md"];
+
+    expect(contract.match(/^## Publishable Change Handoff$/gm)).toHaveLength(1);
+    expect(contract).toContain(
+      "Whenever `Publish changes recommendation` is present, `Fast PR` is required; otherwise `Fast PR`",
+    );
+    expect(contract).toContain("not available (<reason>)");
+    expect(contract).toContain("not checked (<reason>)");
+    expect(contract).toContain("Do not guess a command");
+    expect(contract).toContain(
+      "Publishable changes: none; local-only artifacts changed: <paths or summary>",
+    );
+    expect(contract).toContain("When publishable changes and local-only artifacts both changed");
+    expect(contract).toContain("does not authorize commit, push, PR creation or update, merge");
+    expect(contract).toContain(
+      "`publish-current-branch` remains the only workflow authorized to push",
+    );
+
+    for (const path of [
+      "AGENTS.md",
+      "kit/skills/core/execute-plan/SKILL.md",
+      "kit/skills/meta/update-project-memory/SKILL.md",
+      "kit/skills/meta/writing-great-skills/SKILL.md",
+    ]) {
+      expect(documents[path], path).toContain("Publishable Change Handoff");
+      expect(documents[path], path).not.toContain(
+        "Whenever `Publish changes recommendation` is present, `Fast PR` is required",
+      );
+    }
+
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
+      "Fast PR: <shared-contract value; include only when Publish changes recommendation is present>",
+    );
+    expect(documents["AGENTS.md"]).toContain(
+      "recommended commit message when publishable changes exist",
+    );
+    expect(documents["kit/skills/meta/update-project-memory/SKILL.md"]).toContain(
+      "The no-update output below does not trigger that handoff",
+    );
+    expect(documents["kit/skills/meta/writing-great-skills/SKILL.md"].match(/Fast PR/g)).toBeNull();
+    expect(documents["kit/skills/core/publish-current-branch/SKILL.md"]).not.toContain(
+      "Publishable Change Handoff",
+    );
+  });
+
   it("keeps the explicit target reference guardrail canonical with concise pointers", async () => {
     const paths = [
       "AGENTS.md",

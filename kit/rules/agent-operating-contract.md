@@ -290,3 +290,39 @@ External / global actions:
 
 If any external or global action was performed with explicit approval, list the command or change,
 approval, reason, and result.
+
+## Publishable Change Handoff
+
+When a non-publish workflow creates or recommends committing publishable repository changes and
+leaves them for later publication, its final report must include:
+
+```txt
+Publish changes recommendation: type: <small safe update | normal update | significant / high-impact update>; message: <commit message>; PR title: <PR title>
+Recommended next workflow: publish-current-branch
+Fast PR: <exact confirmed command | not available (<reason>) | not checked (<reason>)>
+```
+
+Whenever `Publish changes recommendation` is present, `Fast PR` is required; otherwise `Fast PR`
+is not required. An exact command must come from current project-local evidence such as root
+`AGENTS.md`, project memory, package scripts, or installed project scripts. Use
+`not checked (<reason>)` when that evidence was not inspected or could not be verified. Use
+`not available (<reason>)` when inspected project sources provide no common fast-publish command.
+Do not guess a command.
+
+This handoff does not apply when the only outputs are local-only artifacts, including
+`dev_locals/**` plans, research notes, handoffs, scratch files, execution logs, dry-run reports,
+temporary notes, or unsaved conversation text, unless the project explicitly marks an artifact as
+publishable. When only local-only artifacts changed, report:
+
+```txt
+Publishable changes: none; local-only artifacts changed: <paths or summary>
+```
+
+When publishable changes and local-only artifacts both changed, include the handoff for the
+publishable scope and report the local-only artifacts separately. Do not include local-only
+artifacts in the proposed commit or Fast PR scope.
+
+Do not run the Fast PR command without an explicit switch to `publish-current-branch`. This
+handoff does not authorize commit, push, PR creation or update, merge, release, or deployment.
+`publish-current-branch` remains the only workflow authorized to push, create or update a PR, or
+merge, and its own factual Publish Summary is outside this pre-publication handoff.

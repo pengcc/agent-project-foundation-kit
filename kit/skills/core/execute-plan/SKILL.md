@@ -301,23 +301,8 @@ STOP, memory, or publish boundaries.
   risks or blockers, memory/docs status, Git/publish status, external/global actions, and next
   workflow when applicable. When Git or the UI already exposes exact paths, prefer a file count
   and category summary; list exact paths when they are needed for review, ambiguity resolution, or
-  safe follow-up. Group publish recommendations near the end as one compact line:
-
-  ```txt
-  Publish changes recommendation: type: <update type>; message: <commit message>; PR title: <PR title>
-  ```
-
-  When the final summary includes `Publish changes recommendation`, it must also include `Fast PR`
-  immediately after `Recommended next workflow`. Use one of:
-
-  - the exact command confirmed from project-local evidence;
-  - `not available (<reason>)` when the project has no confirmed common command; or
-  - `not checked (<reason>)` when command evidence was not inspected or could not be verified.
-
-  Do not silently omit `Fast PR` when recommending publish changes. When no publish changes
-  recommendation is provided, `Fast PR` is optional. This is reporting guidance only; it does not
-  authorize executing the command or performing push, PR, merge, release, or deployment actions
-  from `execute-plan`.
+  safe follow-up. Apply the Publishable Change Handoff from `agent-operating-contract` for
+  publishable changes, including its local-only boundary and publish authorization limits.
 
 Concision never authorizes omitting failed validation, skipped checks, uncertainty, scope drift,
 or an execution boundary.
@@ -421,16 +406,15 @@ Execution Summary:
 - Quality / Constraints Followed:
 - Project memory update check:
 - External / global actions:
-- Publish changes recommendation: type: <update type>; message: <commit message>; PR title: <PR title>
-- Recommended next workflow:
-- Fast PR: <exact confirmed command | not available (reason) | not checked (reason); required with publish recommendation>
+- Publish changes recommendation: <shared-contract value when applicable>
+- Recommended next workflow: <publish-current-branch when the shared handoff applies; otherwise the applicable workflow>
+- Fast PR: <shared-contract value; include only when Publish changes recommendation is present>
 ```
 
 If a local commit was created, report the commit hash.
 
-If publish is recommended, recommend `publish-current-branch`.
-
-Do not run a reported `Fast PR` command from `execute-plan`; publishing requires explicit user
-authorization and the matching publish workflow.
+Include the three publish handoff fields only when required by the shared contract. Otherwise use
+its local-only report when applicable. Publishing still requires explicit user authorization and
+the matching `publish-current-branch` workflow.
 
 If project memory updates are needed, recommend `update-project-memory`.
