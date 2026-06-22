@@ -121,12 +121,21 @@ export function compareScopeSummaries(preliminary, exact, { sampleLimit = 5 } = 
     preliminary.files.filter((file) => file.status === "?").map((file) => file.path),
   );
   const exactLinesByPath = new Map(exact.lineEntries.map((entry) => [entry.path, entry]));
-  const exactUntrackedLines = [...preliminaryUntrackedPaths].reduce(
-    (summary, path) => {
+  const untrackedLineContributions = [...preliminaryUntrackedPaths]
+    .sort((left, right) => left.localeCompare(right))
+    .map((path) => {
       const entry = exactLinesByPath.get(path);
       return {
-        added: summary.added + (entry?.added ?? 0),
-        deleted: summary.deleted + (entry?.deleted ?? 0),
+        path,
+        added: entry?.added ?? 0,
+        deleted: entry?.deleted ?? 0,
+      };
+    });
+  const exactUntrackedLines = untrackedLineContributions.reduce(
+    (summary, path) => {
+      return {
+        added: summary.added + path.added,
+        deleted: summary.deleted + path.deleted,
       };
     },
     { added: 0, deleted: 0 },
@@ -152,7 +161,11 @@ export function compareScopeSummaries(preliminary, exact, { sampleLimit = 5 } = 
     );
   }
 
-  return { matches: differences.length === 0, differences };
+  return {
+    matches: differences.length === 0,
+    differences,
+    untrackedLineContributions,
+  };
 }
 
 export function renderScopeSummary(

@@ -14,6 +14,33 @@ export async function assertHeadFingerprint(git, expected, message) {
   }
 }
 
+function renderUntrackedLineContributions(output, contributions, sampleLimit = 3) {
+  if (!contributions.length) return;
+  if (contributions.length === 1) {
+    const [entry] = contributions;
+    output.info(
+      `Exact scope includes staged untracked file content: +${entry.added}/-${entry.deleted} from ${entry.path}.`,
+    );
+    return;
+  }
+
+  const total = contributions.reduce(
+    (summary, entry) => ({
+      added: summary.added + entry.added,
+      deleted: summary.deleted + entry.deleted,
+    }),
+    { added: 0, deleted: 0 },
+  );
+  const sample = contributions
+    .slice(0, sampleLimit)
+    .map((entry) => `+${entry.added}/-${entry.deleted} ${entry.path}`)
+    .join("; ");
+  const omitted = contributions.length - sampleLimit;
+  output.info(
+    `Exact scope includes staged untracked file content from ${contributions.length} files (total +${total.added}/-${total.deleted}): ${sample}${omitted > 0 ? `; ... (+${omitted} more)` : ""}.`,
+  );
+}
+
 function validateOrRenderExactScope({ scope, preliminaryScope, output, showDiff }) {
   if (!preliminaryScope) {
     renderScopeSummary(scope, output, {
@@ -35,6 +62,7 @@ function validateOrRenderExactScope({ scope, preliminaryScope, output, showDiff 
       ].join("\n"),
     );
   }
+  renderUntrackedLineContributions(output, comparison.untrackedLineContributions);
   output.success("Scope validation passed: exact publish scope matches preliminary summary.");
 }
 

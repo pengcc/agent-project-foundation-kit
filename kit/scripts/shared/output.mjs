@@ -11,22 +11,31 @@ export function createOutput({
   env = process.env,
   theme = DEFAULT_OUTPUT_THEME,
 } = {}) {
+  let hasActiveStep = false;
   const streamFor = (level) => (["ERROR", "DANGER", "WARNING"].includes(level) ? stderr : stdout);
   const format = (level, message, stream = streamFor(level)) => {
     const label = `[${level}]`;
-    if (!stream.isTTY || env.NO_COLOR !== undefined) return `${label} ${message}`;
-    const style = theme.levels[level];
-    const color = ansiColor(style.color);
-    const coloredLabel = `\u001B[1;${color}m${label}`;
-    if (style.fullLine) {
-      return `${coloredLabel}\u001B[22m ${message}\u001B[0m`;
+    let rendered;
+    if (!stream.isTTY || env.NO_COLOR !== undefined) rendered = `${label} ${message}`;
+    else {
+      const style = theme.levels[level];
+      const color = ansiColor(style.color);
+      const coloredLabel = `\u001B[1;${color}m${label}`;
+      rendered = style.fullLine
+        ? `${coloredLabel}\u001B[22m ${message}\u001B[0m`
+        : `${coloredLabel}\u001B[0m ${message}`;
     }
-    return `${coloredLabel}\u001B[0m ${message}`;
+    if (level === "STEP" || !hasActiveStep) return rendered;
+    return rendered
+      .split("\n")
+      .map((line) => `  ${line}`)
+      .join("\n");
   };
   const write = (level, message) => {
     if (level === "DEBUG" && !verbose) return;
     const stream = streamFor(level);
     stream.write(`${format(level, message, stream)}\n`);
+    if (level === "STEP") hasActiveStep = true;
   };
   const command = (label, commandText) => {
     const stream = streamFor("INFO");

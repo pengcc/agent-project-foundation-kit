@@ -215,27 +215,48 @@ describe("interactive prompts and output", () => {
     createOutput({ stdout: plain, stderr: plain, env: {} }).success("Plain success");
 
     expect(tty.write.mock.calls[0][0]).toBe("\u001B[1;94m[STEP]\u001B[22m Colored step\u001B[0m\n");
-    expect(tty.write.mock.calls[1][0]).toBe("\u001B[1;96m[INFO]\u001B[0m Colored info\n");
+    expect(tty.write.mock.calls[1][0]).toBe("  \u001B[1;96m[INFO]\u001B[0m Colored info\n");
     expect(tty.write.mock.calls[2][0]).toBe(
-      "\u001B[1;38;2;243;156;18m[WARNING]\u001B[22m Colored warning\u001B[0m\n",
+      "  \u001B[1;38;2;243;156;18m[WARNING]\u001B[22m Colored warning\u001B[0m\n",
     );
     expect(tty.write.mock.calls[3][0]).toBe(
-      "\u001B[1;91m[ERROR]\u001B[22m Colored error\u001B[0m\n",
+      "  \u001B[1;91m[ERROR]\u001B[22m Colored error\u001B[0m\n",
     );
     expect(tty.write.mock.calls[4][0]).toBe(
-      "\u001B[1;91m[DANGER]\u001B[22m Colored danger\u001B[0m\n",
+      "  \u001B[1;91m[DANGER]\u001B[22m Colored danger\u001B[0m\n",
     );
     expect(tty.write.mock.calls[5][0]).toBe(
-      "\u001B[1;95m[PROMPT]\u001B[22m Colored prompt\u001B[0m\n",
+      "  \u001B[1;95m[PROMPT]\u001B[22m Colored prompt\u001B[0m\n",
     );
-    expect(tty.write.mock.calls[6][0]).toBe("\u001B[1;32m[SUCCESS]\u001B[0m Colored success\n");
+    expect(tty.write.mock.calls[6][0]).toBe("  \u001B[1;32m[SUCCESS]\u001B[0m Colored success\n");
     expect(tty.write.mock.calls[7][0]).toBe(
-      "\u001B[1;38;2;221;151;108m[SKIPPED]\u001B[22m Colored skipped\u001B[0m\n",
+      "  \u001B[1;38;2;221;151;108m[SKIPPED]\u001B[22m Colored skipped\u001B[0m\n",
     );
-    expect(tty.write.mock.calls[8][0]).toBe("\u001B[1;90m[DEBUG]\u001B[0m Colored debug\n");
+    expect(tty.write.mock.calls[8][0]).toBe("  \u001B[1;90m[DEBUG]\u001B[0m Colored debug\n");
     expect(plain.write).toHaveBeenCalledWith("[SUCCESS] Plain success\n");
     expect(tty.write.mock.calls[0][0]).toContain("[STEP]\u001B[22m Colored step");
     expect(tty.write.mock.calls[0][0]).not.toContain("\u001B[1;94mColored step");
+  });
+
+  it("indents non-step output and multiline continuations under the active step", () => {
+    const stream = { isTTY: false, write: vi.fn() };
+    const output = createOutput({ stdout: stream, stderr: stream, env: {} });
+
+    output.info("Before step");
+    output.step("Scope summary");
+    output.info("Files:\n  M file.mjs");
+    output.success("Validated");
+    output.step("Next step");
+    output.warning("Review required");
+
+    expect(stream.write.mock.calls.map(([text]) => text)).toEqual([
+      "[INFO] Before step\n",
+      "[STEP] Scope summary\n",
+      "  [INFO] Files:\n    M file.mjs\n",
+      "  [SUCCESS] Validated\n",
+      "[STEP] Next step\n",
+      "  [WARNING] Review required\n",
+    ]);
   });
 
   it("uses distinct styles for STEP/INFO and WARNING/SKIPPED", () => {
@@ -608,6 +629,7 @@ describe("scope and validation", () => {
     expect(compareScopeSummaries(preliminary, exact)).toEqual({
       matches: true,
       differences: [],
+      untrackedLineContributions: [{ path: "new.md", added: 4, deleted: 0 }],
     });
   });
 

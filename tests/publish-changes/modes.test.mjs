@@ -201,6 +201,40 @@ describe("PR-only flow", () => {
     ).toHaveLength(1);
   });
 
+  it("reports exact staged line contributions for untracked files before success", async () => {
+    const harness = createPrOnlyHarness();
+    harness.git.status = async () => "?? new.md";
+    harness.git.statusZ = async () => "?? new.md\0";
+    harness.git.hashFiles = async () => "new-md-hash";
+    harness.git.untracked = async () => "new.md";
+    harness.git.diff = async (args) => {
+      if (args.includes("--binary")) return "";
+      if (args.includes("--cached") && args.includes("--name-status")) return "A\tnew.md";
+      if (args.includes("--cached") && args.includes("--numstat")) return "4\t0\tnew.md";
+      if (args.includes("--cached")) return "staged new.md content";
+      return "";
+    };
+
+    await runPrOnlyFlow({
+      ...harness,
+      options: prOnlyOptions(),
+      env: {},
+    });
+
+    expect(harness.output.messages).toContainEqual([
+      "INFO",
+      "Exact scope includes staged untracked file content: +4/-0 from new.md.",
+    ]);
+    const contributionIndex = harness.output.messages.findIndex(([, message]) =>
+      message.includes("staged untracked file content"),
+    );
+    const successIndex = harness.output.messages.findIndex(([, message]) =>
+      message.includes("Scope validation passed"),
+    );
+    expect(contributionIndex).toBeGreaterThanOrEqual(0);
+    expect(contributionIndex).toBeLessThan(successIndex);
+  });
+
   it("prompts only for a missing commit message when uncommitted work exists", async () => {
     const harness = createPrOnlyHarness();
     await runPrOnlyFlow({
