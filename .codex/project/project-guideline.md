@@ -426,13 +426,22 @@ Maintained workflow tooling boundary:
 - `pnpm publish:merge-pr` does not perform remote PR diff secret scanning.
 - `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
   installation path.
+- Successful apply writes a deterministic schema-v1 installation manifest at
+  `.codex/foundation-kit/installation-manifest.json`. Its SHA-256 records are baseline evidence,
+  not overwrite authorization; source-controlled ownership policy remains authoritative.
 - The installer supports repeatable exact `--include-optional <name>` selection from
   `kit/optional-skills/`, with selected packages mapped only to `.codex/skills/engineering/`.
-- `--apply --skip-conflicts` writes only genuinely new mapped files and never overwrites an
-  existing target; identical files are skipped and differences remain review items.
-- Existing project memory is preserved and differing `AGENTS.md` remains a manual merge candidate
-  in safe mode. Project-owned `.codex/skills/project/` is outside installer inspection and
+- WI-1 existing-project apply is safe-add-only for target content. It writes only genuinely new
+  mapped files, never replaces an existing target, and keeps kit-managed replacement report-only
+  even when `--overwrite-conflicts` is supplied.
+- During explicit apply, exact unchanged baseline-adoptable kit-managed files may be adopted into
+  the installation manifest without rewriting their target bytes.
+- Project memory, project-owned publish config, workflow scripts and other manual-risk paths,
+  mixed entrypoints/config, and unclaimed project skills are not silently claimed as replaceable
+  kit baselines. Project-owned `.codex/skills/project/` remains outside installer inspection and
   collision handling.
+- Malformed or source-policy-conflicting installation manifests block apply before mapped target
+  writes.
 - Skill `metadata.yml` files should remain single YAML metadata documents, with source-repository
   tests covering parse hygiene.
 - Installer tree mapping excludes local OS junk files such as `.DS_Store`, `Thumbs.db`,
@@ -600,11 +609,18 @@ Current `install-foundation-kit.mjs` purpose:
 - default `--project-mode` to `auto`, resolving project signals or conflicts to existing-like
   caution and empty conflict-free targets to new-like behavior
 - support explicit `new` and `existing` modes without changing file mappings
-- block existing-like conflict apply before staging unless `--overwrite-conflicts` is supplied
+- block existing-like conflict apply before staging; `--overwrite-conflicts` does not authorize
+  existing-project replacement during WI-1
 - support `--apply --skip-conflicts` as a zero-overwrite new-files-only apply path
-- classify mapped files as `new`, `existing-identical`, or `existing-different`, with separate
-  ownership handling for project memory, `AGENTS.md`, workflow scripts, reusable files, and
-  selected optional skills
+- classify content state separately from source-controlled ownership and risk, producing
+  `SAFE_ADD`, `KIT_MANAGED_REPLACE`, `PROJECT_OWNED`, `MIXED_AGENT_MERGE`, or `BLOCKED_MANUAL`
+  review outcomes plus unchanged no-op entries
+- use `.codex/foundation-kit/installation-manifest.json` as SHA-256 baseline evidence for eligible
+  kit-managed full-file content, while rejecting malformed manifests and ownership claims that
+  conflict with source policy before apply writes
+- keep existing-project mapped target writes safe-add-only during WI-1; exact unchanged eligible
+  kit-managed files may be adopted into the manifest during explicit apply, while replacement of
+  existing files remains report-only and deferred
 - report existing-different `.codex/scripts/*` as workflow-script merge items while preserving
   new-script installation, identical skips, safe apply zero-overwrite, and explicit overwrite
   safeguards
@@ -613,7 +629,8 @@ Current `install-foundation-kit.mjs` purpose:
 - collision-check selected optional skills only against kit-managed core, meta, and engineering
   paths; never inspect or collision-check `.codex/skills/project/`
 - keep conflict display, strong warning, typed confirmation, verified backup, plan revalidation,
-  and overwrite mandatory after explicit overwrite authorization
+  and overwrite safeguards for the explicit new-project replacement path; existing-project
+  replacement cannot use that authorization during WI-1
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
 - map project templates to `.codex/project/`
 - map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/config/`,

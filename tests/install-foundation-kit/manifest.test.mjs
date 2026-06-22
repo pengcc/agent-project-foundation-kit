@@ -262,6 +262,7 @@ describe("installation manifest", () => {
 
   it("reports invalid manifests and blocks apply before target writes", async () => {
     const fixture = await workspace("manifest-invalid");
+    const output = createOutput();
     await installFresh(fixture);
     await writeFile(resolve(fixture.targetRoot, INSTALLATION_MANIFEST_RELATIVE), "{not json\n");
     await writeFile(resolve(fixture.kitRoot, "rules/new.md"), "new rule\n");
@@ -272,8 +273,12 @@ describe("installation manifest", () => {
       true,
     );
     await expect(
-      run(fixture, { options: { apply: true, skipConflicts: true } }),
+      run(fixture, { options: { apply: true, skipConflicts: true }, output }),
     ).rejects.toMatchObject({ type: "INVALID_INSTALLATION_MANIFEST" });
+    expect(output.messages).toContainEqual([
+      "DANGER",
+      "Install blocked: the installation manifest is invalid or conflicts with source policy; no target files were written.",
+    ]);
     await expect(
       readFile(resolve(fixture.targetRoot, ".codex/rules/new.md")),
     ).rejects.toMatchObject({ code: "ENOENT" });
