@@ -78,6 +78,30 @@ export async function atomicCopyIntoTarget({
   }
 }
 
+export async function atomicWriteTextIntoTarget({
+  contents,
+  mode,
+  targetRoot,
+  targetRelative,
+  signal,
+}) {
+  throwIfAborted(signal);
+  assertRelativePathSafe(targetRelative, "Target path");
+  await assertNoTargetSymlinks(targetRoot, targetRelative);
+  const destination = resolve(targetRoot, targetRelative);
+  assertInside(targetRoot, destination, "Target path");
+  const temporary = `${destination}.foundation-kit-${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, contents, "utf8");
+    await chmod(temporary, mode);
+    throwIfAborted(signal);
+    await assertNoTargetSymlinks(targetRoot, targetRelative);
+    await rename(temporary, destination);
+  } finally {
+    await rm(temporary, { force: true });
+  }
+}
+
 export async function walkRegularFiles(root, { boundary = root } = {}) {
   const files = [];
   async function visit(directory) {

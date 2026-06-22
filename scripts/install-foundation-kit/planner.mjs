@@ -6,8 +6,9 @@ import { loadInstallationManifest } from "./installation-manifest.mjs";
 import { buildMappings } from "./mapping.mjs";
 import { isManifestManaged, OWNERSHIP, ownershipPolicyFor, RISK } from "./ownership-policy.mjs";
 import { assertInside, assertNoTargetSymlinks, assertRelativePathSafe } from "./path-boundary.mjs";
+import { planPublishAliases, publishAliasPlanFingerprint } from "./publish-aliases.mjs";
 
-function planFingerprint(entries, installationManifest) {
+function planFingerprint(entries, installationManifest, publishAliases) {
   return JSON.stringify({
     installationManifest: {
       status: installationManifest.status,
@@ -34,6 +35,7 @@ function planFingerprint(entries, installationManifest) {
       action: entry.action,
       optionalName: entry.optionalName ?? "",
     })),
+    publishAliases: publishAliasPlanFingerprint(publishAliases),
   });
 }
 
@@ -337,10 +339,12 @@ export async function buildInstallPlan({ kitRoot, targetRoot, includeOptional = 
   entries.push(...(await obsoleteEntries({ mappings, targetRoot, installationManifest })));
   entries.sort((left, right) => left.targetRelative.localeCompare(right.targetRelative));
   const frozenEntries = entries.map((entry) => Object.freeze(entry));
+  const publishAliases = await planPublishAliases(targetRoot);
   return Object.freeze({
     entries: Object.freeze(frozenEntries),
     installationManifest,
-    fingerprint: planFingerprint(frozenEntries, installationManifest),
+    publishAliases,
+    fingerprint: planFingerprint(frozenEntries, installationManifest, publishAliases),
     ...summaryFor(frozenEntries, includeOptional),
   });
 }

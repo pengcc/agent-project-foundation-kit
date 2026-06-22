@@ -17,7 +17,7 @@ export async function chooseBackupRelative(targetRoot, now = () => new Date()) {
   return candidate;
 }
 
-export function createBackupManifest({ plan, createdAt }) {
+export function createBackupManifest({ plan, createdAt, supplementalEntries = [] }) {
   return {
     version: 1,
     createdAt,
@@ -31,7 +31,15 @@ export function createBackupManifest({ plan, createdAt }) {
         originalSha256: entry.targetSha256,
         replacementSha256: entry.sourceSha256,
       })),
+    supplementalEntries: supplementalEntries.map((entry) => ({
+      target: entry.targetRelative,
+      backup: entry.targetRelative,
+      source: entry.source,
+      originalSha256: entry.originalSha256,
+      replacementSha256: entry.replacementSha256,
+    })),
     completedTargets: [],
+    completedSupplementalTargets: [],
   };
 }
 
@@ -39,21 +47,33 @@ export async function prepareBackupSnapshots({
   plan,
   targetRoot,
   runtimeRoot,
+  supplementalEntries = [],
   now = () => new Date(),
   signal,
 }) {
   const conflicts = plan.entries.filter((entry) => entry.contentState === "existing-different");
-  if (!conflicts.length) return null;
+  if (!conflicts.length && !supplementalEntries.length) return null;
   const backupRelative = await chooseBackupRelative(targetRoot, now);
   const snapshotRoot = resolve(runtimeRoot, "backup-snapshot");
-  const manifest = createBackupManifest({ plan, createdAt: now().toISOString() });
-  for (const entry of conflicts) {
+  const manifest = createBackupManifest({
+    plan,
+    createdAt: now().toISOString(),
+    supplementalEntries,
+  });
+  const snapshots = [
+    ...conflicts.map((entry) => ({
+      targetRelative: entry.targetRelative,
+      originalSha256: entry.targetSha256,
+    })),
+    ...supplementalEntries,
+  ];
+  for (const entry of snapshots) {
     throwIfAborted(signal);
     const source = resolve(targetRoot, entry.targetRelative);
     const snapshot = resolve(snapshotRoot, entry.targetRelative);
     assertInside(snapshotRoot, snapshot, "Backup snapshot path");
     await copyPreserved(source, snapshot);
-    if ((await hashFile(snapshot)) !== entry.targetSha256) {
+    if ((await hashFile(snapshot)) !== entry.originalSha256) {
       throw new InstallerError(
         "BACKUP_VERIFICATION_FAILED",
         `Backup snapshot hash mismatch: ${entry.targetRelative}`,
@@ -72,7 +92,7 @@ export async function materializeBackup({ prepared, targetRoot, signal }) {
   assertInside(targetRoot, backupRoot, "Backup root");
   await mkdir(backupRoot, { recursive: true });
   await assertNoTargetSymlinks(targetRoot, `${prepared.backupRelative}/manifest.json`);
-  for (const entry of prepared.manifest.entries) {
+  for (const entry of [...prepared.manifest.entries, ...prepared.manifest.supplementalEntries]) {
     throwIfAborted(signal);
     const source = resolve(prepared.snapshotRoot, entry.backup);
     const destination = resolve(backupRoot, entry.backup);

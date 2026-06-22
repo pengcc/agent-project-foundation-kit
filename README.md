@@ -47,8 +47,9 @@ before the Node publish tests, installer tests, and whitespace validation.
 
 Biome is a source-repo quality gate for the foundation kit, not a downstream installation
 requirement. Source checks cover installable files under `kit/`, including scripts later copied to
-`.codex/scripts/`, before they are published or installed. The installer does not install Biome,
-create Biome configuration, or modify target `package.json`. If a downstream project has no
+`.codex/scripts/`, before they are published or installed. The installer does not install Biome or
+create Biome configuration. Its only `package.json` convenience is safely adding missing default
+publish aliases without replacing conflicting values. If a downstream project has no
 formatter/linter, `initialize-project-context` may recommend Biome as a manual setup task; it does
 not require or install it.
 
@@ -83,7 +84,9 @@ For conflicting files, Node apply requires the exact `INSTALL_WITH_BACKUP` token
 or piped input. It stages and verifies all replacements and backup snapshots under
 `dev_locals/workflow-tmp/` and revalidates the plan before the first downstream write. Verified
 backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` with a
-`manifest.json`. The installer does not create or modify downstream `package.json`.
+`manifest.json`. For a valid existing downstream `package.json`, the installer may safely add
+missing default publish aliases. It never creates or repairs `package.json`, and it preserves
+same-name aliases with different values.
 
 Successful apply creates or updates a separate stable installation baseline at
 `.codex/foundation-kit/installation-manifest.json`. This deterministic schema-v1 manifest stores
@@ -265,14 +268,15 @@ node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
 node .codex/scripts/publish-changes.mjs --mode merge-pr --auto-merge 123
 ```
 
-Run these commands from the target project root. Existing projects may add equivalent
-`package.json` aliases manually when they fit local package-manager and script conventions. The
-installer does not add aliases and does not create a `package.json` solely for shortcuts.
-An optional downstream alias equivalent to `publish:merge-pr:auto` is manual setup only.
+Run these commands from the target project root. For a valid existing `package.json`, installer
+dry-run reports and apply safely adds missing `publish:changes`, `publish:pr-only`,
+`publish:merge-pr`, and `publish:merge-pr:auto` aliases. Existing aliases with different values
+are reported and preserved. The installer does not create or repair `package.json` solely for
+these shortcuts.
 
-The source repository uses package-managed `yaml` for policy loading. The installer does not
-create or modify a downstream `package.json`; if `yaml` is unavailable downstream, the Node CLI
-ignores the external YAML file, warns clearly, and uses built-in conservative defaults.
+The source repository uses package-managed `yaml` for policy loading. The installer does not add
+downstream dependencies; if `yaml` is unavailable downstream, the Node CLI ignores the external
+YAML file, warns clearly, and uses built-in conservative defaults.
 
 `kit/config/publish-cli-theme.json` is the source of truth for publish CLI level colors and
 label-only versus full-line rendering. Installed projects receive the same file at

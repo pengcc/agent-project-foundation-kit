@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { InstallerError } from "../../scripts/install-foundation-kit/errors.mjs";
 import { runInstallerFlow } from "../../scripts/install-foundation-kit/flow.mjs";
 import { hashFile } from "../../scripts/install-foundation-kit/fs-safe.mjs";
+import { PUBLISH_PACKAGE_ALIASES } from "../../scripts/install-foundation-kit/publish-aliases.mjs";
 import { commandRunner, createOutput, createTestWorkspace } from "./helpers.mjs";
 
 const workspaces = [];
@@ -72,7 +73,6 @@ describe("installer flow", () => {
   it("applies a fresh install, preserves executable mode, and omits source-only files", async () => {
     const fixture = await workspace("fresh-apply");
     await writeFile(resolve(fixture.targetRoot, "package.json"), '{"private":true}\n');
-    const originalPackage = await readFile(resolve(fixture.targetRoot, "package.json"), "utf8");
     const result = await run(fixture, { options: { apply: true } });
 
     expect(result.report.mode).toBe("apply");
@@ -103,8 +103,8 @@ describe("installer flow", () => {
     expect(
       (await lstat(resolve(fixture.targetRoot, ".codex/scripts/publish-changes.mjs"))).mode & 0o111,
     ).not.toBe(0);
-    expect(await readFile(resolve(fixture.targetRoot, "package.json"), "utf8")).toBe(
-      originalPackage,
+    expect(JSON.parse(await readFile(resolve(fixture.targetRoot, "package.json"), "utf8"))).toEqual(
+      { private: true, scripts: PUBLISH_PACKAGE_ALIASES },
     );
     await expect(
       lstat(resolve(fixture.targetRoot, "scripts/install-foundation-kit.mjs")),
@@ -123,6 +123,237 @@ describe("installer flow", () => {
     ).rejects.toMatchObject({ code: "ENOENT" });
     await expect(lstat(resolve(fixture.targetRoot, "archive"))).rejects.toMatchObject({
       code: "ENOENT",
+    });
+  });
+
+  it("does not create a missing package.json and reports the skipped aliases", async () => {
+    const fixture = await workspace("aliases-missing-package");
+    const output = createOutput();
+    const result = await run(fixture, { options: { apply: true }, output });
+
+    await expect(lstat(resolve(fixture.targetRoot, "package.json"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    expect(result.report.publishAliases).toMatchObject({
+      status: "skipped",
+      skippedReason: "package-json-missing",
+      applied: false,
+      rawFallbackCommand: "node .codex/scripts/publish-changes.mjs",
+    });
+    expect(output.messages).toContainEqual([
+      "SKIPPED",
+      "Publish aliases not installed: package.json is missing.",
+    ]);
+  });
+
+  it("does not repair invalid package.json and reports the skipped aliases", async () => {
+    const fixture = await workspace("aliases-invalid-package");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    const invalid = '{"private":true';
+    await writeFile(packagePath, invalid);
+    const result = await run(fixture, { options: { apply: true } });
+
+    expect(await readFile(packagePath, "utf8")).toBe(invalid);
+    expect(result.report.publishAliases).toMatchObject({
+      status: "skipped",
+      skippedReason: "package-json-invalid",
+      applied: false,
+    });
+  });
+
+  it.each([
+    ["non-object root", "[]\n", "package-json-non-object"],
+    ["non-object scripts", '{"private":true,"scripts":[]}\n', "package-json-scripts-non-object"],
+  ])("preserves package.json with %s", async (_label, contents, skippedReason) => {
+    const fixture = await workspace(`aliases-${skippedReason}`);
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    await writeFile(packagePath, contents);
+    const result = await run(fixture, { options: { apply: true } });
+
+    expect(await readFile(packagePath, "utf8")).toBe(contents);
+    expect(result.report.publishAliases).toMatchObject({
+      status: "skipped",
+      skippedReason,
+      applied: false,
+    });
+  });
+
+  it("creates scripts, preserves formatting convention, backs up package.json, and excludes it from the installation manifest", async () => {
+    const fixture = await workspace("aliases-create-scripts");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    const original = '{\n\t"name": "fixture",\n\t"private": true\n}\n';
+    await writeFile(packagePath, original);
+    const originalSha256 = await hashFile(packagePath);
+    const result = await run(fixture, { options: { apply: true } });
+
+    const installedContents = await readFile(packagePath, "utf8");
+    expect(installedContents).toContain('\n\t"scripts": {');
+    expect(installedContents.endsWith("\n")).toBe(true);
+    expect(JSON.parse(installedContents)).toEqual({
+      name: "fixture",
+      private: true,
+      scripts: PUBLISH_PACKAGE_ALIASES,
+    });
+    expect(result.report.publishAliases).toMatchObject({
+      status: "ready",
+      added: Object.keys(PUBLISH_PACKAGE_ALIASES),
+      applied: true,
+    });
+
+    const backupRoot = resolve(fixture.targetRoot, result.report.backupRelative);
+    expect(await readFile(resolve(backupRoot, "package.json"), "utf8")).toBe(original);
+    const backupManifest = JSON.parse(await readFile(resolve(backupRoot, "manifest.json"), "utf8"));
+    expect(backupManifest.supplementalEntries).toEqual([
+      expect.objectContaining({ target: "package.json", originalSha256 }),
+    ]);
+    expect(backupManifest.completedSupplementalTargets).toEqual(["package.json"]);
+
+    const installationManifest = JSON.parse(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/foundation-kit/installation-manifest.json"),
+        "utf8",
+      ),
+    );
+    expect(installationManifest.files["package.json"]).toBeUndefined();
+  });
+
+  it("adds only missing aliases while preserving unrelated scripts", async () => {
+    const fixture = await workspace("aliases-missing-only");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    await writeFile(
+      packagePath,
+      `${JSON.stringify({ private: true, scripts: { test: "vitest" } }, null, 2)}\n`,
+    );
+    await run(fixture, { options: { apply: true } });
+
+    const installed = JSON.parse(await readFile(packagePath, "utf8"));
+    expect(installed.scripts).toEqual({ test: "vitest", ...PUBLISH_PACKAGE_ALIASES });
+  });
+
+  it("does not write package.json when every alias is already current", async () => {
+    const fixture = await workspace("aliases-current");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    await writeFile(
+      packagePath,
+      `${JSON.stringify({ private: true, scripts: PUBLISH_PACKAGE_ALIASES }, null, 2)}\n`,
+    );
+    const before = await lstat(packagePath);
+    const original = await readFile(packagePath, "utf8");
+    const result = await run(fixture, { options: { apply: true } });
+    const after = await lstat(packagePath);
+
+    expect(await readFile(packagePath, "utf8")).toBe(original);
+    expect(after.ino).toBe(before.ino);
+    expect(result.report.publishAliases).toMatchObject({
+      status: "no-changes",
+      added: [],
+      alreadyCurrent: Object.keys(PUBLISH_PACKAGE_ALIASES),
+      applied: false,
+    });
+  });
+
+  it("does not write package.json when conflicts exist but no safe aliases are missing", async () => {
+    const fixture = await workspace("aliases-conflicts-only");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    const scripts = {
+      ...PUBLISH_PACKAGE_ALIASES,
+      "publish:merge-pr:auto": "node scripts/custom-publish.js --auto",
+    };
+    await writeFile(packagePath, `${JSON.stringify({ private: true, scripts }, null, 2)}\n`);
+    const before = await lstat(packagePath);
+    const original = await readFile(packagePath, "utf8");
+    const result = await run(fixture, { options: { apply: true } });
+    const after = await lstat(packagePath);
+
+    expect(await readFile(packagePath, "utf8")).toBe(original);
+    expect(after.ino).toBe(before.ino);
+    expect(result.report.publishAliases).toMatchObject({
+      status: "no-changes",
+      added: [],
+      skippedConflicts: ["publish:merge-pr:auto"],
+      applied: false,
+    });
+  });
+
+  it("reports conflicts in dry-run and apply, preserves them, and adds other missing aliases", async () => {
+    const fixture = await workspace("aliases-conflict");
+    const output = createOutput();
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    const custom = "node scripts/custom-publish.js";
+    const original = `${JSON.stringify({ private: true, scripts: { "publish:changes": custom } }, null, 2)}\n`;
+    await writeFile(packagePath, original);
+
+    const dryRun = await run(fixture, { output });
+    expect(await readFile(packagePath, "utf8")).toBe(original);
+    expect(dryRun.report.publishAliases).toMatchObject({
+      added: ["publish:pr-only", "publish:merge-pr", "publish:merge-pr:auto"],
+      skippedConflicts: ["publish:changes"],
+      applied: false,
+    });
+    expect(output.messages).toContainEqual([
+      "WARNING",
+      "Skipped conflicting alias: publish:changes",
+    ]);
+    expect(output.messages).toContainEqual(["INFO", `Existing value: ${custom}`]);
+
+    const applied = await run(fixture, { options: { apply: true }, output: createOutput() });
+    const installed = JSON.parse(await readFile(packagePath, "utf8"));
+    expect(installed.scripts["publish:changes"]).toBe(custom);
+    for (const name of ["publish:pr-only", "publish:merge-pr", "publish:merge-pr:auto"]) {
+      expect(installed.scripts[name]).toBe(PUBLISH_PACKAGE_ALIASES[name]);
+    }
+    expect(applied.report.publishAliases.applied).toBe(true);
+  });
+
+  it("detects package.json drift before package or mapped writes", async () => {
+    const fixture = await workspace("aliases-drift");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    await writeFile(packagePath, '{"private":true}\n');
+
+    await expect(
+      run(fixture, {
+        options: { apply: true },
+        hooks: {
+          afterBackupPrepared: async () => {
+            await writeFile(packagePath, '{"private":true,"late":true}\n');
+          },
+        },
+      }),
+    ).rejects.toMatchObject({ type: "PLAN_DRIFT" });
+    expect(await readFile(packagePath, "utf8")).toBe('{"private":true,"late":true}\n');
+    await expect(lstat(resolve(fixture.targetRoot, "AGENTS.md"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
+  it("revalidates package.json immediately before the alias write", async () => {
+    const fixture = await workspace("aliases-late-drift");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    await writeFile(packagePath, '{"private":true}\n');
+
+    await expect(
+      run(fixture, {
+        options: { apply: true },
+        hooks: {
+          beforePublishAliasesApply: async () => {
+            await writeFile(packagePath, '{"private":true,"late":true}\n');
+          },
+        },
+      }),
+    ).rejects.toMatchObject({ type: "PLAN_DRIFT" });
+    expect(await readFile(packagePath, "utf8")).toBe('{"private":true,"late":true}\n');
+    expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe(
+      "agent instructions\n",
+    );
+    const backupManifest = JSON.parse(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/backups/install-20260615-123456/manifest.json"),
+        "utf8",
+      ),
+    );
+    expect(backupManifest).toMatchObject({
+      status: "failed",
+      completedSupplementalTargets: [],
     });
   });
 
