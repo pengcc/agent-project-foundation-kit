@@ -735,6 +735,26 @@ For old or multi-work-item plans:
   necessary;
 - use relevant lessons as stop conditions before planning the next slice.
 
+## Avoid: Editing handoff wording before modeling workflow states
+
+### Context
+
+The publishable-change handoff needed successive corrections because PR creation for review was
+initially conflated with the post-review merge or final publication action.
+
+### Lesson
+
+Before optimizing a handoff or reporting template, model its states, transitions, actors, and
+authorization boundaries. Wording should follow that model; otherwise a small phrase can invert
+the intended sequence or place approval at the wrong transition.
+
+### Reuse guidance
+
+- distinguish preparation, review, PR creation/update, merge, release, and deployment states;
+- identify which transition each command performs;
+- place explicit authorization at the transition that causes the external side effect;
+- test state order and forbidden implications, not only the presence of preferred phrases.
+
 ## Keep: Deliberately distill generic lessons while retaining source history
 
 ### Context

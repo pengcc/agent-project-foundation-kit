@@ -172,15 +172,22 @@ Current plan/execute/review quality boundaries:
 - `plan-with-context` plans must be self-contained enough for a fresh agent to execute, with exact
   scope boundaries, baseline state, STOP conditions, and validation commands confirmed from repo
   files for non-trivial work.
+- Before extending an existing multi-work-item plan, `plan-with-context` rechecks the original
+  objective and non-goals against completed work and current evidence. If the objective is already
+  satisfied, it recommends closeout or re-scope rather than continuing from plan inertia.
 - `execute-plan` treats the approved plan as the execution contract. Changed hunks must map to a
   plan step, validation step, or approved memory/design-log update; material drift returns to
   `plan-with-context`.
 - `execute-plan` remains the primary workflow for approved-plan execution. It may invoke installed
   supporting skills for bounded substeps, but supporting skills do not override or expand the
   approved plan.
-- `publish-current-branch` is a post-execution workflow transition, not an internal
-  `execute-plan` supporting substep. Push, PR, and merge require an explicit workflow switch after
-  execution.
+- After non-publish implementation produces publishable changes, the normal recommended next
+  workflow is `code-review`. `pnpm publish:pr-only "<commit message>" "<PR title>"` creates or
+  updates a PR for review only after explicit user authorization; completed review is not a
+  prerequisite for that PR-for-review action.
+- `publish-current-branch` remains the workflow authorized for push, PR, and merge actions. Merge,
+  release, deploy, or other final publication requires completed review and separate explicit user
+  authorization.
 - `code-review` remains review-only and advisory. Reviews distinguish findings introduced by the
   change from pre-existing issues, check generated package/theme zip safety, and perform plan-hunk
   alignment when an approved plan exists.
@@ -515,6 +522,8 @@ Current publish workflow architecture:
 - avoid unnecessary theme zip overhead for one/few-file changes
 - classify updates as `SMALL_SAFE`, `NORMAL`, or `SIGNIFICANT`
 - display a preliminary scope, select update type, and then confirm the complete publish scope
+- the current terminal output presents nearly duplicate `Preliminary scope summary` and
+  `Exact publish scope` blocks; analyze that UX separately before changing publish-script behavior
 - use a numbered Small safe / Normal / Significant selection while preserving stable internal codes
 - treat `SMALL_SAFE` selection as merge authorization only after scope confirmation
 - inspect branch freshness, repository open PRs, current-branch PR state, uncommitted changes, and unpushed commits before prompting
@@ -1000,3 +1009,5 @@ In progress / next likely themes:
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
 - Project-local validation must not silently mutate global tooling to satisfy runtime requirements.
+- Downstream installation or defaulting of source-repository publish package scripts remains
+  unresolved and requires a separate scoped decision.

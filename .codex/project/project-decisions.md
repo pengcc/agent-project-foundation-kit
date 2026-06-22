@@ -2830,3 +2830,38 @@ dev_locals/plans/2026-06-21-existing-project-upgrade-safety-plan.md
 dev_locals/research-notes/2026-06-22-existing-project-dry-run-validation.md
 dev_locals/research-notes/2026-06-22-existing-project-upgrade-safety-closeout.md
 ```
+
+## Decision: Publishable change handoff separates PR-for-review from final publication
+
+### Status
+
+Accepted
+
+### Context
+
+The handoff initially treated PR-only publication as an after-review action, conflating the PR
+needed to conduct review with the later merge or final publication decision.
+
+### Decision
+
+After non-publish implementation produces publishable changes, recommend `code-review` as the
+normal next workflow. A verified `pnpm publish:pr-only "<commit message>" "<PR title>"` command may
+create or update a PR for review only after explicit user authorization; it does not require
+completed review. Merge, release, deploy, or other final publication requires completed review and
+separate explicit user authorization. `publish-current-branch` remains the workflow authorized for
+push, PR, and merge actions.
+
+Do not use `pnpm publish:changes` as a PR-for-review substitute or infer command forms from package
+script names. Downstream package-script installation and default behavior remain unresolved and
+outside this decision.
+
+### Impact
+
+Handoff reports now preserve the real workflow sequence and authorization boundaries without
+changing package scripts, installer behavior, or publish-script behavior.
+
+### Related Files
+
+- `kit/rules/agent-operating-contract.md`
+- `kit/skills/core/execute-plan/SKILL.md`
+- `tests/install-foundation-kit/core.test.mjs`
