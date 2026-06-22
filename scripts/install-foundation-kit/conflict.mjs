@@ -19,6 +19,8 @@ export async function reportConflicts({
   showDiff,
   commandRunner,
   overwriteConflicts = false,
+  replaceKitManaged = false,
+  managedReplacementPackageEligible = false,
 }) {
   output.info(
     `Plan: ${plan.safeAddFiles} SAFE_ADD, ${plan.kitManagedReplaceFiles} KIT_MANAGED_REPLACE, ` +
@@ -41,9 +43,15 @@ export async function reportConflicts({
       const optional = entry.kind === "optional" ? "[OPTIONAL] " : "";
       output.info(`${optional}[SAFE_ADD] ${entry.targetRelative}; ${detail}`);
     } else if (entry.resultCategory === "KIT_MANAGED_REPLACE") {
-      output.warning(
-        `[KIT_MANAGED_REPLACE] ${entry.targetRelative}; report-only in WI-1; ${detail}`,
-      );
+      const status =
+        replaceKitManaged && entry.managedReplaceAllowed && managedReplacementPackageEligible
+          ? "authorized allowlisted canary"
+          : replaceKitManaged && entry.managedReplaceAllowed
+            ? "package not eligible; both React files are required"
+            : entry.managedReplaceAllowed
+              ? "allowlisted canary; requires --replace-kit-managed"
+              : "report-only; not allowlisted";
+      output.warning(`[KIT_MANAGED_REPLACE] ${entry.targetRelative}; ${status}; ${detail}`);
     } else if (entry.resultCategory === "PROJECT_OWNED") {
       output.info(`[PROJECT_OWNED] ${entry.targetRelative}; preserved; ${detail}`);
     } else if (entry.resultCategory === "MIXED_AGENT_MERGE") {

@@ -7,7 +7,23 @@ export function createFinalReport({
   backupRelative = "",
   completedTargets = [],
   installationManifestRelative = "",
+  replaceKitManaged = false,
+  managedReplacementPackageEligible = false,
 }) {
+  const completed = new Set(completedTargets);
+  const authorizedManagedReplacements = plan.entries.filter(
+    (entry) =>
+      replaceKitManaged &&
+      managedReplacementPackageEligible &&
+      entry.resultCategory === "KIT_MANAGED_REPLACE" &&
+      entry.managedReplaceAllowed,
+  );
+  const unresolvedReviewItems = plan.entries.filter(
+    (entry) =>
+      entry.resultCategory &&
+      entry.resultCategory !== "SAFE_ADD" &&
+      !completed.has(entry.targetRelative),
+  ).length;
   return {
     mode,
     targetRoot,
@@ -23,6 +39,7 @@ export function createFinalReport({
     migrationReviews: plan.migrationReviews,
     optionalSelectedFiles: plan.optionalSelectedFiles,
     reviewItems: plan.reviewItems,
+    unresolvedReviewItems,
     safeAddFiles: plan.safeAddFiles,
     kitManagedReplaceFiles: plan.kitManagedReplaceFiles,
     projectOwnedFiles: plan.projectOwnedFiles,
@@ -37,6 +54,11 @@ export function createFinalReport({
     selectedOptionalSkills: [...plan.selectedOptionalSkills],
     completedTargets: [...completedTargets],
     completedFiles: completedTargets.length,
+    authorizedManagedReplaceFiles: authorizedManagedReplacements.length,
+    completedManagedReplaceFiles: authorizedManagedReplacements.filter((entry) =>
+      completed.has(entry.targetRelative),
+    ).length,
+    managedReplacementPackageEligible,
     requestedProjectMode: policy.requestedMode,
     effectiveProjectMode: policy.effectiveMode,
     detectedSignals: [...policy.detectedSignals],
@@ -62,7 +84,7 @@ export function printConflictReviewChoices(report, output) {
   output.info("2. Rerun with --show-diff to inspect conflicts; this does not authorize overwrite.");
   output.info("3. Use a manual merge/adoption workflow for important project context.");
   output.info(
-    "4. Existing-project replacement is report-only in WI-1; --overwrite-conflicts cannot bypass classification.",
+    "4. Existing-project replacement is limited to the exact allowlisted React canary under --replace-kit-managed; all other replacements remain report-only.",
   );
   if (report.requestedProjectMode === "auto") {
     output.warning(
@@ -76,7 +98,7 @@ function blockedReportMessage(report) {
     return "Install blocked: the installation manifest is invalid or conflicts with source policy; no target files were written.";
   }
   if (report.conflictPolicy === "existing-project-replacement-blocked") {
-    return "Install blocked: existing-project replacement is report-only in WI-1; no existing target files were replaced.";
+    return "Install blocked: broad existing-project replacement is not allowed; only exact eligible React canary files can use --replace-kit-managed.";
   }
   if (report.mixedAgentMergeFiles || report.blockedManualFiles) {
     return "Install blocked: existing-project differences include mixed or manual-risk entries that require manual review; no existing target files were replaced.";
@@ -107,6 +129,12 @@ export function printFinalReport(report, output) {
     output.info(`Backups: ${report.backupRelative}`);
   }
   output.info(`Installation manifest status: ${report.installationManifestStatus}`);
+  output.info(
+    `Managed replacements: ${report.kitManagedReplaceFiles} classified, ` +
+      `${report.authorizedManagedReplaceFiles} authorized, ` +
+      `${report.completedManagedReplaceFiles} completed.`,
+  );
+  output.info(`Unresolved review item count: ${report.unresolvedReviewItems}`);
   if (report.installationManifestRelative) {
     output.info(`Installation manifest updated: ${report.installationManifestRelative}`);
   }
@@ -123,7 +151,7 @@ export function printFinalReport(report, output) {
     }
     return;
   }
-  if (report.reviewItems) {
+  if (report.unresolvedReviewItems) {
     const message = report.completedFiles
       ? "Partial adoption: authorized files were installed; unresolved differences and migration items were preserved for review."
       : "Upgrade remains partial: unresolved differences and migration items were preserved for review.";

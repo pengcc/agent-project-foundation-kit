@@ -69,6 +69,7 @@ pnpm install:node --target /path/to/downstream-project --apply
 pnpm install:node --target /path/to/downstream-project --apply --skip-conflicts
 pnpm install:node --target /path/to/downstream-project --include-optional react-component-patterns
 pnpm install:node --target /path/to/downstream-project --project-mode existing
+pnpm install:node --target /path/to/downstream-project --project-mode existing --apply --replace-kit-managed --include-optional react-component-patterns
 ```
 
 When using pnpm's direct script shortcut, pass installer flags directly as shown above. If using the explicit `pnpm run` form, use pnpm's separator instead: `pnpm run install:node -- --target /path/to/downstream-project`.
@@ -87,9 +88,10 @@ backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` wit
 Successful apply creates or updates a separate stable installation baseline at
 `.codex/foundation-kit/installation-manifest.json`. This deterministic schema-v1 manifest stores
 SHA-256 evidence only for exact kit-managed full files that were safely added or explicitly
-adopted while byte-identical. It stores no target contents, timestamps, absolute machine paths, or
-project-owned baselines. The manifest is classification evidence, not overwrite authority;
-source-controlled ownership and risk policy always wins. Dry-run never creates or updates it.
+adopted while byte-identical, plus completed allowlisted canary replacements. It stores no target
+contents, timestamps, absolute machine paths, or project-owned baselines. The manifest is
+classification evidence, not overwrite authority; source-controlled ownership and risk policy
+always wins. Dry-run never creates or updates it.
 
 Project mode controls conflict policy without changing mappings:
 
@@ -97,9 +99,9 @@ Project mode controls conflict policy without changing mappings:
   existing-like caution; no signals and no conflicts select new-like behavior.
 - `--project-mode new` treats conflicts as starter files or previous-install remnants and permits
   the existing backup-and-overwrite flow after the typed confirmation.
-- `--project-mode existing` treats conflicts as important project context. WI-1 blocks existing
-  target replacement even when `--overwrite-conflicts` is supplied; use safe apply or manual
-  review.
+- `--project-mode existing` treats conflicts as important project context. Broad replacement stays
+  blocked even when `--overwrite-conflicts` is supplied. The only managed-replacement exception is
+  the exact React optional-skill canary described below.
 
 `--apply --skip-conflicts` is the zero-overwrite existing-project path. It writes only mapped
 targets classified as `SAFE_ADD`, safely skips byte-identical targets, records eligible unchanged
@@ -108,9 +110,31 @@ kit-managed baselines, and preserves differing files, existing project memory, d
 It is mutually exclusive with `--overwrite-conflicts` and explicit `--project-mode new`.
 
 Upgrade reports separate `SAFE_ADD`, `KIT_MANAGED_REPLACE`, `PROJECT_OWNED`,
-`MIXED_AGENT_MERGE`, and `BLOCKED_MANUAL` from unchanged files. During WI-1,
-`KIT_MANAGED_REPLACE` is report-only. Missing, malformed, unsafe, unsupported, or
-source-policy-conflicting installation manifests block apply before target writes.
+`MIXED_AGENT_MERGE`, and `BLOCKED_MANUAL` from unchanged files. Missing, malformed, unsafe,
+unsupported, or source-policy-conflicting installation manifests block apply before target
+writes.
+
+Existing-project full-file replacement is limited to this exact allowlist:
+
+```txt
+.codex/skills/engineering/react-component-patterns/SKILL.md
+.codex/skills/engineering/react-component-patterns/metadata.yml
+```
+
+The package must be selected through `--include-optional react-component-patterns`. Both files
+must be recorded in a valid installation manifest, classified `KIT_MANAGED_REPLACE`, allowlisted,
+and unchanged from their recorded target baselines. If either file is missing, mixed, blocked, or
+otherwise ineligible, neither file is replaced. Replacement requires the normal
+`INSTALL_WITH_BACKUP` confirmation and:
+
+```bash
+--project-mode existing --apply --replace-kit-managed
+```
+
+The flag is mutually exclusive with `--skip-conflicts` and `--overwrite-conflicts`. All other
+managed-replacement candidates remain report-only; target-only or concurrent changes remain
+preserved for review. If either package copy or its manifest update fails, both React files are
+restored from the verified backup and the previous installation manifest is preserved.
 
 In existing projects, differing `.codex/scripts/*` files are reported as workflow-script merge
 items because installed scripts may contain project-specific workflow, publish, CI, or local
@@ -124,8 +148,8 @@ Use repeatable `--include-optional <name>` flags to select packages from
 `.codex/skills/project/`, or a flat `.codex/skills/<name>/` path. Project-owned
 `.codex/skills/project/` content is outside installer inspection and collision handling.
 
-`--overwrite-conflicts` cannot bypass ownership or classification in existing-project mode during
-WI-1. Explicit new-project replacement retains conflict display, strong warning, typed
+`--overwrite-conflicts` cannot bypass ownership or classification in existing-project mode.
+Explicit new-project replacement retains conflict display, strong warning, typed
 confirmation, backup preparation, plan revalidation, and verified overwrite. Project mode never
 changes package files, dependencies, formatter or linter tooling, optional-skill selection,
 project-memory merging, or publish behavior.

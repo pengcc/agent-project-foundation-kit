@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { InstallerError } from "../../scripts/install-foundation-kit/errors.mjs";
 import { runInstallerFlow } from "../../scripts/install-foundation-kit/flow.mjs";
+import { hashFile } from "../../scripts/install-foundation-kit/fs-safe.mjs";
 import { commandRunner, createOutput, createTestWorkspace } from "./helpers.mjs";
 
 const workspaces = [];
@@ -25,6 +26,7 @@ function options(target, overrides = {}) {
     projectMode: "auto",
     overwriteConflicts: false,
     skipConflicts: false,
+    replaceKitManaged: false,
     includeOptional: [],
     verbose: false,
     help: false,
@@ -276,6 +278,339 @@ describe("installer flow", () => {
     expect(await readFile(target, "utf8")).toBe("local optional skill\n");
   });
 
+  it("replaces only the two allowlisted React optional files with verified backup evidence", async () => {
+    const fixture = await workspace("react-managed-replace");
+    const selected = ["optional-example", "react-component-patterns"];
+    await run(fixture, {
+      options: { apply: true, projectMode: "new", includeOptional: selected },
+    });
+
+    const reactSkillRelative = ".codex/skills/engineering/react-component-patterns/SKILL.md";
+    const reactMetadataRelative = ".codex/skills/engineering/react-component-patterns/metadata.yml";
+    const otherRelative = ".codex/skills/engineering/optional-example/SKILL.md";
+    const reactSkill = resolve(fixture.targetRoot, reactSkillRelative);
+    const reactMetadata = resolve(fixture.targetRoot, reactMetadataRelative);
+    const other = resolve(fixture.targetRoot, otherRelative);
+    const originalReactSkill = await readFile(reactSkill, "utf8");
+    const originalReactMetadata = await readFile(reactMetadata, "utf8");
+    const originalOther = await readFile(other, "utf8");
+    const preservedMappings = [
+      ["project-templates/AGENTS.md", "AGENTS.md", "updated agents\n"],
+      [
+        "project-templates/project-guideline.md",
+        ".codex/project/project-guideline.md",
+        "updated project memory\n",
+      ],
+      ["rules/example.md", ".codex/rules/example.md", "updated rule\n"],
+      ["prompts/example.md", ".codex/prompts/example.md", "updated prompt\n"],
+      [
+        "skills/core/core-example/SKILL.md",
+        ".codex/skills/core/core-example/SKILL.md",
+        "updated core\n",
+      ],
+      [
+        "skills/meta/meta-example/SKILL.md",
+        ".codex/skills/meta/meta-example/SKILL.md",
+        "updated meta\n",
+      ],
+      ["scripts/publish-changes.mjs", ".codex/scripts/publish-changes.mjs", "updated script\n"],
+      ["config/example.json", ".codex/config/example.json", '{"updated":true}\n'],
+      [
+        "config/publish-changes-policy.yml",
+        ".codex/config/publish-changes-policy.yml",
+        "updateTypes:\n  changed: true\n",
+      ],
+      [
+        "config/publish-cli-theme.json",
+        ".codex/config/publish-cli-theme.json",
+        '{"levels":{"updated":true}}\n',
+      ],
+      ["github-settings/example.json", ".codex/github-settings/example.json", '{"updated":true}\n'],
+    ];
+    const preservedOriginals = new Map();
+    for (const [sourceRelative, targetRelative, updated] of preservedMappings) {
+      preservedOriginals.set(
+        targetRelative,
+        await readFile(resolve(fixture.targetRoot, targetRelative), "utf8"),
+      );
+      await writeFile(resolve(fixture.kitRoot, sourceRelative), updated);
+    }
+
+    await writeFile(
+      resolve(fixture.kitRoot, "optional-skills/react-component-patterns/SKILL.md"),
+      "updated react patterns\n",
+    );
+    await writeFile(
+      resolve(fixture.kitRoot, "optional-skills/react-component-patterns/metadata.yml"),
+      originalReactMetadata.replace("React fixture skill.", "Updated React fixture skill."),
+    );
+    await writeFile(
+      resolve(fixture.kitRoot, "optional-skills/optional-example/SKILL.md"),
+      "updated non-allowlisted optional skill\n",
+    );
+
+    let prompted = false;
+    const result = await run(fixture, {
+      options: {
+        apply: true,
+        projectMode: "existing",
+        replaceKitManaged: true,
+        includeOptional: selected,
+      },
+      prompts: {
+        confirmBackup: async () => {
+          prompted = true;
+          return true;
+        },
+      },
+    });
+
+    expect(prompted).toBe(true);
+    expect(await readFile(reactSkill, "utf8")).toBe("updated react patterns\n");
+    expect(await readFile(reactMetadata, "utf8")).toContain("Updated React fixture skill.");
+    expect(await readFile(other, "utf8")).toBe(originalOther);
+    for (const [, targetRelative] of preservedMappings) {
+      expect(await readFile(resolve(fixture.targetRoot, targetRelative), "utf8")).toBe(
+        preservedOriginals.get(targetRelative),
+      );
+    }
+    expect(result.report).toMatchObject({
+      authorizedManagedReplaceFiles: 2,
+      completedManagedReplaceFiles: 2,
+      unresolvedReviewItems: expect.any(Number),
+    });
+
+    const backupRoot = resolve(fixture.targetRoot, result.report.backupRelative);
+    expect(await readFile(resolve(backupRoot, reactSkillRelative), "utf8")).toBe(
+      originalReactSkill,
+    );
+    expect(await readFile(resolve(backupRoot, reactMetadataRelative), "utf8")).toBe(
+      originalReactMetadata,
+    );
+    await expect(readFile(resolve(backupRoot, otherRelative), "utf8")).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+
+    const backupManifest = JSON.parse(await readFile(resolve(backupRoot, "manifest.json"), "utf8"));
+    expect(backupManifest.entries.map((entry) => entry.target).sort()).toEqual(
+      [reactMetadataRelative, reactSkillRelative].sort(),
+    );
+    expect(backupManifest.status).toBe("completed");
+    expect(await hashFile(resolve(backupRoot, reactSkillRelative))).toBe(
+      backupManifest.entries.find((entry) => entry.target === reactSkillRelative).originalSha256,
+    );
+
+    const installationManifest = JSON.parse(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/foundation-kit/installation-manifest.json"),
+        "utf8",
+      ),
+    );
+    expect(installationManifest.files[reactSkillRelative].baselineSha256).toBe(
+      await hashFile(reactSkill),
+    );
+    expect(installationManifest.files[reactMetadataRelative].baselineSha256).toBe(
+      await hashFile(reactMetadata),
+    );
+    expect(installationManifest.files[otherRelative].baselineSha256).toBe(await hashFile(other));
+  });
+
+  it("replaces neither React file when only one package file is eligible", async () => {
+    const fixture = await workspace("react-managed-mixed");
+    const selected = ["react-component-patterns"];
+    await run(fixture, {
+      options: { apply: true, projectMode: "new", includeOptional: selected },
+    });
+
+    const skill = resolve(
+      fixture.targetRoot,
+      ".codex/skills/engineering/react-component-patterns/SKILL.md",
+    );
+    const metadata = resolve(
+      fixture.targetRoot,
+      ".codex/skills/engineering/react-component-patterns/metadata.yml",
+    );
+    const metadataSource = resolve(
+      fixture.kitRoot,
+      "optional-skills/react-component-patterns/metadata.yml",
+    );
+    await writeFile(skill, "local React patterns\n");
+    const localSkill = await readFile(skill, "utf8");
+    const originalMetadata = await readFile(metadata, "utf8");
+    const manifestPath = resolve(
+      fixture.targetRoot,
+      ".codex/foundation-kit/installation-manifest.json",
+    );
+    const originalManifest = await readFile(manifestPath, "utf8");
+    await writeFile(
+      resolve(fixture.kitRoot, "optional-skills/react-component-patterns/SKILL.md"),
+      "upstream React patterns\n",
+    );
+    await writeFile(
+      metadataSource,
+      (await readFile(metadataSource, "utf8")).replace(
+        "React fixture skill.",
+        "Updated React fixture skill.",
+      ),
+    );
+
+    const output = createOutput();
+    let prompted = false;
+    const result = await run(fixture, {
+      options: {
+        apply: true,
+        projectMode: "existing",
+        replaceKitManaged: true,
+        includeOptional: selected,
+      },
+      output,
+      prompts: {
+        confirmBackup: async () => {
+          prompted = true;
+          return true;
+        },
+      },
+    });
+
+    expect(prompted).toBe(false);
+    expect(await readFile(skill, "utf8")).toBe(localSkill);
+    expect(await readFile(metadata, "utf8")).toBe(originalMetadata);
+    expect(await readFile(manifestPath, "utf8")).toBe(originalManifest);
+    expect(result.report).toMatchObject({
+      managedReplacementPackageEligible: false,
+      authorizedManagedReplaceFiles: 0,
+      completedManagedReplaceFiles: 0,
+    });
+    expect(output.messages).toContainEqual([
+      "WARNING",
+      "React canary package not eligible: both package files must be eligible KIT_MANAGED_REPLACE entries; neither package file will be replaced.",
+    ]);
+  });
+
+  it("restores both React files and preserves the manifest after partial replacement failure", async () => {
+    const fixture = await workspace("react-managed-partial");
+    const selected = ["react-component-patterns"];
+    await run(fixture, {
+      options: { apply: true, projectMode: "new", includeOptional: selected },
+    });
+    const manifestPath = resolve(
+      fixture.targetRoot,
+      ".codex/foundation-kit/installation-manifest.json",
+    );
+    const skillRelative = ".codex/skills/engineering/react-component-patterns/SKILL.md";
+    const metadataRelative = ".codex/skills/engineering/react-component-patterns/metadata.yml";
+    const originalSkill = await readFile(resolve(fixture.targetRoot, skillRelative), "utf8");
+    const originalMetadata = await readFile(resolve(fixture.targetRoot, metadataRelative), "utf8");
+    const originalManifest = await readFile(manifestPath, "utf8");
+    await writeFile(
+      resolve(fixture.kitRoot, "optional-skills/react-component-patterns/SKILL.md"),
+      "updated React patterns\n",
+    );
+    const metadataSource = resolve(
+      fixture.kitRoot,
+      "optional-skills/react-component-patterns/metadata.yml",
+    );
+    await writeFile(
+      metadataSource,
+      (await readFile(metadataSource, "utf8")).replace(
+        "React fixture skill.",
+        "Updated React fixture skill.",
+      ),
+    );
+
+    await expect(
+      run(fixture, {
+        options: {
+          apply: true,
+          projectMode: "existing",
+          replaceKitManaged: true,
+          includeOptional: selected,
+        },
+        hooks: {
+          beforeCopy: async ({ completedTargets }) => {
+            if (completedTargets.length === 1) {
+              throw new Error("injected second replacement failure");
+            }
+          },
+        },
+      }),
+    ).rejects.toThrow("injected second replacement failure");
+
+    expect(await readFile(resolve(fixture.targetRoot, skillRelative), "utf8")).toBe(originalSkill);
+    expect(await readFile(resolve(fixture.targetRoot, metadataRelative), "utf8")).toBe(
+      originalMetadata,
+    );
+    expect(await readFile(manifestPath, "utf8")).toBe(originalManifest);
+    const backupManifest = JSON.parse(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/backups/install-20260615-123456/manifest.json"),
+        "utf8",
+      ),
+    );
+    expect(backupManifest).toMatchObject({ status: "rolled-back", completedTargets: [] });
+  });
+
+  it("restores both React files and the prior manifest when manifest persistence fails", async () => {
+    const fixture = await workspace("react-managed-manifest-failure");
+    const selected = ["react-component-patterns"];
+    await run(fixture, {
+      options: { apply: true, projectMode: "new", includeOptional: selected },
+    });
+    const skillRelative = ".codex/skills/engineering/react-component-patterns/SKILL.md";
+    const metadataRelative = ".codex/skills/engineering/react-component-patterns/metadata.yml";
+    const skill = resolve(fixture.targetRoot, skillRelative);
+    const metadata = resolve(fixture.targetRoot, metadataRelative);
+    const manifest = resolve(
+      fixture.targetRoot,
+      ".codex/foundation-kit/installation-manifest.json",
+    );
+    const originalSkill = await readFile(skill, "utf8");
+    const originalMetadata = await readFile(metadata, "utf8");
+    const originalManifest = await readFile(manifest, "utf8");
+    await writeFile(
+      resolve(fixture.kitRoot, "optional-skills/react-component-patterns/SKILL.md"),
+      "updated React patterns\n",
+    );
+    const metadataSource = resolve(
+      fixture.kitRoot,
+      "optional-skills/react-component-patterns/metadata.yml",
+    );
+    await writeFile(
+      metadataSource,
+      (await readFile(metadataSource, "utf8")).replace(
+        "React fixture skill.",
+        "Updated React fixture skill.",
+      ),
+    );
+
+    await expect(
+      run(fixture, {
+        options: {
+          apply: true,
+          projectMode: "existing",
+          replaceKitManaged: true,
+          includeOptional: selected,
+        },
+        hooks: {
+          beforeInstallationManifestWrite: async () => {
+            throw new Error("injected manifest persistence failure");
+          },
+        },
+      }),
+    ).rejects.toThrow("injected manifest persistence failure");
+
+    expect(await readFile(skill, "utf8")).toBe(originalSkill);
+    expect(await readFile(metadata, "utf8")).toBe(originalMetadata);
+    expect(await readFile(manifest, "utf8")).toBe(originalManifest);
+    const backupManifest = JSON.parse(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/backups/install-20260615-123456/manifest.json"),
+        "utf8",
+      ),
+    );
+    expect(backupManifest).toMatchObject({ status: "rolled-back", completedTargets: [] });
+  });
+
   it("safe apply leaves optional migration collisions for review", async () => {
     const fixture = await workspace("optional-migration-review");
     await mkdir(resolve(fixture.targetRoot, ".codex/skills/meta/optional-example"), {
@@ -344,7 +679,7 @@ describe("installer flow", () => {
     ).rejects.toMatchObject({ code: "ENOENT" });
     expect(output.messages).toContainEqual([
       "DANGER",
-      "Install blocked: existing-project replacement is report-only in WI-1; no existing target files were replaced.",
+      "Install blocked: broad existing-project replacement is not allowed; only exact eligible React canary files can use --replace-kit-managed.",
     ]);
   });
 

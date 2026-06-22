@@ -9,9 +9,31 @@ export const RISK = Object.freeze({
   MANUAL: "manual",
 });
 
-function policy(ownership, risk, kind, { baselineAdoptable = false } = {}) {
-  return Object.freeze({ ownership, risk, kind, baselineAdoptable });
+function policy(
+  ownership,
+  risk,
+  kind,
+  { baselineAdoptable = false, managedReplaceAllowed = false } = {},
+) {
+  return Object.freeze({
+    ownership,
+    risk,
+    kind,
+    baselineAdoptable,
+    managedReplaceAllowed,
+  });
 }
+
+export const REACT_CANARY_MANAGED_REPLACEMENT = Object.freeze([
+  Object.freeze({
+    sourceRelative: "optional-skills/react-component-patterns/SKILL.md",
+    targetRelative: ".codex/skills/engineering/react-component-patterns/SKILL.md",
+  }),
+  Object.freeze({
+    sourceRelative: "optional-skills/react-component-patterns/metadata.yml",
+    targetRelative: ".codex/skills/engineering/react-component-patterns/metadata.yml",
+  }),
+]);
 
 const PROJECT_MEMORY = policy(OWNERSHIP.PROJECT_OWNED, RISK.MANUAL, "project-memory");
 const ENTRYPOINT = policy(OWNERSHIP.MIXED, RISK.MANUAL, "entrypoint");
@@ -21,9 +43,13 @@ const UNCLASSIFIED_CONFIG = policy(OWNERSHIP.MIXED, RISK.MANUAL, "unclassified-c
 const REUSABLE = policy(OWNERSHIP.KIT_MANAGED, RISK.NORMAL, "reusable", {
   baselineAdoptable: true,
 });
-const OPTIONAL = policy(OWNERSHIP.KIT_MANAGED, RISK.NORMAL, "optional", {
-  baselineAdoptable: true,
-});
+export function isManagedReplacementAllowlisted(mapping) {
+  return REACT_CANARY_MANAGED_REPLACEMENT.some(
+    (entry) =>
+      entry.sourceRelative === mapping.sourceRelative &&
+      entry.targetRelative === mapping.targetRelative,
+  );
+}
 
 export function ownershipPolicyFor(mapping) {
   if (mapping.targetRelative === "AGENTS.md") return ENTRYPOINT;
@@ -37,7 +63,12 @@ export function ownershipPolicyFor(mapping) {
     return PROJECT_CONFIG;
   }
   if (mapping.targetRelative.startsWith(".codex/config/")) return UNCLASSIFIED_CONFIG;
-  if (mapping.category === "optional") return OPTIONAL;
+  if (mapping.category === "optional") {
+    return policy(OWNERSHIP.KIT_MANAGED, RISK.NORMAL, "optional", {
+      baselineAdoptable: true,
+      managedReplaceAllowed: isManagedReplacementAllowlisted(mapping),
+    });
+  }
   return REUSABLE;
 }
 

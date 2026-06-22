@@ -20,10 +20,16 @@ export function resolveProjectMode({
   });
 }
 
-export function conflictPolicyOutcome({ policy, overwriteConflicts, skipConflicts = false }) {
+export function conflictPolicyOutcome({
+  policy,
+  overwriteConflicts,
+  skipConflicts = false,
+  replaceKitManaged = false,
+}) {
   if (!policy.reviewItems) return "no-conflicts";
   if (skipConflicts) return "safe-new-files-only";
   if (policy.effectiveMode === "new") return "new-project-backup-and-overwrite";
+  if (replaceKitManaged) return "allowlisted-managed-replace";
   if (overwriteConflicts) return "explicit-backup-and-overwrite";
   return "manual-review-required";
 }

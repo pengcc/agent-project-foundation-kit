@@ -31,6 +31,7 @@ function options(target, overrides = {}) {
     projectMode: "auto",
     overwriteConflicts: false,
     skipConflicts: false,
+    replaceKitManaged: false,
     includeOptional: [],
     verbose: false,
     help: false,

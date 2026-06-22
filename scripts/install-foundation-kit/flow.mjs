@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { materializeBackup, prepareBackupSnapshots } from "./backup.mjs";
+import { resolve } from "node:path";
+import { materializeBackup, prepareBackupSnapshots, updateBackupManifest } from "./backup.mjs";
 import { reportConflicts } from "./conflict.mjs";
 import {
   applyStagedPlan,
@@ -9,11 +10,14 @@ import {
 } from "./copier.mjs";
 import { InstallerError } from "./errors.mjs";
 import { createFinalReport, printBlockedReport, printFinalReport } from "./final-report.mjs";
+import { atomicCopyIntoTarget, hashFile } from "./fs-safe.mjs";
 import {
   createNextInstallationManifest,
+  restoreInstallationManifest,
   verifyManifestCandidates,
   writeInstallationManifest,
 } from "./installation-manifest.mjs";
+import { REACT_CANARY_MANAGED_REPLACEMENT } from "./ownership-policy.mjs";
 import { buildInstallPlan, revalidateInstallPlan } from "./planner.mjs";
 import {
   conflictOverwriteBlocked,
@@ -22,6 +26,90 @@ import {
 } from "./project-mode.mjs";
 import { inspectTargetProject } from "./target-project.mjs";
 import { resolveInstallRoots } from "./validation.mjs";
+
+const REACT_CANARY_TARGETS = Object.freeze(
+  REACT_CANARY_MANAGED_REPLACEMENT.map((entry) => entry.targetRelative),
+);
+
+function reactCanaryPackageState(plan, requested) {
+  const entries = REACT_CANARY_TARGETS.map((target) =>
+    plan.entries.find((entry) => entry.targetRelative === target),
+  );
+  if (!requested) return { eligible: false, reason: "not-requested", entries: [] };
+  if (entries.some((entry) => !entry)) {
+    return {
+      eligible: false,
+      reason: "not selected or missing from the current mapping",
+      entries: [],
+    };
+  }
+  if (
+    entries.some(
+      (entry) => entry.resultCategory !== "KIT_MANAGED_REPLACE" || !entry.managedReplaceAllowed,
+    )
+  ) {
+    return {
+      eligible: false,
+      reason: "both package files must be eligible KIT_MANAGED_REPLACE entries",
+      entries: [],
+    };
+  }
+  return { eligible: true, reason: "eligible", entries };
+}
+
+async function persistInstallationManifest({ plan, roots, completedTargets, hooks }) {
+  await hooks.beforeInstallationManifestWrite?.({ plan, roots, completedTargets });
+  await verifyManifestCandidates({ plan, targetRoot: roots.targetRoot, completedTargets });
+  const nextInstallationManifest = createNextInstallationManifest({ plan, completedTargets });
+  return writeInstallationManifest({
+    targetRoot: roots.targetRoot,
+    expected: plan.installationManifest,
+    manifest: nextInstallationManifest,
+  });
+}
+
+async function rollbackReactCanary({ packageEntries, completedTargets, materialized, targetRoot }) {
+  if (!materialized) {
+    throw new InstallerError(
+      "INSTALL_ROLLBACK_FAILED",
+      "React canary rollback requires a materialized backup.",
+    );
+  }
+  const backupEntries = new Map(
+    materialized.manifest.entries.map((entry) => [entry.target, entry]),
+  );
+  for (const entry of [...packageEntries].reverse()) {
+    const backupEntry = backupEntries.get(entry.targetRelative);
+    if (!backupEntry) {
+      throw new InstallerError(
+        "INSTALL_ROLLBACK_FAILED",
+        `React canary backup entry is missing: ${entry.targetRelative}`,
+      );
+    }
+    await atomicCopyIntoTarget({
+      source: resolve(materialized.backupRoot, backupEntry.backup),
+      targetRoot,
+      targetRelative: entry.targetRelative,
+      overwrite: true,
+    });
+    if (
+      (await hashFile(resolve(targetRoot, entry.targetRelative))) !== backupEntry.originalSha256
+    ) {
+      throw new InstallerError(
+        "INSTALL_ROLLBACK_FAILED",
+        `React canary rollback hash mismatch: ${entry.targetRelative}`,
+      );
+    }
+  }
+  const remainingCompletedTargets = completedTargets.filter(
+    (target) => !REACT_CANARY_TARGETS.includes(target),
+  );
+  await updateBackupManifest(materialized, {
+    status: "rolled-back",
+    completedTargets: remainingCompletedTargets,
+  });
+  return remainingCompletedTargets;
+}
 
 export async function runInstallerFlow({
   repoRoot,
@@ -47,7 +135,13 @@ export async function runInstallerFlow({
     policy,
     overwriteConflicts: options.overwriteConflicts,
     skipConflicts: options.skipConflicts,
+    replaceKitManaged: options.replaceKitManaged,
   });
+  const reactCanaryPackage = reactCanaryPackageState(plan, options.replaceKitManaged);
+  const authorizedManagedReplacements = reactCanaryPackage.entries;
+  const authorizedManagedReplacementTargets = new Set(
+    authorizedManagedReplacements.map((entry) => entry.targetRelative),
+  );
   output.info(`Source kit: ${roots.kitRoot}`);
   output.info(`Target root: ${roots.targetRoot}`);
   await reportConflicts({
@@ -58,6 +152,8 @@ export async function runInstallerFlow({
     showDiff: options.showDiff,
     commandRunner,
     overwriteConflicts: options.overwriteConflicts,
+    replaceKitManaged: options.replaceKitManaged,
+    managedReplacementPackageEligible: reactCanaryPackage.eligible,
   });
 
   if (!options.apply) {
@@ -68,6 +164,8 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
+      managedReplacementPackageEligible: reactCanaryPackage.eligible,
     });
     printFinalReport(report, output);
     return { report, plan };
@@ -80,6 +178,8 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
+      managedReplacementPackageEligible: reactCanaryPackage.eligible,
     });
     printBlockedReport(report, output);
     throw new InstallerError(
@@ -95,15 +195,18 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy: "existing-project-replacement-blocked",
+      replaceKitManaged: options.replaceKitManaged,
+      managedReplacementPackageEligible: reactCanaryPackage.eligible,
     });
     printBlockedReport(report, output);
     throw new InstallerError(
       "EXISTING_PROJECT_REPLACEMENT_BLOCKED",
-      "WI-1 does not permit replacing existing target files in existing-project mode.",
+      "Broad existing-project replacement is blocked; use the dedicated React canary authorization only for exact eligible targets.",
     );
   }
 
   if (
+    !options.replaceKitManaged &&
     conflictOverwriteBlocked({
       policy,
       overwriteConflicts: options.overwriteConflicts,
@@ -116,6 +219,8 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
+      managedReplacementPackageEligible: reactCanaryPackage.eligible,
     });
     printBlockedReport(report, output);
     throw new InstallerError(
@@ -124,7 +229,19 @@ export async function runInstallerFlow({
     );
   }
 
-  if (plan.conflicts && !options.skipConflicts) {
+  if (options.replaceKitManaged) {
+    if (authorizedManagedReplacements.length) {
+      output.danger("Allowlisted existing-project files will be backed up and replaced:");
+      for (const entry of authorizedManagedReplacements) {
+        output.danger(`- ${entry.targetRelative}`);
+      }
+      await prompts.confirmBackup();
+    } else {
+      output.warning(
+        `React canary package not eligible: ${reactCanaryPackage.reason}; neither package file will be replaced.`,
+      );
+    }
+  } else if (plan.conflicts && !options.skipConflicts) {
     const context =
       policy.effectiveMode === "new"
         ? "Conflicts are treated as starter files or previous-install remnants."
@@ -142,7 +259,11 @@ export async function runInstallerFlow({
     const entriesToApply = options.skipConflicts
       ? plan.entries.filter((entry) => entry.action === "write")
       : policy.effectiveMode === "existing"
-        ? plan.entries.filter((entry) => entry.action === "write")
+        ? plan.entries.filter(
+            (entry) =>
+              entry.action === "write" ||
+              authorizedManagedReplacementTargets.has(entry.targetRelative),
+          )
         : plan.entries.filter(
             (entry) =>
               entry.mappingState === "current" &&
@@ -186,26 +307,66 @@ export async function runInstallerFlow({
       includeOptional: options.includeOptional,
     });
     await hooks.beforeApply?.({ plan, roots, materialized });
-    const completedTargets = await applyStagedPlan({
-      plan: applyPlan,
-      stagedRoot,
-      targetRoot: roots.targetRoot,
-      materializedBackup: materialized,
-      signal,
-      hooks,
-      allowOverwrite: policy.effectiveMode === "new" && !options.skipConflicts,
-    });
-    let installationManifestRelative = "";
+    let completedTargets = [];
     try {
-      await hooks.beforeInstallationManifestWrite?.({ plan, roots, completedTargets });
-      await verifyManifestCandidates({ plan, targetRoot: roots.targetRoot, completedTargets });
-      const nextInstallationManifest = createNextInstallationManifest({ plan, completedTargets });
-      installationManifestRelative = await writeInstallationManifest({
+      completedTargets = await applyStagedPlan({
+        plan: applyPlan,
+        stagedRoot,
         targetRoot: roots.targetRoot,
-        expected: plan.installationManifest,
-        manifest: nextInstallationManifest,
+        materializedBackup: materialized,
+        signal,
+        hooks,
+        allowOverwrite: policy.effectiveMode === "new" && !options.skipConflicts,
+        overwriteTargets: [...authorizedManagedReplacementTargets],
       });
     } catch (error) {
+      completedTargets = error?.completedTargets ?? [];
+      if (reactCanaryPackage.eligible) {
+        try {
+          completedTargets = await rollbackReactCanary({
+            packageEntries: authorizedManagedReplacements,
+            completedTargets,
+            materialized,
+            targetRoot: roots.targetRoot,
+          });
+          output.danger("React canary replacement failed; both package files were restored.");
+        } catch (rollbackError) {
+          rollbackError.completedTargets = completedTargets;
+          throw rollbackError;
+        }
+      }
+      error.completedTargets = completedTargets;
+      throw error;
+    }
+    let installationManifestRelative = "";
+    try {
+      installationManifestRelative = await persistInstallationManifest({
+        plan,
+        roots,
+        completedTargets,
+        hooks,
+      });
+    } catch (error) {
+      if (reactCanaryPackage.eligible) {
+        try {
+          completedTargets = await rollbackReactCanary({
+            packageEntries: authorizedManagedReplacements,
+            completedTargets,
+            materialized,
+            targetRoot: roots.targetRoot,
+          });
+          await restoreInstallationManifest({
+            targetRoot: roots.targetRoot,
+            previous: plan.installationManifest,
+          });
+          output.danger(
+            "React canary manifest update failed; both package files and the prior manifest were restored.",
+          );
+        } catch (rollbackError) {
+          rollbackError.completedTargets = completedTargets;
+          throw rollbackError;
+        }
+      }
       error.completedTargets = completedTargets;
       throw error;
     }
@@ -216,6 +377,8 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
+      managedReplacementPackageEligible: reactCanaryPackage.eligible,
       backupRelative: materialized?.backupRelative,
       completedTargets,
       installationManifestRelative,
