@@ -119,7 +119,7 @@ pnpm publish:changes "Commit message"
 
 ## Final Report Requirement
 
-Every implementation final report must classify the update as one of:
+Every implementation final report must classify any publishable update as one of:
 
 - `small safe update`
 - `normal update`
@@ -127,15 +127,19 @@ Every implementation final report must classify the update as one of:
 
 The final report must include:
 
-- recommended update type
-- recommended commit message
-- recommended PR title
+- recommended update type when publishable changes exist
+- recommended commit message when publishable changes exist
+- recommended PR title when publishable changes exist
 - files changed
 - why the change was made
 - impact / risk level
 - validation performed
 - whether project memory or docs were updated
 - whether commit, push, PR, merge, or other external actions were performed
+
+When the task leaves publishable repository changes, apply the Publishable Change Handoff in
+`kit/rules/agent-operating-contract.md`. It owns the compact recommendation, Fast PR, project-local
+evidence, authorization, and local-only artifact boundaries.
 
 Every task final report must include:
 
