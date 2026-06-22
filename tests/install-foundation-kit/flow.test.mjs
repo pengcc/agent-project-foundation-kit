@@ -166,7 +166,7 @@ describe("installer flow", () => {
     });
     expect(output.messages).toContainEqual([
       "WARNING",
-      "Partial adoption: safe new files were installed; existing differences and migration items were preserved for review.",
+      "Partial adoption: authorized files were installed; unresolved differences and migration items were preserved for review.",
     ]);
   });
 
@@ -201,11 +201,11 @@ describe("installer flow", () => {
     });
     expect(output.messages).toContainEqual([
       "WARNING",
-      "[SCRIPT-MERGE] .codex/scripts/publish-changes.mjs differs; target scripts may contain project-specific workflow, publish, CI, or local automation changes.",
+      expect.stringContaining("[BLOCKED_MANUAL] [SCRIPT-MERGE] .codex/scripts/publish-changes.mjs"),
     ]);
     expect(
       output.messages.some(
-        ([level, message]) => level === "SUCCESS" && message.includes("1 script merge"),
+        ([level, message]) => level === "SUCCESS" && message.includes("1 BLOCKED_MANUAL"),
       ),
     ).toBe(true);
   });
@@ -314,8 +314,9 @@ describe("installer flow", () => {
     expect(await readFile(lateTarget, "utf8")).toBe("created during apply\n");
   });
 
-  it("cancels conflicts before runtime staging or target writes", async () => {
+  it("blocks existing-project replacement before prompting, staging, or target writes", async () => {
     const fixture = await workspace("cancel-conflict");
+    let prompted = false;
     await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "existing\n");
     await expect(
       run(fixture, {
@@ -324,10 +325,15 @@ describe("installer flow", () => {
           projectMode: "existing",
           overwriteConflicts: true,
         },
-        prompts: prompts({ accept: false }),
+        prompts: {
+          confirmBackup: async () => {
+            prompted = true;
+          },
+        },
         runId: "not-created",
       }),
-    ).rejects.toThrow("Confirmation token did not match");
+    ).rejects.toMatchObject({ type: "EXISTING_PROJECT_REPLACEMENT_BLOCKED" });
+    expect(prompted).toBe(false);
     expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe("existing\n");
     await expect(
       lstat(
@@ -390,7 +396,7 @@ describe("installer flow", () => {
     expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe("existing\n");
   });
 
-  it("keeps warning, typed confirmation, backup, and overwrite with explicit authorization", async () => {
+  it("does not let explicit overwrite bypass existing-project classification", async () => {
     const fixture = await workspace("existing-overwrite");
     const output = createOutput();
     let prompted = false;
@@ -398,49 +404,28 @@ describe("installer flow", () => {
     const script = resolve(fixture.targetRoot, ".codex/scripts/publish-changes.mjs");
     await mkdir(resolve(script, ".."), { recursive: true });
     await writeFile(script, "project-specific publish workflow\n");
-    const result = await run(fixture, {
-      options: {
-        apply: true,
-        projectMode: "existing",
-        overwriteConflicts: true,
-      },
-      output,
-      prompts: {
-        confirmBackup: async () => {
-          prompted = true;
-          return true;
+    await expect(
+      run(fixture, {
+        options: {
+          apply: true,
+          projectMode: "existing",
+          overwriteConflicts: true,
         },
-      },
-    });
+        output,
+        prompts: {
+          confirmBackup: async () => {
+            prompted = true;
+          },
+        },
+      }),
+    ).rejects.toMatchObject({ type: "EXISTING_PROJECT_REPLACEMENT_BLOCKED" });
 
-    expect(prompted).toBe(true);
-    expect(result.report).toMatchObject({
-      effectiveProjectMode: "existing",
-      conflictPolicy: "explicit-backup-and-overwrite",
-      backupRelative: ".codex/backups/install-20260615-123456",
+    expect(prompted).toBe(false);
+    expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe("existing\n");
+    expect(await readFile(script, "utf8")).toBe("project-specific publish workflow\n");
+    await expect(lstat(resolve(fixture.targetRoot, ".codex/backups"))).rejects.toMatchObject({
+      code: "ENOENT",
     });
-    expect(output.messages).toContainEqual([
-      "DANGER",
-      "Conflicts may contain important existing-project context.",
-    ]);
-    expect(output.messages).toContainEqual([
-      "DANGER",
-      "[SCRIPT-MERGE] .codex/scripts/publish-changes.mjs differs; target scripts may contain project-specific workflow, publish, CI, or local automation changes.",
-    ]);
-    expect(
-      await readFile(
-        resolve(
-          fixture.targetRoot,
-          result.report.backupRelative,
-          ".codex/scripts/publish-changes.mjs",
-        ),
-        "utf8",
-      ),
-    ).toBe("project-specific publish workflow\n");
-    expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe(
-      "agent instructions\n",
-    );
-    expect(await readFile(script, "utf8")).toBe('console.log("publish");\n');
   });
 
   it("reports auto resolution and review choices during a zero-write conflict dry-run", async () => {
@@ -527,7 +512,7 @@ describe("installer flow", () => {
           },
         },
       }),
-    ).rejects.toThrow("Source or target state changed");
+    ).rejects.toThrow("Source, target, policy, or installation manifest changed");
     expect(await readFile(resolve(targetDrift.targetRoot, "AGENTS.md"), "utf8")).toBe(
       "late target change\n",
     );
@@ -548,7 +533,7 @@ describe("installer flow", () => {
           },
         },
       }),
-    ).rejects.toThrow("Source or target state changed");
+    ).rejects.toThrow("Source, target, policy, or installation manifest changed");
     expect(await readdir(sourceDrift.targetRoot)).toEqual([]);
   });
 
@@ -559,8 +544,7 @@ describe("installer flow", () => {
       run(fixture, {
         options: {
           apply: true,
-          projectMode: "existing",
-          overwriteConflicts: true,
+          projectMode: "new",
         },
         hooks: {
           afterBackupMaterialized: async ({ roots }) => {
@@ -568,7 +552,7 @@ describe("installer flow", () => {
           },
         },
       }),
-    ).rejects.toThrow("Source or target state changed");
+    ).rejects.toThrow("Source, target, policy, or installation manifest changed");
     expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe(
       "changed after backup\n",
     );
@@ -613,6 +597,9 @@ describe("installer flow", () => {
       "INFO",
       "Prepared backup retained at: .codex/backups/install-20260615-123456",
     ]);
+    await expect(
+      readFile(resolve(fixture.targetRoot, ".codex/foundation-kit/installation-manifest.json")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("treats missing diff as a non-blocking preview warning", async () => {

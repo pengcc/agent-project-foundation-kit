@@ -6,6 +6,7 @@ export function createFinalReport({
   conflictPolicy,
   backupRelative = "",
   completedTargets = [],
+  installationManifestRelative = "",
 }) {
   return {
     mode,
@@ -22,6 +23,17 @@ export function createFinalReport({
     migrationReviews: plan.migrationReviews,
     optionalSelectedFiles: plan.optionalSelectedFiles,
     reviewItems: plan.reviewItems,
+    safeAddFiles: plan.safeAddFiles,
+    kitManagedReplaceFiles: plan.kitManagedReplaceFiles,
+    projectOwnedFiles: plan.projectOwnedFiles,
+    mixedAgentMergeFiles: plan.mixedAgentMergeFiles,
+    blockedManualFiles: plan.blockedManualFiles,
+    unchangedFiles: plan.unchangedFiles,
+    installationManifestStatus: installationManifestRelative
+      ? "valid"
+      : plan.installationManifest.status,
+    installationManifestIssues: [...plan.installationManifest.issues],
+    installationManifestRelative,
     selectedOptionalSkills: [...plan.selectedOptionalSkills],
     completedTargets: [...completedTargets],
     completedFiles: completedTargets.length,
@@ -48,10 +60,10 @@ export function printConflictReviewChoices(report, output) {
   output.info("Next steps:");
   output.info("1. Abort and review the conflicting project files manually.");
   output.info("2. Rerun with --show-diff to inspect conflicts; this does not authorize overwrite.");
+  output.info("3. Use a manual merge/adoption workflow for important project context.");
   output.info(
-    "3. Rerun with --overwrite-conflicts to request backup and overwrite with typed confirmation.",
+    "4. Existing-project replacement is report-only in WI-1; --overwrite-conflicts cannot bypass classification.",
   );
-  output.info("4. Use a manual merge/adoption workflow for important project context.");
   if (report.requestedProjectMode === "auto") {
     output.warning(
       "Use --project-mode new only when you intentionally want the new-project overwrite workflow.",
@@ -71,14 +83,21 @@ export function printBlockedReport(report, output) {
 export function printFinalReport(report, output) {
   output.success(
     `${report.mode === "apply" ? "Install completed" : "Dry-run completed"}: ` +
-      `${report.writableNewFiles} safe new, ${report.identicalFiles} identical, ` +
-      `${report.differentFiles} different, ${report.scriptMergeFiles} script merge, ` +
-      `${report.migrationReviews} migration review, ${report.total} total.`,
+      `${report.safeAddFiles} SAFE_ADD, ` +
+      `${report.kitManagedReplaceFiles} KIT_MANAGED_REPLACE, ` +
+      `${report.projectOwnedFiles} PROJECT_OWNED, ` +
+      `${report.mixedAgentMergeFiles} MIXED_AGENT_MERGE, ` +
+      `${report.blockedManualFiles} BLOCKED_MANUAL, ` +
+      `${report.unchangedFiles} unchanged, ${report.total} total.`,
   );
   output.info(`Target root: ${report.targetRoot}`);
   printPolicySummary(report, output);
   if (report.backupRelative) {
     output.info(`Backups: ${report.backupRelative}`);
+  }
+  output.info(`Installation manifest status: ${report.installationManifestStatus}`);
+  if (report.installationManifestRelative) {
+    output.info(`Installation manifest updated: ${report.installationManifestRelative}`);
   }
   if (report.selectedOptionalSkills.length) {
     output.info(
@@ -93,10 +112,11 @@ export function printFinalReport(report, output) {
     }
     return;
   }
-  if (report.conflictPolicy === "safe-new-files-only" && report.reviewItems) {
-    output.warning(
-      "Partial adoption: safe new files were installed; existing differences and migration items were preserved for review.",
-    );
+  if (report.reviewItems) {
+    const message = report.completedFiles
+      ? "Partial adoption: authorized files were installed; unresolved differences and migration items were preserved for review."
+      : "Upgrade remains partial: unresolved differences and migration items were preserved for review.";
+    output.warning(message);
   }
   output.info("Next steps:");
   output.info("1. Run .codex/prompts/force-initialize-project-context.md with your agent.");

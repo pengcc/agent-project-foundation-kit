@@ -1,5 +1,16 @@
 import { resolve } from "node:path";
 
+function shortHash(value) {
+  return value ? value.slice(0, 12) : "none";
+}
+
+function evidence(entry) {
+  return (
+    `reason=${entry.reasonCode}; baseline=${shortHash(entry.baselineSha256)}; ` +
+    `target=${shortHash(entry.targetSha256)}; source=${shortHash(entry.sourceSha256)}`
+  );
+}
+
 export async function reportConflicts({
   plan,
   kitRoot,
@@ -10,40 +21,56 @@ export async function reportConflicts({
   overwriteConflicts = false,
 }) {
   output.info(
-    `Plan: ${plan.writableNewFiles} safe new, ${plan.identicalFiles} identical, ` +
-      `${plan.differentFiles} different, ${plan.scriptMergeFiles} script merge, ` +
-      `${plan.migrationReviews} migration review, ${plan.total} total mapped file(s).`,
+    `Plan: ${plan.safeAddFiles} SAFE_ADD, ${plan.kitManagedReplaceFiles} KIT_MANAGED_REPLACE, ` +
+      `${plan.projectOwnedFiles} PROJECT_OWNED, ${plan.mixedAgentMergeFiles} MIXED_AGENT_MERGE, ` +
+      `${plan.blockedManualFiles} BLOCKED_MANUAL, ${plan.unchangedFiles} unchanged, ` +
+      `${plan.total} total item(s).`,
   );
+  output.info(`Installation manifest: ${plan.installationManifest.status}`);
+  for (const issue of plan.installationManifest.issues) {
+    output.danger(`[MANIFEST] ${issue}`);
+  }
+
   for (const entry of plan.entries) {
     if (entry.action === "skip-identical") {
-      output.debug(`[SKIP] ${entry.targetRelative} (existing-identical)`);
+      output.debug(`[SKIP] ${entry.targetRelative} (${entry.reasonCode})`);
       continue;
     }
-    if (entry.action === "preserve") {
-      output.info(`[PRESERVE] ${entry.targetRelative} (project-owned memory)`);
-    } else if (entry.action === "manual-merge") {
-      output.warning(`[MERGE] ${entry.targetRelative} differs; manual merge required.`);
+    const detail = evidence(entry);
+    if (entry.resultCategory === "SAFE_ADD") {
+      const optional = entry.kind === "optional" ? "[OPTIONAL] " : "";
+      output.info(`${optional}[SAFE_ADD] ${entry.targetRelative}; ${detail}`);
+    } else if (entry.resultCategory === "KIT_MANAGED_REPLACE") {
+      output.warning(
+        `[KIT_MANAGED_REPLACE] ${entry.targetRelative}; report-only in WI-1; ${detail}`,
+      );
+    } else if (entry.resultCategory === "PROJECT_OWNED") {
+      output.info(`[PROJECT_OWNED] ${entry.targetRelative}; preserved; ${detail}`);
+    } else if (entry.resultCategory === "MIXED_AGENT_MERGE") {
+      output.warning(`[MIXED_AGENT_MERGE] ${entry.targetRelative}; ${detail}`);
     } else if (entry.action === "script-merge") {
-      const message =
-        `[SCRIPT-MERGE] ${entry.targetRelative} differs; target scripts may contain ` +
-        "project-specific workflow, publish, CI, or local automation changes.";
-      if (overwriteConflicts) output.danger(message);
-      else output.warning(message);
+      output.warning(
+        `[BLOCKED_MANUAL] [SCRIPT-MERGE] ${entry.targetRelative}; ` +
+          `project-specific workflow changes may exist; ${detail}`,
+      );
     } else if (entry.action === "migration-review") {
       output.warning(
-        `[MIGRATE] ${entry.targetRelative} conflicts with legacy kit-managed path ${entry.collisionPath}.`,
+        `[BLOCKED_MANUAL] [MIGRATE] ${entry.targetRelative}; ` +
+          `legacy path ${entry.collisionPath}; ${detail}`,
       );
-    } else if (entry.action === "review") {
-      const label = entry.ownership === "optional" ? "[OPTIONAL] [REVIEW]" : "[REVIEW]";
-      const message = `${label} ${entry.targetRelative} differs from ${entry.sourceRelative}.`;
+    } else if (entry.resultCategory === "BLOCKED_MANUAL") {
+      const message = `[BLOCKED_MANUAL] ${entry.targetRelative}; ${detail}`;
       if (overwriteConflicts) output.danger(message);
       else output.warning(message);
-    } else if (entry.ownership === "optional") {
-      output.info(`[OPTIONAL] [NEW] ${entry.targetRelative}`);
-    } else {
-      output.info(`[NEW] ${entry.targetRelative}`);
     }
-    if (!showDiff || entry.contentState !== "existing-different") continue;
+
+    if (
+      !showDiff ||
+      entry.mappingState !== "current" ||
+      entry.contentState !== "existing-different"
+    ) {
+      continue;
+    }
     const result = await commandRunner.run("diff", [
       "-u",
       resolve(targetRoot, entry.targetRelative),

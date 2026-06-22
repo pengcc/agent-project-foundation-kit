@@ -9,6 +9,11 @@ import {
 } from "./copier.mjs";
 import { InstallerError } from "./errors.mjs";
 import { createFinalReport, printBlockedReport, printFinalReport } from "./final-report.mjs";
+import {
+  createNextInstallationManifest,
+  verifyManifestCandidates,
+  writeInstallationManifest,
+} from "./installation-manifest.mjs";
 import { buildInstallPlan, revalidateInstallPlan } from "./planner.mjs";
 import {
   conflictOverwriteBlocked,
@@ -68,6 +73,36 @@ export async function runInstallerFlow({
     return { report, plan };
   }
 
+  if (plan.installationManifest.status === "invalid") {
+    const report = createFinalReport({
+      mode: "blocked",
+      plan,
+      targetRoot: roots.targetRoot,
+      policy,
+      conflictPolicy,
+    });
+    printBlockedReport(report, output);
+    throw new InstallerError(
+      "INVALID_INSTALLATION_MANIFEST",
+      "Apply blocked because the installation manifest is invalid or conflicts with source policy.",
+    );
+  }
+
+  if (policy.effectiveMode === "existing" && options.overwriteConflicts && plan.reviewItems) {
+    const report = createFinalReport({
+      mode: "blocked",
+      plan,
+      targetRoot: roots.targetRoot,
+      policy,
+      conflictPolicy: "existing-project-replacement-blocked",
+    });
+    printBlockedReport(report, output);
+    throw new InstallerError(
+      "EXISTING_PROJECT_REPLACEMENT_BLOCKED",
+      "WI-1 does not permit replacing existing target files in existing-project mode.",
+    );
+  }
+
   if (
     conflictOverwriteBlocked({
       policy,
@@ -85,7 +120,7 @@ export async function runInstallerFlow({
     printBlockedReport(report, output);
     throw new InstallerError(
       "CONFLICT_REVIEW_REQUIRED",
-      "Existing-project differences or migration items require manual review, safe apply, or --overwrite-conflicts.",
+      "Existing-project differences or migration items require safe apply or manual review.",
     );
   }
 
@@ -106,7 +141,14 @@ export async function runInstallerFlow({
   try {
     const entriesToApply = options.skipConflicts
       ? plan.entries.filter((entry) => entry.action === "write")
-      : plan.entries.filter((entry) => entry.contentState !== "existing-identical");
+      : policy.effectiveMode === "existing"
+        ? plan.entries.filter((entry) => entry.action === "write")
+        : plan.entries.filter(
+            (entry) =>
+              entry.mappingState === "current" &&
+              entry.contentState !== "existing-identical" &&
+              !["manifested-target-missing", "legacy-path-collision"].includes(entry.reasonCode),
+          );
     const applyPlan = { ...plan, entries: entriesToApply };
     runtimeRoot = await createRuntimeRoot(roots.repoRoot, runId);
     const stagedRoot = await stageReplacements({
@@ -151,8 +193,22 @@ export async function runInstallerFlow({
       materializedBackup: materialized,
       signal,
       hooks,
-      allowOverwrite: !options.skipConflicts,
+      allowOverwrite: policy.effectiveMode === "new" && !options.skipConflicts,
     });
+    let installationManifestRelative = "";
+    try {
+      await hooks.beforeInstallationManifestWrite?.({ plan, roots, completedTargets });
+      await verifyManifestCandidates({ plan, targetRoot: roots.targetRoot, completedTargets });
+      const nextInstallationManifest = createNextInstallationManifest({ plan, completedTargets });
+      installationManifestRelative = await writeInstallationManifest({
+        targetRoot: roots.targetRoot,
+        expected: plan.installationManifest,
+        manifest: nextInstallationManifest,
+      });
+    } catch (error) {
+      error.completedTargets = completedTargets;
+      throw error;
+    }
 
     const report = createFinalReport({
       mode: "apply",
@@ -162,6 +218,7 @@ export async function runInstallerFlow({
       conflictPolicy,
       backupRelative: materialized?.backupRelative,
       completedTargets,
+      installationManifestRelative,
     });
     printFinalReport(report, output);
     return { report, plan };

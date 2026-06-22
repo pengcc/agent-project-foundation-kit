@@ -84,25 +84,39 @@ or piped input. It stages and verifies all replacements and backup snapshots und
 backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` with a
 `manifest.json`. The installer does not create or modify downstream `package.json`.
 
+Successful apply creates or updates a separate stable installation baseline at
+`.codex/foundation-kit/installation-manifest.json`. This deterministic schema-v1 manifest stores
+SHA-256 evidence only for exact kit-managed full files that were safely added or explicitly
+adopted while byte-identical. It stores no target contents, timestamps, absolute machine paths, or
+project-owned baselines. The manifest is classification evidence, not overwrite authority;
+source-controlled ownership and risk policy always wins. Dry-run never creates or updates it.
+
 Project mode controls conflict policy without changing mappings:
 
 - `--project-mode auto` is the default. Existing-project signals or mapped-file conflicts select
   existing-like caution; no signals and no conflicts select new-like behavior.
 - `--project-mode new` treats conflicts as starter files or previous-install remnants and permits
   the existing backup-and-overwrite flow after the typed confirmation.
-- `--project-mode existing` treats conflicts as important project context and blocks apply until
-  they are reviewed or `--overwrite-conflicts` is explicitly supplied.
+- `--project-mode existing` treats conflicts as important project context. WI-1 blocks existing
+  target replacement even when `--overwrite-conflicts` is supplied; use safe apply or manual
+  review.
 
 `--apply --skip-conflicts` is the zero-overwrite existing-project path. It writes only mapped
-targets classified as genuinely new, safely skips byte-identical targets, and preserves differing
-files, existing project memory, differing `AGENTS.md`, and skill migration collisions for review.
+targets classified as `SAFE_ADD`, safely skips byte-identical targets, records eligible unchanged
+kit-managed baselines, and preserves differing files, existing project memory, differing
+`AGENTS.md`, and skill migration collisions for review.
 It is mutually exclusive with `--overwrite-conflicts` and explicit `--project-mode new`.
+
+Upgrade reports separate `SAFE_ADD`, `KIT_MANAGED_REPLACE`, `PROJECT_OWNED`,
+`MIXED_AGENT_MERGE`, and `BLOCKED_MANUAL` from unchanged files. During WI-1,
+`KIT_MANAGED_REPLACE` is report-only. Missing, malformed, unsafe, unsupported, or
+source-policy-conflicting installation manifests block apply before target writes.
 
 In existing projects, differing `.codex/scripts/*` files are reported as workflow-script merge
 items because installed scripts may contain project-specific workflow, publish, CI, or local
 automation changes. New scripts still install normally, identical scripts are skipped, and safe
-apply preserves differing scripts. Explicit overwrite remains available only through the existing
-backup and typed-confirmation path; the installer does not auto-merge or migrate target scripts.
+apply preserves differing scripts. Existing-project overwrite cannot bypass this classification;
+the installer does not auto-merge or migrate target scripts.
 
 Use repeatable `--include-optional <name>` flags to select packages from
 `kit/optional-skills/<name>/`. Selected packages install only under
@@ -110,10 +124,11 @@ Use repeatable `--include-optional <name>` flags to select packages from
 `.codex/skills/project/`, or a flat `.codex/skills/<name>/` path. Project-owned
 `.codex/skills/project/` content is outside installer inspection and collision handling.
 
-`--overwrite-conflicts` never skips conflict display, the strong warning, typed confirmation,
-backup preparation, plan revalidation, or verified overwrite. It only authorizes the existing-mode
-flow to reach those safeguards. Project mode never changes package files, dependencies, formatter
-or linter tooling, optional-skill selection, project-memory merging, or publish behavior.
+`--overwrite-conflicts` cannot bypass ownership or classification in existing-project mode during
+WI-1. Explicit new-project replacement retains conflict display, strong warning, typed
+confirmation, backup preparation, plan revalidation, and verified overwrite. Project mode never
+changes package files, dependencies, formatter or linter tooling, optional-skill selection,
+project-memory merging, or publish behavior.
 
 Use `--show-diff` for optional `diff -u` previews. A missing `diff` command warns but does not
 block dry-run, apply authorization, backup, installation, or verification.
