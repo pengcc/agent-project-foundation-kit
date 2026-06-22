@@ -299,21 +299,21 @@ leaves them for later publication, its final report must include:
 ```txt
 Publish changes recommendation: type: <small safe update | normal update | significant / high-impact update>; message: <commit message>; PR title: <PR title>
 Recommended next workflow: code-review
-Fast PR after review approval: pnpm publish:pr-only "<commit message>" "<PR title>" | not available (<reason>) | not checked (<reason>)
-Publication guardrail: do not run Fast PR, push, create/update PR, merge, release, or deploy until review is complete and the user explicitly authorizes publication.
+PR for review: pnpm publish:pr-only "<commit message>" "<PR title>" | not available (<reason>) | not checked (<reason>)
+Publication guardrail: do not create/update a PR unless the user explicitly authorizes PR publication; do not merge, release, deploy, or otherwise finalize publication until review is complete and the user explicitly authorizes it.
 ```
 
-Whenever `Publish changes recommendation` is present, `Fast PR after review approval` and
+Whenever `Publish changes recommendation` is present, `PR for review` and
 `Publication guardrail` are required; otherwise neither field is required. The default next
 workflow after non-publish implementation is `code-review`, not `publish-current-branch`.
 
-An exact Fast PR command must come from current project-local evidence such as root `AGENTS.md`,
+An exact PR-for-review command must come from current project-local evidence such as root `AGENTS.md`,
 project memory, package scripts, or installed project scripts. The supported command form, when
 that evidence verifies it, is `pnpm publish:pr-only "<commit message>" "<PR title>"`. Do not use
-`pnpm publish:changes` as a Fast PR substitute, and do not infer other command forms from package
-script names. Use `not checked (<reason>)` when command evidence was not inspected or could not be
-verified. Use `not available (<reason>)` when inspected project sources provide no verified Fast
-PR command. Do not guess a command.
+`pnpm publish:changes` as a PR-for-review or Fast PR substitute, and do not infer other command
+forms from package script names. Use `not checked (<reason>)` when command evidence was not
+inspected or could not be verified. Use `not available (<reason>)` when inspected project sources
+provide no verified PR-for-review command. Do not guess a command.
 
 This handoff does not apply when the only outputs are local-only artifacts, including
 `dev_locals/**` plans, research notes, handoffs, scratch files, execution logs, dry-run reports,
@@ -326,10 +326,11 @@ Publishable changes: none; local-only artifacts changed: <paths or summary>
 
 When publishable changes and local-only artifacts both changed, include the handoff for the
 publishable scope and report the local-only artifacts separately. Do not include local-only
-artifacts in the proposed commit or Fast PR scope.
+artifacts in the proposed commit or PR-for-review scope.
 
-Do not run the Fast PR command, push, create or update a PR, merge, release, or deploy before review
-is complete and the user explicitly authorizes publication. After that authorization,
-`publish-current-branch` remains the only workflow authorized to push, create or update a PR, or
-merge, and its own factual Publish Summary is outside this pre-publication handoff. This handoff
-does not itself authorize any publication action.
+Do not create or update a PR unless the user explicitly authorizes publishing the branch for
+review. The PR-only action exists so review can happen; it does not require completed review. Do
+not merge, release, deploy, or otherwise finalize publication until review is complete and the
+user explicitly authorizes that action. `publish-current-branch` remains the only workflow
+authorized to push, create or update a PR, or merge, and its own factual Publish Summary is outside
+this pre-publication handoff. This handoff does not itself authorize any publication action.

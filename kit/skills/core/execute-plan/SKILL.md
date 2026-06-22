@@ -148,7 +148,7 @@ durable memory write -> update-project-memory
 concrete diff/PR/package review -> code-review
 repo-wide audit -> codebase-audit
 unclear requirements -> grill-me
-publish readiness / publish handoff -> recommend code-review after execution; publish-current-branch only after review approval and explicit publication authorization
+publish readiness / publish handoff -> recommend code-review after execution; publish-current-branch only after explicit user authorization for the requested PR or merge action
 ```
 
 Read and apply the supporting skill only for that bounded substep, report the supporting skill
@@ -408,14 +408,15 @@ Execution Summary:
 - External / global actions:
 - Publish changes recommendation: <shared-contract value when applicable>
 - Recommended next workflow: <code-review when the shared handoff applies; otherwise the applicable workflow>
-- Fast PR after review approval: <shared-contract value; include only when Publish changes recommendation is present>
+- PR for review: <shared-contract value; include only when Publish changes recommendation is present>
 - Publication guardrail: <shared-contract value; include only when Publish changes recommendation is present>
 ```
 
 If a local commit was created, report the commit hash.
 
 Include the four publish handoff fields only when required by the shared contract. Otherwise use
-its local-only report when applicable. Publishing requires completed review, explicit user
-authorization, and the matching `publish-current-branch` workflow.
+its local-only report when applicable. PR creation or update requires explicit user authorization.
+Merge or final publication requires completed review, explicit user authorization, and the
+matching `publish-current-branch` workflow.
 
 If project memory updates are needed, recommend `update-project-memory`.
