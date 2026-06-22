@@ -9,7 +9,12 @@ import {
   stageReplacements,
 } from "./copier.mjs";
 import { InstallerError } from "./errors.mjs";
-import { createFinalReport, printBlockedReport, printFinalReport } from "./final-report.mjs";
+import {
+  createFinalReport,
+  printBlockedReport,
+  printFinalReport,
+  printPublishAliasPlan,
+} from "./final-report.mjs";
 import { atomicCopyIntoTarget, hashFile } from "./fs-safe.mjs";
 import {
   createNextInstallationManifest,
@@ -24,6 +29,7 @@ import {
   conflictPolicyOutcome,
   resolveProjectMode,
 } from "./project-mode.mjs";
+import { applyPublishAliases } from "./publish-aliases.mjs";
 import { inspectTargetProject } from "./target-project.mjs";
 import { resolveInstallRoots } from "./validation.mjs";
 
@@ -105,7 +111,9 @@ async function rollbackReactCanary({ packageEntries, completedTargets, materiali
     (target) => !REACT_CANARY_TARGETS.includes(target),
   );
   await updateBackupManifest(materialized, {
-    status: "rolled-back",
+    status: materialized.manifest.completedSupplementalTargets?.length
+      ? "partially-completed"
+      : "rolled-back",
     completedTargets: remainingCompletedTargets,
   });
   return remainingCompletedTargets;
@@ -155,6 +163,7 @@ export async function runInstallerFlow({
     replaceKitManaged: options.replaceKitManaged,
     managedReplacementPackageEligible: reactCanaryPackage.eligible,
   });
+  printPublishAliasPlan(plan.publishAliases, output);
 
   if (!options.apply) {
     output.info("Dry-run only. Re-run with --apply to write files.");
@@ -283,6 +292,16 @@ export async function runInstallerFlow({
       plan: applyPlan,
       targetRoot: roots.targetRoot,
       runtimeRoot,
+      supplementalEntries: plan.publishAliases.added.length
+        ? [
+            {
+              targetRelative: plan.publishAliases.targetRelative,
+              source: "installer:publish-package-aliases",
+              originalSha256: plan.publishAliases.originalSha256,
+              replacementSha256: plan.publishAliases.replacementSha256,
+            },
+          ]
+        : [],
       now,
       signal,
     });
@@ -339,6 +358,41 @@ export async function runInstallerFlow({
       throw error;
     }
     let installationManifestRelative = "";
+    let publishAliasesApplied = false;
+    if (plan.publishAliases.added.length) {
+      if (materialized) {
+        await updateBackupManifest(materialized, {
+          status: "applying",
+          completedTargets,
+          completedSupplementalTargets: [],
+        });
+      }
+      try {
+        await hooks.beforePublishAliasesApply?.({ plan, roots, materialized, completedTargets });
+        publishAliasesApplied = await applyPublishAliases({
+          plan: plan.publishAliases,
+          targetRoot: roots.targetRoot,
+          signal,
+        });
+      } catch (error) {
+        if (materialized) {
+          await updateBackupManifest(materialized, {
+            status: error?.type === "INTERRUPTED" ? "interrupted" : "failed",
+            completedTargets,
+            completedSupplementalTargets: [],
+          });
+        }
+        error.completedTargets = completedTargets;
+        throw error;
+      }
+      if (materialized) {
+        await updateBackupManifest(materialized, {
+          status: "completed",
+          completedTargets,
+          completedSupplementalTargets: publishAliasesApplied ? ["package.json"] : [],
+        });
+      }
+    }
     try {
       installationManifestRelative = await persistInstallationManifest({
         plan,
@@ -366,6 +420,12 @@ export async function runInstallerFlow({
           rollbackError.completedTargets = completedTargets;
           throw rollbackError;
         }
+      } else if (materialized) {
+        await updateBackupManifest(materialized, {
+          status: "failed",
+          completedTargets,
+          completedSupplementalTargets: publishAliasesApplied ? ["package.json"] : [],
+        });
       }
       error.completedTargets = completedTargets;
       throw error;
@@ -382,6 +442,7 @@ export async function runInstallerFlow({
       backupRelative: materialized?.backupRelative,
       completedTargets,
       installationManifestRelative,
+      publishAliasesApplied,
     });
     printFinalReport(report, output);
     return { report, plan };

@@ -1,3 +1,5 @@
+import { PUBLISH_SCRIPT_FALLBACK } from "./publish-aliases.mjs";
+
 export function createFinalReport({
   mode,
   plan,
@@ -9,6 +11,7 @@ export function createFinalReport({
   installationManifestRelative = "",
   replaceKitManaged = false,
   managedReplacementPackageEligible = false,
+  publishAliasesApplied = false,
 }) {
   const completed = new Set(completedTargets);
   const authorizedManagedReplacements = plan.entries.filter(
@@ -64,7 +67,46 @@ export function createFinalReport({
     detectedSignals: [...policy.detectedSignals],
     conflictPolicy,
     backupRelative,
+    publishAliases: {
+      status: plan.publishAliases.status,
+      skippedReason: plan.publishAliases.skippedReason,
+      added: plan.publishAliases.added.map((entry) => entry.name),
+      alreadyCurrent: plan.publishAliases.alreadyCurrent.map((entry) => entry.name),
+      skippedConflicts: plan.publishAliases.conflicts.map((entry) => entry.name),
+      applied: publishAliasesApplied,
+      rawFallbackCommand: PUBLISH_SCRIPT_FALLBACK,
+    },
   };
+}
+
+function publishAliasSkipMessage(reason) {
+  const messages = {
+    "package-json-missing": "package.json is missing",
+    "package-json-invalid": "package.json is invalid JSON",
+    "package-json-non-object": "package.json has a non-object root",
+    "package-json-scripts-non-object": "package.json scripts is not an object",
+    "package-json-not-regular": "package.json is not a regular file",
+  };
+  return messages[reason] ?? reason;
+}
+
+export function printPublishAliasPlan(plan, output) {
+  output.step("Publish package aliases");
+  if (plan.status === "skipped") {
+    output.skipped(
+      `Publish aliases not installed: ${publishAliasSkipMessage(plan.skippedReason)}.`,
+    );
+    output.info(`Raw fallback command: ${PUBLISH_SCRIPT_FALLBACK}`);
+    return;
+  }
+  for (const entry of plan.added) output.info(`Planned addition: ${entry.name}`);
+  for (const entry of plan.alreadyCurrent) output.skipped(`Already current: ${entry.name}`);
+  for (const entry of plan.conflicts) {
+    output.warning(`Skipped conflicting alias: ${entry.name}`);
+    output.info(`Existing value: ${String(entry.existingValue)}`);
+    output.info(`Kit default: ${entry.defaultValue}`);
+  }
+  if (!plan.added.length) output.skipped("No safe missing aliases to add.");
 }
 
 function printPolicySummary(report, output) {
@@ -76,6 +118,24 @@ function printPolicySummary(report, output) {
   output.info(`Conflict count: ${report.conflicts}`);
   output.info(`Review item count: ${report.reviewItems}`);
   output.info(`Conflict policy: ${report.conflictPolicy}`);
+}
+
+function printPublishAliasSummary(report, output) {
+  const aliases = report.publishAliases;
+  output.info("Publish package aliases:");
+  if (aliases.status === "skipped") {
+    output.info(`- Not installed: ${publishAliasSkipMessage(aliases.skippedReason)}.`);
+  } else {
+    const addedLabel = report.mode === "apply" ? "Added" : "Planned additions";
+    output.info(`- ${addedLabel}: ${aliases.added.length ? aliases.added.join(", ") : "none"}`);
+    output.info(
+      `- Already current: ${aliases.alreadyCurrent.length ? aliases.alreadyCurrent.join(", ") : "none"}`,
+    );
+    output.info(
+      `- Skipped conflicts: ${aliases.skippedConflicts.length ? aliases.skippedConflicts.join(", ") : "none"}`,
+    );
+  }
+  output.info(`- Raw fallback command: ${aliases.rawFallbackCommand}`);
 }
 
 export function printConflictReviewChoices(report, output) {
@@ -143,6 +203,7 @@ export function printFinalReport(report, output) {
       `Selected optional skills: ${report.selectedOptionalSkills.join(", ")} (${report.optionalSelectedFiles} mapped file(s))`,
     );
   }
+  printPublishAliasSummary(report, output);
   if (report.mode === "dry-run") {
     if (report.conflictPolicy === "manual-review-required") {
       printConflictReviewChoices(report, output);
@@ -168,5 +229,4 @@ export function printFinalReport(report, output) {
   output.info(
     "Installed scripts run from the target project root, for example: node .codex/scripts/publish-changes.mjs --mode pr-only",
   );
-  output.info("Package.json aliases are optional manual setup; the installer does not add them.");
 }
