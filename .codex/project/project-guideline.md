@@ -431,9 +431,14 @@ Maintained workflow tooling boundary:
   not overwrite authorization; source-controlled ownership policy remains authoritative.
 - The installer supports repeatable exact `--include-optional <name>` selection from
   `kit/optional-skills/`, with selected packages mapped only to `.codex/skills/engineering/`.
-- WI-1 existing-project apply is safe-add-only for target content. It writes only genuinely new
-  mapped files, never replaces an existing target, and keeps kit-managed replacement report-only
-  even when `--overwrite-conflicts` is supplied.
+- Existing-project apply remains safe-add-only by default. The only managed-replacement exception
+  is the exact two-file `react-component-patterns` canary under explicit
+  `--replace-kit-managed --include-optional react-component-patterns`; all other existing-file
+  replacement remains report-only, and `--overwrite-conflicts` does not broaden authorization.
+- The React canary is package-atomic: both `SKILL.md` and `metadata.yml` must be selected and each
+  qualify as `KIT_MANAGED_REPLACE` with `managedReplaceAllowed`. Otherwise neither file is
+  replaced. Copy or manifest-write failure restores both target files and preserves the previous
+  installation manifest, so no partial package baseline advances.
 - During explicit apply, exact unchanged baseline-adoptable kit-managed files may be adopted into
   the installation manifest without rewriting their target bytes.
 - Project memory, project-owned publish config, workflow scripts and other manual-risk paths,
@@ -610,7 +615,7 @@ Current `install-foundation-kit.mjs` purpose:
   caution and empty conflict-free targets to new-like behavior
 - support explicit `new` and `existing` modes without changing file mappings
 - block existing-like conflict apply before staging; `--overwrite-conflicts` does not authorize
-  existing-project replacement during WI-1
+  existing-project replacement
 - support `--apply --skip-conflicts` as a zero-overwrite new-files-only apply path
 - classify content state separately from source-controlled ownership and risk, producing
   `SAFE_ADD`, `KIT_MANAGED_REPLACE`, `PROJECT_OWNED`, `MIXED_AGENT_MERGE`, or `BLOCKED_MANUAL`
@@ -618,9 +623,14 @@ Current `install-foundation-kit.mjs` purpose:
 - use `.codex/foundation-kit/installation-manifest.json` as SHA-256 baseline evidence for eligible
   kit-managed full-file content, while rejecting malformed manifests and ownership claims that
   conflict with source policy before apply writes
-- keep existing-project mapped target writes safe-add-only during WI-1; exact unchanged eligible
-  kit-managed files may be adopted into the manifest during explicit apply, while replacement of
-  existing files remains report-only and deferred
+- keep existing-project mapped target writes safe-add-only by default; exact unchanged eligible
+  kit-managed files may be adopted into the manifest during explicit apply without rewriting
+  target bytes
+- permit managed replacement only for the exact selected two-file `react-component-patterns`
+  canary under `--replace-kit-managed`, and only when both files independently qualify as
+  `KIT_MANAGED_REPLACE` with `managedReplaceAllowed`
+- treat the React canary as one atomic package for eligibility, target replacement, rollback, and
+  manifest advancement; all other existing-file replacement remains report-only
 - report existing-different `.codex/scripts/*` as workflow-script merge items while preserving
   new-script installation, identical skips, safe apply zero-overwrite, and explicit overwrite
   safeguards
@@ -629,8 +639,8 @@ Current `install-foundation-kit.mjs` purpose:
 - collision-check selected optional skills only against kit-managed core, meta, and engineering
   paths; never inspect or collision-check `.codex/skills/project/`
 - keep conflict display, strong warning, typed confirmation, verified backup, plan revalidation,
-  and overwrite safeguards for the explicit new-project replacement path; existing-project
-  replacement cannot use that authorization during WI-1
+  and overwrite safeguards for replacement; existing-project authorization remains limited to
+  the exact package-atomic React canary
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
 - map project templates to `.codex/project/`
 - map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/config/`,

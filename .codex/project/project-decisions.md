@@ -2403,8 +2403,9 @@ to overwrite project-owned or customized content.
   `.codex/foundation-kit/installation-manifest.json` after successful apply.
 - Store SHA-256 full-file baseline evidence only for eligible kit-managed paths. Source-controlled
   ownership policy wins over downstream manifest claims.
-- Keep WI-1 existing-project target writes safe-add-only. Existing-file replacement remains
-  report-only and deferred to a separately approved WI-2.
+- Keep WI-1 existing-project target writes safe-add-only. Any later existing-file replacement
+  requires separately approved, source-controlled authorization and cannot derive authority from
+  manifest evidence alone.
 - Permit exact unchanged, baseline-adoptable kit-managed files to be adopted into the manifest
   during explicit apply without rewriting target bytes.
 - Do not silently claim project memory, project-owned configuration, workflow scripts and other
@@ -2416,8 +2417,8 @@ to overwrite project-owned or customized content.
 ### Impact
 
 The manifest can support deterministic classification and later review, but it cannot bypass
-ownership, risk, or WI-1 replacement boundaries. Any existing-file replacement capability needs
-separate planning, authorization, and validation.
+ownership or risk policy. Existing-file replacement requires separate planning, authorization,
+and validation.
 
 ### Related files
 
@@ -2427,6 +2428,52 @@ scripts/install-foundation-kit/ownership-policy.mjs
 scripts/install-foundation-kit/planner.mjs
 scripts/install-foundation-kit/flow.mjs
 tests/install-foundation-kit/
+```
+
+## Decision: Managed replacement starts with a package-atomic React canary
+
+### Status
+
+Accepted
+
+### Context
+
+PR #108 introduced the first existing-project managed-replacement slice after WI-1. Allowing one
+file from a selected optional skill package to advance independently could leave the installed
+package internally inconsistent or record a partial baseline.
+
+### Decision
+
+- Keep existing-project apply safe-add-only by default and retain `--replace-kit-managed` as a
+  separate explicit authorization.
+- Allow replacement only for the exact source-controlled pair
+  `.codex/skills/engineering/react-component-patterns/SKILL.md` and `metadata.yml`; do not infer
+  replacement authority for any other path from manifest evidence.
+- Require both React files to be selected and each classified as `KIT_MANAGED_REPLACE` with
+  `managedReplaceAllowed`. If either file is missing, unselected, not baseline-equal, mixed,
+  manual-risk, or otherwise ineligible, replace neither file and report the package as ineligible.
+- Treat target writes and manifest advancement as one package operation. If a copy or manifest
+  write fails, restore both React files and preserve the previous installation manifest.
+- Keep AGENTS, project memory, rules, prompts, core/meta skills, scripts, configuration, GitHub
+  settings, mixed/manual-risk paths, and downstream project-specific skills outside this
+  replacement allowlist.
+
+### Impact
+
+The first managed-replacement capability is deliberately narrow and fail-closed. A downstream
+manifest proves baseline equality but does not grant replacement permission, and partial React
+package replacement or partial manifest advancement is not allowed.
+
+### Related files
+
+```txt
+scripts/install-foundation-kit/ownership-policy.mjs
+scripts/install-foundation-kit/flow.mjs
+scripts/install-foundation-kit/installation-manifest.mjs
+scripts/install-foundation-kit/conflict.mjs
+scripts/install-foundation-kit/final-report.mjs
+tests/install-foundation-kit/flow.test.mjs
+README.md
 ```
 
 ## Decision: Execute-plan readiness checks require a visible pre-execution status boundary
