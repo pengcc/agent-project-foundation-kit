@@ -877,8 +877,9 @@ Accepted
 Theme 17.1 makes `kit/scripts/publish-changes.sh` the canonical mechanical publish implementation
 and `kit/scripts/lib/workflow-common.sh` its shared helper.
 
-The installer copies the complete `kit/scripts/` tree to `.codex/scripts/`. It does not create or
-modify a downstream `package.json`.
+At this stage, the installer copied the complete `kit/scripts/` tree to `.codex/scripts/` without
+creating or modifying a downstream `package.json`. PR #115 later added the bounded safe-add alias
+exception recorded below.
 
 The `publish-current-branch` skill owns strategy, role routing, scope, authorization, and final
 reporting. Agents prefer the installed script for Git and GitHub mechanics and use the skill's
@@ -1096,7 +1097,8 @@ relative-path-only manifest with source, target, original/replacement hashes, st
 targets.
 
 `diff -u` is optional preview behavior. Its absence cannot block planning, authorization, backup,
-copy, or verification. The installer never creates or modifies downstream `package.json`.
+copy, or verification. At this stage, the installer did not create or modify downstream
+`package.json`; PR #115 later added the bounded safe-add alias exception recorded below.
 
 ### Impact
 
@@ -2028,8 +2030,9 @@ installed publish runtime.
 
 Successful installation directs users to `force-initialize-project-context`. Existing product
 plans and roadmaps are initialization inputs. Feature implementation waits for initialization and
-approved durable-memory updates. Optional skills, package aliases, and Biome adoption remain
-manual, separately approved setup.
+approved durable-memory updates. At this stage, optional skills, package aliases, and Biome
+adoption remained manual, separately approved setup. PR #115 later superseded only the package
+alias part through the bounded safe-add decision below.
 
 ### Impact
 
@@ -2057,7 +2060,8 @@ run `biome check .` at the start of `pnpm check`.
 
 Biome covers source files under `kit/`, including scripts that the installer later copies to
 downstream `.codex/scripts/`. The installer does not install Biome, create target Biome
-configuration, modify target `package.json`, or require downstream projects to adopt Biome.
+configuration, add dependencies, or require downstream projects to adopt Biome. PR #115's
+safe-add publish aliases are independent of Biome adoption.
 
 When initialization finds no existing formatter/linter in a downstream project, it may recommend
 Biome as a manual setup candidate through a separate approved plan. Existing project tooling takes
@@ -2112,7 +2116,8 @@ drafts, conflicts, dirty worktrees, and wrong bases remain blocking.
 
 Repository-level **Allow auto-merge** permits the feature but does not enable it per PR. The option
 is never inferred, never bypasses checks or reviews, and is invalid for normal publish and PR-only
-modes. Downstream package aliases remain optional manual setup; the installer does not add them.
+modes. At this stage, downstream package aliases remained optional manual setup; PR #115 later
+superseded that setup boundary with the safe-add decision below.
 
 ### Impact
 
@@ -2852,8 +2857,8 @@ separate explicit user authorization. `publish-current-branch` remains the workf
 push, PR, and merge actions.
 
 Do not use `pnpm publish:changes` as a PR-for-review substitute or infer command forms from package
-script names. Downstream package-script installation and default behavior remain unresolved and
-outside this decision.
+script names. Downstream package-script installation was outside this decision and is resolved by
+the later safe-add publish-alias decision below.
 
 ### Impact
 
@@ -2865,3 +2870,46 @@ changing package scripts, installer behavior, or publish-script behavior.
 - `kit/rules/agent-operating-contract.md`
 - `kit/skills/core/execute-plan/SKILL.md`
 - `tests/install-foundation-kit/core.test.mjs`
+
+## Decision: Downstream publish package aliases are safe-add installer conveniences
+
+### Status
+
+Accepted
+
+### Context
+
+Installed publish scripts run from `.codex/scripts/`, but downstream projects previously needed to
+add package aliases manually. Automatically replacing existing aliases or claiming
+`package.json` as kit-managed would violate project ownership and existing-project safety.
+
+### Decision
+
+For a valid existing downstream `package.json`, the installer may add these missing aliases:
+
+```txt
+publish:changes        node .codex/scripts/publish-changes.mjs
+publish:pr-only        node .codex/scripts/publish-changes.mjs --mode pr-only
+publish:merge-pr       node .codex/scripts/publish-changes.mjs --mode merge-pr
+publish:merge-pr:auto  node .codex/scripts/publish-changes.mjs --mode merge-pr --auto-merge
+```
+
+Existing same-name aliases with different values are preserved and reported. Missing, invalid,
+non-object, or structurally unsafe package files are not created or repaired. `package.json`
+remains project-owned and outside installation-manifest authority. The canonical guaranteed
+executor remains `node .codex/scripts/publish-changes.mjs`; source-repository aliases may instead
+invoke `kit/scripts/publish-changes.mjs` because they run before installation.
+
+### Impact
+
+Downstream projects receive convenient default commands without silent package-script overwrite,
+dependency changes, or broader installer ownership. Direct installed-script execution remains the
+stable fallback.
+
+### Related Files
+
+- `scripts/install-foundation-kit/publish-aliases.mjs`
+- `scripts/install-foundation-kit/planner.mjs`
+- `scripts/install-foundation-kit/flow.mjs`
+- `scripts/install-foundation-kit/final-report.mjs`
+- `tests/install-foundation-kit/flow.test.mjs`
