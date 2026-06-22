@@ -2385,6 +2385,50 @@ README.md
 docs/optional-skill-catalog.md
 ```
 
+## Decision: Installation manifests are evidence, not replacement authority
+
+### Status
+
+Accepted
+
+### Context
+
+PR #106 implemented WI-1 manifest-backed classification for existing-project upgrades. The
+installer needs durable baseline evidence without converting installation history into permission
+to overwrite project-owned or customized content.
+
+### Decision
+
+- Generate the stable schema-v1 manifest at
+  `.codex/foundation-kit/installation-manifest.json` after successful apply.
+- Store SHA-256 full-file baseline evidence only for eligible kit-managed paths. Source-controlled
+  ownership policy wins over downstream manifest claims.
+- Keep WI-1 existing-project target writes safe-add-only. Existing-file replacement remains
+  report-only and deferred to a separately approved WI-2.
+- Permit exact unchanged, baseline-adoptable kit-managed files to be adopted into the manifest
+  during explicit apply without rewriting target bytes.
+- Do not silently claim project memory, project-owned configuration, workflow scripts and other
+  manual-risk paths, mixed entrypoints/config, or unclaimed project skills as replaceable kit
+  baselines.
+- Block apply before mapped target writes when the manifest is malformed or conflicts with source
+  policy.
+
+### Impact
+
+The manifest can support deterministic classification and later review, but it cannot bypass
+ownership, risk, or WI-1 replacement boundaries. Any existing-file replacement capability needs
+separate planning, authorization, and validation.
+
+### Related files
+
+```txt
+scripts/install-foundation-kit/installation-manifest.mjs
+scripts/install-foundation-kit/ownership-policy.mjs
+scripts/install-foundation-kit/planner.mjs
+scripts/install-foundation-kit/flow.mjs
+tests/install-foundation-kit/
+```
+
 ## Decision: Execute-plan readiness checks require a visible pre-execution status boundary
 
 ### Status

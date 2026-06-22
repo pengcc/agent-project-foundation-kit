@@ -71,10 +71,21 @@ export function printConflictReviewChoices(report, output) {
   }
 }
 
+function blockedReportMessage(report) {
+  if (report.installationManifestStatus === "invalid") {
+    return "Install blocked: the installation manifest is invalid or conflicts with source policy; no target files were written.";
+  }
+  if (report.conflictPolicy === "existing-project-replacement-blocked") {
+    return "Install blocked: existing-project replacement is report-only in WI-1; no existing target files were replaced.";
+  }
+  if (report.mixedAgentMergeFiles || report.blockedManualFiles) {
+    return "Install blocked: existing-project differences include mixed or manual-risk entries that require manual review; no existing target files were replaced.";
+  }
+  return "Install blocked: existing-project differences or migration items require safe apply or manual review.";
+}
+
 export function printBlockedReport(report, output) {
-  output.danger(
-    "Install blocked: existing-project differences or migration items require an explicit next step.",
-  );
+  output.danger(blockedReportMessage(report));
   output.info(`Target root: ${report.targetRoot}`);
   printPolicySummary(report, output);
   printConflictReviewChoices(report, output);

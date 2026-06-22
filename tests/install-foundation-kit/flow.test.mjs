@@ -316,6 +316,7 @@ describe("installer flow", () => {
 
   it("blocks existing-project replacement before prompting, staging, or target writes", async () => {
     const fixture = await workspace("cancel-conflict");
+    const output = createOutput();
     let prompted = false;
     await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "existing\n");
     await expect(
@@ -330,6 +331,7 @@ describe("installer flow", () => {
             prompted = true;
           },
         },
+        output,
         runId: "not-created",
       }),
     ).rejects.toMatchObject({ type: "EXISTING_PROJECT_REPLACEMENT_BLOCKED" });
@@ -340,6 +342,10 @@ describe("installer flow", () => {
         resolve(fixture.repoRoot, "dev_locals/workflow-tmp/install-foundation-kit/not-created"),
       ),
     ).rejects.toMatchObject({ code: "ENOENT" });
+    expect(output.messages).toContainEqual([
+      "DANGER",
+      "Install blocked: existing-project replacement is report-only in WI-1; no existing target files were replaced.",
+    ]);
   });
 
   it("blocks existing-like conflicts before prompting, staging, backup, or target writes", async () => {
@@ -383,6 +389,10 @@ describe("installer flow", () => {
       ),
     ).rejects.toMatchObject({ code: "ENOENT" });
     expect(output.messages).toContainEqual(["INFO", "Conflict policy: manual-review-required"]);
+    expect(output.messages).toContainEqual([
+      "DANGER",
+      "Install blocked: existing-project differences include mixed or manual-risk entries that require manual review; no existing target files were replaced.",
+    ]);
   });
 
   it("does not treat --show-diff as existing-project overwrite authorization", async () => {
