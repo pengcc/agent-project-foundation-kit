@@ -20,6 +20,7 @@ export async function reportConflicts({
   commandRunner,
   overwriteConflicts = false,
   replaceKitManaged = false,
+  managedReplacementPackageEligible = false,
 }) {
   output.info(
     `Plan: ${plan.safeAddFiles} SAFE_ADD, ${plan.kitManagedReplaceFiles} KIT_MANAGED_REPLACE, ` +
@@ -43,11 +44,13 @@ export async function reportConflicts({
       output.info(`${optional}[SAFE_ADD] ${entry.targetRelative}; ${detail}`);
     } else if (entry.resultCategory === "KIT_MANAGED_REPLACE") {
       const status =
-        replaceKitManaged && entry.managedReplaceAllowed
+        replaceKitManaged && entry.managedReplaceAllowed && managedReplacementPackageEligible
           ? "authorized allowlisted canary"
-          : entry.managedReplaceAllowed
-            ? "allowlisted canary; requires --replace-kit-managed"
-            : "report-only; not allowlisted";
+          : replaceKitManaged && entry.managedReplaceAllowed
+            ? "package not eligible; both React files are required"
+            : entry.managedReplaceAllowed
+              ? "allowlisted canary; requires --replace-kit-managed"
+              : "report-only; not allowlisted";
       output.warning(`[KIT_MANAGED_REPLACE] ${entry.targetRelative}; ${status}; ${detail}`);
     } else if (entry.resultCategory === "PROJECT_OWNED") {
       output.info(`[PROJECT_OWNED] ${entry.targetRelative}; preserved; ${detail}`);

@@ -121,9 +121,11 @@ Existing-project full-file replacement is limited to this exact allowlist:
 .codex/skills/engineering/react-component-patterns/metadata.yml
 ```
 
-Each file must be selected through `--include-optional react-component-patterns`, recorded in a
-valid installation manifest, classified `KIT_MANAGED_REPLACE`, and unchanged from its recorded
-target baseline. Replacement requires the normal `INSTALL_WITH_BACKUP` confirmation and:
+The package must be selected through `--include-optional react-component-patterns`. Both files
+must be recorded in a valid installation manifest, classified `KIT_MANAGED_REPLACE`, allowlisted,
+and unchanged from their recorded target baselines. If either file is missing, mixed, blocked, or
+otherwise ineligible, neither file is replaced. Replacement requires the normal
+`INSTALL_WITH_BACKUP` confirmation and:
 
 ```bash
 --project-mode existing --apply --replace-kit-managed
@@ -131,7 +133,8 @@ target baseline. Replacement requires the normal `INSTALL_WITH_BACKUP` confirmat
 
 The flag is mutually exclusive with `--skip-conflicts` and `--overwrite-conflicts`. All other
 managed-replacement candidates remain report-only; target-only or concurrent changes remain
-preserved for review.
+preserved for review. If either package copy or its manifest update fails, both React files are
+restored from the verified backup and the previous installation manifest is preserved.
 
 In existing projects, differing `.codex/scripts/*` files are reported as workflow-script merge
 items because installed scripts may contain project-specific workflow, publish, CI, or local

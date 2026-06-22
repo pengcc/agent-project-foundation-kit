@@ -8,11 +8,13 @@ export function createFinalReport({
   completedTargets = [],
   installationManifestRelative = "",
   replaceKitManaged = false,
+  managedReplacementPackageEligible = false,
 }) {
   const completed = new Set(completedTargets);
   const authorizedManagedReplacements = plan.entries.filter(
     (entry) =>
       replaceKitManaged &&
+      managedReplacementPackageEligible &&
       entry.resultCategory === "KIT_MANAGED_REPLACE" &&
       entry.managedReplaceAllowed,
   );
@@ -56,6 +58,7 @@ export function createFinalReport({
     completedManagedReplaceFiles: authorizedManagedReplacements.filter((entry) =>
       completed.has(entry.targetRelative),
     ).length,
+    managedReplacementPackageEligible,
     requestedProjectMode: policy.requestedMode,
     effectiveProjectMode: policy.effectiveMode,
     detectedSignals: [...policy.detectedSignals],

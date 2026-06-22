@@ -203,3 +203,26 @@ export async function writeInstallationManifest({ targetRoot, expected, manifest
   }
   return INSTALLATION_MANIFEST_RELATIVE;
 }
+
+export async function restoreInstallationManifest({ targetRoot, previous }) {
+  if (previous.status !== "valid" || !previous.manifest) {
+    throw new InstallerError(
+      "INSTALL_ROLLBACK_FAILED",
+      "Cannot restore the previous installation manifest because it was not valid.",
+    );
+  }
+  await assertNoTargetSymlinks(targetRoot, INSTALLATION_MANIFEST_RELATIVE);
+  const path = resolve(targetRoot, INSTALLATION_MANIFEST_RELATIVE);
+  assertInside(targetRoot, path, "Installation manifest");
+  await writeJsonAtomic(path, previous.manifest);
+  const restored = await loadInstallationManifest(targetRoot);
+  if (
+    restored.status !== "valid" ||
+    restored.manifest.payloadSha256 !== previous.manifest.payloadSha256
+  ) {
+    throw new InstallerError(
+      "INSTALL_ROLLBACK_FAILED",
+      "Previous installation manifest failed rollback verification.",
+    );
+  }
+}

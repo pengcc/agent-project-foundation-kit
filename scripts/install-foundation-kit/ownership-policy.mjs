@@ -24,7 +24,7 @@ function policy(
   });
 }
 
-const MANAGED_REPLACEMENT_ALLOWLIST = Object.freeze([
+export const REACT_CANARY_MANAGED_REPLACEMENT = Object.freeze([
   Object.freeze({
     sourceRelative: "optional-skills/react-component-patterns/SKILL.md",
     targetRelative: ".codex/skills/engineering/react-component-patterns/SKILL.md",
@@ -44,7 +44,7 @@ const REUSABLE = policy(OWNERSHIP.KIT_MANAGED, RISK.NORMAL, "reusable", {
   baselineAdoptable: true,
 });
 export function isManagedReplacementAllowlisted(mapping) {
-  return MANAGED_REPLACEMENT_ALLOWLIST.some(
+  return REACT_CANARY_MANAGED_REPLACEMENT.some(
     (entry) =>
       entry.sourceRelative === mapping.sourceRelative &&
       entry.targetRelative === mapping.targetRelative,
