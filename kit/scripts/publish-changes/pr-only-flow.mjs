@@ -86,6 +86,7 @@ export async function runPrOnlyFlow({ git, gh, prompts, output, options, env = p
     state,
     output,
     showDiff: options.showDiff,
+    preliminaryScope: state.scope,
   });
   await assertHeadFingerprint(
     git,

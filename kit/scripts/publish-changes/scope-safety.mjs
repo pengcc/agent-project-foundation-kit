@@ -1,5 +1,5 @@
 import { PublishError } from "../shared/errors.mjs";
-import { buildScopeSummary, renderScopeSummary } from "./scope-summary.mjs";
+import { buildScopeSummary, compareScopeSummaries, renderScopeSummary } from "./scope-summary.mjs";
 import { buildStagedScope, captureWorktreeSnapshot, worktreeSnapshotsMatch } from "./state.mjs";
 
 export async function captureHeadFingerprint(git) {
@@ -14,7 +14,66 @@ export async function assertHeadFingerprint(git, expected, message) {
   }
 }
 
-export async function collectExactPublishScope({ git, state, output, showDiff = false }) {
+function renderUntrackedLineContributions(output, contributions, sampleLimit = 3) {
+  if (!contributions.length) return;
+  if (contributions.length === 1) {
+    const [entry] = contributions;
+    output.info(
+      `Exact scope includes staged untracked file content: +${entry.added}/-${entry.deleted} from ${entry.path}.`,
+    );
+    return;
+  }
+
+  const total = contributions.reduce(
+    (summary, entry) => ({
+      added: summary.added + entry.added,
+      deleted: summary.deleted + entry.deleted,
+    }),
+    { added: 0, deleted: 0 },
+  );
+  const sample = contributions
+    .slice(0, sampleLimit)
+    .map((entry) => `+${entry.added}/-${entry.deleted} ${entry.path}`)
+    .join("; ");
+  const omitted = contributions.length - sampleLimit;
+  output.info(
+    `Exact scope includes staged untracked file content from ${contributions.length} files (total +${total.added}/-${total.deleted}): ${sample}${omitted > 0 ? `; ... (+${omitted} more)` : ""}.`,
+  );
+}
+
+function validateOrRenderExactScope({ scope, preliminaryScope, output, showDiff }) {
+  if (!preliminaryScope) {
+    renderScopeSummary(scope, output, {
+      showDiff,
+      heading: "Exact publish scope",
+    });
+    return;
+  }
+
+  const comparison = compareScopeSummaries(preliminaryScope, scope);
+  if (!comparison.matches) {
+    throw new PublishError(
+      "SCOPE_DRIFT",
+      [
+        "Scope validation failed: exact publish scope differs from the preliminary summary.",
+        "Difference summary:",
+        ...comparison.differences.map((difference) => `- ${difference}`),
+        "No files were committed, pushed, or published. Re-run the command and confirm the updated scope.",
+      ].join("\n"),
+    );
+  }
+  renderUntrackedLineContributions(output, comparison.untrackedLineContributions);
+  output.success("Scope validation passed: exact publish scope matches preliminary summary.");
+}
+
+export async function collectExactPublishScope({
+  git,
+  state,
+  output,
+  showDiff = false,
+  preliminaryScope = null,
+}) {
+  if (preliminaryScope) output.step("Exact publish scope validation");
   if (state.hasUncommitted) {
     const currentSnapshot = await captureWorktreeSnapshot(git);
     if (!worktreeSnapshotsMatch(state.worktreeSnapshot, currentSnapshot)) {
@@ -25,10 +84,7 @@ export async function collectExactPublishScope({ git, state, output, showDiff = 
     }
     await git.addPaths(state.worktreeSnapshot.paths);
     const scope = await buildStagedScope(git, state.branch, state.compareRef, showDiff);
-    renderScopeSummary(scope, output, {
-      showDiff,
-      heading: "Exact publish scope",
-    });
+    validateOrRenderExactScope({ scope, preliminaryScope, output, showDiff });
     return {
       scope,
       indexTree: await git.writeTree(),
@@ -44,10 +100,7 @@ export async function collectExactPublishScope({ git, state, output, showDiff = 
     numstat: await git.diff(["--numstat", confirmedRange]),
     diff: showDiff ? await git.diff([confirmedRange]) : "",
   });
-  renderScopeSummary(scope, output, {
-    showDiff,
-    heading: "Exact publish scope",
-  });
+  validateOrRenderExactScope({ scope, preliminaryScope, output, showDiff });
   return { scope, indexTree: "", head };
 }
 

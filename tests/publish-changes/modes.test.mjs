@@ -52,6 +52,7 @@ function createPrOnlyHarness({
     latestSubject: async () => "Existing branch work",
     diff: async (args) => {
       if (args.includes("--binary")) return "binary patch";
+      if (!hasUncommitted && !hasUnpushed) return "";
       if (args.includes("--numstat")) return "2\t0\tpackage.json";
       if (args.includes("--name-status")) return "M\tpackage.json";
       return "";
@@ -175,6 +176,63 @@ describe("PR-only flow", () => {
       "create-pr:Quick publish",
     ]);
     expect(harness.promptEvents).toEqual([]);
+    expect(harness.output.messages).toContainEqual(["STEP", "Preliminary scope summary"]);
+    expect(harness.output.messages).toContainEqual(["STEP", "Exact publish scope validation"]);
+    expect(harness.output.messages).toContainEqual([
+      "SUCCESS",
+      "Scope validation passed: exact publish scope matches preliminary summary.",
+    ]);
+    expect(harness.output.messages).not.toContainEqual(["STEP", "Exact publish scope"]);
+    expect(
+      harness.output.messages.filter(([, message]) => message === "Changed files: 1"),
+    ).toHaveLength(1);
+  });
+
+  it("shows the full diff only once when exact scope validation succeeds", async () => {
+    const harness = createPrOnlyHarness();
+    await runPrOnlyFlow({
+      ...harness,
+      options: prOnlyOptions({ showDiff: true }),
+      env: {},
+    });
+
+    expect(
+      harness.output.messages.filter(([, message]) => message.startsWith("Full diff:")),
+    ).toHaveLength(1);
+  });
+
+  it("reports exact staged line contributions for untracked files before success", async () => {
+    const harness = createPrOnlyHarness();
+    harness.git.status = async () => "?? new.md";
+    harness.git.statusZ = async () => "?? new.md\0";
+    harness.git.hashFiles = async () => "new-md-hash";
+    harness.git.untracked = async () => "new.md";
+    harness.git.diff = async (args) => {
+      if (args.includes("--binary")) return "";
+      if (args.includes("--cached") && args.includes("--name-status")) return "A\tnew.md";
+      if (args.includes("--cached") && args.includes("--numstat")) return "4\t0\tnew.md";
+      if (args.includes("--cached")) return "staged new.md content";
+      return "";
+    };
+
+    await runPrOnlyFlow({
+      ...harness,
+      options: prOnlyOptions(),
+      env: {},
+    });
+
+    expect(harness.output.messages).toContainEqual([
+      "INFO",
+      "Exact scope includes staged untracked file content: +4/-0 from new.md.",
+    ]);
+    const contributionIndex = harness.output.messages.findIndex(([, message]) =>
+      message.includes("staged untracked file content"),
+    );
+    const successIndex = harness.output.messages.findIndex(([, message]) =>
+      message.includes("Scope validation passed"),
+    );
+    expect(contributionIndex).toBeGreaterThanOrEqual(0);
+    expect(contributionIndex).toBeLessThan(successIndex);
   });
 
   it("prompts only for a missing commit message when uncommitted work exists", async () => {
@@ -314,6 +372,46 @@ describe("PR-only flow", () => {
     expect(harness.output.messages.some(([, message]) => message.includes(sensitiveValue))).toBe(
       false,
     );
+  });
+
+  it("blocks exact scope mismatch with a concise difference summary before publication", async () => {
+    const harness = createPrOnlyHarness();
+    const diff = harness.git.diff;
+    harness.git.diff = async (args) => {
+      if (args.includes("--cached") && args.includes("--name-status")) {
+        return "A\tpackage.json\nA\tkit/scripts/new-helper.mjs";
+      }
+      if (args.includes("--cached") && args.includes("--numstat")) {
+        return "4\t1\tpackage.json\n2\t0\tkit/scripts/new-helper.mjs";
+      }
+      return diff(args);
+    };
+
+    let failure;
+    try {
+      await runPrOnlyFlow({
+        ...harness,
+        options: prOnlyOptions(),
+        env: {},
+      });
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toMatchObject({
+      type: "SCOPE_DRIFT",
+      message: expect.stringContaining("Difference summary:"),
+    });
+    expect(failure.message).toContain("File set differs:");
+    expect(failure.message).toContain("Status differs:");
+    expect(failure.message).toContain("Line summary differs:");
+    expect(failure.message).toContain("High-risk hints differ:");
+    expect(failure.message).toContain("No files were committed, pushed, or published");
+    expect(harness.calls).toEqual(["fetch", "add:package.json"]);
+    expect(harness.calls.some((call) => call.startsWith("commit:"))).toBe(false);
+    expect(harness.calls.some((call) => call.startsWith("push:"))).toBe(false);
+    expect(harness.calls.some((call) => call.startsWith("create-pr:"))).toBe(false);
+    expect(harness.output.messages).toContainEqual(["STEP", "Exact publish scope validation"]);
   });
 
   it("blocks worktree drift before staging or push", async () => {

@@ -20,6 +20,7 @@ import {
 } from "../../kit/scripts/publish-changes/prompts.mjs";
 import {
   buildScopeSummary,
+  compareScopeSummaries,
   recommendClassification,
   renderScopeSummary,
 } from "../../kit/scripts/publish-changes/scope-summary.mjs";
@@ -214,27 +215,48 @@ describe("interactive prompts and output", () => {
     createOutput({ stdout: plain, stderr: plain, env: {} }).success("Plain success");
 
     expect(tty.write.mock.calls[0][0]).toBe("\u001B[1;94m[STEP]\u001B[22m Colored step\u001B[0m\n");
-    expect(tty.write.mock.calls[1][0]).toBe("\u001B[1;96m[INFO]\u001B[0m Colored info\n");
+    expect(tty.write.mock.calls[1][0]).toBe("  \u001B[1;96m[INFO]\u001B[0m Colored info\n");
     expect(tty.write.mock.calls[2][0]).toBe(
-      "\u001B[1;38;2;243;156;18m[WARNING]\u001B[22m Colored warning\u001B[0m\n",
+      "  \u001B[1;38;2;243;156;18m[WARNING]\u001B[22m Colored warning\u001B[0m\n",
     );
     expect(tty.write.mock.calls[3][0]).toBe(
-      "\u001B[1;91m[ERROR]\u001B[22m Colored error\u001B[0m\n",
+      "  \u001B[1;91m[ERROR]\u001B[22m Colored error\u001B[0m\n",
     );
     expect(tty.write.mock.calls[4][0]).toBe(
-      "\u001B[1;91m[DANGER]\u001B[22m Colored danger\u001B[0m\n",
+      "  \u001B[1;91m[DANGER]\u001B[22m Colored danger\u001B[0m\n",
     );
     expect(tty.write.mock.calls[5][0]).toBe(
-      "\u001B[1;95m[PROMPT]\u001B[22m Colored prompt\u001B[0m\n",
+      "  \u001B[1;95m[PROMPT]\u001B[22m Colored prompt\u001B[0m\n",
     );
-    expect(tty.write.mock.calls[6][0]).toBe("\u001B[1;32m[SUCCESS]\u001B[0m Colored success\n");
+    expect(tty.write.mock.calls[6][0]).toBe("  \u001B[1;32m[SUCCESS]\u001B[0m Colored success\n");
     expect(tty.write.mock.calls[7][0]).toBe(
-      "\u001B[1;38;2;221;151;108m[SKIPPED]\u001B[22m Colored skipped\u001B[0m\n",
+      "  \u001B[1;38;2;221;151;108m[SKIPPED]\u001B[22m Colored skipped\u001B[0m\n",
     );
-    expect(tty.write.mock.calls[8][0]).toBe("\u001B[1;90m[DEBUG]\u001B[0m Colored debug\n");
+    expect(tty.write.mock.calls[8][0]).toBe("  \u001B[1;90m[DEBUG]\u001B[0m Colored debug\n");
     expect(plain.write).toHaveBeenCalledWith("[SUCCESS] Plain success\n");
     expect(tty.write.mock.calls[0][0]).toContain("[STEP]\u001B[22m Colored step");
     expect(tty.write.mock.calls[0][0]).not.toContain("\u001B[1;94mColored step");
+  });
+
+  it("indents non-step output and multiline continuations under the active step", () => {
+    const stream = { isTTY: false, write: vi.fn() };
+    const output = createOutput({ stdout: stream, stderr: stream, env: {} });
+
+    output.info("Before step");
+    output.step("Scope summary");
+    output.info("Files:\n  M file.mjs");
+    output.success("Validated");
+    output.step("Next step");
+    output.warning("Review required");
+
+    expect(stream.write.mock.calls.map(([text]) => text)).toEqual([
+      "[INFO] Before step\n",
+      "[STEP] Scope summary\n",
+      "  [INFO] Files:\n    M file.mjs\n",
+      "  [SUCCESS] Validated\n",
+      "[STEP] Next step\n",
+      "  [WARNING] Review required\n",
+    ]);
   });
 
   it("uses distinct styles for STEP/INFO and WARNING/SKIPPED", () => {
@@ -562,6 +584,53 @@ describe("scope and validation", () => {
     renderScopeSummary(summary, output);
     expect(messages.join("\n")).toContain("? new file.txt");
     expect(messages.join("\n")).toContain("M tracked.txt");
+  });
+
+  it("compares normalized scope data and bounds difference samples", () => {
+    const preliminary = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "M\told.md\nM\tstatus.md\nM\tline.md",
+      numstat: "1\t0\told.md\n2\t0\tstatus.md\n3\t0\tline.md",
+    });
+    const exact = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "A\tstatus.md\nM\tline.md\nA\tkit/scripts/new-a.mjs\nA\tkit/scripts/new-b.mjs",
+      numstat:
+        "2\t0\tstatus.md\n5\t1\tline.md\n1\t0\tkit/scripts/new-a.mjs\n1\t0\tkit/scripts/new-b.mjs",
+    });
+
+    const comparison = compareScopeSummaries(preliminary, exact, { sampleLimit: 2 });
+
+    expect(comparison.matches).toBe(false);
+    expect(comparison.differences).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("File set differs:"),
+        expect.stringContaining("Status differs:"),
+        expect.stringContaining("Classification totals differ:"),
+        expect.stringContaining("Line summary differs:"),
+        expect.stringContaining("High-risk hints differ:"),
+      ]),
+    );
+    expect(comparison.differences.join("\n")).toContain("more)");
+  });
+
+  it("treats staging an observed untracked file as the same semantic scope", () => {
+    const preliminary = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "?\tnew.md\nM\ttracked.md",
+      numstat: "2\t1\ttracked.md",
+    });
+    const exact = buildScopeSummary({
+      branch: "feature/test",
+      nameStatus: "A\tnew.md\nM\ttracked.md",
+      numstat: "4\t0\tnew.md\n2\t1\ttracked.md",
+    });
+
+    expect(compareScopeSummaries(preliminary, exact)).toEqual({
+      matches: true,
+      differences: [],
+      untrackedLineContributions: [{ path: "new.md", added: 4, deleted: 0 }],
+    });
   });
 
   it("rejects failed and pending checks for immediate merge", () => {
