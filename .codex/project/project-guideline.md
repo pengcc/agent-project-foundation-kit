@@ -467,8 +467,9 @@ Maintained workflow tooling boundary:
   formatting, `pnpm format:check` checks formatting, `pnpm biome:fix` applies safe Biome fixes,
   and `pnpm check` runs `biome check .` before tests and whitespace validation.
 - Source-repository Biome checks include installable content under `kit/` before publication or
-  installation. The installer does not install Biome, create downstream Biome configuration, or
-  modify target `package.json`; downstream Biome adoption remains an optional manual setup task.
+  installation. The installer does not install Biome or create downstream Biome configuration.
+  Its only `package.json` mutation is the bounded safe-add publish-alias convenience; downstream
+  Biome adoption remains an optional manual setup task.
 - Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
   historical reference.
 - Future apply-theme behavior should be planned as a Node.js workflow before being reintroduced.
@@ -664,7 +665,9 @@ Current `install-foundation-kit.mjs` purpose:
 - never auto-merge existing files
 - backup existing files before replacement under `.codex/backups/install-YYYYMMDD-HHMMSS/`
 - never install this repo's own `.codex/project/`, `dev_locals/`, `docs/`, or source-repository `scripts/`
-- never create or modify a downstream `package.json`
+- never create or repair a downstream `package.json`; for a valid existing file, add only missing
+  default publish aliases, preserve and report conflicting same-name values, and keep the file
+  project-owned and outside installation-manifest ownership
 - report first-adoption next steps and direct successful installs to
   `.codex/prompts/force-initialize-project-context.md`
 
@@ -689,7 +692,9 @@ Current `kit/scripts/` purpose:
 
 - provide installable mechanical workflow executors for downstream projects
 - install under `.codex/scripts/`
-- run from the downstream project root; package aliases remain optional manual setup
+- run from the downstream project root; the installer may safe-add the four default publish
+  aliases to a valid existing `package.json`, while
+  `node .codex/scripts/publish-changes.mjs` remains the canonical guaranteed executor
 - provide a Node.js 24+ ESM publish default with modular Git, GitHub, output, prompt, policy,
   state, action, and final-report boundaries
 - install publish policy under `.codex/config/`
@@ -1009,5 +1014,8 @@ In progress / next likely themes:
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
 - Project-local validation must not silently mutate global tooling to satisfy runtime requirements.
-- Downstream installation or defaulting of source-repository publish package scripts remains
-  unresolved and requires a separate scoped decision.
+- PR #115 resolved downstream publish alias defaults as safe-add installer conveniences. Source
+  repository aliases invoke `kit/scripts/publish-changes.mjs`; installed downstream aliases invoke
+  `.codex/scripts/publish-changes.mjs`. Missing, invalid, non-object, or structurally unsafe
+  `package.json` files are not created or repaired, and conflicting aliases are preserved and
+  reported.
