@@ -2797,3 +2797,36 @@ from drifting into competing classification models.
 - `kit/skills/core/execute-plan/SKILL.md`
 - `kit/skills/core/to-work-items/SKILL.md`
 - `docs/foundation-design-log.md`
+
+## Decision: Existing-project upgrade safety v1 closes after WI-1/WI-2 validation
+
+### Status
+
+Accepted
+
+### Context
+
+WI-1/WI-2 established fail-closed classification, safe-add-only default behavior, and one atomic
+managed-replacement canary. The read-only Germany Holiday dry-run preserved project-owned memory,
+config, and customized scripts, identified additive files, and left the downstream repository
+unchanged.
+
+### Decision
+
+Close the initiative at v1. No immediate installer safety fix is required. Keep differing scripts
+manual-risk. Defer WI-3 and WI-4; reopen either only for a concrete unresolved safety gap or
+repeated maintenance evidence, with separate planning and explicit approval.
+
+### Impact
+
+Accepted limitations include manual handling for no-manifest differences, no automatic script
+upgrade, and no partial `AGENTS.md` update path. These are usability tradeoffs, not silent-overwrite
+defects.
+
+### Related local-only evidence
+
+```txt
+dev_locals/plans/2026-06-21-existing-project-upgrade-safety-plan.md
+dev_locals/research-notes/2026-06-22-existing-project-dry-run-validation.md
+dev_locals/research-notes/2026-06-22-existing-project-upgrade-safety-closeout.md
+```

@@ -60,6 +60,7 @@ Completed themes:
 - Report depth levels and final report concision contract
 - Downstream installation and first-adoption hardening
 - Extract Grilling Primitive
+- Existing-project upgrade safety v1 closeout
 
 Current conceptual skill taxonomy:
 
@@ -439,6 +440,10 @@ Maintained workflow tooling boundary:
   qualify as `KIT_MANAGED_REPLACE` with `managedReplaceAllowed`. Otherwise neither file is
   replaced. Copy or manifest-write failure restores both target files and preserves the previous
   installation manifest, so no partial package baseline advances.
+- Existing-project upgrade safety v1 is closed after WI-1/WI-2 and read-only downstream dry-run
+  validation. No immediate installer safety fix is required; WI-3 marker work and WI-4
+  script-runtime seam work remain deferred and require new evidence, separate planning, and
+  explicit approval.
 - During explicit apply, exact unchanged baseline-adoptable kit-managed files may be adopted into
   the installation manifest without rewriting their target bytes.
 - Project memory, project-owned publish config, workflow scripts and other manual-risk paths,

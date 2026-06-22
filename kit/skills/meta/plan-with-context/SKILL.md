@@ -153,6 +153,18 @@ A plan must include a recommendation.
 
 Default to the smallest useful, verifiable, reversible option unless project memory or the user goal clearly requires a heavier solution.
 
+## Objective Recheck for Existing Plans
+
+Before planning the next deferred work item or extending an existing multi-work-item plan,
+re-check the original objective and non-goals against completed work, validation, and current
+repository evidence. If the objective is already satisfied, recommend closeout or re-scope instead
+of continuing merely because another work item is listed. Continue only when the next item
+addresses a concrete unresolved gap with clear product, safety, or maintenance value.
+
+For old-plan continuation, migrations, installer changes, workflow scripts, publish automation, or
+architecture expansion, inspect relevant project lessons by heading or topic before recommending
+the next step. Do not require a full lessons-file read for unrelated or trivial tasks.
+
 ## Task Execution Classification
 
 Apply `task-execution-classification.md` after required context, clarification, and research checks

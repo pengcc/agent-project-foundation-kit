@@ -325,6 +325,16 @@ describe("source repository metadata hygiene", () => {
 });
 
 describe("source repository reference hygiene", () => {
+  it("requires an objective recheck before extending existing plans", async () => {
+    const text = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
+
+    expect(text).toContain("## Objective Recheck for Existing Plans");
+    expect(text).toContain("If the objective is already satisfied, recommend closeout or re-scope");
+    expect(text).toContain(
+      "Do not require a full lessons-file read for unrelated or trivial tasks.",
+    );
+  });
+
   it("keeps the publishable change handoff canonical with concise workflow pointers", async () => {
     const paths = [
       "AGENTS.md",
