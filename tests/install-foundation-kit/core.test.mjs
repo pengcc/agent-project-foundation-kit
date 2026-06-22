@@ -351,8 +351,14 @@ describe("source repository reference hygiene", () => {
 
     expect(contract.match(/^## Publishable Change Handoff$/gm)).toHaveLength(1);
     expect(contract).toContain(
-      "Whenever `Publish changes recommendation` is present, `Fast PR` is required; otherwise `Fast PR`",
+      "Whenever `Publish changes recommendation` is present, `Fast PR after review approval`",
     );
+    expect(contract).toContain("Recommended next workflow: code-review");
+    expect(contract).toContain("Fast PR after review approval:");
+    expect(contract).toContain('pnpm publish:pr-only "<commit message>" "<PR title>"');
+    expect(contract).toContain("Publication guardrail:");
+    expect(contract).toContain("Do not use\n`pnpm publish:changes` as a Fast PR substitute");
+    expect(contract).toContain("do not infer other command forms from package\nscript names");
     expect(contract).toContain("not available (<reason>)");
     expect(contract).toContain("not checked (<reason>)");
     expect(contract).toContain("Do not guess a command");
@@ -360,7 +366,7 @@ describe("source repository reference hygiene", () => {
       "Publishable changes: none; local-only artifacts changed: <paths or summary>",
     );
     expect(contract).toContain("When publishable changes and local-only artifacts both changed");
-    expect(contract).toContain("does not authorize commit, push, PR creation or update, merge");
+    expect(contract).toContain("does not itself authorize any publication action");
     expect(contract).toContain(
       "`publish-current-branch` remains the only workflow authorized to push",
     );
@@ -373,12 +379,18 @@ describe("source repository reference hygiene", () => {
     ]) {
       expect(documents[path], path).toContain("Publishable Change Handoff");
       expect(documents[path], path).not.toContain(
-        "Whenever `Publish changes recommendation` is present, `Fast PR` is required",
+        "Whenever `Publish changes recommendation` is present, `Fast PR after review approval`",
       );
     }
 
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "Fast PR: <shared-contract value; include only when Publish changes recommendation is present>",
+      "Recommended next workflow: <code-review when the shared handoff applies",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
+      "Fast PR after review approval: <shared-contract value",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
+      "publish readiness / publish handoff -> recommend publish-current-branch after execution",
     );
     expect(documents["AGENTS.md"]).toContain(
       "recommended commit message when publishable changes exist",
