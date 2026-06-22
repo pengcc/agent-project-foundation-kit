@@ -23,6 +23,17 @@ import {
 import { inspectTargetProject } from "./target-project.mjs";
 import { resolveInstallRoots } from "./validation.mjs";
 
+async function persistInstallationManifest({ plan, roots, completedTargets, hooks }) {
+  await hooks.beforeInstallationManifestWrite?.({ plan, roots, completedTargets });
+  await verifyManifestCandidates({ plan, targetRoot: roots.targetRoot, completedTargets });
+  const nextInstallationManifest = createNextInstallationManifest({ plan, completedTargets });
+  return writeInstallationManifest({
+    targetRoot: roots.targetRoot,
+    expected: plan.installationManifest,
+    manifest: nextInstallationManifest,
+  });
+}
+
 export async function runInstallerFlow({
   repoRoot,
   options,
@@ -47,6 +58,7 @@ export async function runInstallerFlow({
     policy,
     overwriteConflicts: options.overwriteConflicts,
     skipConflicts: options.skipConflicts,
+    replaceKitManaged: options.replaceKitManaged,
   });
   output.info(`Source kit: ${roots.kitRoot}`);
   output.info(`Target root: ${roots.targetRoot}`);
@@ -58,7 +70,15 @@ export async function runInstallerFlow({
     showDiff: options.showDiff,
     commandRunner,
     overwriteConflicts: options.overwriteConflicts,
+    replaceKitManaged: options.replaceKitManaged,
   });
+
+  const authorizedManagedReplacements = plan.entries.filter(
+    (entry) =>
+      options.replaceKitManaged &&
+      entry.resultCategory === "KIT_MANAGED_REPLACE" &&
+      entry.managedReplaceAllowed,
+  );
 
   if (!options.apply) {
     output.info("Dry-run only. Re-run with --apply to write files.");
@@ -68,6 +88,7 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
     });
     printFinalReport(report, output);
     return { report, plan };
@@ -80,6 +101,7 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
     });
     printBlockedReport(report, output);
     throw new InstallerError(
@@ -95,15 +117,17 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy: "existing-project-replacement-blocked",
+      replaceKitManaged: options.replaceKitManaged,
     });
     printBlockedReport(report, output);
     throw new InstallerError(
       "EXISTING_PROJECT_REPLACEMENT_BLOCKED",
-      "WI-1 does not permit replacing existing target files in existing-project mode.",
+      "Broad existing-project replacement is blocked; use the dedicated React canary authorization only for exact eligible targets.",
     );
   }
 
   if (
+    !options.replaceKitManaged &&
     conflictOverwriteBlocked({
       policy,
       overwriteConflicts: options.overwriteConflicts,
@@ -116,6 +140,7 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
     });
     printBlockedReport(report, output);
     throw new InstallerError(
@@ -124,7 +149,17 @@ export async function runInstallerFlow({
     );
   }
 
-  if (plan.conflicts && !options.skipConflicts) {
+  if (options.replaceKitManaged) {
+    if (authorizedManagedReplacements.length) {
+      output.danger("Allowlisted existing-project files will be backed up and replaced:");
+      for (const entry of authorizedManagedReplacements) {
+        output.danger(`- ${entry.targetRelative}`);
+      }
+      await prompts.confirmBackup();
+    } else {
+      output.warning("No allowlisted managed replacements are eligible in the current plan.");
+    }
+  } else if (plan.conflicts && !options.skipConflicts) {
     const context =
       policy.effectiveMode === "new"
         ? "Conflicts are treated as starter files or previous-install remnants."
@@ -142,7 +177,13 @@ export async function runInstallerFlow({
     const entriesToApply = options.skipConflicts
       ? plan.entries.filter((entry) => entry.action === "write")
       : policy.effectiveMode === "existing"
-        ? plan.entries.filter((entry) => entry.action === "write")
+        ? plan.entries.filter(
+            (entry) =>
+              entry.action === "write" ||
+              (options.replaceKitManaged &&
+                entry.resultCategory === "KIT_MANAGED_REPLACE" &&
+                entry.managedReplaceAllowed),
+          )
         : plan.entries.filter(
             (entry) =>
               entry.mappingState === "current" &&
@@ -186,24 +227,40 @@ export async function runInstallerFlow({
       includeOptional: options.includeOptional,
     });
     await hooks.beforeApply?.({ plan, roots, materialized });
-    const completedTargets = await applyStagedPlan({
-      plan: applyPlan,
-      stagedRoot,
-      targetRoot: roots.targetRoot,
-      materializedBackup: materialized,
-      signal,
-      hooks,
-      allowOverwrite: policy.effectiveMode === "new" && !options.skipConflicts,
-    });
+    let completedTargets = [];
+    try {
+      completedTargets = await applyStagedPlan({
+        plan: applyPlan,
+        stagedRoot,
+        targetRoot: roots.targetRoot,
+        materializedBackup: materialized,
+        signal,
+        hooks,
+        allowOverwrite: policy.effectiveMode === "new" && !options.skipConflicts,
+        overwriteTargets: authorizedManagedReplacements.map((entry) => entry.targetRelative),
+      });
+    } catch (error) {
+      completedTargets = error?.completedTargets ?? [];
+      if (options.replaceKitManaged && completedTargets.length) {
+        try {
+          await persistInstallationManifest({ plan, roots, completedTargets, hooks });
+          output.info(
+            `Installation manifest advanced for ${completedTargets.length} completed target(s) after partial apply.`,
+          );
+        } catch (manifestError) {
+          manifestError.completedTargets = completedTargets;
+          throw manifestError;
+        }
+      }
+      throw error;
+    }
     let installationManifestRelative = "";
     try {
-      await hooks.beforeInstallationManifestWrite?.({ plan, roots, completedTargets });
-      await verifyManifestCandidates({ plan, targetRoot: roots.targetRoot, completedTargets });
-      const nextInstallationManifest = createNextInstallationManifest({ plan, completedTargets });
-      installationManifestRelative = await writeInstallationManifest({
-        targetRoot: roots.targetRoot,
-        expected: plan.installationManifest,
-        manifest: nextInstallationManifest,
+      installationManifestRelative = await persistInstallationManifest({
+        plan,
+        roots,
+        completedTargets,
+        hooks,
       });
     } catch (error) {
       error.completedTargets = completedTargets;
@@ -216,6 +273,7 @@ export async function runInstallerFlow({
       targetRoot: roots.targetRoot,
       policy,
       conflictPolicy,
+      replaceKitManaged: options.replaceKitManaged,
       backupRelative: materialized?.backupRelative,
       completedTargets,
       installationManifestRelative,

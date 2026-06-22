@@ -64,6 +64,7 @@ describe("installer CLI", () => {
       projectMode: "existing",
       overwriteConflicts: true,
       skipConflicts: false,
+      replaceKitManaged: false,
       includeOptional: [],
       verbose: true,
       help: false,
@@ -134,6 +135,51 @@ describe("installer CLI", () => {
       "--include-optional requires a skill name",
     );
     expect(() => parseCliOptions(["--", "--target", "/tmp/x"])).toThrow("Unknown option: --");
+  });
+
+  it("requires a dedicated existing-project authorization for managed replacement", () => {
+    expect(
+      parseCliOptions([
+        "--target",
+        "/tmp/x",
+        "--project-mode",
+        "existing",
+        "--apply",
+        "--replace-kit-managed",
+        "--include-optional",
+        "react-component-patterns",
+      ]),
+    ).toMatchObject({
+      apply: true,
+      projectMode: "existing",
+      replaceKitManaged: true,
+      includeOptional: ["react-component-patterns"],
+    });
+    expect(() =>
+      parseCliOptions([
+        "--target",
+        "/tmp/x",
+        "--project-mode",
+        "existing",
+        "--replace-kit-managed",
+      ]),
+    ).toThrow("--replace-kit-managed requires --apply");
+    expect(() =>
+      parseCliOptions(["--target", "/tmp/x", "--apply", "--replace-kit-managed"]),
+    ).toThrow("requires --project-mode existing");
+    for (const conflictFlag of ["--skip-conflicts", "--overwrite-conflicts"]) {
+      expect(() =>
+        parseCliOptions([
+          "--target",
+          "/tmp/x",
+          "--project-mode",
+          "existing",
+          "--apply",
+          "--replace-kit-managed",
+          conflictFlag,
+        ]),
+      ).toThrow("mutually exclusive");
+    }
   });
 });
 

@@ -10,6 +10,7 @@ export function parseCliOptions(argv) {
     projectMode: "auto",
     overwriteConflicts: false,
     skipConflicts: false,
+    replaceKitManaged: false,
     includeOptional: [],
     verbose: false,
     help: false,
@@ -44,6 +45,8 @@ export function parseCliOptions(argv) {
       options.overwriteConflicts = true;
     } else if (value === "--skip-conflicts") {
       options.skipConflicts = true;
+    } else if (value === "--replace-kit-managed") {
+      options.replaceKitManaged = true;
     } else if (value === "--include-optional") {
       index += 1;
       const name = argv[index];
@@ -78,6 +81,21 @@ export function parseCliOptions(argv) {
       "--skip-conflicts cannot be combined with --project-mode new.",
     );
   }
+  if (options.replaceKitManaged && !options.apply) {
+    throw new InstallerError("INVALID_ARGUMENT", "--replace-kit-managed requires --apply.");
+  }
+  if (options.replaceKitManaged && options.projectMode !== "existing") {
+    throw new InstallerError(
+      "INVALID_ARGUMENT",
+      "--replace-kit-managed requires --project-mode existing.",
+    );
+  }
+  if (options.replaceKitManaged && (options.skipConflicts || options.overwriteConflicts)) {
+    throw new InstallerError(
+      "INVALID_ARGUMENT",
+      "--replace-kit-managed is mutually exclusive with --skip-conflicts and --overwrite-conflicts.",
+    );
+  }
   options.includeOptional = [...new Set(options.includeOptional)];
   return options;
 }
@@ -93,8 +111,9 @@ export function usage() {
     "  --target PATH             Required downstream project root",
     "  --apply                   Apply the prepared install plan",
     "  --project-mode MODE       auto (default), new, or existing",
-    "  --overwrite-conflicts     Retained for new-project workflows; existing-project replacement is blocked in WI-1",
+    "  --overwrite-conflicts     Retained for broad new-project replacement only",
     "  --skip-conflicts          With --apply, write safe new files and preserve every existing target",
+    "  --replace-kit-managed     With explicit existing mode and --apply, replace only the two allowlisted React optional files",
     "  --include-optional NAME   Include one optional skill; repeat to select more",
     "  --show-diff               Preview conflicts with diff -u when available; does not authorize overwrite",
     "  --verbose                 Print DEBUG output",
