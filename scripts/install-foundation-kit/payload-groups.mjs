@@ -59,6 +59,7 @@ const COMMON_WORKFLOW_TARGETS = new Set([
   ".codex/rules/agent-operating-contract.md",
   ".codex/rules/skill-and-output-efficiency.md",
   ".codex/rules/skill-invocation-and-dependency-boundaries.md",
+  ".codex/rules/task-and-change-safety-principles.md",
   ".codex/rules/task-execution-classification.md",
   ".codex/prompts/force-execute-plan.md",
   ".codex/prompts/force-initialize-project-context.md",

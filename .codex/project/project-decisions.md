@@ -2944,3 +2944,48 @@ adding speculative capability or new workflow ceremony.
 
 - `kit/rules/engineering-quality-principles.md`
 - `dev_locals/research-notes/2026-06-29-plausible-extension-check-placement-analysis.md`
+
+## Decision: Task and change safety uses a common non-authorizing rule
+
+### Status
+
+Accepted
+
+### Context
+
+PR #118 placed the Plausible Extension Check in engineering quality because a standalone rule for
+that check alone was not justified. A later ownership review found a broader coherent set of
+proportional scope, change-safety, evidence, and design-safety principles that applies to code and
+non-code work and now has two direct consumers.
+
+### Decision
+
+Use `kit/rules/task-and-change-safety-principles.md` as the compact common owner. Reference it from
+`agent-operating-contract.md` and `engineering-quality-principles.md` without creating a workflow,
+task taxonomy, output template, broad collaboration protocol, or authorization mechanism.
+
+Keep hard startup, context, target-reference, clarification, project-root, global-tooling,
+routing, memory, reporting, and publish boundaries directly visible in the operating contract.
+Keep code, UI, runtime, security, and module-quality guidance in engineering quality. The shared
+rule remains proportional and non-ceremonial, and the Plausible Extension Check remains conditional
+and does not authorize speculative capabilities.
+
+Classify the new installed rule as `common-workflow`. Do not add it to bootstrap-critical or
+dependency-guard lists, and do not change installer mapping, conflict, ownership, write, apply, or
+rendering behavior.
+
+This supersedes the PR #118 decision only for the check's canonical location. Its conditionality,
+cheap-structural-optionality limit, and anti-speculation safeguards remain accepted.
+
+### Impact
+
+Code and non-code workflows can share one small judgment rule while the operating contract retains
+direct enforcement and engineering quality remains focused. Skills, prompts, package files,
+downstream projects, and installer behavior remain unchanged.
+
+### Related Files
+
+- `kit/rules/task-and-change-safety-principles.md`
+- `kit/rules/agent-operating-contract.md`
+- `kit/rules/engineering-quality-principles.md`
+- `scripts/install-foundation-kit/payload-groups.mjs`

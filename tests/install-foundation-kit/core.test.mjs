@@ -335,6 +335,45 @@ describe("source repository reference hygiene", () => {
     );
   });
 
+  it("keeps shared task and change principles advisory with direct operating boundaries", async () => {
+    const paths = [
+      "kit/rules/agent-operating-contract.md",
+      "kit/rules/engineering-quality-principles.md",
+      "kit/rules/task-and-change-safety-principles.md",
+    ];
+    const documents = Object.fromEntries(
+      await Promise.all(paths.map(async (path) => [path, await readFile(path, "utf8")])),
+    );
+    const contract = documents["kit/rules/agent-operating-contract.md"];
+    const engineering = documents["kit/rules/engineering-quality-principles.md"];
+    const shared = documents["kit/rules/task-and-change-safety-principles.md"];
+
+    expect(contract).toContain("task-and-change-safety-principles.md");
+    expect(engineering).toContain("task-and-change-safety-principles.md");
+    expect(shared).toContain("This rule is non-authorizing and non-ceremonial");
+    expect(shared).toContain("It is not a workflow");
+    expect(shared).toContain("This rule guides judgment only");
+
+    for (const heading of [
+      "Startup Order",
+      "Project Memory Context Gate",
+      "Explicit Target Reference Guardrail",
+      "Requirement Clarification Gate",
+      "Project Root Boundary",
+      "Global Toolchain and Out-of-Project Operation Boundary",
+      "Skill Routing Map",
+      "Durable Project Memory Loop",
+      "Final Report Boundary",
+      "Publishable Change Handoff",
+    ]) {
+      expect(contract.match(new RegExp(`^## ${heading}$`, "gm")), heading).toHaveLength(1);
+    }
+
+    for await (const path of glob("kit/rules/*.md")) {
+      expect(await readFile(path, "utf8"), path).not.toContain("Base Collaboration Protocol");
+    }
+  });
+
   it("keeps the publishable change handoff canonical with concise workflow pointers", async () => {
     const paths = [
       "AGENTS.md",

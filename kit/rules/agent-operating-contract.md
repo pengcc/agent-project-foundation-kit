@@ -272,6 +272,11 @@ keep runtime rules auditable.
 
 ## Scope and Safety Guardrails
 
+Apply `task-and-change-safety-principles.md` for proportional scope, focused and reviewable
+changes, validation and evidence, safe update methods, and conditional design flexibility. That
+shared rule guides judgment only; it does not replace any startup, context, approval, project-root,
+global-tooling, routing, memory, reporting, publish, or other hard boundary in this contract.
+
 - Do not expand scope without calling it out.
 - Do not bypass matching installed skills.
 - Do not perform destructive actions without explicit user approval.
