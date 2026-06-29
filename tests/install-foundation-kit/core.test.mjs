@@ -732,6 +732,39 @@ describe("mapping and boundaries", () => {
     });
   });
 
+  it("treats the publish theme as reusable while preserving project-owned publish policy", async () => {
+    const fixture = await workspace("publish-config-ownership");
+    const configRoot = resolve(fixture.targetRoot, ".codex/config");
+    await mkdir(configRoot, { recursive: true });
+    await writeFile(resolve(configRoot, "publish-cli-theme.json"), '{"project":"theme"}\n');
+    await writeFile(resolve(configRoot, "publish-changes-policy.yml"), "project: policy\n");
+
+    const plan = await buildInstallPlan(fixture);
+
+    expect(
+      plan.entries.find((entry) => entry.targetRelative === ".codex/config/publish-cli-theme.json"),
+    ).toMatchObject({
+      ownership: "kit-managed",
+      risk: "normal",
+      kind: "reusable",
+      baselineAdoptable: true,
+      resultCategory: "BLOCKED_MANUAL",
+      action: "review",
+    });
+    expect(
+      plan.entries.find(
+        (entry) => entry.targetRelative === ".codex/config/publish-changes-policy.yml",
+      ),
+    ).toMatchObject({
+      ownership: "project-owned",
+      risk: "manual",
+      kind: "project-config",
+      baselineAdoptable: false,
+      resultCategory: "PROJECT_OWNED",
+      action: "preserve",
+    });
+  });
+
   it("classifies workflow scripts by content state without changing new-file behavior", async () => {
     const fixture = await workspace("workflow-script-classification");
     const targetRelative = ".codex/scripts/publish-changes.mjs";
