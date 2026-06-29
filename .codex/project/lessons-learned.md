@@ -894,3 +894,35 @@ availability, timing, ownership, and enforcement.
 kit/rules/skill-and-output-efficiency.md
 dev_locals/research-notes/2026-06-20-capability-preserving-skill-efficiency-audit.md
 ```
+
+## Keep: Structure foundation-kit payload by capability surface
+
+### Context
+
+Foundation-kit installer reports needed to make a large mapped payload easier to review while
+keeping existing classification, ownership, and write policy unchanged. Future profiles were a
+plausible adjacent use, but were not required to improve the current report.
+
+### Lesson
+
+Static, report-only grouping by capability surface is acceptable cheap structural optionality for
+the foundation-kit payload. It creates useful vocabulary and preserves independent ownership and
+policy axes without selecting files, authorizing replacement, or changing installation behavior.
+
+Profiles, profile switching, package-manager behavior, dependency solving, and manifest migration
+remain deferred speculative implementation until concrete evidence shows that static grouping
+alone is insufficient.
+
+### Reuse guidance
+
+- group mapped payload by the capability it provides, not by current conflict outcome
+- keep ownership, classification, and write authorization separate from reporting groups
+- prefer static report projections before adding installation-selection behavior
+- revisit profiles or package behavior only for a verified use case that grouping cannot satisfy
+
+### Related files
+
+```txt
+scripts/install-foundation-kit/payload-groups.mjs
+scripts/install-foundation-kit/final-report.mjs
+```
