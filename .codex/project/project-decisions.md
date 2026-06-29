@@ -2989,3 +2989,49 @@ downstream projects, and installer behavior remain unchanged.
 - `kit/rules/agent-operating-contract.md`
 - `kit/rules/engineering-quality-principles.md`
 - `scripts/install-foundation-kit/payload-groups.mjs`
+
+## Decision: Docs installation is one explicit additive profile
+
+### Status
+
+Accepted
+
+### Context
+
+Non-code projects need the foundation kit's planning, research, writing, memory, and publish
+workflow without carrying code-review or repository-setup surfaces. Static payload groups provide
+a verified capability boundary, but arbitrary group combinations would introduce incomplete
+packages and dependency-solving pressure.
+
+### Decision
+
+Support exactly `--kit-profile docs` in the maintained installer. It selects project templates,
+common workflow, docs/writing workflow, and the complete publish package. It excludes code
+workflow, GitHub setup, optional skills, and unclassified mappings. Include publish because its
+project-memory dependency is present and its aliases already preserve project ownership and
+conflicts.
+
+Build and validate the complete mapping against manifest policy before filtering current mappings
+for per-target planning. Detect obsolete manifest records against the complete mapping and omit
+unclassified obsolete entries from docs-profile planning. Carry the requested profile through both
+revalidation points and the plan fingerprint.
+
+Keep the feature additive per invocation. Do not persist profile metadata in schema-v1, remove
+out-of-profile files or records, infer project type, support profile switching, expose free-form
+groups or standalone packages, or add dependency solving. No-profile behavior remains the
+complete installer path. Profile groups select scope only; ownership, conflict, backup, apply,
+manifest, alias, and verification authority remain unchanged.
+
+### Impact
+
+Writing, research, planning, business-note, interview-preparation, and documentation projects can
+install a smaller coherent workflow through the mature installer safety path. Generalized package
+or profile behavior remains deferred until concrete evidence requires it.
+
+### Related Files
+
+- `scripts/install-foundation-kit/kit-profiles.mjs`
+- `scripts/install-foundation-kit/planner.mjs`
+- `scripts/install-foundation-kit/flow.mjs`
+- `scripts/install-foundation-kit/final-report.mjs`
+- `tests/install-foundation-kit/kit-profiles.test.mjs`

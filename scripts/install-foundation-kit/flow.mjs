@@ -132,7 +132,11 @@ export async function runInstallerFlow({
 }) {
   const roots = await resolveInstallRoots({ repoRoot, target: options.target });
   const targetProject = await inspectTargetProject(roots.targetRoot);
-  const plan = await buildInstallPlan({ ...roots, includeOptional: options.includeOptional });
+  const plan = await buildInstallPlan({
+    ...roots,
+    includeOptional: options.includeOptional,
+    kitProfile: options.kitProfile,
+  });
   const policy = resolveProjectMode({
     requestedMode: options.projectMode,
     detectedSignals: targetProject.detectedSignals,
@@ -311,6 +315,7 @@ export async function runInstallerFlow({
       expected: plan,
       ...roots,
       includeOptional: options.includeOptional,
+      kitProfile: options.kitProfile,
     });
     await hooks.beforeBackupMaterialization?.({ plan, roots, preparedBackup });
     materialized = await materializeBackup({
@@ -324,6 +329,7 @@ export async function runInstallerFlow({
       expected: plan,
       ...roots,
       includeOptional: options.includeOptional,
+      kitProfile: options.kitProfile,
     });
     await hooks.beforeApply?.({ plan, roots, materialized });
     let completedTargets = [];

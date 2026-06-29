@@ -12,6 +12,7 @@ export function parseCliOptions(argv) {
     skipConflicts: false,
     replaceKitManaged: false,
     includeOptional: [],
+    kitProfile: "",
     verbose: false,
     help: false,
   };
@@ -54,6 +55,19 @@ export function parseCliOptions(argv) {
         throw new InstallerError("INVALID_ARGUMENT", "--include-optional requires a skill name.");
       }
       options.includeOptional.push(name);
+    } else if (value === "--kit-profile") {
+      index += 1;
+      const profile = argv[index];
+      if (!profile || profile.startsWith("--")) {
+        throw new InstallerError("INVALID_ARGUMENT", "--kit-profile requires a value.");
+      }
+      if (profile !== "docs") {
+        throw new InstallerError(
+          "INVALID_ARGUMENT",
+          `Unsupported kit profile: ${profile}. Expected docs.`,
+        );
+      }
+      options.kitProfile = profile;
     } else if (value === "--verbose") {
       options.verbose = true;
     } else if (value === "--help" || value === "-h") {
@@ -97,6 +111,18 @@ export function parseCliOptions(argv) {
     );
   }
   options.includeOptional = [...new Set(options.includeOptional)];
+  if (options.kitProfile && options.includeOptional.length) {
+    throw new InstallerError(
+      "INVALID_ARGUMENT",
+      "--kit-profile docs cannot be combined with --include-optional.",
+    );
+  }
+  if (options.kitProfile && options.replaceKitManaged) {
+    throw new InstallerError(
+      "INVALID_ARGUMENT",
+      "--kit-profile docs cannot be combined with --replace-kit-managed.",
+    );
+  }
   return options;
 }
 
@@ -115,6 +141,7 @@ export function usage() {
     "  --skip-conflicts          With --apply, write safe new files and preserve every existing target",
     "  --replace-kit-managed     With explicit existing mode and --apply, replace only the two allowlisted React optional files",
     "  --include-optional NAME   Include one optional skill; repeat to select more",
+    "  --kit-profile docs        Install the non-code docs profile instead of the complete kit",
     "  --show-diff               Preview conflicts with diff -u when available; does not authorize overwrite",
     "  --verbose                 Print DEBUG output",
     "  -h, --help                Show this help",
@@ -122,5 +149,6 @@ export function usage() {
     "Direct pnpm examples (no extra -- separator):",
     "  pnpm install:node --target /path/to/project --apply --skip-conflicts",
     "  pnpm install:node --target /path/to/project --include-optional react-component-patterns",
+    "  pnpm install:node --target /path/to/project --kit-profile docs",
   ].join("\n");
 }

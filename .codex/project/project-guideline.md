@@ -446,6 +446,14 @@ Maintained workflow tooling boundary:
   not overwrite authorization; source-controlled ownership policy remains authoritative.
 - The installer supports repeatable exact `--include-optional <name>` selection from
   `kit/optional-skills/`, with selected packages mapped only to `.codex/skills/engineering/`.
+- The installer supports exactly one bounded profile, `--kit-profile docs`, selecting project
+  templates, common workflow, docs/writing workflow, and the complete publish package. It excludes
+  code workflow, GitHub setup, optional skills, and unclassified mappings. The flag is mutually
+  exclusive with `--include-optional` and `--replace-kit-managed`.
+- Docs-profile selection occurs after complete mapping and manifest-policy validation but before
+  per-target planning. It is additive per invocation: schema-v1 stores no profile field, prior
+  out-of-profile records and files remain untouched, and no-profile behavior remains the complete
+  mapping. Explicit profile reports show the requested profile and selected groups.
 - Existing-project apply remains safe-add-only by default. The only managed-replacement exception
   is the exact two-file `react-component-patterns` canary under explicit
   `--replace-kit-managed --include-optional react-component-patterns`; all other existing-file
@@ -636,6 +644,14 @@ Current `install-foundation-kit.mjs` purpose:
 - default `--project-mode` to `auto`, resolving project signals or conflicts to existing-like
   caution and empty conflict-free targets to new-like behavior
 - support explicit `new` and `existing` modes without changing file mappings
+- support exactly `--kit-profile docs` as an explicit selected-mapping view over the complete
+  validated mapping; preserve the complete mapping and output when no profile is requested
+- include project templates, common workflow, docs/writing workflow, and publish package in the
+  docs profile while excluding code workflow, GitHub setup, optional skills, and unclassified
+  mappings
+- keep profile use additive and report-only in schema-v1: never clean up prior files or records,
+  persist an active profile, or change ownership, conflict, backup, apply, alias, or verification
+  authority
 - block existing-like conflict apply before staging; `--overwrite-conflicts` does not authorize
   existing-project replacement
 - support `--apply --skip-conflicts` as a zero-overwrite new-files-only apply path
@@ -686,6 +702,9 @@ Current Node installer test purpose:
   dry-run, fresh install, complete mapping correctness, existing-like pre-staging conflict blocking,
   explicit overwrite safeguards, no silent overwrite, backup-before-replace, missing-source
   blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
+- verify docs-profile group selection, hard-dependency closure, selected-only planning/apply,
+  default pass-through behavior, profile-aware revalidation/reporting, manifest record
+  preservation, and unchanged publish-alias safety
 
 Current `kit/github-settings/` purpose:
 

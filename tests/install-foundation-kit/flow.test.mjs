@@ -8,6 +8,7 @@ import {
   BOOTSTRAP_CRITICAL_TARGETS,
   BOOTSTRAP_DEPENDENCY_GUARD_TARGETS,
 } from "../../scripts/install-foundation-kit/payload-groups.mjs";
+import { buildInstallPlan } from "../../scripts/install-foundation-kit/planner.mjs";
 import { PUBLISH_PACKAGE_ALIASES } from "../../scripts/install-foundation-kit/publish-aliases.mjs";
 import { commandRunner, createOutput, createTestWorkspace } from "./helpers.mjs";
 
@@ -33,6 +34,7 @@ function options(target, overrides = {}) {
     skipConflicts: false,
     replaceKitManaged: false,
     includeOptional: [],
+    kitProfile: "",
     verbose: false,
     help: false,
     ...overrides,
@@ -90,6 +92,161 @@ describe("installer flow", () => {
     await expect(
       lstat(resolve(fixture.repoRoot, "dev_locals/workflow-tmp/install-foundation-kit/test-run")),
     ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("plans only selected docs groups and reports the explicit profile without writes", async () => {
+    const fixture = await workspace("docs-profile-dry-run");
+    const output = createOutput();
+    await writeFixtureSource(fixture, "rules/agent-operating-contract.md", "common\n");
+    await writeFixtureSource(fixture, "rules/docs-first-policy.md", "docs\n");
+    await writeFixtureSource(fixture, "rules/engineering-quality-principles.md", "code\n");
+
+    const result = await run(fixture, { options: { kitProfile: "docs" }, output });
+    const targets = result.plan.entries.map((entry) => entry.targetRelative);
+
+    expect(result.report.requestedKitProfile).toBe("docs");
+    expect(result.report.selectedPayloadGroups).toEqual([
+      "project-templates",
+      "common-workflow",
+      "docs-writing-workflow",
+      "publish-package",
+    ]);
+    expect(targets).toContain(".codex/rules/agent-operating-contract.md");
+    expect(targets).toContain(".codex/rules/docs-first-policy.md");
+    expect(targets).toContain(".codex/scripts/publish-changes.mjs");
+    expect(targets).not.toContain(".codex/rules/engineering-quality-principles.md");
+    expect(targets).not.toContain(".codex/github-settings/example.json");
+    expect(targets).not.toContain(".codex/rules/example.md");
+    expect(await readdir(fixture.targetRoot)).toEqual([]);
+    expect(output.messages).toContainEqual(["INFO", "Requested kit profile: docs"]);
+    expect(output.messages).toContainEqual([
+      "INFO",
+      "Selected payload groups: project-templates, common-workflow, docs-writing-workflow, publish-package",
+    ]);
+  });
+
+  it("preserves default planning and output when no profile is requested", async () => {
+    const fixture = await workspace("docs-profile-default-regression");
+    const output = createOutput();
+    const result = await run(fixture, { output });
+
+    expect(result.plan.requestedKitProfile).toBe("");
+    expect(result.plan.selectedPayloadGroups).toEqual([]);
+    expect(result.plan.entries).toHaveLength(16);
+    expect(
+      output.messages.some(([, message]) => message.startsWith("Requested kit profile:")),
+    ).toBe(false);
+    expect(
+      output.messages.some(([, message]) => message.startsWith("Selected payload groups:")),
+    ).toBe(false);
+  });
+
+  it("keeps selected entry classifications identical to complete planning", async () => {
+    const fixture = await workspace("docs-profile-classification-equivalence");
+    await writeFixtureSource(fixture, "rules/agent-operating-contract.md", "common\n");
+    await writeFixtureSource(fixture, "rules/docs-first-policy.md", "docs\n");
+    const complete = await buildInstallPlan(fixture);
+    const docs = await buildInstallPlan({ ...fixture, kitProfile: "docs" });
+    const completeByTarget = new Map(
+      complete.entries.map((entry) => [entry.targetRelative, entry]),
+    );
+
+    for (const entry of docs.entries) {
+      expect(entry).toMatchObject({
+        ownership: completeByTarget.get(entry.targetRelative).ownership,
+        risk: completeByTarget.get(entry.targetRelative).risk,
+        resultCategory: completeByTarget.get(entry.targetRelative).resultCategory,
+        reasonCode: completeByTarget.get(entry.targetRelative).reasonCode,
+        action: completeByTarget.get(entry.targetRelative).action,
+      });
+    }
+  });
+
+  it("ignores and preserves existing out-of-profile differences", async () => {
+    const fixture = await workspace("docs-profile-out-of-profile-difference");
+    await writeMappedDifference(
+      fixture,
+      "rules/engineering-quality-principles.md",
+      ".codex/rules/engineering-quality-principles.md",
+      { sourceContents: "code source\n", targetContents: "project code rule\n" },
+    );
+
+    const result = await run(fixture, { options: { kitProfile: "docs" } });
+
+    expect(result.plan.conflicts).toBe(0);
+    expect(result.plan.reviewItems).toBe(0);
+    expect(
+      result.plan.entries.some(
+        (entry) => entry.targetRelative === ".codex/rules/engineering-quality-principles.md",
+      ),
+    ).toBe(false);
+    await expect(
+      readFile(
+        resolve(fixture.targetRoot, ".codex/rules/engineering-quality-principles.md"),
+        "utf8",
+      ),
+    ).resolves.toBe("project code rule\n");
+  });
+
+  it("applies only docs groups while preserving publish alias behavior", async () => {
+    const fixture = await workspace("docs-profile-apply");
+    const output = createOutput();
+    await writeFixtureSource(fixture, "rules/agent-operating-contract.md", "common\n");
+    await writeFixtureSource(fixture, "rules/docs-first-policy.md", "docs\n");
+    await writeFixtureSource(fixture, "rules/engineering-quality-principles.md", "code\n");
+    await writeFile(resolve(fixture.targetRoot, "package.json"), '{"scripts":{}}\n');
+
+    const result = await run(fixture, {
+      options: { apply: true, kitProfile: "docs" },
+      output,
+    });
+
+    expect(result.report.mode).toBe("apply");
+    await expect(
+      readFile(resolve(fixture.targetRoot, ".codex/rules/agent-operating-contract.md"), "utf8"),
+    ).resolves.toBe("common\n");
+    await expect(
+      readFile(resolve(fixture.targetRoot, ".codex/rules/docs-first-policy.md"), "utf8"),
+    ).resolves.toBe("docs\n");
+    await expect(
+      lstat(resolve(fixture.targetRoot, ".codex/rules/engineering-quality-principles.md")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(
+      lstat(resolve(fixture.targetRoot, ".codex/github-settings/example.json")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    const packageJson = JSON.parse(await readFile(resolve(fixture.targetRoot, "package.json")));
+    expect(packageJson.scripts).toMatchObject(PUBLISH_PACKAGE_ALIASES);
+    expect(output.messages).toContainEqual(["INFO", "Requested kit profile: docs"]);
+  });
+
+  it("reports the explicit profile in blocked output", async () => {
+    const fixture = await workspace("docs-profile-blocked");
+    const output = createOutput();
+    await writeMappedDifference(
+      fixture,
+      "rules/agent-operating-contract.md",
+      ".codex/rules/agent-operating-contract.md",
+    );
+
+    await expect(
+      run(fixture, { options: { apply: true, kitProfile: "docs" }, output }),
+    ).rejects.toThrow("require safe apply or manual review");
+    expect(output.messages).toContainEqual(["INFO", "Requested kit profile: docs"]);
+  });
+
+  it("revalidates the selected docs profile before writes", async () => {
+    const fixture = await workspace("docs-profile-revalidation");
+    const selectedSource = resolve(fixture.kitRoot, "rules/agent-operating-contract.md");
+    await writeFixtureSource(fixture, "rules/agent-operating-contract.md", "before\n");
+
+    await expect(
+      run(fixture, {
+        options: { apply: true, kitProfile: "docs" },
+        hooks: {
+          afterBackupMaterialized: async () => writeFile(selectedSource, "after\n"),
+        },
+      }),
+    ).rejects.toThrow("Source, target, policy, or installation manifest changed");
   });
 
   it("groups existing-project review items without changing classifications or target bytes", async () => {
