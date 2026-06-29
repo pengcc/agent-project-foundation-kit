@@ -110,6 +110,7 @@ Current canonical core rules:
 - `engineering-quality-principles`
 - `skill-and-output-efficiency`
 - `skill-invocation-and-dependency-boundaries`
+- `task-and-change-safety-principles`
 
 Current project-memory context control:
 
@@ -238,6 +239,12 @@ Current UI Quality Foundation boundaries:
 
 Current engineering quality boundaries:
 
+- `task-and-change-safety-principles` owns proportional scope, focused and reviewable changes,
+  explicit uncertainty and tradeoffs, validation and evidence, safe update methods, and the
+  conditional Plausible Extension Check across code and non-code work.
+- The shared rule is non-authorizing and non-ceremonial. Hard startup, context, approval,
+  project-root, global-tooling, routing, memory, reporting, and publish boundaries remain directly
+  owned by `agent-operating-contract`.
 - `engineering-quality-principles` favors focused units, explicit contracts, visible dependency
   direction, and extension points only after demonstrated variation or integration needs.
 - Deploy-varying configuration and secrets remain separate from code and use project-approved

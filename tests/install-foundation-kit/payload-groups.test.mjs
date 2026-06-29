@@ -34,6 +34,7 @@ describe("installer payload reporting groups", () => {
     [".codex/project/project-decisions.md", "project-templates"],
     [".codex/project/lessons-learned.md", "project-templates"],
     [".codex/rules/agent-operating-contract.md", "common-workflow"],
+    [".codex/rules/task-and-change-safety-principles.md", "common-workflow"],
     [".codex/skills/meta/project-memory/SKILL.md", "common-workflow"],
     [".codex/skills/meta/plan-with-context/metadata.yml", "common-workflow"],
     [".codex/prompts/force-execute-plan.md", "common-workflow"],

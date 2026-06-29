@@ -4,6 +4,11 @@ These principles are cross-technology engineering constraints for planning, impl
 
 They are not a standalone workflow skill.
 
+Apply `task-and-change-safety-principles.md` for proportional task scope, focused changes,
+validation and evidence, safe update methods, and the conditional Plausible Extension Check.
+Operating authority and global-tooling approval remain directly owned by
+`agent-operating-contract.md`.
+
 They are applied by roles and workflows such as:
 
 - agent-roles-and-capabilities
@@ -18,13 +23,11 @@ If project conventions conflict with these principles, report the conflict and a
 
 ## 1. Keep It Simple
 
-Prefer simple, readable, maintainable solutions.
+Prefer simple, readable, maintainable code and engineering designs.
 
-Avoid clever or over-engineered code.
+Avoid clever or over-engineered implementations.
 
-Use the smallest design that solves the current approved scope.
-
-Do not add abstractions only because they might be useful later.
+Use the smallest code design that solves the current engineering need.
 
 ## 2. DRY, but Avoid Premature Abstraction
 
@@ -70,15 +73,7 @@ Keep branching understandable.
 
 Avoid deeply nested conditionals.
 
-## 7. Small Focused Changes
-
-Prefer small, meaningful changes.
-
-Avoid mixing refactors, feature work, formatting churn, and unrelated cleanup in one change.
-
-When committing is in scope, prefer small focused commits with useful messages.
-
-## 8. Comments Explain Why
+## 7. Comments Explain Why
 
 Code should usually explain what it does.
 
@@ -86,7 +81,7 @@ Comments should explain why a decision was made, what tradeoff exists, what busi
 
 Avoid comments that repeat obvious code.
 
-## 9. Consistent Style
+## 8. Consistent Style
 
 Follow the project's existing style, lint rules, formatter, naming patterns, and file organization.
 
@@ -94,7 +89,7 @@ Use tools such as ESLint, Prettier, Biome, TypeScript, or project-specific forma
 
 Do not introduce a new style or tooling without a plan and user approval.
 
-## 10. Defensive Programming
+## 9. Defensive Programming
 
 Validate inputs at trust boundaries.
 
@@ -104,7 +99,7 @@ Do not swallow errors silently.
 
 Log or surface errors appropriately for the project context.
 
-## 11. Complexity Control
+## 10. Complexity Control
 
 Prefer small focused functions and components.
 
@@ -114,13 +109,13 @@ Use cyclomatic complexity or similar metrics as guidance, not as a mechanical ru
 
 Do not split code into many tiny pieces if that harms readability.
 
-## 12. Avoid Magic Values
+## 11. Avoid Magic Values
 
 Avoid unexplained hard-coded numbers, strings, statuses, durations, and config values.
 
 Use named constants, enums, config, or domain-specific names when that improves readability and maintainability.
 
-## 13. Follow Existing Patterns First
+## 12. Follow Existing Patterns First
 
 Before introducing a new pattern, inspect how the project already handles similar problems.
 
@@ -128,17 +123,10 @@ Prefer consistency unless the existing pattern is clearly harmful.
 
 If changing a pattern, explain why and limit the change scope.
 
-## 14. Make Tradeoffs Explicit
+## 13. Engineering Validation
 
-When there are multiple reasonable approaches, explain the tradeoff.
-
-Prefer decisions that reduce long-term maintenance cost without overengineering.
-
-State uncertainty clearly.
-
-## 15. Validate the Change
-
-For implementation work, run or recommend the smallest meaningful validation:
+For implementation work, select checks that cover the affected engineering boundary. Typical
+validation includes:
 
 - typecheck
 - lint
@@ -148,9 +136,7 @@ For implementation work, run or recommend the smallest meaningful validation:
 - build
 - manual verification
 
-If validation is skipped, explain why.
-
-## 16. UI Quality and Design-System Reuse
+## 14. UI Quality and Design-System Reuse
 
 For user-facing UI work, existing project conventions, design systems, component libraries,
 tokens, accessibility practices, and product context take priority.
@@ -180,7 +166,7 @@ Evaluate UI changes with this compact checklist:
 This guidance is not a component library, design system package, technology-specific UI skill, or
 professional accessibility audit.
 
-## 17. Reassess the Runtime as Automation Grows
+## 15. Reassess the Runtime as Automation Grows
 
 Shell is appropriate for small, linear glue around existing commands. Reassess the runtime before
 a script becomes a workflow engine with complex state, structured data, interactive prompts,
@@ -197,44 +183,17 @@ When those signals appear:
 Node.js is one suitable choice in this repository, but the general rule is to select the runtime
 that best supports the workflow's state model, validation needs, and long-term maintenance.
 
-## 18. Keep Project and Global Tooling Boundaries Explicit
-
-Treat project-local runtime configuration and global machine tooling as separate state.
-
-Use read-only diagnostics to identify which executable and version a project command actually
-uses. Do not install, upgrade, downgrade, relink, reconfigure, or otherwise mutate global tools,
-shell profiles, PATH, global Git configuration, or files outside the project root without explicit
-user approval.
-
-When a runtime mismatch blocks validation:
-
-- report the detected and required versions
-- report the failing command
-- distinguish global state from project-local state
-- recommend a manual correction and explain its machine-wide risk
-- wait for explicit approval before any mutating command
-
-Do not silently repair global tooling to make a project check pass.
-
-## 19. Composable Boundaries and Extension Seams
+## 16. Composable Boundaries and Extension Seams
 
 Compose focused units through small, explicit inputs, outputs, and contracts. Keep dependency
 direction visible by passing external services, state, and configuration through deliberate
 boundaries instead of hidden globals or cross-layer reach-through.
 
-For reusable systems or durable architecture, installer, workflow, or framework-like boundaries,
-apply a conditional Plausible Extension Check: consider one or two credible adjacent uses and
-preserve only cheap structural optionality through naming, static grouping or classification,
-separate ownership axes, report-only boundaries, or separation of decisions from side effects.
-This is not a mandatory checklist for small tasks.
-
 Add extension points only for demonstrated variation or integration needs. Prefer a later small
-refactor over speculative profiles, plugin systems, package managers, dependency solvers,
-migration engines, semantic merge, extension APIs, or generalized interfaces. Separate domain
-decisions from adapters or side effects when it improves testability and change isolation; do not
-impose layers mechanically.
+refactor over generalized interfaces. Separate domain decisions from adapters or side effects when
+it improves testability and change isolation; do not impose layers mechanically.
 
-## 20. Configuration, Secrets, and Security Boundaries
+## 17. Configuration, Secrets, and Security Boundaries
 
 Separate deploy-varying configuration from code and validate required configuration at an
 appropriate startup or trust boundary. Use project-approved runtime configuration and secret
@@ -246,33 +205,7 @@ security-sensitive behavior behind small auditable boundaries with consistent en
 secure defaults, least privilege, established libraries or patterns, and docs-first verification
 over custom security mechanisms.
 
-## 21. Change Safety and Evidence
-
-Prefer the simplest safe, reviewable update path. Preserve mature files and make targeted changes
-unless a full replacement is explicitly justified by the approved scope and is easier to verify.
-
-Treat large deletions, major line-count drops, and replacement of mature content with stubs as
-destructive-risk signals. Stop and review the diff before continuing.
-
-For skill metadata, invocation, dependency, and context-load design, apply
-`skill-invocation-and-dependency-boundaries.md` rather than duplicating those rules here.
-
-Choose the update method by review safety:
-
-- isolated edits: direct patch
-- coordinated changes within one file: full-file replacement only when it is safer to review
-- coordinated multi-file changes: a bounded bundle with complete diff review
-
-For rename or migration work, search repository-wide before and after the change. Classify
-remaining references as current, historical, or stale rather than assuming every match should be
-changed.
-
-Verify external or remote state through authoritative evidence. Manual confirmation expresses
-intent but does not prove external state. Place confirmations at meaningful safety boundaries;
-do not add prompts to every mechanical step when one explicit, scope-visible authorization is
-sufficient.
-
-## 22. Module Depth and Seams
+## 18. Module Depth and Seams
 
 - Prefer deep modules: a small, stable interface with meaningful implementation behind it.
 - Avoid shallow pass-through abstractions unless they isolate an external boundary, volatile
