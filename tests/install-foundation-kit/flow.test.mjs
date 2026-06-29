@@ -4,6 +4,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import { InstallerError } from "../../scripts/install-foundation-kit/errors.mjs";
 import { runInstallerFlow } from "../../scripts/install-foundation-kit/flow.mjs";
 import { hashFile } from "../../scripts/install-foundation-kit/fs-safe.mjs";
+import {
+  BOOTSTRAP_CRITICAL_TARGETS,
+  BOOTSTRAP_DEPENDENCY_GUARD_TARGETS,
+} from "../../scripts/install-foundation-kit/payload-groups.mjs";
 import { PUBLISH_PACKAGE_ALIASES } from "../../scripts/install-foundation-kit/publish-aliases.mjs";
 import { commandRunner, createOutput, createTestWorkspace } from "./helpers.mjs";
 
@@ -59,6 +63,24 @@ async function run(fixture, overrides = {}) {
   });
 }
 
+async function writeFixtureSource(fixture, sourceRelative, contents = "source fixture\n") {
+  const source = resolve(fixture.kitRoot, sourceRelative);
+  await mkdir(resolve(source, ".."), { recursive: true });
+  await writeFile(source, contents);
+}
+
+async function writeMappedDifference(
+  fixture,
+  sourceRelative,
+  targetRelative,
+  { sourceContents = "source fixture\n", targetContents = "target fixture\n" } = {},
+) {
+  await writeFixtureSource(fixture, sourceRelative, sourceContents);
+  const target = resolve(fixture.targetRoot, targetRelative);
+  await mkdir(resolve(target, ".."), { recursive: true });
+  await writeFile(target, targetContents);
+}
+
 describe("installer flow", () => {
   it("performs a zero-write dry-run", async () => {
     const fixture = await workspace("dry-run");
@@ -67,6 +89,257 @@ describe("installer flow", () => {
     expect(await readdir(fixture.targetRoot)).toEqual([]);
     await expect(
       lstat(resolve(fixture.repoRoot, "dev_locals/workflow-tmp/install-foundation-kit/test-run")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("groups existing-project review items without changing classifications or target bytes", async () => {
+    const fixture = await workspace("payload-groups-dry-run");
+    const output = createOutput();
+    const packageContents = `${JSON.stringify(
+      {
+        private: true,
+        scripts: { "publish:changes": "node tools/project-publish.mjs" },
+      },
+      null,
+      2,
+    )}\n`;
+    await writeFile(resolve(fixture.targetRoot, "package.json"), packageContents);
+    await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "project agents\n");
+    await mkdir(resolve(fixture.targetRoot, ".codex/project"), { recursive: true });
+    await writeFile(
+      resolve(fixture.targetRoot, ".codex/project/project-guideline.md"),
+      "project memory\n",
+    );
+    await writeMappedDifference(
+      fixture,
+      "rules/agent-operating-contract.md",
+      ".codex/rules/agent-operating-contract.md",
+    );
+    await writeMappedDifference(
+      fixture,
+      "rules/docs-first-policy.md",
+      ".codex/rules/docs-first-policy.md",
+    );
+    await writeMappedDifference(
+      fixture,
+      "rules/engineering-quality-principles.md",
+      ".codex/rules/engineering-quality-principles.md",
+    );
+    await writeMappedDifference(
+      fixture,
+      "skills/core/publish-current-branch/SKILL.md",
+      ".codex/skills/core/publish-current-branch/SKILL.md",
+    );
+    await writeMappedDifference(
+      fixture,
+      "scripts/publish-changes.mjs",
+      ".codex/scripts/publish-changes.mjs",
+    );
+    await writeMappedDifference(
+      fixture,
+      "scripts/shared/command-runner.mjs",
+      ".codex/scripts/shared/command-runner.mjs",
+    );
+    await writeMappedDifference(
+      fixture,
+      "config/publish-cli-theme.json",
+      ".codex/config/publish-cli-theme.json",
+    );
+    await writeMappedDifference(
+      fixture,
+      "github-settings/example.json",
+      ".codex/github-settings/example.json",
+    );
+
+    const targetPaths = [
+      "AGENTS.md",
+      "package.json",
+      ".codex/project/project-guideline.md",
+      ".codex/rules/agent-operating-contract.md",
+      ".codex/rules/docs-first-policy.md",
+      ".codex/rules/engineering-quality-principles.md",
+      ".codex/skills/core/publish-current-branch/SKILL.md",
+      ".codex/scripts/publish-changes.mjs",
+      ".codex/scripts/shared/command-runner.mjs",
+      ".codex/config/publish-cli-theme.json",
+      ".codex/github-settings/example.json",
+    ];
+    const before = new Map(
+      await Promise.all(
+        targetPaths.map(async (target) => [
+          target,
+          await readFile(resolve(fixture.targetRoot, target), "utf8"),
+        ]),
+      ),
+    );
+
+    const result = await run(fixture, { output });
+    for (const [reportField, planField] of [
+      ["safeAddFiles", "safeAddFiles"],
+      ["kitManagedReplaceFiles", "kitManagedReplaceFiles"],
+      ["projectOwnedFiles", "projectOwnedFiles"],
+      ["mixedAgentMergeFiles", "mixedAgentMergeFiles"],
+      ["blockedManualFiles", "blockedManualFiles"],
+      ["unchangedFiles", "unchangedFiles"],
+    ]) {
+      expect(result.report[reportField]).toBe(result.plan[planField]);
+    }
+    expect(
+      result.report.payloadGroups.filter((group) => group.unresolvedCount).map((group) => group.id),
+    ).toEqual([
+      "project-templates",
+      "common-workflow",
+      "docs-writing-workflow",
+      "code-workflow",
+      "publish-package",
+      "github-setup",
+    ]);
+    expect(
+      result.report.payloadGroups.find((group) => group.id === "project-templates"),
+    ).toMatchObject({
+      unresolvedCount: 2,
+      categoryCounts: { PROJECT_OWNED: 1, BLOCKED_MANUAL: 1 },
+    });
+    expect(
+      result.report.payloadGroups.find((group) => group.id === "common-workflow"),
+    ).toMatchObject({
+      unresolvedCount: 1,
+      entries: [
+        expect.objectContaining({
+          targetRelative: ".codex/rules/agent-operating-contract.md",
+          resultCategory: "BLOCKED_MANUAL",
+        }),
+      ],
+    });
+    expect(
+      result.report.payloadGroups.find((group) => group.id === "docs-writing-workflow"),
+    ).toMatchObject({
+      unresolvedCount: 1,
+    });
+    expect(result.report.payloadGroups.find((group) => group.id === "code-workflow")).toMatchObject(
+      {
+        unresolvedCount: 1,
+      },
+    );
+    expect(
+      result.report.payloadGroups.find((group) => group.id === "publish-package"),
+    ).toMatchObject({
+      unresolvedCount: 4,
+      categoryCounts: { PROJECT_OWNED: 1, BLOCKED_MANUAL: 3 },
+    });
+    expect(result.report.payloadGroups.find((group) => group.id === "github-setup")).toMatchObject({
+      unresolvedCount: 1,
+    });
+    expect(result.report.projectOwnedPreserved).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          targetRelative: ".codex/config/publish-cli-theme.json",
+          resultCategory: "PROJECT_OWNED",
+        }),
+        expect.objectContaining({
+          targetRelative: ".codex/project/project-guideline.md",
+          resultCategory: "PROJECT_OWNED",
+        }),
+      ]),
+    );
+    expect(output.messages).toContainEqual(["INFO", "Payload review groups:"]);
+    expect(
+      output.messages.some(
+        ([level, message]) =>
+          level === "INFO" &&
+          message.startsWith("Docs / writing workflow: 1 unresolved review item(s)"),
+      ),
+    ).toBe(true);
+    expect(output.messages).toContainEqual([
+      "WARNING",
+      "Review these publish workflow differences together. This grouping is report-only; it does not change replacement authorization, ownership, package alias behavior, or publishing behavior.",
+    ]);
+    expect(output.messages).toContainEqual([
+      "INFO",
+      "- [BLOCKED_MANUAL] .codex/scripts/publish-changes.mjs",
+    ]);
+    expect(output.messages).toContainEqual(["INFO", "Project-owned preserved differences: 2."]);
+    expect(output.messages).toContainEqual(["INFO", "Existing conflict policy still applies."]);
+    expect(output.messages).toContainEqual(["INFO", "No target files were changed."]);
+    expect(output.messages).toContainEqual(["INFO", "Publish package aliases:"]);
+    expect(
+      output.messages.some(
+        ([level, message]) =>
+          level === "SUCCESS" &&
+          message ===
+            `Dry-run completed: ${result.plan.safeAddFiles} SAFE_ADD, ` +
+              `${result.plan.kitManagedReplaceFiles} KIT_MANAGED_REPLACE, ` +
+              `${result.plan.projectOwnedFiles} PROJECT_OWNED, ` +
+              `${result.plan.mixedAgentMergeFiles} MIXED_AGENT_MERGE, ` +
+              `${result.plan.blockedManualFiles} BLOCKED_MANUAL, ` +
+              `${result.plan.unchangedFiles} unchanged, ${result.plan.total} total.`,
+      ),
+    ).toBe(true);
+
+    for (const [target, contents] of before) {
+      expect(await readFile(resolve(fixture.targetRoot, target), "utf8")).toBe(contents);
+    }
+    await expect(
+      lstat(resolve(fixture.targetRoot, ".codex/foundation-kit/installation-manifest.json")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(lstat(resolve(fixture.targetRoot, ".codex/backups"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
+  it("reports the bootstrap subset and dependency guards as advisory-only dry-run output", async () => {
+    const fixture = await workspace("bootstrap-payload-advisory");
+    const output = createOutput();
+    for (const [sourceRelative, targetRelative] of [
+      ["rules/agent-operating-contract.md", ".codex/rules/agent-operating-contract.md"],
+      ["rules/skill-and-output-efficiency.md", ".codex/rules/skill-and-output-efficiency.md"],
+      ["rules/task-execution-classification.md", ".codex/rules/task-execution-classification.md"],
+      ["skills/core/execute-plan/SKILL.md", ".codex/skills/core/execute-plan/SKILL.md"],
+      ["skills/meta/plan-with-context/SKILL.md", ".codex/skills/meta/plan-with-context/SKILL.md"],
+    ]) {
+      await writeMappedDifference(fixture, sourceRelative, targetRelative);
+    }
+    await writeFixtureSource(fixture, "skills/meta/project-memory/SKILL.md");
+    await writeMappedDifference(
+      fixture,
+      "skills/meta/grilling/SKILL.md",
+      ".codex/skills/meta/grilling/SKILL.md",
+    );
+
+    const result = await run(fixture, { output });
+    expect(result.report.bootstrapAdvisory).toEqual({
+      detected: true,
+      criticalTargets: BOOTSTRAP_CRITICAL_TARGETS,
+      dependencyGuardTargets: BOOTSTRAP_DEPENDENCY_GUARD_TARGETS,
+    });
+    expect(output.messages).toContainEqual([
+      "WARNING",
+      "Bootstrap-critical workflow differences detected: 5.",
+    ]);
+    for (const target of BOOTSTRAP_CRITICAL_TARGETS) {
+      expect(output.messages).toContainEqual(["INFO", `- ${target}`]);
+      expect(await readFile(resolve(fixture.targetRoot, target), "utf8")).toBe("target fixture\n");
+    }
+    expect(output.messages).toContainEqual([
+      "WARNING",
+      "Bootstrap dependency guards missing or different: 2.",
+    ]);
+    expect(output.messages).toContainEqual([
+      "INFO",
+      "Review/adopt this bootstrap slice before relying on target-repository installed workflow authority.",
+    ]);
+    expect(output.messages).toContainEqual([
+      "INFO",
+      "Use current source-kit planning/execution authority for that review.",
+    ]);
+    expect(output.messages).toContainEqual([
+      "INFO",
+      "This is advisory only. No replacement is authorized.",
+    ]);
+    expect(output.messages).toContainEqual(["INFO", "Existing conflict policy still applies."]);
+    expect(output.messages).toContainEqual(["INFO", "No target files were changed."]);
+    await expect(
+      lstat(resolve(fixture.targetRoot, ".codex/skills/meta/project-memory/SKILL.md")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -384,6 +657,18 @@ describe("installer flow", () => {
       preservedFiles: 1,
       mergeFiles: 1,
     });
+    expect(
+      result.report.payloadGroups.find((group) => group.id === "project-templates"),
+    ).toMatchObject({
+      unresolvedCount: 2,
+      entries: [
+        expect.objectContaining({ targetRelative: ".codex/project/project-guideline.md" }),
+        expect.objectContaining({ targetRelative: "AGENTS.md" }),
+      ],
+    });
+    expect(result.report.projectOwnedPreserved).toEqual([
+      expect.objectContaining({ targetRelative: ".codex/project/project-guideline.md" }),
+    ]);
     expect(await readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).toBe("local agents\n");
     expect(
       await readFile(resolve(fixture.targetRoot, ".codex/project/project-guideline.md"), "utf8"),
@@ -1029,6 +1314,12 @@ describe("installer flow", () => {
     await writeFile(resolve(fixture.targetRoot, "AGENTS.md"), "existing\n");
     const result = await run(fixture, {
       options: { apply: true, projectMode: "new" },
+    });
+    expect(
+      result.report.payloadGroups.find((group) => group.id === "project-templates"),
+    ).toMatchObject({
+      unresolvedCount: 0,
+      entries: [],
     });
     expect(result.report.backupRelative).toBe(".codex/backups/install-20260615-123456");
     const backupRoot = resolve(fixture.targetRoot, result.report.backupRelative);

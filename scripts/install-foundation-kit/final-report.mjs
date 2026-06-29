@@ -1,3 +1,4 @@
+import { buildBootstrapAdvisory, buildPayloadGroupReport } from "./payload-groups.mjs";
 import { PUBLISH_SCRIPT_FALLBACK } from "./publish-aliases.mjs";
 
 export function createFinalReport({
@@ -27,6 +28,12 @@ export function createFinalReport({
       entry.resultCategory !== "SAFE_ADD" &&
       !completed.has(entry.targetRelative),
   ).length;
+  const payloadGroupReport = buildPayloadGroupReport(plan.entries, { completedTargets });
+  const bootstrapAdvisory = buildBootstrapAdvisory({
+    entries: plan.entries,
+    mode,
+    effectiveProjectMode: policy.effectiveMode,
+  });
   return {
     mode,
     targetRoot,
@@ -67,6 +74,9 @@ export function createFinalReport({
     detectedSignals: [...policy.detectedSignals],
     conflictPolicy,
     backupRelative,
+    payloadGroups: payloadGroupReport.groups,
+    projectOwnedPreserved: payloadGroupReport.projectOwnedPreserved,
+    bootstrapAdvisory,
     publishAliases: {
       status: plan.publishAliases.status,
       skippedReason: plan.publishAliases.skippedReason,
@@ -138,6 +148,76 @@ function printPublishAliasSummary(report, output) {
   output.info(`- Raw fallback command: ${aliases.rawFallbackCommand}`);
 }
 
+function categoryBreakdown(group) {
+  return Object.entries(group.categoryCounts)
+    .filter(([, count]) => count)
+    .map(([category, count]) => `${count} ${category}`)
+    .join(", ");
+}
+
+function shouldPrintPayloadGroups(report) {
+  if (!report.unresolvedReviewItems) return false;
+  return (
+    report.mode === "apply" ||
+    (report.mode === "dry-run" && report.effectiveProjectMode === "existing")
+  );
+}
+
+function printBootstrapAdvisory(advisory, output) {
+  if (!advisory.detected) return;
+  output.warning(
+    `Bootstrap-critical workflow differences detected: ${advisory.criticalTargets.length}.`,
+  );
+  for (const target of advisory.criticalTargets) output.info(`- ${target}`);
+  if (advisory.dependencyGuardTargets.length) {
+    output.warning(
+      `Bootstrap dependency guards missing or different: ${advisory.dependencyGuardTargets.length}.`,
+    );
+    for (const target of advisory.dependencyGuardTargets) output.info(`- ${target}`);
+  }
+  output.info(
+    "Review/adopt this bootstrap slice before relying on target-repository installed workflow authority.",
+  );
+  output.info("Use current source-kit planning/execution authority for that review.");
+  output.info("This is advisory only. No replacement is authorized.");
+}
+
+function printPayloadGroupSummary(report, output) {
+  if (!shouldPrintPayloadGroups(report)) return;
+
+  output.info("Payload review groups:");
+  for (const group of report.payloadGroups) {
+    if (!group.unresolvedCount) continue;
+    const summary =
+      `${group.label}: ${group.unresolvedCount} unresolved review item(s) ` +
+      `(${categoryBreakdown(group)}; ${group.mappedCount} mapped).`;
+    if (group.id === "unclassified") {
+      output.warning(`${summary} Reporting taxonomy update needed; safety handling is unchanged.`);
+    } else {
+      output.info(summary);
+    }
+    if (group.id === "publish-package") {
+      output.warning(
+        "Review these publish workflow differences together. This grouping is report-only; it does not change replacement authorization, ownership, package alias behavior, or publishing behavior.",
+      );
+    }
+    for (const entry of group.entries) {
+      output.info(`- [${entry.resultCategory}] ${entry.targetRelative}`);
+    }
+  }
+
+  if (report.projectOwnedPreserved.length) {
+    output.info(`Project-owned preserved differences: ${report.projectOwnedPreserved.length}.`);
+    for (const entry of report.projectOwnedPreserved) {
+      output.info(`- [${entry.resultCategory}] ${entry.targetRelative}`);
+    }
+  }
+
+  printBootstrapAdvisory(report.bootstrapAdvisory, output);
+  output.info("Existing conflict policy still applies.");
+  if (report.mode === "dry-run") output.info("No target files were changed.");
+}
+
 export function printConflictReviewChoices(report, output) {
   output.info("Next steps:");
   output.info("1. Abort and review the conflicting project files manually.");
@@ -203,6 +283,7 @@ export function printFinalReport(report, output) {
       `Selected optional skills: ${report.selectedOptionalSkills.join(", ")} (${report.optionalSelectedFiles} mapped file(s))`,
     );
   }
+  printPayloadGroupSummary(report, output);
   printPublishAliasSummary(report, output);
   if (report.mode === "dry-run") {
     if (report.conflictPolicy === "manual-review-required") {
