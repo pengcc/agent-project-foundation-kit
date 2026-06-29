@@ -106,7 +106,7 @@ describe("installer payload reporting groups", () => {
         resultCategory: "MIXED_AGENT_MERGE",
         action: "agent-merge",
       }),
-      entry(".codex/config/publish-cli-theme.json", {
+      entry(".codex/config/publish-changes-policy.yml", {
         resultCategory: "PROJECT_OWNED",
         ownership: "project-owned",
         kind: "project-config",
@@ -155,7 +155,7 @@ describe("installer payload reporting groups", () => {
     });
     expect(report.projectOwnedPreserved).toEqual([
       expect.objectContaining({
-        targetRelative: ".codex/config/publish-cli-theme.json",
+        targetRelative: ".codex/config/publish-changes-policy.yml",
         resultCategory: "PROJECT_OWNED",
       }),
     ]);

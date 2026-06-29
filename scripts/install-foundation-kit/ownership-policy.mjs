@@ -55,13 +55,10 @@ export function ownershipPolicyFor(mapping) {
   if (mapping.targetRelative === "AGENTS.md") return ENTRYPOINT;
   if (mapping.targetRelative.startsWith(".codex/project/")) return PROJECT_MEMORY;
   if (mapping.targetRelative.startsWith(".codex/scripts/")) return WORKFLOW_SCRIPT;
-  if (
-    [".codex/config/publish-changes-policy.yml", ".codex/config/publish-cli-theme.json"].includes(
-      mapping.targetRelative,
-    )
-  ) {
+  if (mapping.targetRelative === ".codex/config/publish-changes-policy.yml") {
     return PROJECT_CONFIG;
   }
+  if (mapping.targetRelative === ".codex/config/publish-cli-theme.json") return REUSABLE;
   if (mapping.targetRelative.startsWith(".codex/config/")) return UNCLASSIFIED_CONFIG;
   if (mapping.category === "optional") {
     return policy(OWNERSHIP.KIT_MANAGED, RISK.NORMAL, "optional", {

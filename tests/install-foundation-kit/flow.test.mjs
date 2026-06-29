@@ -382,23 +382,23 @@ describe("installer flow", () => {
       result.report.payloadGroups.find((group) => group.id === "publish-package"),
     ).toMatchObject({
       unresolvedCount: 4,
-      categoryCounts: { PROJECT_OWNED: 1, BLOCKED_MANUAL: 3 },
+      categoryCounts: { PROJECT_OWNED: 0, BLOCKED_MANUAL: 4 },
+      entries: expect.arrayContaining([
+        expect.objectContaining({
+          targetRelative: ".codex/config/publish-cli-theme.json",
+          resultCategory: "BLOCKED_MANUAL",
+        }),
+      ]),
     });
     expect(result.report.payloadGroups.find((group) => group.id === "github-setup")).toMatchObject({
       unresolvedCount: 1,
     });
-    expect(result.report.projectOwnedPreserved).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          targetRelative: ".codex/config/publish-cli-theme.json",
-          resultCategory: "PROJECT_OWNED",
-        }),
-        expect.objectContaining({
-          targetRelative: ".codex/project/project-guideline.md",
-          resultCategory: "PROJECT_OWNED",
-        }),
-      ]),
-    );
+    expect(result.report.projectOwnedPreserved).toEqual([
+      expect.objectContaining({
+        targetRelative: ".codex/project/project-guideline.md",
+        resultCategory: "PROJECT_OWNED",
+      }),
+    ]);
     expect(output.messages).toContainEqual(["INFO", "Payload review groups:"]);
     expect(
       output.messages.some(
@@ -415,7 +415,7 @@ describe("installer flow", () => {
       "INFO",
       "- [BLOCKED_MANUAL] .codex/scripts/publish-changes.mjs",
     ]);
-    expect(output.messages).toContainEqual(["INFO", "Project-owned preserved differences: 2."]);
+    expect(output.messages).toContainEqual(["INFO", "Project-owned preserved differences: 1."]);
     expect(output.messages).toContainEqual(["INFO", "Existing conflict policy still applies."]);
     expect(output.messages).toContainEqual(["INFO", "No target files were changed."]);
     expect(output.messages).toContainEqual(["INFO", "Publish package aliases:"]);
