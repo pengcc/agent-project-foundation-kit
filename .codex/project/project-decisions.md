@@ -2913,3 +2913,34 @@ stable fallback.
 - `scripts/install-foundation-kit/flow.mjs`
 - `scripts/install-foundation-kit/final-report.mjs`
 - `tests/install-foundation-kit/flow.test.mjs`
+
+## Decision: Plausible Extension Check is conditional engineering-quality guidance
+
+### Status
+
+Accepted
+
+### Context
+
+Static payload grouping showed that a small conceptual boundary can preserve a credible adjacent
+use without implementing that future behavior. The reusable distinction belongs with existing
+simplicity, composability, and extension-seam guidance rather than in another workflow surface.
+
+### Decision
+
+Keep the Plausible Extension Check in `kit/rules/engineering-quality-principles.md` as conditional
+guidance for reusable systems and durable design boundaries. It may justify only cheap structural
+optionality; real extension behavior still requires demonstrated variation or integration need.
+
+Do not make the check a standalone rule, a new skill, or a mandatory workflow step unless future
+evidence shows that the existing engineering-quality owner is insufficient.
+
+### Impact
+
+Planning, architecture, implementation, and review can preserve low-cost flexibility without
+adding speculative capability or new workflow ceremony.
+
+### Related Files
+
+- `kit/rules/engineering-quality-principles.md`
+- `dev_locals/research-notes/2026-06-29-plausible-extension-check-placement-analysis.md`

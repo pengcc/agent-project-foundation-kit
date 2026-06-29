@@ -222,10 +222,17 @@ Compose focused units through small, explicit inputs, outputs, and contracts. Ke
 direction visible by passing external services, state, and configuration through deliberate
 boundaries instead of hidden globals or cross-layer reach-through.
 
+For reusable systems or durable architecture, installer, workflow, or framework-like boundaries,
+apply a conditional Plausible Extension Check: consider one or two credible adjacent uses and
+preserve only cheap structural optionality through naming, static grouping or classification,
+separate ownership axes, report-only boundaries, or separation of decisions from side effects.
+This is not a mandatory checklist for small tasks.
+
 Add extension points only for demonstrated variation or integration needs. Prefer a later small
-refactor over speculative plugin systems or generalized interfaces. Separate domain decisions from
-adapters or side effects when it improves testability and change isolation; do not impose layers
-mechanically.
+refactor over speculative profiles, plugin systems, package managers, dependency solvers,
+migration engines, semantic merge, extension APIs, or generalized interfaces. Separate domain
+decisions from adapters or side effects when it improves testability and change isolation; do not
+impose layers mechanically.
 
 ## 20. Configuration, Secrets, and Security Boundaries
 
