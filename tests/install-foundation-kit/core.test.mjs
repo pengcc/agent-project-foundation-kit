@@ -66,6 +66,7 @@ describe("installer CLI", () => {
       skipConflicts: false,
       replaceKitManaged: false,
       includeOptional: [],
+      kitProfile: "",
       verbose: true,
       help: false,
     });
@@ -106,6 +107,42 @@ describe("installer CLI", () => {
     expect(usage()).toContain(
       "pnpm install:node --target /path/to/project --apply --skip-conflicts",
     );
+  });
+
+  it("supports only the explicit docs profile", () => {
+    expect(parseCliOptions(["--target", "/tmp/x", "--kit-profile", "docs"])).toMatchObject({
+      kitProfile: "docs",
+      includeOptional: [],
+    });
+    expect(usage()).toContain("--kit-profile docs");
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--kit-profile"])).toThrow(
+      "--kit-profile requires a value",
+    );
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--kit-profile", "full"])).toThrow(
+      "Unsupported kit profile: full",
+    );
+    expect(() =>
+      parseCliOptions([
+        "--target",
+        "/tmp/x",
+        "--kit-profile",
+        "docs",
+        "--include-optional",
+        "optional-example",
+      ]),
+    ).toThrow("cannot be combined with --include-optional");
+    expect(() =>
+      parseCliOptions([
+        "--target",
+        "/tmp/x",
+        "--project-mode",
+        "existing",
+        "--apply",
+        "--kit-profile",
+        "docs",
+        "--replace-kit-managed",
+      ]),
+    ).toThrow("cannot be combined with --replace-kit-managed");
   });
 
   it("rejects invalid safe apply combinations and an extra argument separator", () => {

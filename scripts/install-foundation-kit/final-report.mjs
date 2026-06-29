@@ -62,6 +62,8 @@ export function createFinalReport({
     installationManifestIssues: [...plan.installationManifest.issues],
     installationManifestRelative,
     selectedOptionalSkills: [...plan.selectedOptionalSkills],
+    requestedKitProfile: plan.requestedKitProfile,
+    selectedPayloadGroups: [...plan.selectedPayloadGroups],
     completedTargets: [...completedTargets],
     completedFiles: completedTargets.length,
     authorizedManagedReplaceFiles: authorizedManagedReplacements.length,
@@ -120,6 +122,10 @@ export function printPublishAliasPlan(plan, output) {
 }
 
 function printPolicySummary(report, output) {
+  if (report.requestedKitProfile) {
+    output.info(`Requested kit profile: ${report.requestedKitProfile}`);
+    output.info(`Selected payload groups: ${report.selectedPayloadGroups.join(", ")}`);
+  }
   output.info(`Requested project mode: ${report.requestedProjectMode}`);
   output.info(`Effective project mode: ${report.effectiveProjectMode}`);
   output.info(

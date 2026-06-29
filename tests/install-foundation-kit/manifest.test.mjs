@@ -33,6 +33,7 @@ function options(target, overrides = {}) {
     skipConflicts: false,
     replaceKitManaged: false,
     includeOptional: [],
+    kitProfile: "",
     verbose: false,
     help: false,
     ...overrides,
@@ -128,6 +129,50 @@ describe("installation manifest", () => {
     expect(manifest.files).not.toHaveProperty(".codex/project/project-guideline.md");
     expect(manifest.files).not.toHaveProperty(".codex/config/example.json");
     expect(JSON.stringify(manifest)).not.toContain(fixture.root);
+  });
+
+  it("records only selected docs files without adding profile metadata", async () => {
+    const fixture = await workspace("manifest-docs-profile");
+    const commonSource = resolve(fixture.kitRoot, "rules/agent-operating-contract.md");
+    await mkdir(resolve(commonSource, ".."), { recursive: true });
+    await writeFile(commonSource, "common workflow\n");
+
+    await run(fixture, {
+      options: { apply: true, projectMode: "new", kitProfile: "docs" },
+    });
+    const manifest = await readManifest(fixture.targetRoot);
+
+    expect(manifest.schemaVersion).toBe(1);
+    expect(manifest).not.toHaveProperty("kitProfile");
+    expect(manifest).not.toHaveProperty("selectedPayloadGroups");
+    expect(manifest.files).toHaveProperty(".codex/rules/agent-operating-contract.md");
+    expect(manifest.files).toHaveProperty(".codex/scripts/publish-changes.mjs");
+    expect(manifest.files).not.toHaveProperty(".codex/rules/example.md");
+    expect(manifest.files).not.toHaveProperty(".codex/github-settings/example.json");
+  });
+
+  it("preserves prior out-of-profile manifest records without treating them as obsolete", async () => {
+    const fixture = await workspace("manifest-docs-profile-preserve");
+    await installFresh(fixture);
+    const before = await readManifest(fixture.targetRoot);
+    expect(before.files).toHaveProperty(".codex/rules/example.md");
+
+    const plan = await buildInstallPlan({ ...fixture, kitProfile: "docs" });
+    expect(plan.entries.some((entry) => entry.targetRelative === ".codex/rules/example.md")).toBe(
+      false,
+    );
+    expect(plan.entries.some((entry) => entry.mappingState === "source-no-longer-mapped")).toBe(
+      false,
+    );
+
+    await run(fixture, {
+      options: { apply: true, projectMode: "new", kitProfile: "docs" },
+    });
+    const after = await readManifest(fixture.targetRoot);
+    expect(after.files[".codex/rules/example.md"]).toEqual(before.files[".codex/rules/example.md"]);
+    await expect(
+      readFile(resolve(fixture.targetRoot, ".codex/rules/example.md"), "utf8"),
+    ).resolves.toBe("rule\n");
   });
 
   it("adopts exact normal managed files only during apply", async () => {
@@ -303,6 +348,30 @@ describe("installation manifest", () => {
     expect(plan.installationManifest.issues).toContain(
       "Manifest claims a source-policy project or mixed path: AGENTS.md",
     );
+  });
+
+  it("validates manifest policy against full mappings before docs-profile filtering", async () => {
+    const fixture = await workspace("manifest-docs-profile-policy-conflict");
+    await installFresh(fixture);
+    const manifest = await readManifest(fixture.targetRoot);
+    manifest.files[".codex/config/example.json"] = {
+      source: "config/example.json",
+      ownership: "kit-managed",
+      mode: "full-file",
+      baselineSha256: await hashFile(resolve(fixture.targetRoot, ".codex/config/example.json")),
+    };
+    manifest.payloadSha256 = manifestPayloadSha256(manifest.files);
+    await writeManifest(fixture.targetRoot, manifest);
+
+    const plan = await buildInstallPlan({ ...fixture, kitProfile: "docs" });
+    expect(
+      plan.entries.some((entry) => entry.targetRelative === ".codex/config/example.json"),
+    ).toBe(false);
+    expect(plan.installationManifest).toMatchObject({ status: "invalid" });
+    expect(plan.installationManifest.issues).toContain(
+      "Manifest claims a source-policy project or mixed path: .codex/config/example.json",
+    );
+    expect(plan.entries.every((entry) => entry.resultCategory === "BLOCKED_MANUAL")).toBe(true);
   });
 
   it("detects manifest and adoption-candidate drift before baseline write", async () => {

@@ -3,13 +3,23 @@ import { resolve } from "node:path";
 import { InstallerError } from "./errors.mjs";
 import { hashFile, pathStats } from "./fs-safe.mjs";
 import { loadInstallationManifest } from "./installation-manifest.mjs";
+import { kitProfileIncludesGroup, selectMappingsForKitProfile } from "./kit-profiles.mjs";
 import { buildMappings } from "./mapping.mjs";
 import { isManifestManaged, OWNERSHIP, ownershipPolicyFor, RISK } from "./ownership-policy.mjs";
 import { assertInside, assertNoTargetSymlinks, assertRelativePathSafe } from "./path-boundary.mjs";
+import { payloadGroupFor } from "./payload-groups.mjs";
 import { planPublishAliases, publishAliasPlanFingerprint } from "./publish-aliases.mjs";
 
-function planFingerprint(entries, installationManifest, publishAliases) {
+function planFingerprint(
+  entries,
+  installationManifest,
+  publishAliases,
+  requestedKitProfile,
+  selectedPayloadGroups,
+) {
   return JSON.stringify({
+    requestedKitProfile,
+    selectedPayloadGroups,
     installationManifest: {
       status: installationManifest.status,
       fileSha256: installationManifest.fileSha256,
@@ -325,18 +335,31 @@ async function obsoleteEntries({ mappings, targetRoot, installationManifest }) {
   return entries;
 }
 
-export async function buildInstallPlan({ kitRoot, targetRoot, includeOptional = [] }) {
-  const mappings = await buildMappings(kitRoot, { includeOptional });
+export async function buildInstallPlan({
+  kitRoot,
+  targetRoot,
+  includeOptional = [],
+  kitProfile = "",
+}) {
+  const allMappings = await buildMappings(kitRoot, { includeOptional });
   const loadedManifest = await loadInstallationManifest(targetRoot);
   const installationManifest = withPolicyValidation(
     loadedManifest,
-    manifestPolicyIssues(mappings, loadedManifest),
+    manifestPolicyIssues(allMappings, loadedManifest),
   );
+  const selection = selectMappingsForKitProfile(allMappings, kitProfile);
   const entries = [];
-  for (const mapping of mappings) {
+  for (const mapping of selection.mappings) {
     entries.push(await mappedEntry({ mapping, kitRoot, targetRoot, installationManifest }));
   }
-  entries.push(...(await obsoleteEntries({ mappings, targetRoot, installationManifest })));
+  const obsolete = await obsoleteEntries({
+    mappings: allMappings,
+    targetRoot,
+    installationManifest,
+  });
+  entries.push(
+    ...obsolete.filter((entry) => kitProfileIncludesGroup(kitProfile, payloadGroupFor(entry))),
+  );
   entries.sort((left, right) => left.targetRelative.localeCompare(right.targetRelative));
   const frozenEntries = entries.map((entry) => Object.freeze(entry));
   const publishAliases = await planPublishAliases(targetRoot);
@@ -344,7 +367,15 @@ export async function buildInstallPlan({ kitRoot, targetRoot, includeOptional = 
     entries: Object.freeze(frozenEntries),
     installationManifest,
     publishAliases,
-    fingerprint: planFingerprint(frozenEntries, installationManifest, publishAliases),
+    requestedKitProfile: selection.requestedKitProfile,
+    selectedPayloadGroups: selection.selectedPayloadGroups,
+    fingerprint: planFingerprint(
+      frozenEntries,
+      installationManifest,
+      publishAliases,
+      selection.requestedKitProfile,
+      selection.selectedPayloadGroups,
+    ),
     ...summaryFor(frozenEntries, includeOptional),
   });
 }
@@ -354,8 +385,9 @@ export async function revalidateInstallPlan({
   kitRoot,
   targetRoot,
   includeOptional = [],
+  kitProfile = "",
 }) {
-  const current = await buildInstallPlan({ kitRoot, targetRoot, includeOptional });
+  const current = await buildInstallPlan({ kitRoot, targetRoot, includeOptional, kitProfile });
   if (current.fingerprint !== expected.fingerprint) {
     throw new InstallerError(
       "PLAN_DRIFT",

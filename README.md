@@ -69,6 +69,7 @@ pnpm install:node --target /path/to/downstream-project
 pnpm install:node --target /path/to/downstream-project --apply
 pnpm install:node --target /path/to/downstream-project --apply --skip-conflicts
 pnpm install:node --target /path/to/downstream-project --include-optional react-component-patterns
+pnpm install:node --target /path/to/downstream-project --kit-profile docs
 pnpm install:node --target /path/to/downstream-project --project-mode existing
 pnpm install:node --target /path/to/downstream-project --project-mode existing --apply --replace-kit-managed --include-optional react-component-patterns
 ```
@@ -79,6 +80,20 @@ The installer defaults to dry-run. It reads installable content only from `kit/`
 and never installs its own `scripts/install-foundation-kit.mjs` entrypoint or installer-specific
 modules. It may reuse source-repository output helpers from `kit/scripts/shared/` at runtime, but
 that does not make the installer part of the downstream payload.
+
+`--kit-profile docs` selects only project templates, common workflow, docs/writing workflow, and
+the complete publish package. It excludes code workflow, GitHub setup, optional skills, and
+unclassified mappings. The profile is intended for writing, research, planning, business-note,
+interview-preparation, and documentation projects. It cannot be combined with
+`--include-optional` or `--replace-kit-managed`.
+
+Without `--kit-profile`, the installer preserves the complete current mapping and output. Profile
+selection is additive per invocation: it does not remove previously installed out-of-profile
+files or manifest records, does not persist an active profile in the schema-v1 manifest, and does
+not alter ownership, conflict, backup, apply, alias, or verification policy. Explicit profile runs
+report the profile and selected groups in dry-run, blocked, and successful final output. The docs
+profile includes publish files and the existing safe-add publish aliases; it does not include
+GitHub settings.
 
 For conflicting files, Node apply requires the exact `INSTALL_WITH_BACKUP` token from interactive
 or piped input. It stages and verifies all replacements and backup snapshots under

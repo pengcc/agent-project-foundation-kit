@@ -1,4 +1,5 @@
-// Reporting-only taxonomy. Do not use these groups to select mappings or authorize writes.
+// Static capability taxonomy for reporting and explicit profile selection.
+// Groups never classify ownership or authorize writes.
 
 export const PAYLOAD_GROUP_ORDER = Object.freeze([
   "project-templates",
