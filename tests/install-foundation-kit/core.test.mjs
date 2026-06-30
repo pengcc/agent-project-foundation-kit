@@ -414,6 +414,7 @@ describe("source repository reference hygiene", () => {
   it("keeps the publishable change handoff canonical with concise workflow pointers", async () => {
     const paths = [
       "AGENTS.md",
+      "kit/project-templates/AGENTS.md",
       "kit/rules/agent-operating-contract.md",
       "kit/skills/core/execute-plan/SKILL.md",
       "kit/skills/core/publish-current-branch/SKILL.md",
@@ -454,6 +455,7 @@ describe("source repository reference hygiene", () => {
 
     for (const path of [
       "AGENTS.md",
+      "kit/project-templates/AGENTS.md",
       "kit/skills/core/execute-plan/SKILL.md",
       "kit/skills/meta/update-project-memory/SKILL.md",
       "kit/skills/meta/writing-great-skills/SKILL.md",
@@ -462,6 +464,15 @@ describe("source repository reference hygiene", () => {
       expect(documents[path], path).not.toContain(
         "Whenever `Publish changes recommendation` is present, `PR for review`",
       );
+    }
+
+    for (const path of ["AGENTS.md", "kit/project-templates/AGENTS.md"]) {
+      expect(documents[path], path).toContain("PR for review");
+      expect(documents[path], path).toContain("Publication guardrail");
+      expect(documents[path], path).not.toContain(
+        'pnpm publish:pr-only "<commit message>" "<PR title>"',
+      );
+      expect(documents[path].match(/Fast PR/g), path).toBeNull();
     }
 
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
