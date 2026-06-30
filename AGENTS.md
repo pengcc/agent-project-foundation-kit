@@ -130,6 +130,8 @@ The final report must include:
 - recommended update type when publishable changes exist
 - recommended commit message when publishable changes exist
 - recommended PR title when publishable changes exist
+- complete Publishable Change Handoff when publishable changes exist, including `PR for review`
+  and `Publication guardrail`
 - files changed
 - why the change was made
 - impact / risk level
@@ -138,8 +140,8 @@ The final report must include:
 - whether commit, push, PR, merge, or other external actions were performed
 
 When the task leaves publishable repository changes, apply the Publishable Change Handoff in
-`kit/rules/agent-operating-contract.md`. It owns the compact recommendation, Fast PR, project-local
-evidence, authorization, and local-only artifact boundaries.
+`kit/rules/agent-operating-contract.md`. It owns the compact recommendation, PR-for-review
+evidence/status, publication authorization, and local-only artifact boundaries.
 
 Every task final report must include:
 
