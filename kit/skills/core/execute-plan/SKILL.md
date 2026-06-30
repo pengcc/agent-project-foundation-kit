@@ -406,17 +406,18 @@ Execution Summary:
 - Quality / Constraints Followed:
 - Project memory update check:
 - External / global actions:
-- Publish changes recommendation: <shared-contract value when applicable>
-- Recommended next workflow: <code-review when the shared handoff applies; otherwise the applicable workflow>
-- PR for review: <shared-contract value; include only when Publish changes recommendation is present>
-- Publication guardrail: <shared-contract value; include only when Publish changes recommendation is present>
 ```
 
 If a local commit was created, report the commit hash.
 
-Include the four publish handoff fields only when required by the shared contract. Otherwise use
-its local-only report when applicable. PR creation or update requires explicit user authorization.
-Merge or final publication requires completed review, explicit user authorization, and the
-matching `publish-current-branch` workflow.
+Include the four publish handoff fields only when required by the shared contract, reproducing its
+field labels and order exactly as normal report text after the execution summary. Do not wrap the
+complete handoff in one code block. Do not paraphrase `PR for review` or replace its allowed
+command or fallback shapes with descriptive status, validation, or project-type prose. For a
+verified command, keep the field label as normal text and put only the command in the contract's
+command-only `bash` code block. Otherwise use one exact normal-text fallback line. Use the
+contract's local-only report when applicable. PR creation or update requires explicit user
+authorization. Merge or final publication requires completed review, explicit user authorization,
+and the matching `publish-current-branch` workflow.
 
 If project memory updates are needed, recommend `update-project-memory`.

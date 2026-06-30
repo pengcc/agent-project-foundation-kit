@@ -301,12 +301,32 @@ approval, reason, and result.
 When a non-publish workflow creates or recommends committing publishable repository changes and
 leaves them for later publication, its final report must include:
 
-```txt
 Publish changes recommendation: type: <small safe update | normal update | significant / high-impact update>; message: <commit message>; PR title: <PR title>
+
 Recommended next workflow: code-review
-PR for review: pnpm publish:pr-only "<commit message>" "<PR title>" | not available (<reason>) | not checked (<reason>)
+
+PR for review: <verified exact command | not checked (<reason>) | not available (<reason>)>
+
 Publication guardrail: do not create/update a PR unless the user explicitly authorizes PR publication; do not merge, release, deploy, or otherwise finalize publication until review is complete and the user explicitly authorizes it.
+
+Reproduce these four field labels in this order. Do not paraphrase, rename, merge, or substitute
+descriptive prose for any field. Keep the fields as normal report text; do not wrap the complete
+four-field handoff in a code block.
+
+When current project-local evidence verifies the supported command, render the field label as
+normal text followed by a `bash` code block containing only the command:
+
+PR for review:
+
+```bash
+pnpm publish:pr-only "<commit message>" "<PR title>"
 ```
+
+Otherwise use exactly one of these normal-text fallback lines:
+
+PR for review: not checked (<reason>)
+
+PR for review: not available (<reason>)
 
 Whenever `Publish changes recommendation` is present, `PR for review` and
 `Publication guardrail` are required; otherwise neither field is required. The default next
