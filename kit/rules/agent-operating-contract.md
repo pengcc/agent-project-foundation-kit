@@ -144,6 +144,9 @@ Role and capability routing:
 Unclear goals / requirements / decision branches:
   grill-me
 
+Unclear product purpose / user goals / PRD baseline:
+  product-framing-review
+
 External technical facts / framework behavior / community practice:
   docs-first-research
 

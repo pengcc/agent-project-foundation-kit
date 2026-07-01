@@ -37,6 +37,7 @@ describe("installer payload reporting groups", () => {
     [".codex/rules/task-and-change-safety-principles.md", "common-workflow"],
     [".codex/skills/meta/project-memory/SKILL.md", "common-workflow"],
     [".codex/skills/meta/plan-with-context/metadata.yml", "common-workflow"],
+    [".codex/skills/meta/product-framing-review/SKILL.md", "common-workflow"],
     [".codex/prompts/force-execute-plan.md", "common-workflow"],
     [".codex/rules/docs-first-policy.md", "docs-writing-workflow"],
     [".codex/skills/meta/handoff/SKILL.md", "docs-writing-workflow"],

@@ -123,6 +123,10 @@ Use `grill-me` first when the goal, MVP boundary, business rules, scope, constra
 
 Do not use `grill-me` when the answer can be found by inspecting available project sources.
 
+Use `product-framing-review` before planning when product purpose, user goals, workflow meaning,
+data semantics, or a PRD/product baseline is unclear, or when proposed work is framed mainly as
+widget mechanics. Return here after framing is ready for implementation planning.
+
 ## UI Design Guidance
 
 When planning a concrete UI page, screen, flow, or form, apply `ui-design-basics` as bounded

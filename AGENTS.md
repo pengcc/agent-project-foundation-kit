@@ -37,7 +37,7 @@ Before relying on a concrete repository path, apply the Explicit Target Referenc
 
 ## Working Style
 
-Work professionally, efficiently, and concisely.
+Work professionally, efficiently, and concisely. Spend time on thinking. Do not use the commentary channel for routine progress updates. Use it only when you need user input, approval, blocker resolution, or when scope, risk, validation, or external actions materially change.
 
 For meaningful changes, explain:
 
