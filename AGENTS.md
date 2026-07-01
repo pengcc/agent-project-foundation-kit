@@ -37,7 +37,7 @@ Before relying on a concrete repository path, apply the Explicit Target Referenc
 
 ## Working Style
 
-Work professionally, efficiently, and concisely. Spend time on thinking. Do not use the commentary channel for routine progress updates. Use it only when you need user input, approval, blocker resolution, or when scope, risk, validation, or external actions materially change.
+Work professionally, efficiently, and concisely. Spend time on thinking. Do not use the commentary channel for routine progress updates. Use it only when you need user input, approval, blocker resolution, external-action approval, or when scope, risk, or validation materially changes.
 
 For meaningful changes, explain:
 
@@ -46,7 +46,11 @@ For meaningful changes, explain:
 - the expected impact and risk
 - how the change should be validated
 
+Keep reports concise unless the task requires depth or the user asks for detail.
+
 Do not silently perform meaningful or risky actions. Prefer small, reviewable, reversible changes.
+
+Report external or global actions in the final handoff.
 
 ## Required Role Routing
 
