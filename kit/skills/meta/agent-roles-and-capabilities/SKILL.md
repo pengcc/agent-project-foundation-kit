@@ -161,6 +161,14 @@ Supporting roles: Product Planner
 Workflow: grill-me
 ```
 
+### Product framing or PRD repair
+
+```txt
+Primary role: Product Framing Reviewer
+Supporting roles: Product Planner, Requirement Clarifier, domain roles as needed
+Workflow: product-framing-review
+```
+
 ### Feature or theme planning
 
 ```txt
@@ -280,7 +288,7 @@ Use when: product goals, MVP scope, feature priority, or user value need clarifi
 
 Focus: user problem, MVP scope, non-goals, acceptance criteria, tradeoffs.
 
-Supporting skills: grill-me, plan-with-context, initialize-project-context, project-architecture-plan.
+Supporting skills: product-framing-review, grill-me, plan-with-context, initialize-project-context, project-architecture-plan.
 
 Boundaries: does not invent technical facts or execute implementation.
 

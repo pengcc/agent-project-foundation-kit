@@ -72,6 +72,7 @@ const COMMON_WORKFLOW_PREFIXES = Object.freeze([
   ".codex/skills/meta/grilling/",
   ".codex/skills/meta/initialize-project-context/",
   ".codex/skills/meta/plan-with-context/",
+  ".codex/skills/meta/product-framing-review/",
   ".codex/skills/meta/project-memory/",
   ".codex/skills/meta/update-project-memory/",
   ".codex/skills/core/execute-plan/",

@@ -3039,3 +3039,38 @@ or profile behavior remains deferred until concrete evidence requires it.
 - `scripts/install-foundation-kit/flow.mjs`
 - `scripts/install-foundation-kit/final-report.mjs`
 - `tests/install-foundation-kit/kit-profiles.test.mjs`
+
+## Decision: Product framing is a lightweight pre-planning discipline
+
+### Status
+
+Accepted
+
+### Context
+
+Agents can prematurely translate product work into widget mechanics, filters, tabs, colors, state,
+API shape, or layout before the user-facing purpose is clear. The kit needs a reusable check for
+that ambiguity without turning every small UI or planning task into a full PRD workflow.
+
+### Decision
+
+Use `product-framing-review` as a model-invoked meta skill when user-facing purpose, workflow
+meaning, data semantics, or a PRD/product baseline is unclear. Keep it proportional: distinguish
+user goals from implementation mechanics, ask focused questions, route broad ambiguity to
+`grill-me`, and route implementation planning to `plan-with-context` only after framing is clear.
+
+Do not turn the skill into mandatory full-PRD generation, issue-tracker automation, or execution
+authorization.
+
+### Impact
+
+Planning and implementation workflows gain a small product-purpose guardrail while preserving
+existing clarification, planning, execution, publishing, and project-memory boundaries.
+
+### Related Files
+
+- `kit/skills/meta/product-framing-review/SKILL.md`
+- `kit/skills/meta/product-framing-review/metadata.yml`
+- `kit/rules/agent-operating-contract.md`
+- `kit/skills/meta/plan-with-context/SKILL.md`
+- `kit/skills/meta/agent-roles-and-capabilities/SKILL.md`

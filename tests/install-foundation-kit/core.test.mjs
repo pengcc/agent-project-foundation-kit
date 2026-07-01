@@ -351,6 +351,12 @@ describe("source repository metadata hygiene", () => {
       invocation: "user",
       depends_on: ["grilling"],
     });
+    expect(metadataByName.get("product-framing-review")).toMatchObject({
+      category: "meta",
+      required: true,
+      invocation: "model",
+      depends_on: ["project-memory"],
+    });
     for (const name of [
       "plan-with-context",
       "initialize-project-context",
@@ -408,6 +414,32 @@ describe("source repository reference hygiene", () => {
     expect(text).toContain(
       "Do not require a full lessons-file read for unrelated or trivial tasks.",
     );
+  });
+
+  it("keeps product framing separate from implementation mechanics and later workflows", async () => {
+    const skill = await readFile("kit/skills/meta/product-framing-review/SKILL.md", "utf8");
+    const contract = await readFile("kit/rules/agent-operating-contract.md", "utf8");
+    const planning = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
+    const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
+
+    expect(skill).toContain("### 1. Task-Level Product Framing Check");
+    expect(skill).toContain("### 2. Broader Product / Module Review or PRD Repair");
+    expect(skill).toContain(
+      "What problem, question, or decision brings the user to this page, mode, or workflow?",
+    );
+    expect(skill).toContain("readiness is `blocked` or `exploratory-only`");
+    expect(skill).toContain("implementation mechanics");
+    for (const workflow of [
+      "clarification",
+      "grill-me",
+      "plan-with-context",
+      "update-project-memory",
+    ]) {
+      expect(skill, workflow).toContain(workflow);
+    }
+    expect(contract).toContain("product-framing-review");
+    expect(planning).toContain("Use `product-framing-review` before planning");
+    expect(roles).toContain("Workflow: product-framing-review");
   });
 
   it("keeps shared task and change principles advisory with direct operating boundaries", async () => {

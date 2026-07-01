@@ -1,0 +1,14 @@
+name: product-framing-review
+description: Clarify product purpose before planning or implementation when behavior, workflows, data meaning, or a PRD/product baseline is unclear.
+category: meta
+invocation: model
+required: true
+depends_on:
+  - project-memory
+version: 0.1.0
+triggers:
+  - review product framing
+  - clarify product purpose
+  - review a page or workflow
+  - repair a PRD or product baseline
+  - separate user goals from widget mechanics
