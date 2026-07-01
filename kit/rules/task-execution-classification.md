@@ -84,20 +84,32 @@ Potentially qualifying examples include focused documentation, local project-mem
 local notes/design logs, non-behavioral wording, test-only corrections, and narrow code/script
 fixes with already established intended behavior. Examples never bypass the complete gate.
 
+For this rule, excluded `feature implementation` means new product features, new user workflows,
+behavior-changing feature work, or feature work that requires meaningful product or technical
+decisions. A narrow UI, CSS, layout, responsive presentation, or readability fix may qualify for a
+scoped brief when it preserves existing behavior, data semantics, routing and state,
+accessibility contract, validation boundary, and safety boundaries, and every scoped-brief gate
+still passes.
+
 The following never qualify for a scoped brief, regardless of apparent size:
 
-- feature implementation, architecture changes, broad refactors, or multiple independent outcomes;
+- feature implementation as defined above, architecture changes, broad refactors, or multiple
+  independent outcomes;
 - installer apply, overwrite, backup, preserve, or migration behavior;
 - publish, merge, release, or deployment workflow behavior;
 - package scripts, dependencies, runtime requirements, or CI/CD behavior;
 - prompts or metadata behavior;
 - authentication, secrets, permissions, authorization, or security-sensitive behavior;
-- data models, persistence, or migrations;
+- data models, schemas, persistence, or migrations;
 - external-service integration or production behavior;
 - destructive filesystem or network side effects;
 - downstream-template behavior; or
 - unclear requirements, unknown validation/rollback, material side-effect uncertainty, or
   unverified technical assumptions.
+
+When uncertain whether UI work preserves the listed behavior and safety contracts or introduces a
+new user workflow or product decision, classify it as a Full Saved Plan or Work Items rather than
+using a scoped brief.
 
 ### 3. Full Saved Plan
 

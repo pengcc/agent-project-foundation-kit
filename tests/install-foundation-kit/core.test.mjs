@@ -362,6 +362,44 @@ describe("source repository metadata hygiene", () => {
 });
 
 describe("source repository reference hygiene", () => {
+  it("allows scoped briefs only for behavior-preserving UI presentation fixes", async () => {
+    const text = await readFile("kit/rules/task-execution-classification.md", "utf8");
+
+    for (const excludedFeatureWork of [
+      "new product features",
+      "new user workflows",
+      "behavior-changing feature work",
+    ]) {
+      expect(text, excludedFeatureWork).toContain(excludedFeatureWork);
+    }
+    expect(text).toMatch(/meaningful product or technical\s+decisions/);
+    expect(text).toContain("A narrow UI, CSS, layout, responsive presentation, or readability fix");
+    for (const preservedBoundary of [
+      "existing behavior",
+      "data semantics",
+      "routing and state",
+      "accessibility contract",
+      "validation boundary",
+      "safety boundaries",
+    ]) {
+      expect(text, preservedBoundary).toContain(preservedBoundary);
+    }
+    for (const strictExclusion of [
+      "architecture changes",
+      "publish, merge, release, or deployment workflow behavior",
+      "package scripts, dependencies, runtime requirements, or CI/CD behavior",
+      "authentication, secrets, permissions, authorization, or security-sensitive behavior",
+      "data models, schemas, persistence, or migrations",
+      "external-service integration or production behavior",
+      "destructive filesystem or network side effects",
+    ]) {
+      expect(text, strictExclusion).toContain(strictExclusion);
+    }
+    expect(text).toContain("When uncertain whether UI work preserves");
+    expect(text).toContain("classify it as a Full Saved Plan or Work Items");
+    expect(text).not.toContain("- feature implementation, architecture changes, broad refactors");
+  });
+
   it("requires an objective recheck before extending existing plans", async () => {
     const text = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
 

@@ -2778,12 +2778,16 @@ or expand the task.
 workflow. It does not maintain a separate scale taxonomy, create scoped briefs, execute, publish,
 or update project memory.
 
-Eligibility is semantic and risk-based; line and file counts are supporting evidence only. Feature,
-architecture, broad-refactor, installer, publish/merge/release/deploy, package/dependency/runtime/
-CI/CD, prompt/metadata, auth/security/permission, data/persistence, external-service, destructive,
-production, and downstream-template changes do not qualify regardless of size. Ambiguous scope,
-unknown validation or rollback, or unverified technical assumptions require clarification,
-`docs-first-research`, a full plan, or work items as appropriate.
+Eligibility is semantic and risk-based; line and file counts are supporting evidence only. New
+product features, new user workflows, behavior-changing feature work, feature work with meaningful
+product or technical decisions, architecture, broad-refactor, installer,
+publish/merge/release/deploy, package/dependency/runtime/CI/CD, prompt/metadata,
+auth/security/permission, data/schema/persistence, external-service, destructive, production, and
+downstream-template changes do not qualify regardless of size. Narrow UI, CSS, layout, responsive
+presentation, or readability fixes may qualify only when all scoped-brief gates pass and existing
+behavior, data semantics, routing/state, accessibility, validation, and safety contracts remain
+unchanged. Ambiguous scope, unknown validation or rollback, or unverified technical assumptions
+require clarification, `docs-first-research`, a full plan, or work items as appropriate.
 
 Scoped briefs remain strict planning artifacts and execution contracts, not planless execution.
 Existing Project Memory Context Gate, clarification, research, project-memory, validation, commit,
