@@ -933,4 +933,12 @@ scripts/install-foundation-kit/final-report.mjs
 - Root cause: The framing step was treated as a checklist output instead of a validation exercise. It identified product concepts but did not walk through concrete examples, representative user paths, edge cases, and expected user interpretation before authorizing implementation.
 - Resolution: Before implementation, pair the Product Framing Check with a small number of concrete use-case probes. For each user-facing behavior, confirm at least one normal path, one empty/invalid path, and one edge case where ambiguity could change the implementation. If the examples reveal a mismatch, update the framing or plan before coding.
 - Reuse guidance: For Foundation Kit workflows, Product Framing Review should not only ask “what is the purpose?” but also “which concrete user scenarios prove this interpretation is correct?” Add reusable prompts or checklist items that force agents to validate framing against examples before `plan-with-context` or `execute-plan` begins.
-- Related files: Product Framing Review Skill; plan-with-context workflow; execute-plan workflow; project-memory workflow
+
+### Related files
+Product Framing Review Skill; plan-with-context workflow; execute-plan workflow; project-memory workflow
+
+```txt
+kit/skills/meta/plan-with-context/SKILL.md
+kit/skills/meta/agent-roles-and-capabilities/SKILL.md
+kit/skills/meta/plan-with-context/SKILL.md
+```
