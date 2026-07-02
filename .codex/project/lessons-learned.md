@@ -926,13 +926,17 @@ alone is insufficient.
 scripts/install-foundation-kit/payload-groups.mjs
 scripts/install-foundation-kit/final-report.mjs
 ```
-### Lesson 2026-07-02: Ground product framing in concrete use cases before implementation
+### Lesson 2026-07-02: Add product framing before planning when implementation drifts from user intent
 
-- Context: A Product Framing Review Skill may already exist and may be invoked before planning, but the implementation can still drift when the framing stays too abstract or does not test concrete user scenarios, invalid states, and interaction outcomes.
-- Problem: Agents can produce technically coherent plans and code that satisfy the written mechanism while missing the user's actual intended use case. This often appears late, after implementation, when reviewing UI behavior, defaults, legends, empty states, or workflow semantics.
-- Root cause: The framing step was treated as a checklist output instead of a validation exercise. It identified product concepts but did not walk through concrete examples, representative user paths, edge cases, and expected user interpretation before authorizing implementation.
-- Resolution: Before implementation, pair the Product Framing Check with a small number of concrete use-case probes. For each user-facing behavior, confirm at least one normal path, one empty/invalid path, and one edge case where ambiguity could change the implementation. If the examples reveal a mismatch, update the framing or plan before coding.
-- Reuse guidance: For Foundation Kit workflows, Product Framing Review should not only ask “what is the purpose?” but also “which concrete user scenarios prove this interpretation is correct?” Add reusable prompts or checklist items that force agents to validate framing against examples before `plan-with-context` or `execute-plan` begins.
+- Context: Some implementation tasks started from feature ideas, UI mechanics, data states, or technical changes before the concrete user need and use case were fully clarified.
+
+- Problem: Agents could produce technically coherent plans or implementations that satisfied the described mechanism but still diverged from the user's intended product behavior. The mismatch often appeared late, during review, when checking defaults, empty states, view-mode behavior, legends, or UI interpretation.
+
+- Root cause: The workflow lacked a reusable product-framing gate before planning and execution. Requirements were sometimes expressed as implementation mechanics rather than user-facing goals, decisions, valid states, invalid states, and concrete examples.
+
+- Resolution: Introduce and use a Product Framing Review step before `plan-with-context` or implementation whenever a task may affect user-visible behavior, product semantics, data interpretation, view modes, empty states, legends, warnings, or UI meaning.
+
+- Reuse guidance: For Foundation Kit workflows, add a lightweight Product Framing Review Skill that asks what problem, question, or decision brings the user to the page/mode/workflow; separates user-facing concepts from implementation mechanics; records valid and invalid states; and marks readiness before planning. Use concrete use cases as evidence when ambiguity could change implementation direction.
 
 ### Related files
 Product Framing Review Skill; plan-with-context workflow; execute-plan workflow; project-memory workflow
