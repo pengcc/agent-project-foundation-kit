@@ -2853,21 +2853,32 @@ needed to conduct review with the later merge or final publication decision.
 
 ### Decision
 
-After non-publish implementation produces publishable changes, recommend `code-review` as the
-normal next workflow. A verified `pnpm publish:pr-only "<commit message>" "<PR title>"` command may
-create or update a PR for review only after explicit user authorization; it does not require
-completed review. Merge, release, deploy, or other final publication requires completed review and
-separate explicit user authorization. `publish-current-branch` remains the workflow authorized for
-push, PR, and merge actions.
+When a non-publish workflow leaves a publishable local change, its final handoff prints this fixed
+copyable command format using the recommended commit message and PR title:
 
-Do not use `pnpm publish:changes` as a PR-for-review substitute or infer command forms from package
-script names. Downstream package-script installation was outside this decision and is resolved by
-the later safe-add publish-alias decision below.
+```bash
+pnpm publish:pr-only "<commit message>" "<PR title>"
+```
+
+This is a stable output contract. `execute-plan` does not need to verify package scripts on every
+task before printing it. A missing or different project publishing command is a project setup
+issue and does not change the handoff format. Do not use `pnpm publish:changes` as the
+create-PR-for-review command or infer another command form from package script names.
+
+Printing the command does not authorize or execute publication. `execute-plan` must not push,
+create or update PRs, merge, release, deploy, or mutate external settings. Actual PR creation
+requires a user-run command or explicit user authorization through `publish-current-branch`, which
+remains the workflow authorized for push, PR, and merge actions. Merge, release, deploy, or other
+final publication requires completed review and separate explicit user authorization.
+
+When no publishable local change exists, do not print an executable create-PR command. Use the
+not-applicable handoff shape defined by `agent-operating-contract`.
 
 ### Impact
 
-Handoff reports now preserve the real workflow sequence and authorization boundaries without
-changing package scripts, installer behavior, or publish-script behavior.
+Handoff reports use one reliable copyable create-PR command while preserving the separation
+between output and authorization. The decision does not change package scripts, installer
+behavior, publish-script behavior, or publication permissions.
 
 ### Related Files
 
