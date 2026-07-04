@@ -559,10 +559,13 @@ describe("source repository reference hygiene", () => {
     }
 
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "apply the Publishable Change Handoff from\n`agent-operating-contract` exactly",
+      "apply the Publishable Change Handoff from\n`rules/agent-operating-contract.md` exactly",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "Do not restate, modify, rename, reorder, partially reproduce, or silently omit",
+      "Do not maintain a separate local copy of the shared handoff template in this skill",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
+      "apply the shared contract exactly; do not modify, rename, reorder, partially reproduce",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
       "no\n  executable create-PR command appears",

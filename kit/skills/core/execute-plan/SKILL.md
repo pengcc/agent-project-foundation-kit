@@ -411,11 +411,12 @@ Execution Summary:
 If a local commit was created, report the commit hash.
 
 When the task leaves publishable repository changes, apply the Publishable Change Handoff from
-`agent-operating-contract` exactly.
+`rules/agent-operating-contract.md` exactly.
 
-Do not restate, modify, rename, reorder, partially reproduce, or silently omit the shared handoff
-fields, command shape, no-publishable-change fallback, local-only artifact handling, or publication
-guardrail.
+Do not maintain a separate local copy of the shared handoff template in this skill. When reporting,
+apply the shared contract exactly; do not modify, rename, reorder, partially reproduce, or silently
+omit its fields, command shape, no-publishable-change fallback, local-only artifact handling, or
+publication guardrail.
 
 Before sending the final report, check exactly one branch:
 
