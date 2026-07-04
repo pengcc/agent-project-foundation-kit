@@ -3084,14 +3084,19 @@ data semantics, invalid or partial states, or a PRD/product baseline. Keep both 
 ask focused questions, route broad ambiguity to `grill-me`, and route implementation planning to
 `plan-with-context` only after framing is clear.
 
+Use the same framing as a review gate before reviewing, approving, or executing a plan or proposal.
+Compare the proposal with the intended capability, current problem, proposed solution, non-goals,
+and readiness. If it solves a broader or different problem, return to framing before reviewing
+implementation details; do not absorb unscoped high-impact work as an implementation detail.
+
 Do not turn the skill into mandatory full-PRD generation, issue-tracker automation, or execution
 authorization.
 
 ### Impact
 
-Planning and implementation workflows gain a general task-boundary guardrail plus a deeper
-product-purpose mode while preserving existing clarification, planning, execution, publishing,
-and project-memory boundaries.
+Planning, review, and implementation workflows gain a general task-boundary guardrail plus a
+deeper product-purpose mode while preserving existing clarification, execution, publishing, and
+project-memory boundaries.
 
 ### Related Files
 

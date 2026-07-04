@@ -156,7 +156,9 @@ Current foundation alignment boundaries:
   It first frames unclear or drift-prone tasks and changes through intended capability, current
   problem, affected party, smallest sufficient solution, non-goals, and readiness. It uses deeper
   Product Framing only for end-user behavior, workflows, data meaning, and PRD/product baselines,
-  routes broad ambiguity to `grill-me`, and hands clear implementation planning to
+  and acts as a framing-alignment gate before plan/proposal review, approval, or execution. A
+  broader or different proposal returns to framing before implementation-detail review. The skill
+  routes broad ambiguity to `grill-me` and hands clear implementation planning to
   `plan-with-context`.
 - `docs-first-research` passes the Project Memory Context Gate for project-impacting research and
   may state the gate is not applicable for pure external fact lookup.

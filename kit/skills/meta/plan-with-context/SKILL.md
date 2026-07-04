@@ -129,6 +129,10 @@ framing. Use its deeper Product Framing mode when end-user purpose, workflow mea
 semantics, or a PRD/product baseline is unclear, or when proposed work is framed mainly as widget
 mechanics. Return here after framing is ready for implementation planning.
 
+Before reviewing or approving a plan, use `product-framing-review` when the proposal may have
+drifted from the intended capability, current problem, proposed solution, non-goals, or readiness.
+If it solves a broader or different problem, reframe it before reviewing implementation details.
+
 ## UI Design Guidance
 
 When planning a concrete UI page, screen, flow, or form, apply `ui-design-basics` as bounded
