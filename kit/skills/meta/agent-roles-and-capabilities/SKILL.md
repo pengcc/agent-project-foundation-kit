@@ -161,13 +161,16 @@ Supporting roles: Product Planner
 Workflow: grill-me
 ```
 
-### Task or product framing
+### Task, proposal, or product framing
 
 ```txt
 Primary role: Task and Product Framing Reviewer
 Supporting roles: Requirement Clarifier, Product Planner, Documentation Reviewer, domain roles as needed
 Workflow: product-framing-review
 ```
+
+Use this route for preventive task framing and as a framing-alignment gate before reviewing,
+approving, or executing a plan or proposal.
 
 ### Feature or theme planning
 

@@ -1,9 +1,9 @@
 # Task and Product Framing Skill
 
-Use this skill to clarify what a task or change is solving before planning or implementation, then
-apply deeper Product Framing only when the work affects end-user product behavior. Keep it
-proportional: this is a lightweight framing discipline, not a mandatory full PRD or project-management
-framework.
+Use this skill to clarify what a task or change is solving before planning, implementation, or
+proposal review, then apply deeper Product Framing only when the work affects end-user product
+behavior. Keep it proportional: this is a lightweight framing discipline, not a mandatory full PRD
+or project-management framework.
 
 ## Visible Name and Stable Identifier
 
@@ -93,6 +93,25 @@ Task / Change Framing Check:
 If Task / Change Framing is ready and the work is non-product, route to the appropriate planning,
 review, documentation, or maintenance workflow. If it affects end-user behavior, continue with the
 proportional Product Framing mode below.
+
+## Framing Review Gate
+
+Before reviewing, approving, or executing a plan or proposal, compare it with the established:
+
+- intended capability;
+- current problem;
+- proposed solution;
+- not doing now; and
+- readiness.
+
+Check framing alignment before reviewing implementation details. If the proposal solves a broader
+or different problem than the stated current problem, stop and reframe the task before continuing
+review, approval, or execution.
+
+Treat migration, cleanup, compatibility, installer behavior, publishing, deployment,
+cross-project behavior, and other high-impact work as scope-expansion triggers when they were not
+explicitly included in the framing. Do not absorb them as implementation details or approve them
+under a narrower task statement.
 
 ## Product Framing for End-User Behavior
 
@@ -211,4 +230,6 @@ Before finishing, verify that the output:
 - distinguishes known facts, assumptions, unsupported states, and open questions;
 - stays proportional to the selected mode;
 - provides a product acceptance baseline when applicable and an honest readiness result;
+- rejects or reframes plans and proposals that solve a broader or different problem than the
+  established current problem;
 - routes unresolved ambiguity or later planning without silently expanding scope.

@@ -421,6 +421,9 @@ describe("source repository reference hygiene", () => {
     const contract = await readFile("kit/rules/agent-operating-contract.md", "utf8");
     const planning = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
     const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
+    const metadata = await readFile("kit/skills/meta/product-framing-review/metadata.yml", "utf8");
+    const guideline = await readFile(".codex/project/project-guideline.md", "utf8");
+    const decisions = await readFile(".codex/project/project-decisions.md", "utf8");
 
     expect(skill).toContain("# Task and Product Framing Skill");
     expect(skill).toContain("Visible skill name: Task and Product Framing Skill");
@@ -431,6 +434,11 @@ describe("source repository reference hygiene", () => {
     expect(skill).toContain("Primary actor / affected party:");
     expect(skill).toContain("smallest change or decision");
     expect(skill).toContain("Do not force end-user Product Framing onto non-product work");
+    expect(skill).toContain("## Framing Review Gate");
+    expect(skill).toContain("Before reviewing, approving, or executing a plan or proposal");
+    expect(skill).toContain("stop and reframe the task before continuing");
+    expect(skill).toContain("migration, cleanup, compatibility, installer behavior, publishing");
+    expect(skill).toContain("rejects or reframes plans and proposals");
     expect(skill).toContain("## Product Framing for End-User Behavior");
     expect(skill).toContain("### 1. Focused Product Framing Check");
     expect(skill).toContain("### 2. Broader Product / Module Review or PRD Repair");
@@ -449,8 +457,13 @@ describe("source repository reference hygiene", () => {
     }
     expect(contract).toContain("Unclear or drift-prone task/change");
     expect(planning).toContain("Use `product-framing-review` before planning");
+    expect(planning).toContain("Before reviewing or approving a plan");
     expect(roles).toContain("Workflow: product-framing-review");
     expect(roles).toContain("Primary role: Task and Product Framing Reviewer");
+    expect(roles).toContain("as a framing-alignment gate before reviewing");
+    expect(metadata).toContain("review plan or proposal framing");
+    expect(guideline).toContain("acts as a framing-alignment gate before plan/proposal review");
+    expect(decisions).toContain("Use the same framing as a review gate before reviewing");
   });
 
   it("keeps shared task and change principles advisory with direct operating boundaries", async () => {

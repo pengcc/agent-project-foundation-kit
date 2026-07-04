@@ -144,7 +144,7 @@ Role and capability routing:
 Unclear goals / requirements / decision branches:
   grill-me
 
-Unclear or drift-prone task/change, or unclear product purpose / user goals / PRD baseline:
+Unclear or drift-prone task/change or plan/proposal, or unclear product purpose / user goals / PRD baseline:
   product-framing-review
 
 External technical facts / framework behavior / community practice:
