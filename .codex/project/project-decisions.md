@@ -3051,7 +3051,7 @@ or profile behavior remains deferred until concrete evidence requires it.
 - `scripts/install-foundation-kit/final-report.mjs`
 - `tests/install-foundation-kit/kit-profiles.test.mjs`
 
-## Decision: Product framing is a lightweight pre-planning discipline
+## Decision: Task and product framing is a lightweight pre-planning discipline
 
 ### Status
 
@@ -3059,24 +3059,39 @@ Accepted
 
 ### Context
 
-Agents can prematurely translate product work into widget mechanics, filters, tabs, colors, state,
-API shape, or layout before the user-facing purpose is clear. The kit needs a reusable check for
-that ambiguity without turning every small UI or planning task into a full PRD workflow.
+Agents can prematurely translate work into implementation mechanics before the task boundary,
+affected party, or smallest sufficient solution is clear. Product-facing work can additionally
+collapse into widgets, filters, tabs, colors, state, API shape, or layout before the user-facing
+purpose is clear. The kit needs a reusable framing check without turning every task into a full
+PRD or project-management workflow.
 
 ### Decision
 
-Use `product-framing-review` as a model-invoked meta skill when user-facing purpose, workflow
-meaning, data semantics, or a PRD/product baseline is unclear. Keep it proportional: distinguish
-user goals from implementation mechanics, ask focused questions, route broad ambiguity to
-`grill-me`, and route implementation planning to `plan-with-context` only after framing is clear.
+Use Task and Product Framing Skill as the visible name while intentionally retaining
+`product-framing-review` as the stable workflow/package identifier and installed path basename.
+The identifier participates in metadata routing, cross-skill references, installer payload
+grouping, installed destinations, and existing-project manifest/obsolete-path handling. Renaming
+it would be a separate migration requiring compatibility, cleanup, and installer validation; this
+wording update does not authorize that migration.
+
+Use lightweight Task / Change Framing when work is unclear or drift-prone, including workflow,
+rule, skill, prompt, documentation, maintenance, source-of-truth, and product tasks. Identify the
+intended capability, current problem, affected party, smallest sufficient solution, reason it
+works, non-goals, and readiness.
+
+Use deeper Product Framing only when work affects end-user product behavior, workflow meaning,
+data semantics, invalid or partial states, or a PRD/product baseline. Keep both modes proportional,
+ask focused questions, route broad ambiguity to `grill-me`, and route implementation planning to
+`plan-with-context` only after framing is clear.
 
 Do not turn the skill into mandatory full-PRD generation, issue-tracker automation, or execution
 authorization.
 
 ### Impact
 
-Planning and implementation workflows gain a small product-purpose guardrail while preserving
-existing clarification, planning, execution, publishing, and project-memory boundaries.
+Planning and implementation workflows gain a general task-boundary guardrail plus a deeper
+product-purpose mode while preserving existing clarification, planning, execution, publishing,
+and project-memory boundaries.
 
 ### Related Files
 

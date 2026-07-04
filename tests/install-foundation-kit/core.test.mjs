@@ -416,13 +416,23 @@ describe("source repository reference hygiene", () => {
     );
   });
 
-  it("keeps product framing separate from implementation mechanics and later workflows", async () => {
+  it("keeps task and product framing proportional and separate from later workflows", async () => {
     const skill = await readFile("kit/skills/meta/product-framing-review/SKILL.md", "utf8");
     const contract = await readFile("kit/rules/agent-operating-contract.md", "utf8");
     const planning = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
     const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
 
-    expect(skill).toContain("### 1. Task-Level Product Framing Check");
+    expect(skill).toContain("# Task and Product Framing Skill");
+    expect(skill).toContain("Visible skill name: Task and Product Framing Skill");
+    expect(skill).toContain("Stable workflow and package identifier: product-framing-review");
+    expect(skill).toContain("Installed package path: .codex/skills/meta/product-framing-review/");
+    expect(skill).toContain("## Task / Change Framing First");
+    expect(skill).toContain("Task / Change Framing Check:");
+    expect(skill).toContain("Primary actor / affected party:");
+    expect(skill).toContain("smallest change or decision");
+    expect(skill).toContain("Do not force end-user Product Framing onto non-product work");
+    expect(skill).toContain("## Product Framing for End-User Behavior");
+    expect(skill).toContain("### 1. Focused Product Framing Check");
     expect(skill).toContain("### 2. Broader Product / Module Review or PRD Repair");
     expect(skill).toContain(
       "What problem, question, or decision brings the user to this page, mode, or workflow?",
@@ -437,9 +447,10 @@ describe("source repository reference hygiene", () => {
     ]) {
       expect(skill, workflow).toContain(workflow);
     }
-    expect(contract).toContain("product-framing-review");
+    expect(contract).toContain("Unclear or drift-prone task/change");
     expect(planning).toContain("Use `product-framing-review` before planning");
     expect(roles).toContain("Workflow: product-framing-review");
+    expect(roles).toContain("Primary role: Task and Product Framing Reviewer");
   });
 
   it("keeps shared task and change principles advisory with direct operating boundaries", async () => {
