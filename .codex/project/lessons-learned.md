@@ -946,3 +946,42 @@ kit/skills/meta/plan-with-context/SKILL.md
 kit/skills/meta/agent-roles-and-capabilities/SKILL.md
 kit/skills/meta/plan-with-context/SKILL.md
 ```
+
+## Keep: Classify instruction references before rewriting physical paths
+
+### Context
+
+Foundation-kit instruction files can describe logical workflow invocation, source maintenance,
+installed runtime locations, or both source and installed layouts. The same `kit/...` or
+`.codex/...` syntax can be correct or misleading depending on that semantic role.
+
+### Lesson
+
+A physical path is not automatically an invocation target, and an `.codex/...` path in
+installable content is not automatically stale. Classify the reference before editing it. Use
+logical identifiers for operating dependencies, retain source or installed paths when location is
+the subject, and label both locations when guidance spans both contexts.
+
+Existing-project alignment provides a useful preservation example: a safe result may preserve
+project-owned memory, leave a differing `AGENTS.md` for manual review, and perform no managed
+replacement or mixed merge. That outcome demonstrates stable preservation for the observed case;
+it is not a universal expected installer result or authorization to weaken existing classification
+and conflict rules.
+
+### Reuse guidance
+
+- identify whether the sentence means apply, inspect, edit, install, or map a target;
+- do not globally replace `kit/...` with `.codex/...` or remove all physical paths;
+- preserve installed project-memory paths inside installable skills when they name downstream
+  targets;
+- keep shared contracts centralized and reference their logical identifiers from consumers; and
+- treat downstream adoption results as evidence to generalize carefully, not as snapshots to copy
+  into durable memory.
+
+### Related files
+
+```txt
+kit/rules/agent-operating-contract.md
+kit/rules/skill-invocation-and-dependency-boundaries.md
+kit/skills/meta/update-project-memory/SKILL.md
+```

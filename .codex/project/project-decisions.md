@@ -3105,3 +3105,51 @@ project-memory boundaries.
 - `kit/rules/agent-operating-contract.md`
 - `kit/skills/meta/plan-with-context/SKILL.md`
 - `kit/skills/meta/agent-roles-and-capabilities/SKILL.md`
+
+## Decision: Instruction references separate logical invocation from physical location
+
+### Status
+
+Accepted
+
+### Context
+
+Installable instructions are authored in the foundation-kit source repository under `kit/...`
+and installed into downstream projects under `.codex/...`. A physical source path can therefore
+be misleading when an instruction means to apply a rule or skill rather than inspect or maintain
+that file. Conversely, physical paths remain necessary when location, installation, or source
+maintenance is the subject.
+
+### Decision
+
+Classify instruction references by semantic purpose:
+
+- logical invocation uses the rule or skill identifier;
+- source maintenance uses the applicable `kit/...` path;
+- installed runtime uses the applicable `.codex/...` path; and
+- dual-context guidance explicitly labels both source and installed locations.
+
+Do not globally replace or remove physical paths. Determine the semantic role first. In
+particular, `.codex/project/project-guideline.md`, `.codex/project/project-decisions.md`, and
+`.codex/project/lessons-learned.md` remain valid installed target project-memory paths inside
+installable skills.
+
+The existing Publishable Change Handoff decision remains centralized in
+`agent-operating-contract`. Consumer skills reference that logical rule and apply it exactly
+without duplicating its fixed field list. `update-project-memory` uses the
+`Project Memory Curator` role.
+
+### Impact
+
+Source and downstream instructions can express operating dependencies without coupling consumers
+to the foundation-kit repository layout, while retaining precise paths wherever physical location
+is part of the contract. Shared publish-handoff ownership remains centralized and auditable.
+
+### Related Files
+
+- `kit/rules/agent-operating-contract.md`
+- `kit/rules/skill-invocation-and-dependency-boundaries.md`
+- `kit/skills/meta/agent-roles-and-capabilities/SKILL.md`
+- `kit/skills/meta/writing-great-skills/SKILL.md`
+- `kit/skills/meta/update-project-memory/SKILL.md`
+- `kit/skills/core/execute-plan/SKILL.md`
