@@ -118,7 +118,7 @@ Current project-memory context control:
 - `kit/skills/meta/project-memory/SKILL.md` is the single canonical definition of the Project
   Memory Context Gate.
 - `project-memory` owns durable memory reading/applying; `update-project-memory` owns confirmed
-  durable writes.
+  durable writes and uses the `Project Memory Curator` role.
 - Root and downstream AGENTS entrypoints, the operating contract, and project-state workflow
   skills use short references to that definition.
 - The gate applies both to downstream installed projects and this source repository's
@@ -136,6 +136,13 @@ Current foundation alignment boundaries:
   inconsistent targets, stop when a required target blocks safe work, and distinguish prospective
   or historical paths without rewriting history. Entrypoints, taxonomy, and initialization use
   short pointers rather than duplicate the full contract.
+- Instruction references are classified by semantic purpose. Logical invocation uses rule or
+  skill identifiers; source maintenance uses `kit/...`; installed runtime uses `.codex/...`; and
+  dual-context references label source and installed locations explicitly. Do not rewrite a path
+  before determining which role it serves.
+- `agent-operating-contract` remains the canonical owner of the Publishable Change Handoff.
+  Consuming skills apply that logical rule exactly and do not maintain a separate local copy of
+  its fixed field list.
 - `agent-operating-contract` owns Report Depth Levels for Brief, Standard, and Detailed reports.
   High-output workflows reference those levels briefly without duplicating the full convention.
   Concise output must still preserve decisions, validation status, risks or blockers when present,
