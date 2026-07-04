@@ -410,14 +410,24 @@ Execution Summary:
 
 If a local commit was created, report the commit hash.
 
-Include the four publish handoff fields only when required by the shared contract, reproducing its
-field labels and order exactly as normal report text after the execution summary. Do not wrap the
-complete handoff in one code block. Do not paraphrase `PR for review` or replace its allowed
-command or fallback shapes with descriptive status, validation, or project-type prose. For a
-verified command, keep the field label as normal text and put only the command in the contract's
-command-only `bash` code block. Otherwise use one exact normal-text fallback line. Use the
-contract's local-only report when applicable. PR creation or update requires explicit user
-authorization. Merge or final publication requires completed review, explicit user authorization,
-and the matching `publish-current-branch` workflow.
+When the task leaves publishable repository changes, apply the Publishable Change Handoff from
+`rules/agent-operating-contract.md` exactly.
+
+Do not maintain a separate local copy of the shared handoff template in this skill. When reporting,
+apply the shared contract exactly; do not modify, rename, reorder, partially reproduce, or silently
+omit its fields, command shape, no-publishable-change fallback, local-only artifact handling, or
+publication guardrail.
+
+Before sending the final report, check exactly one branch:
+
+- publishable local change: the shared contract's required publishable-change handoff is present;
+  or
+- no publishable local change: the shared contract's not-applicable handoff is present and no
+  executable create-PR command appears.
+
+`execute-plan` must not push, create PRs, update PRs, merge, release, deploy, or mutate external
+settings. PR creation or update requires explicit user action or authorization through
+`publish-current-branch`. Merge or final publication requires completed review, separate explicit
+user authorization, and the matching workflow.
 
 If project memory updates are needed, recommend `update-project-memory`.

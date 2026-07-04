@@ -498,12 +498,14 @@ describe("source repository reference hygiene", () => {
 
     expect(contract.match(/^## Publishable Change Handoff$/gm)).toHaveLength(1);
     expect(contract).toContain(
-      "Whenever `Publish changes recommendation` is present, `PR for review`",
+      "`Recommended commit message` and `Recommended PR title` are present",
     );
-    expect(contract).toContain("Recommended next workflow: code-review");
+    expect(contract).toContain(
+      "Recommended next action:\nCreate the PR for review, then run code-review on the resulting PR.",
+    );
     expect(contract).toContain(
       [
-        "PR for review:",
+        "Create PR for review command:",
         "",
         "```bash",
         'pnpm publish:pr-only "<commit message>" "<PR title>"',
@@ -511,23 +513,19 @@ describe("source repository reference hygiene", () => {
       ].join("\n"),
     );
     expect(contract).not.toContain(
-      'PR for review: pnpm publish:pr-only "<commit message>" "<PR title>"',
+      'Create PR for review command: pnpm publish:pr-only "<commit message>" "<PR title>"',
     );
-    expect(contract).toContain("PR for review: not checked (");
-    expect(contract).toContain("PR for review: not available (");
+    expect(contract).toContain("Create PR for review command:\nnot applicable.");
+    expect(contract).toContain("not applicable; no publishable local change.");
     expect(contract).toContain("Do not paraphrase, rename, merge, or substitute");
-    expect(contract).toContain("do not wrap the complete\nfour-field handoff in a code block");
+    expect(contract).toContain("do not wrap the complete\nhandoff in a code block");
     expect(contract).toContain("Publication guardrail:");
     expect(contract).toContain("do not create/update a PR unless the user explicitly authorizes");
     expect(contract).toContain("until review is complete and the user explicitly authorizes it");
-    expect(contract).toContain(
-      "Do not use\n`pnpm publish:changes` as a PR-for-review or Fast PR substitute",
-    );
-    expect(contract).toContain("do not infer other command\nforms from package script names");
+    expect(contract).toContain("Do not use `pnpm publish:changes` as the create-PR-for-review");
+    expect(contract).toContain("do not infer another command form from package script names");
     expect(contract).not.toContain("Fast PR after review approval");
-    expect(contract).toContain("not available (<reason>)");
-    expect(contract).toContain("not checked (<reason>)");
-    expect(contract).toContain("Do not guess a command");
+    expect(contract).toContain("without requiring per-task package-script\nverification");
     expect(contract).toContain(
       "Publishable changes: none; local-only artifacts changed: <paths or summary>",
     );
@@ -546,12 +544,13 @@ describe("source repository reference hygiene", () => {
     ]) {
       expect(documents[path], path).toContain("Publishable Change Handoff");
       expect(documents[path], path).not.toContain(
-        "Whenever `Publish changes recommendation` is present, `PR for review`",
+        "`Recommended commit message` and `Recommended PR title` are present",
       );
     }
 
     for (const path of ["AGENTS.md", "kit/project-templates/AGENTS.md"]) {
-      expect(documents[path], path).toContain("PR for review");
+      expect(documents[path], path).toContain("Create PR for review command");
+      expect(documents[path], path).toContain("Recommended next action");
       expect(documents[path], path).toContain("Publication guardrail");
       expect(documents[path], path).not.toContain(
         'pnpm publish:pr-only "<commit message>" "<PR title>"',
@@ -560,13 +559,22 @@ describe("source repository reference hygiene", () => {
     }
 
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "Do not wrap the\ncomplete handoff in one code block",
+      "apply the Publishable Change Handoff from\n`rules/agent-operating-contract.md` exactly",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "Do not paraphrase `PR for review`",
+      "Do not maintain a separate local copy of the shared handoff template in this skill",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "command-only `bash` code block",
+      "apply the shared contract exactly; do not modify, rename, reorder, partially reproduce",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
+      "no\n  executable create-PR command appears",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
+      "must not push, create PRs, update PRs, merge, release, deploy, or mutate external",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
+      'pnpm publish:pr-only "<commit message>" "<PR title>"',
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
       "Fast PR after review approval",
