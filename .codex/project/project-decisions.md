@@ -3067,11 +3067,17 @@ PRD or project-management workflow.
 
 ### Decision
 
-Keep the compatible `product-framing-review` identifier and present it as the Task and Product
-Framing skill. Use lightweight Task / Change Framing when work is unclear or drift-prone,
-including workflow, rule, skill, prompt, documentation, maintenance, source-of-truth, and product
-tasks. Identify the intended capability, current problem, affected party, smallest sufficient
-solution, reason it works, non-goals, and readiness.
+Use Task and Product Framing Skill as the visible name while intentionally retaining
+`product-framing-review` as the stable workflow/package identifier and installed path basename.
+The identifier participates in metadata routing, cross-skill references, installer payload
+grouping, installed destinations, and existing-project manifest/obsolete-path handling. Renaming
+it would be a separate migration requiring compatibility, cleanup, and installer validation; this
+wording update does not authorize that migration.
+
+Use lightweight Task / Change Framing when work is unclear or drift-prone, including workflow,
+rule, skill, prompt, documentation, maintenance, source-of-truth, and product tasks. Identify the
+intended capability, current problem, affected party, smallest sufficient solution, reason it
+works, non-goals, and readiness.
 
 Use deeper Product Framing only when work affects end-user product behavior, workflow meaning,
 data semantics, invalid or partial states, or a PRD/product baseline. Keep both modes proportional,

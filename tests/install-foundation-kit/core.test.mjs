@@ -423,6 +423,9 @@ describe("source repository reference hygiene", () => {
     const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
 
     expect(skill).toContain("# Task and Product Framing Skill");
+    expect(skill).toContain("Visible skill name: Task and Product Framing Skill");
+    expect(skill).toContain("Stable workflow and package identifier: product-framing-review");
+    expect(skill).toContain("Installed package path: .codex/skills/meta/product-framing-review/");
     expect(skill).toContain("## Task / Change Framing First");
     expect(skill).toContain("Task / Change Framing Check:");
     expect(skill).toContain("Primary actor / affected party:");

@@ -5,6 +5,19 @@ apply deeper Product Framing only when the work affects end-user product behavio
 proportional: this is a lightweight framing discipline, not a mandatory full PRD or project-management
 framework.
 
+## Visible Name and Stable Identifier
+
+```txt
+Visible skill name: Task and Product Framing Skill
+Stable workflow and package identifier: product-framing-review
+Installed package path: .codex/skills/meta/product-framing-review/
+```
+
+The broader visible name reflects both framing modes. Keep the existing identifier and installed
+path for routing and installation compatibility. A physical rename is a separate migration that
+must account for existing installed paths, payload grouping, references, manifests, and obsolete
+package cleanup; this skill wording update does not authorize that migration.
+
 ## Role Routing Integration
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
