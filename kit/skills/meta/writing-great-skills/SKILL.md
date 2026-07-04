@@ -157,7 +157,7 @@ Prefer narrowly useful skills over broad assistant personas.
 
 ## Taxonomy and Invocation
 
-Apply `kit/rules/skill-invocation-and-dependency-boundaries.md` as the single source of truth for
+Apply the `skill-invocation-and-dependency-boundaries` rule as the single source of truth for
 category, invocation, dependency direction, and context-load design. Do not restate those shared
 semantics in individual skills.
 

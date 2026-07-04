@@ -657,6 +657,25 @@ describe("source repository reference hygiene", () => {
     expect(documents["kit/skills/meta/initialize-project-context/SKILL.md"]).toContain(heading);
   });
 
+  it("distinguishes logical rule invocation from source and installed paths", async () => {
+    const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
+    const authoring = await readFile("kit/skills/meta/writing-great-skills/SKILL.md", "utf8");
+    const boundaries = await readFile(
+      "kit/rules/skill-invocation-and-dependency-boundaries.md",
+      "utf8",
+    );
+
+    expect(roles).toContain("Apply the `skill-invocation-and-dependency-boundaries` rule");
+    expect(roles).toContain("apply the\n`engineering-quality-principles` rule");
+    expect(authoring).toContain(
+      "Apply the `skill-invocation-and-dependency-boundaries` rule as the single source of truth",
+    );
+    expect(`${roles}\n${authoring}`).not.toContain("Apply `kit/rules/");
+    expect(boundaries).toContain("Foundation-kit source paths must match metadata category");
+    expect(boundaries).toContain("Installed paths preserve the meta and core categories");
+    expect(boundaries).toContain("`.codex/skills/engineering/<name>/`");
+  });
+
   it("keeps active surfaces free of obsolete meta skill paths", async () => {
     const activePaths = new Set([
       "AGENTS.md",

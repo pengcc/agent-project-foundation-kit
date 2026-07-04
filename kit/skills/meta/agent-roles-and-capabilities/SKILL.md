@@ -28,7 +28,7 @@ rules, or the Missing Specialist Skill Policy.
 
 ## Skill Taxonomy Routing
 
-Apply `kit/rules/skill-invocation-and-dependency-boundaries.md` when routing skills by category,
+Apply the `skill-invocation-and-dependency-boundaries` rule when routing skills by category,
 invocation type, or hard dependency.
 
 - Meta skills provide reusable disciplines shared by workflows.
@@ -131,11 +131,8 @@ For small bounded tasks, stay pragmatic and avoid overengineering.
 
 ## Engineering Quality Rule
 
-Engineering, architecture, implementation, and review roles must apply:
-
-```txt
-kit/rules/engineering-quality-principles.md
-```
+Engineering, architecture, implementation, and review roles must apply the
+`engineering-quality-principles` rule.
 
 Project conventions, lint/format/test configuration, and existing repo patterns take priority.
 
