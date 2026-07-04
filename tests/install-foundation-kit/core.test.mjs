@@ -559,13 +559,19 @@ describe("source repository reference hygiene", () => {
     }
 
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "Never\nsilently omit the command or next action",
+      "apply the Publishable Change Handoff from\n`agent-operating-contract` exactly",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "Create PR for review command",
+      "Do not restate, modify, rename, reorder, partially reproduce, or silently omit",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "without\nrequiring per-task package-script verification",
+      "no\n  executable create-PR command appears",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
+      "must not push, create PRs, update PRs, merge, release, deploy, or mutate external",
+    );
+    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
+      'pnpm publish:pr-only "<commit message>" "<PR title>"',
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
       "Fast PR after review approval",
