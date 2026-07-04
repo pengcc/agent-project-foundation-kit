@@ -95,10 +95,10 @@ It must not silently update project memory.
 When using this skill, act as:
 
 ```txt
-Project Memory Maintainer
+Project Memory Curator
 ```
 
-The Project Memory Maintainer classifies durable updates into current facts, decision rationale, and reusable lessons.
+The Project Memory Curator classifies durable updates into current facts, decision rationale, and reusable lessons.
 
 ## When to Use
 
@@ -153,7 +153,7 @@ Use this header:
 
 ```txt
 Workflow:
-- Role: Project Memory Maintainer
+- Role: Project Memory Curator
 - Skill: update-project-memory
 - Context: project guideline + decisions + lessons
 - Mode: project memory update
@@ -311,14 +311,11 @@ Validation:
 
 External / global actions:
 - None
-
-Publish changes recommendation: <shared-contract value>
-Recommended next workflow: publish-current-branch
-Fast PR: <shared-contract value>
 ```
 
-When at least one project-memory file changed, apply the Publishable Change Handoff from
-`agent-operating-contract`. The no-update output below does not trigger that handoff.
+When at least one project-memory file changed, apply the Publishable Change Handoff from the
+`agent-operating-contract` rule exactly without duplicating its fixed field list in this skill.
+The no-update output below does not trigger that handoff.
 
 If no update is needed, say:
 
