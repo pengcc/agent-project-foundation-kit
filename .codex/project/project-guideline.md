@@ -151,10 +151,11 @@ Current foundation alignment boundaries:
   discipline. It is support-only; `grill-me` remains the user-facing deep clarification workflow.
   `plan-with-context`, `initialize-project-context`, and `project-architecture-plan` depend on the
   shared primitive without changing their output or approval boundaries.
-- `product-framing-review` owns a lightweight user-purpose check for unclear product behavior,
-  workflows, data meaning, and PRD/product baselines. It separates product concepts from widget
-  mechanics, routes broad ambiguity to `grill-me`, and hands clear implementation planning to
-  `plan-with-context`.
+- `product-framing-review` is visibly the Task and Product Framing skill. It first frames unclear
+  or drift-prone tasks and changes through intended capability, current problem, affected party,
+  smallest sufficient solution, non-goals, and readiness. It uses deeper Product Framing only for
+  end-user behavior, workflows, data meaning, and PRD/product baselines, routes broad ambiguity to
+  `grill-me`, and hands clear implementation planning to `plan-with-context`.
 - `docs-first-research` passes the Project Memory Context Gate for project-impacting research and
   may state the gate is not applicable for pure external fact lookup.
 - External skills are reference candidates only; patterns require evaluation and rewriting before
