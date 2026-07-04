@@ -304,49 +304,63 @@ approval, reason, and result.
 When a non-publish workflow creates or recommends committing publishable repository changes and
 leaves them for later publication, its final report must include:
 
-Publish changes recommendation: type: <small safe update | normal update | significant / high-impact update>; message: <commit message>; PR title: <PR title>
+Recommended update type: <small safe update | normal update | significant / high-impact update>
 
-Recommended next workflow: code-review
+Recommended commit message: <commit message>
 
-PR for review: <verified exact command | not checked (<reason>) | not available (<reason>)>
+Recommended PR title: <PR title>
 
-Publication guardrail: do not create/update a PR unless the user explicitly authorizes PR publication; do not merge, release, deploy, or otherwise finalize publication until review is complete and the user explicitly authorizes it.
-
-Reproduce these four field labels in this order. Do not paraphrase, rename, merge, or substitute
-descriptive prose for any field. Keep the fields as normal report text; do not wrap the complete
-four-field handoff in a code block.
-
-When current project-local evidence verifies the supported command, render the field label as
-normal text followed by a `bash` code block containing only the command:
-
-PR for review:
+Create PR for review command:
 
 ```bash
 pnpm publish:pr-only "<commit message>" "<PR title>"
 ```
 
-Otherwise use exactly one of these normal-text fallback lines:
+Recommended next action:
+Create the PR for review, then run code-review on the resulting PR.
 
-PR for review: not checked (<reason>)
+Publication guardrail: do not create/update a PR unless the user explicitly authorizes PR publication; do not merge, release, deploy, or otherwise finalize publication until review is complete and the user explicitly authorizes it.
 
-PR for review: not available (<reason>)
+Reproduce these six field labels in this order. Do not paraphrase, rename, merge, or substitute
+descriptive prose for any field. Keep the fields as normal report text; do not wrap the complete
+handoff in a code block.
 
-Whenever `Publish changes recommendation` is present, `PR for review` and
-`Publication guardrail` are required; otherwise neither field is required. The default next
-workflow after non-publish implementation is `code-review`, not `publish-current-branch`.
+The `Create PR for review command` label must be normal text followed by a `bash` code block
+containing only this fixed command shape:
 
-An exact PR-for-review command must come from current project-local evidence such as root `AGENTS.md`,
-project memory, package scripts, or installed project scripts. The supported command form, when
-that evidence verifies it, is `pnpm publish:pr-only "<commit message>" "<PR title>"`. Do not use
-`pnpm publish:changes` as a PR-for-review or Fast PR substitute, and do not infer other command
-forms from package script names. Use `not checked (<reason>)` when command evidence was not
-inspected or could not be verified. Use `not available (<reason>)` when inspected project sources
-provide no verified PR-for-review command. Do not guess a command.
+```bash
+pnpm publish:pr-only "<commit message>" "<PR title>"
+```
 
-This handoff does not apply when the only outputs are local-only artifacts, including
-`dev_locals/**` plans, research notes, handoffs, scratch files, execution logs, dry-run reports,
-temporary notes, or unsaved conversation text, unless the project explicitly marks an artifact as
-publishable. When only local-only artifacts changed, report:
+Use the same commit message and PR title values in their fields and in the command. Whenever
+`Recommended commit message` and `Recommended PR title` are present for a publishable local
+change, `Create PR for review command` and `Recommended next action` are also required. Do not
+silently omit either field.
+
+Print the fixed command without executing it and without requiring per-task package-script
+verification. A missing or different project publishing command is a project setup issue; it does
+not change this stable handoff format. Do not use `pnpm publish:changes` as the create-PR-for-review
+command and do not infer another command form from package script names.
+
+When no publishable local change exists, including blocked, analysis-only, review-only,
+planning-only, failed-validation, no-change, or reverted-change outcomes, do not print a command.
+Use:
+
+```txt
+Publishable change handoff:
+not applicable; no publishable local change.
+
+Create PR for review command:
+not applicable.
+
+Recommended next action:
+<appropriate blocker, retry, planning, or none action>
+```
+
+Local-only artifacts, including `dev_locals/**` plans, research notes, handoffs, scratch files,
+execution logs, dry-run reports, temporary notes, or unsaved conversation text, are not
+publishable unless the project explicitly marks them as publishable. When only local-only
+artifacts changed, use the no-publishable-change handoff above and also report:
 
 ```txt
 Publishable changes: none; local-only artifacts changed: <paths or summary>
@@ -354,7 +368,7 @@ Publishable changes: none; local-only artifacts changed: <paths or summary>
 
 When publishable changes and local-only artifacts both changed, include the handoff for the
 publishable scope and report the local-only artifacts separately. Do not include local-only
-artifacts in the proposed commit or PR-for-review scope.
+artifacts in the proposed commit or create-PR-for-review scope.
 
 Do not create or update a PR unless the user explicitly authorizes publishing the branch for
 review. The PR-only action exists so review can happen; it does not require completed review. Do

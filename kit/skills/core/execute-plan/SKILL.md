@@ -410,14 +410,61 @@ Execution Summary:
 
 If a local commit was created, report the commit hash.
 
-Include the four publish handoff fields only when required by the shared contract, reproducing its
-field labels and order exactly as normal report text after the execution summary. Do not wrap the
-complete handoff in one code block. Do not paraphrase `PR for review` or replace its allowed
-command or fallback shapes with descriptive status, validation, or project-type prose. For a
-verified command, keep the field label as normal text and put only the command in the contract's
-command-only `bash` code block. Otherwise use one exact normal-text fallback line. Use the
-contract's local-only report when applicable. PR creation or update requires explicit user
-authorization. Merge or final publication requires completed review, explicit user authorization,
-and the matching `publish-current-branch` workflow.
+For a publishable local change, reproduce the shared handoff field labels and order exactly as
+normal report text after the execution summary. `Recommended commit message`, `Recommended PR
+title`, `Create PR for review command`, and `Recommended next action` must appear together. Never
+silently omit the command or next action when the commit message and PR title are present. Keep
+the command label as normal text and put only the fixed command in its `bash` code block:
+
+```bash
+pnpm publish:pr-only "<commit message>" "<PR title>"
+```
+
+Use the actual recommended values in the command. Print it without executing it and without
+requiring per-task package-script verification. PR creation or update requires explicit user
+action or authorization through `publish-current-branch`. Merge or final publication requires
+completed review, separate explicit user authorization, and the matching workflow.
+
+Example — publishable local change:
+
+Recommended update type:
+small safe update
+
+Recommended commit message:
+feat(web): add three-area public navigation
+
+Recommended PR title:
+Add public site three-area navigation
+
+Create PR for review command:
+
+```bash
+pnpm publish:pr-only "feat(web): add three-area public navigation" "Add public site three-area navigation"
+```
+
+Recommended next action:
+Create the PR for review, then run code-review on the resulting PR.
+
+Publication guardrail: do not create/update a PR unless the user explicitly authorizes PR publication; do not merge, release, deploy, or otherwise finalize publication until review is complete and the user explicitly authorizes it.
+
+If execution produces no publishable local change, do not output a create-PR command. Use:
+
+```txt
+Publishable change handoff:
+not applicable; no publishable local change.
+
+Create PR for review command:
+not applicable.
+
+Recommended next action:
+none, or the appropriate blocker, planning, or retry action.
+```
+
+Before sending the final report, check exactly one branch:
+
+- publishable local change: the commit message, PR title, fixed create-PR command, and next action
+  are all present; or
+- no publishable local change: the handoff and command are both `not applicable`, no executable
+  create-PR command appears, and the next action matches the outcome.
 
 If project memory updates are needed, recommend `update-project-memory`.
