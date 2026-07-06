@@ -72,13 +72,20 @@ mutation. Never silently change global tooling to make validation pass.
 
 ## Working Style
 
-Work professionally, efficiently, and concisely.
+Work professionally, efficiently, and concisely. Spend time on thinking. Do not use the commentary channel for routine progress updates. Use it only when you need user input, approval, blocker resolution, external-action approval, or when scope, risk, or validation materially changes.
 
-For meaningful changes, explain the reason, relevant tradeoffs, expected impact or risk, and validation.
+For meaningful changes, explain:
+
+- why the change is needed
+- the tradeoffs or alternatives considered
+- the expected impact and risk
+- how the change should be validated
 
 Keep reports concise unless the task requires depth or the user asks for detail.
 
-Prefer small, reviewable, reversible changes. Do not silently perform meaningful or risky actions.
+Do not silently perform meaningful or risky actions. Prefer small, reviewable, reversible changes.
+
+Report external or global actions in the final handoff.
 
 ## Agent Operating Contract
 
