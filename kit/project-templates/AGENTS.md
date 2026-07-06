@@ -205,7 +205,7 @@ After meaningful planning, implementation, debugging, review, publishing, instal
 
 ## Git and Publishing Rules
 
-Before editing for new work, check:
+Before editing files for any publishable repository change, check:
 
 - current branch
 - uncommitted changes
@@ -213,13 +213,34 @@ Before editing for new work, check:
 - current-branch open pull request
 - repository-level open pull requests
 
-If a non-default branch has unfinished work, pause before starting an unrelated task. Report the
-pending work and ask whether to finish, merge, or switch branches. Do not mix tasks without
-explicit user approval.
+If a non-default branch has unfinished work, stop before starting an unrelated task and ask
+whether to finish, merge, or switch branches. Do not mix tasks without explicit user approval.
 
-Start new work from an up-to-date default branch and create a feature branch unless the user explicitly approves a different workflow.
+Start new work from an up-to-date default branch. Create a new feature branch before modifying
+files, then make the updates on that feature branch.
+
+Do not edit files directly on the default branch unless the user explicitly approves default-branch
+editing for that specific task.
+
+If the agent is on the default branch and the task may edit tracked or intended-to-be-tracked files,
+stop before editing and create or switch to a feature branch unless that same explicit approval was
+given.
+
+Routine documentation, workflow, and tracked project-memory updates are publishable repository
+changes when the files are tracked or intended to be tracked. They are not exempt from the
+feature-branch workflow by default.
 
 Do not push directly to the default branch.
+
+Project memory updates under `.codex/project/**` are publishable repository changes when those
+files are tracked or intended to be tracked. Apply the same Git preflight and feature-branch
+workflow before editing them. When tracking status is unclear, check repository status and ignore
+rules before classifying the update.
+
+If the project explicitly excludes `.codex/project/**` from version control, such as through
+`.gitignore`, treat those files as local-only project memory. Local-only memory updates still
+require user confirmation before writing, but they do not by themselves require a publishable-
+change branch unless the user or project rules say otherwise.
 
 Local commits may be part of an approved `execute-plan` workflow if the approved plan explicitly includes a commit step or the user explicitly requested commit.
 
