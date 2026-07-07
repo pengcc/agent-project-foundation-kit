@@ -8,11 +8,12 @@ export function parsePorcelainZ(text) {
     const record = records[index];
     if (!record) continue;
     const status = record.slice(0, 2);
-    entries.push({ status, path: record.slice(3) });
+    const entry = { status, path: record.slice(3) };
     if (/[RC]/.test(status)) {
       index += 1;
-      if (records[index]) entries.push({ status, path: records[index] });
+      if (records[index]) entry.originalPath = records[index];
     }
+    entries.push(entry);
   }
   return entries;
 }
@@ -24,11 +25,17 @@ export async function captureWorktreeSnapshot(git) {
     .filter((entry) => entry.status === "??")
     .map((entry) => entry.path);
   const hashes = untrackedPaths.length ? (await git.hashFiles(untrackedPaths)).split("\n") : [];
+  const stagePaths = entries.flatMap((entry) => {
+    if (entry.originalPath && entry.status[1] === "R") {
+      return [entry.path, entry.originalPath];
+    }
+    return [entry.path];
+  });
   return {
     statusZ,
     trackedDiff: await git.diff(["--binary", "HEAD"]),
     untracked: untrackedPaths.map((path, index) => ({ path, hash: hashes[index] })),
-    paths: [...new Set(entries.map((entry) => entry.path))].sort(),
+    paths: [...new Set(stagePaths)].sort(),
   };
 }
 

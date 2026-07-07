@@ -1,6 +1,6 @@
 import { PublishError } from "../shared/errors.mjs";
-import { prOnlyPublishRecord } from "./actions.mjs";
-import { renderPrOnlyReport } from "./final-report.mjs";
+import { prReviewPublishRecord } from "./actions.mjs";
+import { renderPrReviewReport } from "./final-report.mjs";
 import {
   assertHeadFingerprint,
   collectExactPublishScope,
@@ -14,7 +14,7 @@ function isDefaultBranch(branch, defaultBranch) {
   return ["main", "master", defaultBranch].includes(branch);
 }
 
-export async function runPrOnlyFlow({ git, gh, prompts, output, options, env = process.env }) {
+export async function runPrReviewFlow({ git, gh, prompts, output, options, env = process.env }) {
   const defaultBranch = env.DEFAULT_BRANCH || "main";
   const state = await detectPublishState({
     git,
@@ -24,7 +24,7 @@ export async function runPrOnlyFlow({ git, gh, prompts, output, options, env = p
     showDiff: options.showDiff,
   });
 
-  output.step("PR-only preflight");
+  output.step("PR review preflight");
   output.info(`Current branch: ${state.branch}`);
   output.info(`Uncommitted changes: ${state.hasUncommitted ? "yes" : "no"}`);
   output.info(`Unpushed commits: ${state.hasUnpushed ? "yes" : "no"}`);
@@ -33,7 +33,7 @@ export async function runPrOnlyFlow({ git, gh, prompts, output, options, env = p
   if (isDefaultBranch(state.branch, defaultBranch)) {
     throw new PublishError(
       "UNSAFE_BRANCH_STATE",
-      `PR-only publishing from ${state.branch} is blocked. Create or switch to a feature branch first.`,
+      `PR review publishing from ${state.branch} is blocked. Create or switch to a feature branch first.`,
     );
   }
   if (!state.defaultFresh) {
@@ -121,7 +121,7 @@ export async function runPrOnlyFlow({ git, gh, prompts, output, options, env = p
 
   await git.push(state.branch);
   const headSha = expectedPushHead.head;
-  const body = prOnlyPublishRecord({ headSha, defaultBranch });
+  const body = prReviewPublishRecord({ headSha, defaultBranch });
   let pr;
   let action;
 
@@ -154,10 +154,10 @@ export async function runPrOnlyFlow({ git, gh, prompts, output, options, env = p
     prChangesUrl: `${pr.url}/files`,
     latestCommitChangesUrl: pr.headRefOid === headSha ? `${pr.url}/changes/${headSha}` : null,
     latestHeadCommit: pr.headRefOid === headSha ? null : headSha,
-    nextStep: `pnpm publish:merge-pr ${pr.number}`,
+    nextStep: `pnpm pr:merge ${pr.number}`,
     branch: state.branch,
     action,
   };
-  renderPrOnlyReport(output, report);
+  renderPrReviewReport(output, report);
   return { status: "published", report };
 }

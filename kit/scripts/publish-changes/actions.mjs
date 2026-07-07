@@ -30,11 +30,11 @@ export function publishRecord({ classification, validation, headSha, defaultBran
   ].join("\n");
 }
 
-export function prOnlyPublishRecord({ headSha, defaultBranch }) {
+export function prReviewPublishRecord({ headSha, defaultBranch }) {
   return [
     "## Publish record",
     "",
-    "- Mode: `PR_ONLY`",
+    "- Mode: `PR_REVIEW`",
     `- Head commit: \`${headSha}\``,
     `- Target branch: \`${defaultBranch}\``,
     "",

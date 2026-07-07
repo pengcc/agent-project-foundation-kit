@@ -319,7 +319,7 @@ Recommended PR title: <PR title>
 PR review helper command:
 
 ```bash
-pnpm publish:pr-only "<commit message>" "<PR title>"
+pnpm pr:review "<commit message>" "<PR title>"
 ```
 
 Recommended next action:
@@ -335,7 +335,7 @@ The `PR review helper command` label must be normal text followed by a `bash` co
 containing only this fixed command shape:
 
 ```bash
-pnpm publish:pr-only "<commit message>" "<PR title>"
+pnpm pr:review "<commit message>" "<PR title>"
 ```
 
 Use the same commit message and PR title values in their fields and in the command. Whenever
@@ -396,7 +396,7 @@ substitute for the authorization boundary. Do not include local-only artifacts i
 commit or PR review scope.
 
 Do not create or update a PR unless the user explicitly authorizes publishing the branch for
-review. The PR-only action exists so review can happen; it does not require completed review. Do
+review. The PR-review action exists so review can happen; it does not require completed review. Do
 not merge, release, deploy, or otherwise finalize publication until review is complete and the
 user explicitly authorizes that action. `publish-current-branch` remains the only workflow
 authorized to push, create or update a PR, or merge, and its own factual Publish Summary is outside

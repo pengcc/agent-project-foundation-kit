@@ -13,4 +13,4 @@ for (const level of OUTPUT_LEVELS) {
   output.write(level, `${label} label color preview`);
 }
 
-output.command("Command helper preview:", "pnpm publish:merge-pr 101");
+output.command("Command helper preview:", "pnpm pr:merge 101");

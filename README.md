@@ -26,10 +26,10 @@ This repository uses a private `package.json` as a short command façade:
 pnpm publish:changes
 pnpm publish:changes "Commit message"
 pnpm publish:changes "Commit message" "PR title"
-pnpm publish:pr-only "Commit message" "PR title"
-pnpm publish:merge-pr 123
-pnpm publish:merge-pr 123 --yes
-pnpm publish:merge-pr:auto 123
+pnpm pr:review "Commit message" "PR title"
+pnpm pr:merge 123
+pnpm pr:merge 123 --yes
+pnpm pr:auto-merge 123
 pnpm install:node --target /path/to/project
 pnpm test:install
 pnpm test:publish
@@ -39,7 +39,7 @@ pnpm biome:fix
 pnpm check
 ```
 
-`publish:changes`, `publish:pr-only`, and `publish:merge-pr` run the maintained Node.js 24+ ESM
+`publish:changes`, `pr:review`, and `pr:merge` run the maintained Node.js 24+ ESM
 publish CLI. Biome 2.5.0 is a source-repository quality gate: `pnpm format` writes formatting,
 `pnpm format:check` checks formatting, and `pnpm biome:fix` applies Biome safe fixes, including
 formatting, safe lint fixes, and organize-imports assist fixes. `pnpm check` runs `biome check .`
@@ -53,7 +53,7 @@ publish aliases without replacing conflicting values. If a downstream project ha
 formatter/linter, `initialize-project-context` may recommend Biome as a manual setup task; it does
 not require or install it.
 
-`publish:changes` and `publish:pr-only` run a lightweight local secret-safety guard against the
+`publish:changes` and `pr:review` run a lightweight local secret-safety guard against the
 confirmed publish scope before commit, push, or PR updates. The guard is dependency-free and
 high-confidence only; it can have false positives and false negatives.
 Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
@@ -231,29 +231,30 @@ The repository setting only permits PR-level auto-merge; each PR still needs aut
 The manual GitHub CLI equivalent is `gh pr merge <PR_NUMBER> --auto --squash`. Auto-merge waits
 for required checks and reviews and never bypasses them.
 
-### Quick PR-Only and Explicit Merge Commands
+### PR Review and Explicit Merge Commands
 
-`pnpm publish:pr-only` is the non-merging path for quickly publishing review changes from the
+`pnpm pr:review` creates or updates a PR for review from the
 current feature branch. It commits confirmed uncommitted changes when needed, stages only observed
 paths, pushes the branch, and creates or reuses its open PR. It does not ask classification,
-validation, scope-confirmation, completion-mode, or merge questions. It blocks on the default
-branch instead of creating a feature branch automatically.
+validation, scope-confirmation, completion-mode, or merge questions. It does not run code review,
+merge, release, deploy, refresh the default branch, or finalize publication. It blocks on the
+default branch instead of creating a feature branch automatically.
 
 An existing PR keeps its title unless the optional second argument is explicitly supplied. The
 result reports the PR number, PR URL, general Files changed URL, and a neutral latest-commit
 review link only when the re-read PR head matches the verified pushed head. If those heads cannot
 be reconciled, it reports the verified pushed SHA instead. It also prints the copyable next step
-`pnpm publish:merge-pr <pr-number>`, the branch, and whether the PR was created, updated, or
+`pnpm pr:merge <pr-number>`, the branch, and whether the PR was created, updated, or
 unchanged.
 
-`pnpm publish:merge-pr <pr-number>` reads and validates the named PR, required checks, base branch,
-mergeability, and head OID. The explicit command and PR number authorize the immediate squash-merge
-attempt, so this mode does not add a second confirmation prompt. `--yes` remains accepted for
-compatibility. The command does not bypass repository rules or checks. After GitHub verifies the
-merge, it refreshes the default branch with fast-forward-only behavior and never hard-resets a
-diverged branch.
+`pnpm pr:merge <pr-number>` merges an already-reviewed PR after reading and validating the named
+PR, required checks, base branch, mergeability, and head OID. The explicit command and PR number
+authorize the immediate squash-merge attempt, so this mode does not add a second confirmation
+prompt. `--yes` remains accepted for compatibility. The command does not bypass repository rules
+or checks. After GitHub verifies the merge, it refreshes the default branch with fast-forward-only
+behavior and never hard-resets a diverged branch.
 
-`pnpm publish:merge-pr:auto <pr-number>` adds explicit `--auto-merge` authorization. Passed checks
+`pnpm pr:auto-merge <pr-number>` adds explicit `--auto-merge` authorization. Passed checks
 still use the immediate merge path. Pending checks request PR-level squash auto-merge with
 expected-head protection, then read the PR once: an open PR is reported as waiting and the local
 branch remains unchanged. If GitHub rejects the request, the PR remains open and the command
@@ -277,15 +278,15 @@ Use the installed Node CLI directly when Node.js 24 or newer is available:
 ```bash
 node .codex/scripts/publish-changes.mjs --help
 node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-only "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode merge-pr 123
-node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
-node .codex/scripts/publish-changes.mjs --mode merge-pr --auto-merge 123
+node .codex/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
+node .codex/scripts/publish-changes.mjs --mode pr-merge 123
+node .codex/scripts/publish-changes.mjs --mode pr-merge 123 --yes
+node .codex/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
 ```
 
 Run these commands from the target project root. For a valid existing `package.json`, installer
-dry-run reports and apply safely adds missing `publish:changes`, `publish:pr-only`,
-`publish:merge-pr`, and `publish:merge-pr:auto` aliases. Existing aliases with different values
+dry-run reports and apply safely adds missing `publish:changes`, `pr:review`, `pr:merge`, and
+`pr:auto-merge` aliases. Existing aliases with different values
 are reported and preserved. The installer does not create or repair `package.json` solely for
 these shortcuts.
 

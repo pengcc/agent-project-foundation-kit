@@ -3153,3 +3153,57 @@ is part of the contract. Shared publish-handoff ownership remains centralized an
 - `kit/skills/meta/writing-great-skills/SKILL.md`
 - `kit/skills/meta/update-project-memory/SKILL.md`
 - `kit/skills/core/execute-plan/SKILL.md`
+
+## Decision: PR workflow commands use review and merge semantics
+
+### Status
+
+Accepted
+
+### Context
+
+The former `publish:pr-only` command could commit confirmed Git-visible changes, push the
+current feature branch, and create or update its pull request. Its name therefore understated its
+behavior and blurred the distinction between preparing a PR for review and final publication.
+The related merge aliases and CLI modes also used inconsistent word order.
+
+### Decision
+
+Keep `pnpm publish:changes` as the guided publish workflow. Use these explicit PR commands and CLI
+modes:
+
+```txt
+pnpm pr:review      -> --mode pr-review
+pnpm pr:merge       -> --mode pr-merge
+pnpm pr:auto-merge  -> --mode pr-merge --auto-merge
+```
+
+`pr:review` creates or updates a PR for review and may commit confirmed changes and push the
+current feature branch. It does not run code review, merge, release, deploy, refresh the default
+branch, or finalize publication. `pr:merge` and `pr:auto-merge` retain the existing guarded merge
+behavior and require the applicable review, checks, and authorization.
+
+Remove the legacy source aliases and CLI modes rather than preserving compatibility aliases.
+Existing downstream `package.json` aliases remain project-owned and are not deleted by the
+installer's safe-add behavior.
+
+This decision supersedes earlier command names and active output contracts only. Historical
+decisions remain unchanged as records of the behavior and naming in effect when they were made.
+
+### Impact
+
+Agent and user handoffs now distinguish PR creation for review from guarded post-review merge.
+Runtime Git/GitHub mechanics, publish policy, secret scanning, squash behavior, expected-head
+validation, auto-merge confirmation, and fast-forward-only refresh remain unchanged.
+
+### Related Files
+
+- `package.json`
+- `kit/scripts/publish-changes.mjs`
+- `kit/scripts/publish-changes/`
+- `scripts/install-foundation-kit/publish-aliases.mjs`
+- `kit/rules/agent-operating-contract.md`
+- `kit/skills/core/publish-current-branch/SKILL.md`
+- `README.md`
+- `tests/publish-changes/`
+- `tests/install-foundation-kit/`

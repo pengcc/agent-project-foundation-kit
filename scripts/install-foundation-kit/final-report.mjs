@@ -314,6 +314,6 @@ export function printFinalReport(report, output) {
     "3. Do not start feature implementation until initialization and approved project-memory updates are complete.",
   );
   output.info(
-    "Installed scripts run from the target project root, for example: node .codex/scripts/publish-changes.mjs --mode pr-only",
+    "Installed scripts run from the target project root, for example: node .codex/scripts/publish-changes.mjs --mode pr-review",
   );
 }

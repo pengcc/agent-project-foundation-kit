@@ -14,8 +14,8 @@ export function renderFinalReport(output, report) {
   output.info(`External actions performed: ${report.actions.join(", ") || "none"}`);
 }
 
-export function renderPrOnlyReport(output, report) {
-  output.step("PR-only report");
+export function renderPrReviewReport(output, report) {
+  output.step("PR review report");
   output.info(`PR number: ${report.prNumber}`);
   output.info(`PR URL: ${report.prUrl}`);
   output.info(`PR changes: ${report.prChangesUrl}`);
@@ -31,7 +31,7 @@ export function renderPrOnlyReport(output, report) {
 }
 
 export function renderMergePrReport(output, report) {
-  output.step("Merge-PR report");
+  output.step("PR merge report");
   output.info(`PR number: ${report.prNumber}`);
   output.info(`PR URL: ${report.prUrl}`);
   output.info(`Merge status: ${report.mergeStatus}`);

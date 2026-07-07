@@ -21,7 +21,7 @@ export function evaluateRequiredChecks(checks, mode) {
   if (pending && mode === "immediate") {
     throw new PublishError(
       "CHECKS_PENDING",
-      "Required checks are pending; wait and rerun merge-pr, or use --auto-merge.",
+      "Required checks are pending; wait and rerun pnpm pr:merge, or use pnpm pr:auto-merge.",
     );
   }
   return { pending };

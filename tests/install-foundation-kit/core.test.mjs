@@ -547,12 +547,12 @@ describe("source repository reference hygiene", () => {
         "PR review helper command:",
         "",
         "```bash",
-        'pnpm publish:pr-only "<commit message>" "<PR title>"',
+        'pnpm pr:review "<commit message>" "<PR title>"',
         "```",
       ].join("\n"),
     );
     expect(contract).not.toContain(
-      'PR review helper command: pnpm publish:pr-only "<commit message>" "<PR title>"',
+      'PR review helper command: pnpm pr:review "<commit message>" "<PR title>"',
     );
     expect(contract).toContain("PR review helper command:\nnot applicable.");
     expect(contract).toContain(
@@ -601,9 +601,7 @@ describe("source repository reference hygiene", () => {
       expect(documents[path], path).not.toContain("Create PR for review command");
       expect(documents[path], path).toContain("Recommended next action");
       expect(documents[path], path).toContain("Publication guardrail");
-      expect(documents[path], path).not.toContain(
-        'pnpm publish:pr-only "<commit message>" "<PR title>"',
-      );
+      expect(documents[path], path).not.toContain('pnpm pr:review "<commit message>" "<PR title>"');
       expect(documents[path].match(/Fast PR/g), path).toBeNull();
     }
 
@@ -623,7 +621,7 @@ describe("source repository reference hygiene", () => {
       "must not push, create PRs, update PRs, merge, release, deploy, or mutate external",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
-      'pnpm publish:pr-only "<commit message>" "<PR title>"',
+      'pnpm pr:review "<commit message>" "<PR title>"',
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
       "Fast PR after review approval",
