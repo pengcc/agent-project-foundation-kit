@@ -632,7 +632,7 @@ describe("source repository reference hygiene", () => {
       "publish readiness / publish handoff -> recommend publish-current-branch after execution",
     );
     expect(documents["AGENTS.md"]).toContain(
-      "recommended commit message when publishable changes exist",
+      "recommended commit message when Git-visible repository changes exist",
     );
     expect(documents["kit/skills/meta/update-project-memory/SKILL.md"]).toContain(
       "The no-update output below does not trigger that handoff",
