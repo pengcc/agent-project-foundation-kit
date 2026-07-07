@@ -269,10 +269,10 @@ Every implementation final report must classify the update as one of:
 
 The report must include:
 
-- recommended update type
-- recommended commit message
-- recommended PR title
-- complete Publishable Change Handoff when publishable changes exist, including
+- recommended update type when Git-visible repository changes exist
+- recommended commit message when Git-visible repository changes exist
+- recommended PR title when Git-visible repository changes exist
+- complete Publishable Change Handoff when Git-visible repository changes exist, including
   `PR review helper command`, `Recommended next action`, and `Publication guardrail`
 - changed files
 - reason for the change
@@ -281,8 +281,8 @@ The report must include:
 - project memory or documentation updates
 - whether commit, push, pull request, merge, or other external actions were performed
 
-When the task leaves publishable repository changes, apply the Publishable Change Handoff in
-`.codex/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
+When `git status --short` shows Git-visible repository changes, apply the Publishable Change
+Handoff in `.codex/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
 anti-omission requirement, publication authorization, and local-only artifact boundaries.
 
 Every task final report must also include:

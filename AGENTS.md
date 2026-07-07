@@ -144,7 +144,7 @@ The final report must include:
 - whether commit, push, PR, merge, or other external actions were performed
 
 When `git status --short` shows Git-visible repository changes, apply the Publishable Change
-Handoff in `.codex/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
+Handoff in `kit/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
 anti-omission requirement, publication authorization, and local-only artifact boundaries.
 
 Every task final report must also include:
