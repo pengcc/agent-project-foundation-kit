@@ -131,11 +131,11 @@ Every implementation final report must classify any publishable update as one of
 
 The final report must include:
 
-- recommended update type when publishable changes exist
-- recommended commit message when publishable changes exist
-- recommended PR title when publishable changes exist
-- complete Publishable Change Handoff when publishable changes exist, including
-  `Create PR for review command`, `Recommended next action`, and `Publication guardrail`
+- recommended update type when Git-visible repository changes exist
+- recommended commit message when Git-visible repository changes exist
+- recommended PR title when Git-visible repository changes exist
+- complete Publishable Change Handoff when Git-visible repository changes exist, including
+  `PR review helper command`, `Recommended next action`, and `Publication guardrail`
 - files changed
 - why the change was made
 - impact / risk level
@@ -143,11 +143,11 @@ The final report must include:
 - whether project memory or docs were updated
 - whether commit, push, PR, merge, or other external actions were performed
 
-When the task leaves publishable repository changes, apply the Publishable Change Handoff in
-`kit/rules/agent-operating-contract.md`. It owns the fixed create-PR-for-review command,
+When `git status --short` shows Git-visible repository changes, apply the Publishable Change
+Handoff in `kit/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
 anti-omission requirement, publication authorization, and local-only artifact boundaries.
 
-Every task final report must include:
+Every task final report must also include:
 
 ```txt
 External / global actions:
