@@ -985,3 +985,24 @@ kit/rules/agent-operating-contract.md
 kit/rules/skill-invocation-and-dependency-boundaries.md
 kit/skills/meta/update-project-memory/SKILL.md
 ```
+
+## Keep: Justify added complexity against uncontrolled residual risk
+
+### Context
+
+Workflow, report, rule, skill, command, and contract problems can invite extra conditions even
+when current behavior and existing protections already control most of the credible risk.
+
+### Lesson
+
+Before adding conditions, confirm the intended capability and observed problem, inventory current
+behavior and protections, compare the risk of doing nothing with the simplest sufficient
+alternative, and assess the residual risk after that alternative. Add complexity only when the
+remaining risk is real, harmful, uncontrolled, and significant enough to justify it.
+
+### Reuse guidance
+
+- prefer simpler mechanical rules, clearer naming, fixed output groups, precise next-action
+  wording, or explicit boundaries when existing protections are sufficient;
+- keep the reasoning proportional to the decision; and
+- preserve safety controls while avoiding speculative branches and exceptions.

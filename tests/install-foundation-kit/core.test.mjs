@@ -428,6 +428,9 @@ describe("source repository reference hygiene", () => {
     const guideline = await readFile(".codex/project/project-guideline.md", "utf8");
     const decisions = await readFile(".codex/project/project-decisions.md", "utf8");
 
+    // Prefer installed-payload inclusion, canonical ownership, routing, and the absence of
+    // duplicated standalone files. Limit exact phrases to stable routing, ownership, or safety
+    // boundaries; do not assert every checklist item or snapshot long skill prose.
     expect(skill).toContain("# Task and Product Framing Skill");
     expect(skill).toContain("Visible skill name: Task and Product Framing Skill");
     expect(skill).toContain("Stable workflow and package identifier: product-framing-review");
