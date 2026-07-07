@@ -420,11 +420,17 @@ describe("source repository reference hygiene", () => {
     const skill = await readFile("kit/skills/meta/product-framing-review/SKILL.md", "utf8");
     const contract = await readFile("kit/rules/agent-operating-contract.md", "utf8");
     const planning = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
+    const diagnosis = await readFile("kit/skills/core/diagnose/SKILL.md", "utf8");
+    const review = await readFile("kit/skills/core/code-review/SKILL.md", "utf8");
+    const safety = await readFile("kit/rules/task-and-change-safety-principles.md", "utf8");
     const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
     const metadata = await readFile("kit/skills/meta/product-framing-review/metadata.yml", "utf8");
     const guideline = await readFile(".codex/project/project-guideline.md", "utf8");
     const decisions = await readFile(".codex/project/project-decisions.md", "utf8");
 
+    // Prefer installed-payload inclusion, canonical ownership, routing, and the absence of
+    // duplicated standalone files. Limit exact phrases to stable routing, ownership, or safety
+    // boundaries; do not assert every checklist item or snapshot long skill prose.
     expect(skill).toContain("# Task and Product Framing Skill");
     expect(skill).toContain("Visible skill name: Task and Product Framing Skill");
     expect(skill).toContain("Stable workflow and package identifier: product-framing-review");
@@ -439,6 +445,13 @@ describe("source repository reference hygiene", () => {
     expect(skill).toContain("stop and reframe the task before continuing");
     expect(skill).toContain("migration, cleanup, compatibility, installer behavior, publishing");
     expect(skill).toContain("rejects or reframes plans and proposals");
+    expect(skill).toContain("## Layered Solution-Design Review");
+    expect(skill).toContain("### Level 2: Solution-Design Review");
+    expect(skill).toContain("### Level 3: Deep Solution-Design Review");
+    expect(skill).toContain("do not require visible review output for every small change");
+    expect(skill).toContain("existing protections such as validation, tests, review, guardrails");
+    expect(skill).toContain("simplest sufficient alternative");
+    expect(skill).toContain("residual risk");
     expect(skill).toContain("## Product Framing for End-User Behavior");
     expect(skill).toContain("### 1. Focused Product Framing Check");
     expect(skill).toContain("### 2. Broader Product / Module Review or PRD Repair");
@@ -458,10 +471,15 @@ describe("source repository reference hygiene", () => {
     expect(contract).toContain("Unclear or drift-prone task/change");
     expect(planning).toContain("Use `product-framing-review` before planning");
     expect(planning).toContain("Before reviewing or approving a plan");
+    expect(planning).toContain("Use its Solution-Design Review before planning");
+    expect(diagnosis).toContain("use the Solution-Design Review");
+    expect(review).toContain("apply the Solution-Design Review");
+    expect(safety).toContain("use the trigger-gated Solution-Design Review");
     expect(roles).toContain("Workflow: product-framing-review");
     expect(roles).toContain("Primary role: Task and Product Framing Reviewer");
     expect(roles).toContain("as a framing-alignment gate before reviewing");
     expect(metadata).toContain("review plan or proposal framing");
+    expect(metadata).toContain("review solution-design complexity and risk");
     expect(guideline).toContain("acts as a framing-alignment gate before plan/proposal review");
     expect(decisions).toContain("Use the same framing as a review gate before reviewing");
   });

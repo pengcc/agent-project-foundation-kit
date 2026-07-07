@@ -121,6 +121,11 @@ Focus areas:
 - project memory / decisions consistency
 - whether the plan needs revision
 
+For workflow or report contracts, high-risk boundaries, repeated-fix proposals, or questionable
+conditional complexity, apply the Solution-Design Review from `product-framing-review` as a
+supporting lens. Keep the findings, severity, and readiness verdict in this review rather than
+creating a second review report.
+
 Architecture review is a Plan Alignment Review focus. It reviews structural direction and
 architecture-impacting changes against an explicit baseline; it does not create a new architecture
 plan, survey the whole repository by default, or execute changes.

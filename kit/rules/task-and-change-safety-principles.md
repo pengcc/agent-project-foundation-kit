@@ -80,6 +80,11 @@ Do not implement speculative profiles, plugin systems, package managers, depende
 migration engines, semantic merge, extension APIs, or other deferred capabilities without
 demonstrated need. Plausibility may justify a cheap boundary; it does not justify future behavior.
 
+When a proposed solution adds meaningful conditional complexity, follows repeated failed fixes,
+or changes a high-risk workflow boundary, use the trigger-gated Solution-Design Review in
+`product-framing-review`. Keep clear routine tasks direct; this rule does not duplicate that
+workflow's review sequence.
+
 ## Authority Boundary
 
 Hard startup, project-memory, target-reference, clarification, project-root, global-tooling,
