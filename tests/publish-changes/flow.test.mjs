@@ -180,7 +180,7 @@ describe("publish flow classification gates", () => {
   it.each([
     "normal",
     "significant",
-  ])("keeps %s updates at PR-only by default", async (classification) => {
+  ])("keeps %s updates at PR review by default", async (classification) => {
     const harness = createHarness({ classification });
     const result = await runPublishFlow({
       ...harness,
@@ -192,7 +192,7 @@ describe("publish flow classification gates", () => {
       },
       env: {},
     });
-    expect(result.report.mode).toBe("pr_only");
+    expect(result.report.mode).toBe("pr_review");
     expect(harness.calls).toContain("create-pr");
     expect(harness.calls).not.toContain("merge");
     expect(harness.calls).not.toContain("switch-main");

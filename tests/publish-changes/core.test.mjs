@@ -3,11 +3,12 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createOrUpdatePullRequest,
   pollForVerifiedMerge,
+  prReviewPublishRecord,
   refreshDefaultBranch,
   safeBranchName,
   verifyAndMerge,
 } from "../../kit/scripts/publish-changes/actions.mjs";
-import { parseCliOptions } from "../../kit/scripts/publish-changes/cli-options.mjs";
+import { parseCliOptions, usage } from "../../kit/scripts/publish-changes/cli-options.mjs";
 import {
   DEFAULT_POLICY,
   loadPolicy,
@@ -93,11 +94,11 @@ describe("CLI options", () => {
     });
   });
 
-  it("parses PR-only mode and tracks an explicitly supplied PR title", () => {
+  it("parses PR-review mode and tracks an explicitly supplied PR title", () => {
     expect(
-      parseCliOptions(["--mode", "pr-only", "Commit title", "Explicit PR title"]),
+      parseCliOptions(["--mode", "pr-review", "Commit title", "Explicit PR title"]),
     ).toMatchObject({
-      mode: "pr-only",
+      mode: "pr-review",
       commitMessage: "Commit title",
       prTitle: "Explicit PR title",
       prTitleExplicit: true,
@@ -106,28 +107,39 @@ describe("CLI options", () => {
     });
   });
 
-  it("requires a positive PR number and scopes merge flags to merge-pr mode", () => {
-    expect(parseCliOptions(["--mode", "merge-pr", "42", "--yes", "--auto-merge"])).toMatchObject({
-      mode: "merge-pr",
+  it("requires a positive PR number and scopes merge flags to pr-merge mode", () => {
+    expect(parseCliOptions(["--mode", "pr-merge", "42", "--yes", "--auto-merge"])).toMatchObject({
+      mode: "pr-merge",
       prNumber: 42,
       yes: true,
       autoMerge: true,
     });
-    expect(() => parseCliOptions(["--mode", "merge-pr"])).toThrow(
+    expect(() => parseCliOptions(["--mode", "pr-merge"])).toThrow(
       "requires exactly one positive integer PR number",
     );
-    expect(() => parseCliOptions(["--mode", "merge-pr", "0"])).toThrow(
+    expect(() => parseCliOptions(["--mode", "pr-merge", "0"])).toThrow(
       "requires exactly one positive integer PR number",
     );
     expect(() => parseCliOptions(["--yes", "Commit title"])).toThrow(
-      "--yes is supported only with merge-pr mode",
+      "--yes is supported only with pr-merge mode",
     );
     expect(() => parseCliOptions(["--auto-merge", "Commit title"])).toThrow(
-      "--auto-merge is supported only with merge-pr mode",
+      "--auto-merge is supported only with pr-merge mode",
     );
-    expect(() => parseCliOptions(["--mode", "pr-only", "--auto-merge"])).toThrow(
-      "--auto-merge is supported only with merge-pr mode",
+    expect(() => parseCliOptions(["--mode", "pr-review", "--auto-merge"])).toThrow(
+      "--auto-merge is supported only with pr-merge mode",
     );
+  });
+
+  it("rejects removed legacy modes and documents only current modes", () => {
+    expect(() => parseCliOptions(["--mode", "pr-only"])).toThrow("Unknown publish mode: pr-only");
+    expect(() => parseCliOptions(["--mode", "merge-pr", "42"])).toThrow(
+      "Unknown publish mode: merge-pr",
+    );
+    expect(usage()).toContain("--mode pr-review");
+    expect(usage()).toContain("--mode pr-merge");
+    expect(usage()).not.toContain("--mode pr-only");
+    expect(usage()).not.toContain("--mode merge-pr");
   });
 });
 
@@ -136,15 +148,18 @@ describe("source repository package scripts", () => {
     expect(packageJson.scripts["publish:changes"]).toBe("node kit/scripts/publish-changes.mjs");
     expect(packageJson.scripts["publish:local"]).toBeUndefined();
     expect(packageJson.scripts["publish:node"]).toBeUndefined();
-    expect(packageJson.scripts["publish:pr-only"]).toBe(
-      "node kit/scripts/publish-changes.mjs --mode pr-only",
+    expect(packageJson.scripts["pr:review"]).toBe(
+      "node kit/scripts/publish-changes.mjs --mode pr-review",
     );
-    expect(packageJson.scripts["publish:merge-pr"]).toBe(
-      "node kit/scripts/publish-changes.mjs --mode merge-pr",
+    expect(packageJson.scripts["pr:merge"]).toBe(
+      "node kit/scripts/publish-changes.mjs --mode pr-merge",
     );
-    expect(packageJson.scripts["publish:merge-pr:auto"]).toBe(
-      "node kit/scripts/publish-changes.mjs --mode merge-pr --auto-merge",
+    expect(packageJson.scripts["pr:auto-merge"]).toBe(
+      "node kit/scripts/publish-changes.mjs --mode pr-merge --auto-merge",
     );
+    expect(packageJson.scripts["publish:pr-only"]).toBeUndefined();
+    expect(packageJson.scripts["publish:merge-pr"]).toBeUndefined();
+    expect(packageJson.scripts["publish:merge-pr:auto"]).toBeUndefined();
     expect(packageJson.scripts["publish:bash"]).toBeUndefined();
     expect(packageJson.scripts["apply-theme"]).toBeUndefined();
   });
@@ -283,29 +298,19 @@ describe("interactive prompts and output", () => {
     const plain = { isTTY: false, write: vi.fn() };
     const noColor = { isTTY: true, write: vi.fn() };
 
-    createOutput({ stdout: tty, env: {} }).command(
-      "Next Step After Review:",
-      "pnpm publish:merge-pr 18",
-    );
-    createOutput({ stdout: plain, env: {} }).command(
-      "Next Step After Review:",
-      "pnpm publish:merge-pr 18",
-    );
+    createOutput({ stdout: tty, env: {} }).command("Next Step After Review:", "pnpm pr:merge 18");
+    createOutput({ stdout: plain, env: {} }).command("Next Step After Review:", "pnpm pr:merge 18");
     createOutput({ stdout: noColor, env: { NO_COLOR: "1" } }).command(
       "Next Step After Review:",
-      "pnpm publish:merge-pr 18",
+      "pnpm pr:merge 18",
     );
 
     expect(tty.write).toHaveBeenCalledWith(
       "\u001B[1;96m[INFO]\u001B[0m Next Step After Review: " +
-        "\u001B[38;2;28;112;230mpnpm publish:merge-pr 18\u001B[0m\n",
+        "\u001B[38;2;28;112;230mpnpm pr:merge 18\u001B[0m\n",
     );
-    expect(plain.write).toHaveBeenCalledWith(
-      "[INFO] Next Step After Review: pnpm publish:merge-pr 18\n",
-    );
-    expect(noColor.write).toHaveBeenCalledWith(
-      "[INFO] Next Step After Review: pnpm publish:merge-pr 18\n",
-    );
+    expect(plain.write).toHaveBeenCalledWith("[INFO] Next Step After Review: pnpm pr:merge 18\n");
+    expect(noColor.write).toHaveBeenCalledWith("[INFO] Next Step After Review: pnpm pr:merge 18\n");
   });
 
   it("disables every ANSI style when NO_COLOR is set", () => {
@@ -335,7 +340,7 @@ describe("interactive prompts and output", () => {
     expect(rendered).toContain("[DEBUG] debug message");
   });
 
-  it("shows PR-only and auto-merge when Normal policy allows auto-merge", async () => {
+  it("shows PR review and auto-merge when Normal policy allows auto-merge", async () => {
     const prompts = { ask: vi.fn().mockResolvedValue("2") };
     const output = { info: vi.fn() };
     await expect(
@@ -347,7 +352,7 @@ describe("interactive prompts and output", () => {
       ),
     ).resolves.toBe("auto");
     expect(prompts.ask).toHaveBeenCalledWith(
-      expect.stringContaining("1) PR only  2) Enable auto-merge with squash"),
+      expect.stringContaining("1) PR for review  2) Enable auto-merge with squash"),
     );
   });
 
@@ -546,6 +551,29 @@ describe("scope and validation", () => {
       status: "??",
       path: "new file.txt",
     });
+  });
+
+  it("omits an already-staged rename source from staging paths", async () => {
+    const git = {
+      statusZ: async () => "R  new-name.txt\0old-name.txt\0",
+      diff: async () => "rename patch",
+      hashFiles: async () => "",
+    };
+    const snapshot = await captureWorktreeSnapshot(git);
+    expect(snapshot.paths).toEqual(["new-name.txt"]);
+    expect(parsePorcelainZ(snapshot.statusZ)).toEqual([
+      { status: "R ", path: "new-name.txt", originalPath: "old-name.txt" },
+    ]);
+  });
+
+  it("keeps an unstaged rename source so its deletion is staged", async () => {
+    const git = {
+      statusZ: async () => " R new-name.txt\0old-name.txt\0",
+      diff: async () => "rename patch",
+      hashFiles: async () => "",
+    };
+    const snapshot = await captureWorktreeSnapshot(git);
+    expect(snapshot.paths).toEqual(["new-name.txt", "old-name.txt"]);
   });
 
   it("keeps full diff output opt-in", () => {
@@ -836,6 +864,12 @@ describe("command and branch safety", () => {
       ],
       expect.any(Object),
     );
+  });
+
+  it("records the PR review mode without the removed PR-only label", () => {
+    const record = prReviewPublishRecord({ headSha: "head-sha", defaultBranch: "main" });
+    expect(record).toContain("Mode: `PR_REVIEW`");
+    expect(record).not.toContain("PR_ONLY");
   });
 
   it("reuses an existing pull request instead of creating a duplicate", async () => {

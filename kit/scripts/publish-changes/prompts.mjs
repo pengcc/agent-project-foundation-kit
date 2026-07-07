@@ -84,13 +84,13 @@ export async function chooseValidation(prompts, classification, classificationPo
 
 export async function chooseCompletionMode(prompts, classification, classificationPolicy, output) {
   const label = classification.toUpperCase();
-  const choices = ["1) PR only"];
+  const choices = ["1) PR for review"];
   if (classificationPolicy.allow_auto_merge) choices.push("2) Enable auto-merge with squash");
   else output?.info(`Auto-merge disabled by policy for ${label}.`);
   if (classificationPolicy.allow_immediate_merge) choices.push("3) Merge immediately with squash");
   else output?.info(`Immediate merge disabled by policy for ${label}.`);
   const answer = await prompts.ask(`Choose completion mode: ${choices.join("  ")} `);
-  if (answer === "" || answer === "1") return "pr_only";
+  if (answer === "" || answer === "1") return "pr_review";
   if (answer === "2" && classificationPolicy.allow_auto_merge) return "auto";
   if (answer === "3" && classificationPolicy.allow_immediate_merge) return "immediate";
   if (answer === "2") {

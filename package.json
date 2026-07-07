@@ -7,9 +7,9 @@
   "packageManager": "pnpm@10.26.2",
   "scripts": {
     "publish:changes": "node kit/scripts/publish-changes.mjs",
-    "publish:pr-only": "node kit/scripts/publish-changes.mjs --mode pr-only",
-    "publish:merge-pr": "node kit/scripts/publish-changes.mjs --mode merge-pr",
-    "publish:merge-pr:auto": "node kit/scripts/publish-changes.mjs --mode merge-pr --auto-merge",
+    "pr:review": "node kit/scripts/publish-changes.mjs --mode pr-review",
+    "pr:merge": "node kit/scripts/publish-changes.mjs --mode pr-merge",
+    "pr:auto-merge": "node kit/scripts/publish-changes.mjs --mode pr-merge --auto-merge",
     "install:node": "node scripts/install-foundation-kit.mjs",
     "test:install": "pnpm test:install:node",
     "test:install:node": "vitest run tests/install-foundation-kit",

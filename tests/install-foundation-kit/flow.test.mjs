@@ -660,6 +660,25 @@ describe("installer flow", () => {
     expect(installed.scripts).toEqual({ test: "vitest", ...PUBLISH_PACKAGE_ALIASES });
   });
 
+  it("adds current aliases without deleting project-owned legacy aliases", async () => {
+    const fixture = await workspace("aliases-preserve-legacy");
+    const packagePath = resolve(fixture.targetRoot, "package.json");
+    const legacyScripts = {
+      "publish:pr-only": "node project/legacy-review.mjs",
+      "publish:merge-pr": "node project/legacy-merge.mjs",
+      "publish:merge-pr:auto": "node project/legacy-auto-merge.mjs",
+    };
+    await writeFile(
+      packagePath,
+      `${JSON.stringify({ private: true, scripts: legacyScripts }, null, 2)}\n`,
+    );
+
+    await run(fixture, { options: { apply: true } });
+
+    const installed = JSON.parse(await readFile(packagePath, "utf8"));
+    expect(installed.scripts).toEqual({ ...legacyScripts, ...PUBLISH_PACKAGE_ALIASES });
+  });
+
   it("does not write package.json when every alias is already current", async () => {
     const fixture = await workspace("aliases-current");
     const packagePath = resolve(fixture.targetRoot, "package.json");
@@ -687,7 +706,7 @@ describe("installer flow", () => {
     const packagePath = resolve(fixture.targetRoot, "package.json");
     const scripts = {
       ...PUBLISH_PACKAGE_ALIASES,
-      "publish:merge-pr:auto": "node scripts/custom-publish.js --auto",
+      "pr:auto-merge": "node scripts/custom-publish.js --auto",
     };
     await writeFile(packagePath, `${JSON.stringify({ private: true, scripts }, null, 2)}\n`);
     const before = await lstat(packagePath);
@@ -700,7 +719,7 @@ describe("installer flow", () => {
     expect(result.report.publishAliases).toMatchObject({
       status: "no-changes",
       added: [],
-      skippedConflicts: ["publish:merge-pr:auto"],
+      skippedConflicts: ["pr:auto-merge"],
       applied: false,
     });
   });
@@ -716,7 +735,7 @@ describe("installer flow", () => {
     const dryRun = await run(fixture, { output });
     expect(await readFile(packagePath, "utf8")).toBe(original);
     expect(dryRun.report.publishAliases).toMatchObject({
-      added: ["publish:pr-only", "publish:merge-pr", "publish:merge-pr:auto"],
+      added: ["pr:review", "pr:merge", "pr:auto-merge"],
       skippedConflicts: ["publish:changes"],
       applied: false,
     });
@@ -729,9 +748,12 @@ describe("installer flow", () => {
     const applied = await run(fixture, { options: { apply: true }, output: createOutput() });
     const installed = JSON.parse(await readFile(packagePath, "utf8"));
     expect(installed.scripts["publish:changes"]).toBe(custom);
-    for (const name of ["publish:pr-only", "publish:merge-pr", "publish:merge-pr:auto"]) {
+    for (const name of ["pr:review", "pr:merge", "pr:auto-merge"]) {
       expect(installed.scripts[name]).toBe(PUBLISH_PACKAGE_ALIASES[name]);
     }
+    expect(installed.scripts["publish:pr-only"]).toBeUndefined();
+    expect(installed.scripts["publish:merge-pr"]).toBeUndefined();
+    expect(installed.scripts["publish:merge-pr:auto"]).toBeUndefined();
     expect(applied.report.publishAliases.applied).toBe(true);
   });
 

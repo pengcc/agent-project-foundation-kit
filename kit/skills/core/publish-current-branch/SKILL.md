@@ -96,10 +96,10 @@ Use the installed Node.js 24+ CLI as the maintained mechanical executor:
 node .codex/scripts/publish-changes.mjs
 node .codex/scripts/publish-changes.mjs "Commit message"
 node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-only "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode merge-pr 123
-node .codex/scripts/publish-changes.mjs --mode merge-pr 123 --yes
-node .codex/scripts/publish-changes.mjs --mode merge-pr --auto-merge 123
+node .codex/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
+node .codex/scripts/publish-changes.mjs --mode pr-merge 123
+node .codex/scripts/publish-changes.mjs --mode pr-merge 123 --yes
+node .codex/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
 ```
 
 The skill remains responsible for publish judgment, role routing, scope, authorization, and final
@@ -107,18 +107,19 @@ reporting. The script owns repeatable Git and GitHub mechanics, including state-
 feature-branch creation, commit-message prompting when needed, PR creation or update, classified
 merge handling, required-check inspection, and verified default-branch refresh.
 
-Use `--mode pr-only` for a quick create-or-update PR operation that must not classify, validate,
-merge, or refresh the default branch. It requires an existing feature branch, stages only the
-observed paths, stops on drift, preserves an existing PR title unless an explicit second argument
-is supplied, and never creates a second open PR for the same branch. Its report keeps the general
-PR Files changed link, adds a neutral latest-commit review link only when the re-read PR head
-matches the verified pushed head, falls back to the verified pushed SHA when they differ, and
-prints a copyable `publish:merge-pr` next step.
+Use `--mode pr-review` for a quick create-or-update PR-for-review operation that must not classify,
+validate, merge, or refresh the default branch. It requires an existing feature branch, stages
+only the observed paths, stops on drift, preserves an existing PR title unless an explicit second
+argument is supplied, and never creates a second open PR for the same branch. Its report keeps the
+general PR Files changed link, adds a neutral latest-commit review link only when the re-read PR
+head matches the verified pushed head, falls back to the verified pushed SHA when they differ, and
+prints a copyable `pnpm pr:merge` next step.
 
-Use `--mode merge-pr <pr-number>` only when the user explicitly requests merging that PR. The mode
+Use `--mode pr-merge <pr-number>` only when the user explicitly requests merging that PR. The mode
 requires a clean worktree, displays and revalidates PR metadata, blocks failing or unknown required
 checks, squash-merges with expected-head protection, verifies a completed merge, and refreshes the
-default branch with fast-forward-only behavior. The explicit command and PR number authorize the
+default branch with fast-forward-only behavior. Do not use it before review approval. The explicit
+command and PR number authorize the
 normal immediate merge attempt, so it does not add another confirmation prompt. Pending checks
 block with wait/rerun guidance unless the user explicitly supplies `--auto-merge`; that option
 requests PR-level squash auto-merge and leaves the local branch unchanged while the PR remains
@@ -309,7 +310,7 @@ Default to create/update PR only and recommend setup check.
 - Repo settings are known to support auto-merge
 - Branch protection/ruleset does not block it
 - Required checks can be waited on or are expected
-- User did not request PR-only mode
+- User did not request review-only completion
 
 If auto-merge support is unclear, do not attempt to enable it.
 

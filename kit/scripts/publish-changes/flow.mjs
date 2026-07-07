@@ -202,7 +202,7 @@ export async function runPublishFlow({
       : await chooseCompletionMode(prompts, classification, classificationPolicy, output);
   let refreshStatus = "not requested";
 
-  if (mode !== "pr_only") {
+  if (mode !== "pr_review") {
     if (classificationPolicy.require_manual_review) {
       const approved = await prompts.typed(
         "Confirm manual PR review and squash merge approval.",

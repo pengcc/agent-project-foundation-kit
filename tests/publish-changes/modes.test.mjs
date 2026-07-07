@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { runMergePrFlow } from "../../kit/scripts/publish-changes/merge-pr-flow.mjs";
-import { runPrOnlyFlow } from "../../kit/scripts/publish-changes/pr-only-flow.mjs";
+import { runPrReviewFlow } from "../../kit/scripts/publish-changes/pr-review-flow.mjs";
 import { PublishError } from "../../kit/scripts/shared/errors.mjs";
 
 function createOutput() {
@@ -21,7 +21,7 @@ function generatedToken(prefix, length = 24) {
   return `${prefix}${"A".repeat(length)}`;
 }
 
-function createPrOnlyHarness({
+function createPrReviewHarness({
   branch = "feature/quick-pr",
   hasUncommitted = true,
   hasUnpushed = false,
@@ -132,9 +132,9 @@ function createPrOnlyHarness({
   return { calls, promptEvents, git, gh, prompts, output: createOutput() };
 }
 
-function prOnlyOptions(overrides = {}) {
+function prReviewOptions(overrides = {}) {
   return {
-    mode: "pr-only",
+    mode: "pr-review",
     commitMessage: "Quick publish",
     prTitle: "Quick publish",
     prTitleExplicit: false,
@@ -143,12 +143,12 @@ function prOnlyOptions(overrides = {}) {
   };
 }
 
-describe("PR-only flow", () => {
+describe("PR-review flow", () => {
   it("commits, pushes, and creates a PR without normal publish prompts", async () => {
-    const harness = createPrOnlyHarness();
-    const result = await runPrOnlyFlow({
+    const harness = createPrReviewHarness();
+    const result = await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions(),
+      options: prReviewOptions(),
       env: {},
     });
     expect(result.report).toMatchObject({
@@ -156,7 +156,7 @@ describe("PR-only flow", () => {
       prChangesUrl: "https://example.test/pr/18/files",
       latestCommitChangesUrl: "https://example.test/pr/18/changes/committed-head",
       latestHeadCommit: null,
-      nextStep: "pnpm publish:merge-pr 18",
+      nextStep: "pnpm pr:merge 18",
       branch: "feature/quick-pr",
       action: "created",
     });
@@ -166,8 +166,9 @@ describe("PR-only flow", () => {
     ]);
     expect(harness.output.messages).toContainEqual([
       "INFO",
-      "Next Step After Review: pnpm publish:merge-pr 18",
+      "Next Step After Review: pnpm pr:merge 18",
     ]);
+    expect(harness.output.messages).toContainEqual(["STEP", "PR review report"]);
     expect(harness.calls).toEqual([
       "fetch",
       "add:package.json",
@@ -189,10 +190,10 @@ describe("PR-only flow", () => {
   });
 
   it("shows the full diff only once when exact scope validation succeeds", async () => {
-    const harness = createPrOnlyHarness();
-    await runPrOnlyFlow({
+    const harness = createPrReviewHarness();
+    await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions({ showDiff: true }),
+      options: prReviewOptions({ showDiff: true }),
       env: {},
     });
 
@@ -201,8 +202,40 @@ describe("PR-only flow", () => {
     ).toHaveLength(1);
   });
 
+  it("stages an already-staged rename without the removed source path", async () => {
+    const harness = createPrReviewHarness();
+    const addPaths = harness.git.addPaths;
+    harness.git.status = async () =>
+      "R  kit/scripts/publish-changes/pr-only-flow.mjs -> kit/scripts/publish-changes/pr-review-flow.mjs";
+    harness.git.statusZ = async () =>
+      "R  kit/scripts/publish-changes/pr-review-flow.mjs\0kit/scripts/publish-changes/pr-only-flow.mjs\0";
+    harness.git.diff = async (args) => {
+      if (args.includes("--binary")) return "rename patch";
+      if (args.includes("--name-status")) {
+        return "R100\tkit/scripts/publish-changes/pr-only-flow.mjs\tkit/scripts/publish-changes/pr-review-flow.mjs";
+      }
+      if (args.includes("--numstat")) {
+        return "0\t0\tkit/scripts/publish-changes/pr-review-flow.mjs";
+      }
+      return "";
+    };
+    harness.git.addPaths = async (paths) => {
+      expect(paths).toEqual(["kit/scripts/publish-changes/pr-review-flow.mjs"]);
+      await addPaths(paths);
+    };
+
+    await expect(
+      runPrReviewFlow({
+        ...harness,
+        options: prReviewOptions(),
+        env: {},
+      }),
+    ).resolves.toMatchObject({ status: "published" });
+    expect(harness.calls).toContain("add:kit/scripts/publish-changes/pr-review-flow.mjs");
+  });
+
   it("reports exact staged line contributions for untracked files before success", async () => {
-    const harness = createPrOnlyHarness();
+    const harness = createPrReviewHarness();
     harness.git.status = async () => "?? new.md";
     harness.git.statusZ = async () => "?? new.md\0";
     harness.git.hashFiles = async () => "new-md-hash";
@@ -215,9 +248,9 @@ describe("PR-only flow", () => {
       return "";
     };
 
-    await runPrOnlyFlow({
+    await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions(),
+      options: prReviewOptions(),
       env: {},
     });
 
@@ -236,10 +269,10 @@ describe("PR-only flow", () => {
   });
 
   it("prompts only for a missing commit message when uncommitted work exists", async () => {
-    const harness = createPrOnlyHarness();
-    await runPrOnlyFlow({
+    const harness = createPrReviewHarness();
+    await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions({ commitMessage: "", prTitle: "" }),
+      options: prReviewOptions({ commitMessage: "", prTitle: "" }),
       env: {},
     });
     expect(harness.promptEvents).toEqual(["ask:Enter commit message: "]);
@@ -247,10 +280,10 @@ describe("PR-only flow", () => {
   });
 
   it("reuses an open PR, preserves its title, and never creates a duplicate", async () => {
-    const harness = createPrOnlyHarness({ existingPr: {} });
-    const result = await runPrOnlyFlow({
+    const harness = createPrReviewHarness({ existingPr: {} });
+    const result = await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions(),
+      options: prReviewOptions(),
       env: {},
     });
     expect(result.report.action).toBe("updated");
@@ -263,18 +296,18 @@ describe("PR-only flow", () => {
   });
 
   it("falls back to the pushed head SHA when current PR metadata does not match", async () => {
-    const harness = createPrOnlyHarness({
+    const harness = createPrReviewHarness({
       existingPr: { headRefOid: "stale-remote-head" },
     });
-    const result = await runPrOnlyFlow({
+    const result = await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions(),
+      options: prReviewOptions(),
       env: {},
     });
     expect(result.report).toMatchObject({
       latestCommitChangesUrl: null,
       latestHeadCommit: "committed-head",
-      nextStep: "pnpm publish:merge-pr 17",
+      nextStep: "pnpm pr:merge 17",
     });
     expect(harness.output.messages).toContainEqual([
       "INFO",
@@ -283,10 +316,10 @@ describe("PR-only flow", () => {
   });
 
   it("updates an existing title only when the second argument was explicit", async () => {
-    const harness = createPrOnlyHarness({ existingPr: {} });
-    await runPrOnlyFlow({
+    const harness = createPrReviewHarness({ existingPr: {} });
+    await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions({
+      options: prReviewOptions({
         prTitle: "Reviewed title",
         prTitleExplicit: true,
       }),
@@ -296,14 +329,14 @@ describe("PR-only flow", () => {
   });
 
   it("reports an unchanged existing PR without adding a comment", async () => {
-    const harness = createPrOnlyHarness({
+    const harness = createPrReviewHarness({
       hasUncommitted: false,
       hasUnpushed: false,
       existingPr: {},
     });
-    const result = await runPrOnlyFlow({
+    const result = await runPrReviewFlow({
       ...harness,
-      options: prOnlyOptions({ commitMessage: "", prTitle: "" }),
+      options: prReviewOptions({ commitMessage: "", prTitle: "" }),
       env: {},
     });
     expect(result.report.action).toBe("unchanged");
@@ -311,11 +344,11 @@ describe("PR-only flow", () => {
   });
 
   it("blocks the default branch without creating a feature branch", async () => {
-    const harness = createPrOnlyHarness({ branch: "main" });
+    const harness = createPrReviewHarness({ branch: "main" });
     await expect(
-      runPrOnlyFlow({
+      runPrReviewFlow({
         ...harness,
-        options: prOnlyOptions(),
+        options: prReviewOptions(),
         env: {},
       }),
     ).rejects.toThrow("Create or switch to a feature branch first");
@@ -324,12 +357,12 @@ describe("PR-only flow", () => {
   });
 
   it("blocks unauthenticated publishing before staging or push", async () => {
-    const harness = createPrOnlyHarness();
+    const harness = createPrReviewHarness();
     harness.gh.authReady = async () => false;
     await expect(
-      runPrOnlyFlow({
+      runPrReviewFlow({
         ...harness,
-        options: prOnlyOptions(),
+        options: prReviewOptions(),
         env: {},
       }),
     ).rejects.toThrow("authentication is required");
@@ -337,7 +370,7 @@ describe("PR-only flow", () => {
   });
 
   it("blocks confirmed secret-looking content before commit, push, or PR creation", async () => {
-    const harness = createPrOnlyHarness();
+    const harness = createPrReviewHarness();
     const sensitiveValue = generatedToken("xoxb-", 24);
     harness.git.status = async () => " M config.js";
     harness.git.statusZ = async () => " M config.js\0";
@@ -358,9 +391,9 @@ describe("PR-only flow", () => {
     };
 
     await expect(
-      runPrOnlyFlow({
+      runPrReviewFlow({
         ...harness,
-        options: prOnlyOptions(),
+        options: prReviewOptions(),
         env: {},
       }),
     ).rejects.toThrow("Publish blocked");
@@ -375,7 +408,7 @@ describe("PR-only flow", () => {
   });
 
   it("blocks exact scope mismatch with a concise difference summary before publication", async () => {
-    const harness = createPrOnlyHarness();
+    const harness = createPrReviewHarness();
     const diff = harness.git.diff;
     harness.git.diff = async (args) => {
       if (args.includes("--cached") && args.includes("--name-status")) {
@@ -389,9 +422,9 @@ describe("PR-only flow", () => {
 
     let failure;
     try {
-      await runPrOnlyFlow({
+      await runPrReviewFlow({
         ...harness,
-        options: prOnlyOptions(),
+        options: prReviewOptions(),
         env: {},
       });
     } catch (error) {
@@ -415,7 +448,7 @@ describe("PR-only flow", () => {
   });
 
   it("blocks worktree drift before staging or push", async () => {
-    const harness = createPrOnlyHarness();
+    const harness = createPrReviewHarness();
     let snapshots = 0;
     harness.git.statusZ = async () => {
       snapshots += 1;
@@ -423,9 +456,9 @@ describe("PR-only flow", () => {
     };
     harness.git.hashFiles = async () => "drift-hash";
     await expect(
-      runPrOnlyFlow({
+      runPrReviewFlow({
         ...harness,
-        options: prOnlyOptions(),
+        options: prReviewOptions(),
         env: {},
       }),
     ).rejects.toThrow("Worktree changed after scope collection");
@@ -505,11 +538,11 @@ function createMergeHarness({
     gh,
     prompts,
     output: createOutput(),
-    options: { mode: "merge-pr", prNumber: 23, yes, autoMerge },
+    options: { mode: "pr-merge", prNumber: 23, yes, autoMerge },
   };
 }
 
-describe("merge-PR flow", () => {
+describe("PR-merge flow", () => {
   it("shows metadata, verifies the merge without prompting, and refreshes main", async () => {
     const harness = createMergeHarness();
     const result = await runMergePrFlow({
@@ -532,6 +565,7 @@ describe("merge-PR flow", () => {
       refreshStatus: "refreshed with fast-forward only",
       currentBranch: "main",
     });
+    expect(harness.output.messages).toContainEqual(["STEP", "PR merge report"]);
     expect(harness.output.messages.flat().join("\n")).toContain("Head SHA/OID: reviewed-head");
   });
 
@@ -580,7 +614,7 @@ describe("merge-PR flow", () => {
         env: {},
         sleep: async () => {},
       }),
-    ).rejects.toThrow("wait and rerun merge-pr, or use --auto-merge");
+    ).rejects.toThrow("wait and rerun pnpm pr:merge, or use pnpm pr:auto-merge");
     expect(harness.calls.some((call) => call.startsWith("merge:"))).toBe(false);
   });
 

@@ -38,33 +38,33 @@ export function parseCliOptions(argv) {
     }
   }
 
-  if (!["publish", "pr-only", "merge-pr"].includes(options.mode)) {
+  if (!["publish", "pr-review", "pr-merge"].includes(options.mode)) {
     throw new PublishError("INVALID_ARGUMENT", `Unknown publish mode: ${options.mode}`);
   }
-  if (options.yes && options.mode !== "merge-pr") {
-    throw new PublishError("INVALID_ARGUMENT", "--yes is supported only with merge-pr mode.");
+  if (options.yes && options.mode !== "pr-merge") {
+    throw new PublishError("INVALID_ARGUMENT", "--yes is supported only with pr-merge mode.");
   }
-  if (options.autoMerge && options.mode !== "merge-pr") {
+  if (options.autoMerge && options.mode !== "pr-merge") {
     throw new PublishError(
       "INVALID_ARGUMENT",
-      "--auto-merge is supported only with merge-pr mode.",
+      "--auto-merge is supported only with pr-merge mode.",
     );
   }
   if (options.policyPath && options.mode !== "publish") {
     throw new PublishError("INVALID_ARGUMENT", "--policy is supported only with publish mode.");
   }
-  if (options.mode === "merge-pr") {
+  if (options.mode === "pr-merge") {
     if (options.showDiff || options.policyPath) {
       throw new PublishError(
         "INVALID_ARGUMENT",
-        "merge-pr supports only --yes, --auto-merge, --verbose, and --help.",
+        "pr-merge supports only --yes, --auto-merge, --verbose, and --help.",
       );
     }
     if (options.help) return options;
     if (positionals.length !== 1 || !/^[1-9]\d*$/.test(positionals[0])) {
       throw new PublishError(
         "INVALID_ARGUMENT",
-        "merge-pr requires exactly one positive integer PR number.",
+        "pr-merge requires exactly one positive integer PR number.",
       );
     }
     options.prNumber = Number(positionals[0]);
@@ -88,13 +88,13 @@ export function usage() {
   return [
     "Usage:",
     '  node .codex/scripts/publish-changes.mjs [options] ["Commit message"] ["PR title"]',
-    '  node .codex/scripts/publish-changes.mjs --mode pr-only [options] ["Commit message"] ["PR title"]',
-    "  node .codex/scripts/publish-changes.mjs --mode merge-pr <pr-number> [--auto-merge] [--yes] [--verbose]",
+    '  node .codex/scripts/publish-changes.mjs --mode pr-review [options] ["Commit message"] ["PR title"]',
+    "  node .codex/scripts/publish-changes.mjs --mode pr-merge <pr-number> [--auto-merge] [--yes] [--verbose]",
     "",
     "Options:",
     "  --show-diff    Print the full relevant diff",
-    "  --mode MODE    Use publish, pr-only, or merge-pr mode",
-    "  --yes          Skip only the merge-pr human confirmation",
+    "  --mode MODE    Use publish, pr-review, or pr-merge mode",
+    "  --yes          Skip only the pr-merge human confirmation",
     "  --auto-merge   Enable PR auto-merge only when required checks are pending",
     "  --verbose      Print DEBUG output",
     "  --policy PATH  Use a specific YAML policy file",

@@ -200,7 +200,7 @@ Current plan/execute/review quality boundaries:
   supporting skills for bounded substeps, but supporting skills do not override or expand the
   approved plan.
 - After non-publish implementation produces publishable changes, the normal recommended next
-  workflow is `code-review`. `pnpm publish:pr-only "<commit message>" "<PR title>"` creates or
+  workflow is `code-review`. `pnpm pr:review "<commit message>" "<PR title>"` creates or
   updates a PR for review only after explicit user authorization; completed review is not a
   prerequisite for that PR-for-review action.
 - `publish-current-branch` remains the workflow authorized for push, PR, and merge actions. Merge,
@@ -428,9 +428,9 @@ Short command entrypoints:
 
 ```txt
 pnpm publish:changes
-pnpm publish:pr-only
-pnpm publish:merge-pr
-pnpm publish:merge-pr:auto
+pnpm pr:review
+pnpm pr:merge
+pnpm pr:auto-merge
 pnpm install:node
 pnpm test
 pnpm test:node
@@ -446,16 +446,16 @@ Maintained workflow tooling boundary:
 
 - `kit/scripts/publish-changes.mjs`, invoked by `pnpm publish:changes`, is
   the maintained publish path.
-- `pnpm publish:pr-only`, `pnpm publish:merge-pr`, and `pnpm publish:merge-pr:auto` are explicit
+- `pnpm pr:review`, `pnpm pr:merge`, and `pnpm pr:auto-merge` are explicit
   entrypoints to modes of the same maintained
   Node publish CLI, not separate workflow implementations.
-- `pnpm publish:changes` and `pnpm publish:pr-only` run a lightweight dependency-free
+- `pnpm publish:changes` and `pnpm pr:review` run a lightweight dependency-free
   secret-safety guard against the confirmed publish scope before commit, push, or PR create/update
   side effects.
 - The secret-safety guard scans confirmed publish-scope paths and diff content for dangerous
   credential paths and high-confidence secret patterns. It is not a complete secret-scanning
   product and does not validate tokens over the network.
-- `pnpm publish:merge-pr` does not perform remote PR diff secret scanning.
+- `pnpm pr:merge` does not perform remote PR diff secret scanning.
 - `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
   installation path.
 - Successful apply writes a deterministic schema-v1 installation manifest at
@@ -546,7 +546,7 @@ Historical `apply-theme-zip.sh` safety behavior:
 Current publish workflow architecture:
 
 - `pnpm publish:changes` runs `kit/scripts/publish-changes.mjs`
-- `pnpm publish:pr-only` and `pnpm publish:merge-pr` expose explicit modes of the same Node CLI
+- `pnpm pr:review` and `pnpm pr:merge` expose explicit modes of the same Node CLI
 - Node is the maintained publish workflow; future publish defects should be fixed there first
 - legacy Bash publish snapshots are unsupported source-only history under
   `archive/legacy-bash-workflows/`
@@ -565,22 +565,22 @@ Current publish workflow architecture:
 - show recommended update type, commit message, and PR title while allowing overrides
 - list repository-level open PRs and require acknowledgement without blocking solely because they exist
 - update an existing current-branch PR instead of creating a duplicate
-- use `publish:pr-only` for non-interactive create/update PR publishing from an existing feature
-  branch without classification, validation, completion, merge, or default-branch refresh
-- preserve an existing PR title in PR-only mode unless an explicit second title argument is given
-- use `publish:merge-pr <pr-number>` for explicit squash merge with clean-worktree, base-branch,
-  mergeability, required-check, and head-OID verification
-- use `publish:merge-pr:auto <pr-number>` only for explicit PR-level auto-merge authorization;
+- use `pr:review` for non-interactive create/update PR-for-review publishing from an existing
+  feature branch without classification, validation, completion, merge, or default-branch refresh
+- preserve an existing PR title in PR-review mode unless an explicit second title argument is given
+- use `pr:merge <pr-number>` for explicit squash merge of an already-reviewed PR with
+  clean-worktree, base-branch, mergeability, required-check, and head-OID verification
+- use `pr:auto-merge <pr-number>` only for explicit PR-level auto-merge authorization;
   passed checks retain immediate merge, while pending checks request GitHub auto-merge with squash
   and expected-head protection
 - after an auto-merge request, read the PR once; refresh only if already verified merged, otherwise
   report the open waiting PR and leave the local branch unchanged
 - treat repository-level Allow auto-merge as permission for the feature, not per-PR enablement
-- treat an explicit normal `publish:merge-pr <pr-number>` command as authorization for its
+- treat an explicit normal `pr:merge <pr-number>` command as authorization for its
   immediate squash-merge attempt without a second prompt; retain the auto-merge confirmation
   unless `--yes` is supplied, and keep `--yes` accepted for compatibility
 - refresh after explicit PR merge only after verified remote merge and with fast-forward-only
-  behavior; never hard-reset in merge-PR mode
+  behavior; never hard-reset in PR-merge mode
 - show final staged scope for uncommitted changes and commit/diff scope for unpushed commits
 - recover clean current-branch PRs that merged after a polling timeout and refresh only after verifying `mergedAt` and the default-branch base
 - skip the validation prompt for `SMALL_SAFE` and record its scope-confirmed authorization statement
@@ -589,7 +589,7 @@ Current publish workflow architecture:
 - retry GitHub's transient `UNKNOWN` merge-readiness state for a bounded interval before blocking
 - automatically enable squash auto-merge for `SMALL_SAFE`, verify the remote merge, and refresh local `main`
 - skip the PR completion mode and manual-review token for `SMALL_SAFE` because its post-scope classification is explicit authorization
-- offer PR-only, squash auto-merge, or immediate squash merge modes for `NORMAL` and `SIGNIFICANT`
+- offer PR for review, squash auto-merge, or immediate squash merge modes for `NORMAL` and `SIGNIFICANT`
 - require typed manual-review approval before scripted merge modes for `NORMAL` and `SIGNIFICANT`
 - never push directly to the default branch
 - exit after enabling auto-merge without polling for `NORMAL` and `SIGNIFICANT`
@@ -625,13 +625,13 @@ Current publish workflow architecture:
 - render every `[LEVEL]` label bold as a fixed rule; label bold is not theme-configurable
 - warn and use matching built-in defaults when the theme config is missing or invalid
 - keep the complete color table in the JSON source of truth rather than duplicating it in docs
-- dispatch explicit PR-only and merge-PR modes without loading the classification policy used by
+- dispatch explicit PR-review and PR-merge modes without loading the classification policy used by
   the default publish flow
-- keep PR-only deterministic and non-interactive except for a missing required commit message
-- report PR-only results as created, updated, or unchanged with the general PR Files changed URL,
+- keep PR-review deterministic and non-interactive except for a missing required commit message
+- report PR-review results as created, updated, or unchanged with the general PR Files changed URL,
   a neutral `/changes/<head-sha>` latest-commit link only when re-read PR metadata matches the
   verified pushed head, a pushed-SHA fallback when it does not, and a copyable merge next step
-- report merge-PR partial success when GitHub merged the PR but local default-branch refresh cannot
+- report PR-merge partial success when GitHub merged the PR but local default-branch refresh cannot
   fast-forward
 
 Current Node publish test purpose:
@@ -640,7 +640,7 @@ Current Node publish test purpose:
 - use project-local fixtures with fake `git` and `gh` commands
 - avoid real pushes, PR creation, merges, and network access
 - cover scope-confirmation ordering, numbered classification, recommendations, repository/current-branch PR handling, late-merge recovery, required-check states, GitHub CLI errors, merge modes, and verified post-merge refresh
-- cover PR-only default-branch blocking, title preservation, duplicate prevention, observed-path
+- cover PR-review default-branch blocking, title preservation, duplicate prevention, observed-path
   staging, drift protection, created/updated/unchanged reporting, verified-head review links, and
   mismatched-head fallback reporting
 - cover explicit PR-number validation, clean-worktree enforcement, required checks, head changes,

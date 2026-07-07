@@ -7,9 +7,9 @@ import { assertNoTargetSymlinks } from "./path-boundary.mjs";
 
 export const PUBLISH_PACKAGE_ALIASES = Object.freeze({
   "publish:changes": "node .codex/scripts/publish-changes.mjs",
-  "publish:pr-only": "node .codex/scripts/publish-changes.mjs --mode pr-only",
-  "publish:merge-pr": "node .codex/scripts/publish-changes.mjs --mode merge-pr",
-  "publish:merge-pr:auto": "node .codex/scripts/publish-changes.mjs --mode merge-pr --auto-merge",
+  "pr:review": "node .codex/scripts/publish-changes.mjs --mode pr-review",
+  "pr:merge": "node .codex/scripts/publish-changes.mjs --mode pr-merge",
+  "pr:auto-merge": "node .codex/scripts/publish-changes.mjs --mode pr-merge --auto-merge",
 });
 
 export const PUBLISH_SCRIPT_FALLBACK = "node .codex/scripts/publish-changes.mjs";
