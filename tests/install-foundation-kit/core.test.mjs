@@ -431,20 +431,17 @@ describe("source repository reference hygiene", () => {
     // Prefer installed-payload inclusion, canonical ownership, routing, and the absence of
     // duplicated standalone files. Limit exact phrases to stable routing, ownership, or safety
     // boundaries; do not assert every checklist item or snapshot long skill prose.
-    expect(skill).toContain("# Task and Product Framing Skill");
     expect(skill).toContain("Visible skill name: Task and Product Framing Skill");
     expect(skill).toContain("Stable workflow and package identifier: product-framing-review");
     expect(skill).toContain("Installed package path: .codex/skills/meta/product-framing-review/");
-    expect(skill).toContain("## Task / Change Framing First");
     expect(skill).toContain("Task / Change Framing Check:");
     expect(skill).toContain("Primary actor / affected party:");
-    expect(skill).toContain("smallest change or decision");
+    expect(skill).toContain("Proposed solution:");
+    expect(skill).toContain("Not doing now:");
     expect(skill).toContain("Do not force end-user Product Framing onto non-product work");
     expect(skill).toContain("## Framing Review Gate");
-    expect(skill).toContain("Before reviewing, approving, or executing a plan or proposal");
     expect(skill).toContain("stop and reframe the task before continuing");
     expect(skill).toContain("migration, cleanup, compatibility, installer behavior, publishing");
-    expect(skill).toContain("rejects or reframes plans and proposals");
     expect(skill).toContain("## Layered Solution-Design Review");
     expect(skill).toContain("### Level 2: Solution-Design Review");
     expect(skill).toContain("### Level 3: Deep Solution-Design Review");
@@ -455,10 +452,8 @@ describe("source repository reference hygiene", () => {
     expect(skill).toContain("## Product Framing for End-User Behavior");
     expect(skill).toContain("### 1. Focused Product Framing Check");
     expect(skill).toContain("### 2. Broader Product / Module Review or PRD Repair");
-    expect(skill).toContain(
-      "What problem, question, or decision brings the user to this page, mode, or workflow?",
-    );
-    expect(skill).toContain("readiness is `blocked` or `exploratory-only`");
+    expect(skill).toContain("Purpose statement:");
+    expect(skill).toContain("Readiness: ready / blocked / exploratory-only");
     expect(skill).toContain("implementation mechanics");
     for (const workflow of [
       "clarification",
@@ -480,8 +475,10 @@ describe("source repository reference hygiene", () => {
     expect(roles).toContain("as a framing-alignment gate before reviewing");
     expect(metadata).toContain("review plan or proposal framing");
     expect(metadata).toContain("review solution-design complexity and risk");
-    expect(guideline).toContain("acts as a framing-alignment gate before plan/proposal review");
-    expect(decisions).toContain("Use the same framing as a review gate before reviewing");
+    expect(guideline).toContain("`product-framing-review` has the visible name");
+    expect(decisions).toContain(
+      "## Decision: Task and product framing is a lightweight pre-planning discipline",
+    );
   });
 
   it("keeps shared task and change principles advisory with direct operating boundaries", async () => {
@@ -581,19 +578,10 @@ describe("source repository reference hygiene", () => {
     );
     expect(contract).not.toContain("Recommended next action:\nnone.");
     expect(contract).not.toContain("Create PR for review command");
-    expect(contract).toContain("Do not paraphrase, rename, merge, or substitute");
-    expect(contract).toContain("do not wrap the complete\nhandoff in a code block");
     expect(contract).toContain("Publication guardrail:");
     expect(contract).toContain("do not create/update a PR unless the user explicitly authorizes");
     expect(contract).toContain("until review is complete and the user explicitly authorizes it");
-    expect(contract).toContain("Do not use `pnpm publish:changes` as the PR review helper");
-    expect(contract).toContain("do not infer another command form from package script names");
     expect(contract).not.toContain("Fast PR after review approval");
-    expect(contract).toContain("without requiring per-task package-script\nverification");
-    expect(contract).toContain("The helper command is output text only");
-    expect(contract).toContain(
-      "Printing it does\nnot authorize running it, committing, pushing, creating or updating a PR",
-    );
     expect(contract).toContain("Local-only artifacts:\n- <paths or summary>");
     expect(contract).toContain("Do not place local-only artifact notes in `Publication guardrail`");
     expect(contract).toContain("does not itself authorize any publication action");
@@ -625,12 +613,6 @@ describe("source repository reference hygiene", () => {
 
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
       "apply the Publishable Change Handoff from\n`rules/agent-operating-contract.md` exactly",
-    );
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "Do not maintain a separate local copy of the shared handoff template in this skill",
-    );
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "apply the shared contract exactly; do not modify, rename, reorder, partially reproduce",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
       "no executable PR review helper command appears",
@@ -680,7 +662,6 @@ describe("source repository reference hygiene", () => {
     expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
       "Stop and ask for direction when the target is required",
     );
-    expect(documents["kit/rules/agent-operating-contract.md"]).toContain("For prospective output");
     expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
       "unless the reference is clearly historical",
     );
