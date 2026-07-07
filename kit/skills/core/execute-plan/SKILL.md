@@ -420,10 +420,10 @@ publication guardrail.
 
 Before sending the final report, check exactly one branch:
 
-- publishable local change: the shared contract's required publishable-change handoff is present;
-  or
-- no publishable local change: the shared contract's not-applicable handoff is present and no
-  executable create-PR command appears.
+- `git status --short` reports Git-visible repository changes: the shared contract's complete
+  handoff is present; or
+- `git status --short` has no output: the shared contract's not-applicable handoff is present and
+  no executable PR review helper command appears.
 
 `execute-plan` must not push, create PRs, update PRs, merge, release, deploy, or mutate external
 settings. PR creation or update requires explicit user action or authorization through

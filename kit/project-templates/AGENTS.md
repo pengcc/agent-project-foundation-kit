@@ -273,7 +273,7 @@ The report must include:
 - recommended commit message
 - recommended PR title
 - complete Publishable Change Handoff when publishable changes exist, including
-  `Create PR for review command`, `Recommended next action`, and `Publication guardrail`
+  `PR review helper command`, `Recommended next action`, and `Publication guardrail`
 - changed files
 - reason for the change
 - impact / risk
@@ -282,7 +282,7 @@ The report must include:
 - whether commit, push, pull request, merge, or other external actions were performed
 
 When the task leaves publishable repository changes, apply the Publishable Change Handoff in
-`.codex/rules/agent-operating-contract.md`. It owns the fixed create-PR-for-review command,
+`.codex/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
 anti-omission requirement, publication authorization, and local-only artifact boundaries.
 
 Every task final report must also include:

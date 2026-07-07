@@ -522,14 +522,31 @@ describe("source repository reference hygiene", () => {
 
     expect(contract.match(/^## Publishable Change Handoff$/gm)).toHaveLength(1);
     expect(contract).toContain(
-      "`Recommended commit message` and `Recommended PR title` are present",
+      "Before sending a final report after file-producing work, run:",
+    );
+    expect(contract).toContain("Use this output as the mechanical handoff trigger");
+    const fixedFields = [
+      "Recommended update type:",
+      "Recommended commit message:",
+      "Recommended PR title:",
+      "PR review helper command:",
+      "Recommended next action:",
+      "Publication guardrail:",
+    ];
+    for (let index = 1; index < fixedFields.length; index += 1) {
+      expect(contract.indexOf(fixedFields[index])).toBeGreaterThan(
+        contract.indexOf(fixedFields[index - 1]),
+      );
+    }
+    expect(contract).toContain(
+      "Create/update the PR for review, then run code-review on the resulting PR.",
     );
     expect(contract).toContain(
-      "Recommended next action:\nCreate the PR for review, then run code-review on the resulting PR.",
+      "Fix the validation failure or blocker before creating/updating a PR for review.",
     );
     expect(contract).toContain(
       [
-        "Create PR for review command:",
+        "PR review helper command:",
         "",
         "```bash",
         'pnpm publish:pr-only "<commit message>" "<PR title>"',
@@ -537,23 +554,34 @@ describe("source repository reference hygiene", () => {
       ].join("\n"),
     );
     expect(contract).not.toContain(
-      'Create PR for review command: pnpm publish:pr-only "<commit message>" "<PR title>"',
+      'PR review helper command: pnpm publish:pr-only "<commit message>" "<PR title>"',
     );
-    expect(contract).toContain("Create PR for review command:\nnot applicable.");
-    expect(contract).toContain("not applicable; no publishable local change.");
+    expect(contract).toContain("PR review helper command:\nnot applicable.");
+    expect(contract).toContain(
+      "not applicable; git status --short reported no Git-visible repository changes.",
+    );
+    expect(contract).toContain(
+      "<appropriate blocker, retry, planning, review, or none action; do not create/update a PR unless Git-visible repository changes exist.>",
+    );
+    expect(contract).not.toContain("Recommended next action:\nnone.");
+    expect(contract).not.toContain("Create PR for review command");
     expect(contract).toContain("Do not paraphrase, rename, merge, or substitute");
     expect(contract).toContain("do not wrap the complete\nhandoff in a code block");
     expect(contract).toContain("Publication guardrail:");
     expect(contract).toContain("do not create/update a PR unless the user explicitly authorizes");
     expect(contract).toContain("until review is complete and the user explicitly authorizes it");
-    expect(contract).toContain("Do not use `pnpm publish:changes` as the create-PR-for-review");
+    expect(contract).toContain("Do not use `pnpm publish:changes` as the PR review helper");
     expect(contract).toContain("do not infer another command form from package script names");
     expect(contract).not.toContain("Fast PR after review approval");
     expect(contract).toContain("without requiring per-task package-script\nverification");
+    expect(contract).toContain("The helper command is output text only");
     expect(contract).toContain(
-      "Publishable changes: none; local-only artifacts changed: <paths or summary>",
+      "Printing it does\nnot authorize running it, committing, pushing, creating or updating a PR",
     );
-    expect(contract).toContain("When publishable changes and local-only artifacts both changed");
+    expect(contract).toContain("Local-only artifacts:\n- <paths or summary>");
+    expect(contract).toContain(
+      "Do not place local-only artifact notes in `Publication guardrail`",
+    );
     expect(contract).toContain("does not itself authorize any publication action");
     expect(contract).toMatch(
       /`publish-current-branch`\s+remains the only workflow\s+authorized to push/,
@@ -573,7 +601,8 @@ describe("source repository reference hygiene", () => {
     }
 
     for (const path of ["AGENTS.md", "kit/project-templates/AGENTS.md"]) {
-      expect(documents[path], path).toContain("Create PR for review command");
+      expect(documents[path], path).toContain("PR review helper command");
+      expect(documents[path], path).not.toContain("Create PR for review command");
       expect(documents[path], path).toContain("Recommended next action");
       expect(documents[path], path).toContain("Publication guardrail");
       expect(documents[path], path).not.toContain(
@@ -592,7 +621,7 @@ describe("source repository reference hygiene", () => {
       "apply the shared contract exactly; do not modify, rename, reorder, partially reproduce",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "no\n  executable create-PR command appears",
+      "no executable PR review helper command appears",
     );
     expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
       "must not push, create PRs, update PRs, merge, release, deploy, or mutate external",

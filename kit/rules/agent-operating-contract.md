@@ -301,8 +301,14 @@ approval, reason, and result.
 
 ## Publishable Change Handoff
 
-When a non-publish workflow creates or recommends committing publishable repository changes and
-leaves them for later publication, its final report must include:
+Before sending a final report after file-producing work, run:
+
+```bash
+git status --short
+```
+
+Use this output as the mechanical handoff trigger. If it reports any Git-visible repository
+changes, the final report must include this complete field group in the fixed order shown:
 
 Recommended update type: <small safe update | normal update | significant / high-impact update>
 
@@ -310,14 +316,14 @@ Recommended commit message: <commit message>
 
 Recommended PR title: <PR title>
 
-Create PR for review command:
+PR review helper command:
 
 ```bash
 pnpm publish:pr-only "<commit message>" "<PR title>"
 ```
 
 Recommended next action:
-Create the PR for review, then run code-review on the resulting PR.
+<readiness-dependent action>
 
 Publication guardrail: do not create/update a PR unless the user explicitly authorizes PR publication; do not merge, release, deploy, or otherwise finalize publication until review is complete and the user explicitly authorizes it.
 
@@ -325,7 +331,7 @@ Reproduce these six field labels in this order. Do not paraphrase, rename, merge
 descriptive prose for any field. Keep the fields as normal report text; do not wrap the complete
 handoff in a code block.
 
-The `Create PR for review command` label must be normal text followed by a `bash` code block
+The `PR review helper command` label must be normal text followed by a `bash` code block
 containing only this fixed command shape:
 
 ```bash
@@ -333,42 +339,61 @@ pnpm publish:pr-only "<commit message>" "<PR title>"
 ```
 
 Use the same commit message and PR title values in their fields and in the command. Whenever
-`Recommended commit message` and `Recommended PR title` are present for a publishable local
-change, `Create PR for review command` and `Recommended next action` are also required. Do not
-silently omit either field.
+`git status --short` reports changes, all six fields are required. Do not emit only the update
+type, commit message, or PR title, and do not silently omit the helper command, next action, or
+publication guardrail.
 
 Print the fixed command without executing it and without requiring per-task package-script
 verification. A missing or different project publishing command is a project setup issue; it does
-not change this stable handoff format. Do not use `pnpm publish:changes` as the create-PR-for-review
+not change this stable handoff format. The helper command is output text only. Printing it does
+not authorize running it, committing, pushing, creating or updating a PR, merging, releasing,
+deploying, or otherwise publishing. Do not use `pnpm publish:changes` as the PR review helper
 command and do not infer another command form from package script names.
 
-When no publishable local change exists, including blocked, analysis-only, review-only,
-planning-only, failed-validation, no-change, or reverted-change outcomes, do not print a command.
-Use:
+Set `Recommended next action` from validation and readiness:
+
+- If validation passed and the branch is ready for review, use exactly:
+
+```txt
+Create/update the PR for review, then run code-review on the resulting PR.
+```
+
+- If validation failed or blockers remain, use exactly:
+
+```txt
+Fix the validation failure or blocker before creating/updating a PR for review.
+```
+
+The helper command remains present when Git-visible changes exist, including when validation
+failed, but the next action must not encourage immediate PR creation while a failure or blocker
+remains.
+
+If `git status --short` has no output, do not print an executable helper command. Use:
 
 ```txt
 Publishable change handoff:
-not applicable; no publishable local change.
+not applicable; git status --short reported no Git-visible repository changes.
 
-Create PR for review command:
+PR review helper command:
 not applicable.
 
 Recommended next action:
-<appropriate blocker, retry, planning, or none action>
+<appropriate blocker, retry, planning, review, or none action; do not create/update a PR unless Git-visible repository changes exist.>
 ```
 
 Local-only artifacts, including `dev_locals/**` plans, research notes, handoffs, scratch files,
 execution logs, dry-run reports, temporary notes, or unsaved conversation text, are not
-publishable unless the project explicitly marks them as publishable. When only local-only
-artifacts changed, use the no-publishable-change handoff above and also report:
+publishable unless the project explicitly marks them as publishable. When relevant, report them
+outside the six-field handoff as:
 
 ```txt
-Publishable changes: none; local-only artifacts changed: <paths or summary>
+Local-only artifacts:
+- <paths or summary>
 ```
 
-When publishable changes and local-only artifacts both changed, include the handoff for the
-publishable scope and report the local-only artifacts separately. Do not include local-only
-artifacts in the proposed commit or create-PR-for-review scope.
+Do not place local-only artifact notes in `Publication guardrail`, and do not use them as a
+substitute for the authorization boundary. Do not include local-only artifacts in the proposed
+commit or PR review scope.
 
 Do not create or update a PR unless the user explicitly authorizes publishing the branch for
 review. The PR-only action exists so review can happen; it does not require completed review. Do
