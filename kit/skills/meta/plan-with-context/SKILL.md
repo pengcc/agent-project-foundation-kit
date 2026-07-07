@@ -132,6 +132,8 @@ mechanics. Return here after framing is ready for implementation planning.
 Before reviewing or approving a plan, use `product-framing-review` when the proposal may have
 drifted from the intended capability, current problem, proposed solution, non-goals, or readiness.
 If it solves a broader or different problem, reframe it before reviewing implementation details.
+Use its Solution-Design Review before planning when a proposal adds meaningful conditional
+complexity or changes a workflow, report, command, rule, skill, safety, or authorization contract.
 
 ## UI Design Guidance
 

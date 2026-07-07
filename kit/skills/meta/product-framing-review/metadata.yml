@@ -1,5 +1,5 @@
 name: product-framing-review
-description: Frame unclear or drift-prone tasks and changes before planning, implementation, or proposal review; reframe misaligned proposals and clarify product purpose when end-user behavior is affected.
+description: Frame unclear or drift-prone tasks and changes before planning, implementation, or proposal review; review solution-design complexity and risk; reframe misaligned proposals; and clarify product purpose when end-user behavior is affected.
 category: meta
 invocation: model
 required: true
@@ -10,6 +10,7 @@ triggers:
   - frame a task or change
   - clarify scope and affected party
   - review plan or proposal framing
+  - review solution-design complexity and risk
   - review product framing
   - clarify product purpose
   - repair a PRD or product baseline

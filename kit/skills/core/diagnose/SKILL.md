@@ -136,6 +136,11 @@ highest-value evidence needed. Do not manufacture certainty.
 
 Recommend the smallest change justified by the evidence.
 
+After establishing the likely root cause, use the Solution-Design Review in
+`product-framing-review` before recommending a broad fix when prior fixes repeatedly failed or the
+proposed solution is accumulating meaningful conditional complexity. Keep evidence gathering and
+root-cause judgment in this workflow.
+
 - Tiny, isolated, low-risk fix: route to `execute-plan` only when repository workflow and user
   authorization allow direct execution.
 - Multi-step, architectural, security-sensitive, data-affecting, risky, or scope-changing fix:

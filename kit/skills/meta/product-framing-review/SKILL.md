@@ -113,6 +113,40 @@ cross-project behavior, and other high-impact work as scope-expansion triggers w
 explicitly included in the framing. Do not absorb them as implementation details or approve them
 under a narrower task statement.
 
+## Layered Solution-Design Review
+
+Keep routine work at Level 1: use the existing Task / Change Framing Check only when a clear task
+needs framing, and do not require visible review output for every small change.
+
+### Level 2: Solution-Design Review
+
+Use this review when a proposal concerns a complex plan, workflow or report contract, command
+naming, rule or skill change, unclear safety or authorization boundary, or meaningful conditional
+complexity.
+
+Keep the review compact:
+
+1. Confirm the real capability, observed problem, invariant behavior, and explicit non-goals.
+2. State the proposed benefit and the credible harm if nothing changes.
+3. Identify existing protections such as validation, tests, review, guardrails, and authorization
+   controls.
+4. Compare the proposal with the simplest sufficient alternative.
+5. State the residual risk and whether it is real, harmful, and uncontrolled.
+6. Recommend `proceed`, `simplify`, `reframe`, or `deep review`, with a brief complexity
+   justification.
+
+### Level 3: Deep Solution-Design Review
+
+Use the same sequence with deeper evidence when fixes have repeatedly failed, branches or
+exceptions are rapidly increasing, a high-risk workflow boundary is unclear, external or
+irreversible actions are involved, a local incident is being generalized into project-wide or
+workflow-wide behavior, or a proposed rule or skill may duplicate an existing owner.
+
+This review supports framing and design judgment only. `diagnose` still owns unknown causes,
+`code-review` owns review findings and verdicts, `plan-with-context` owns executable plans, and the
+applicable operating contract or specialized workflow owns authorization. Never treat lower
+residual risk as permission to weaken an existing safety control or perform an external action.
+
 ## Product Framing for End-User Behavior
 
 Use Product Framing for pages, UI, user flows, modes, filters, legends, data-display semantics,
@@ -184,11 +218,13 @@ do not authorize implementation.
 1. State the intended capability and current problem from available evidence.
 2. Identify the primary actor or affected party and the smallest sufficient solution.
 3. Record why the solution works, explicit non-goals, assumptions, and readiness.
-4. For end-user product behavior, state the user-facing purpose and desired outcome.
-5. Separate product concepts from implementation mechanics.
-6. Define valid data meaning and expose invalid, partial, unsupported, or ambiguous states.
-7. Capture the smallest useful acceptance baseline and ask only questions that change direction.
-8. Report readiness truthfully.
+4. When a deeper trigger applies, compare existing protections, the do-nothing risk, a simpler
+   alternative, residual risk, and the justification for added complexity.
+5. For end-user product behavior, state the user-facing purpose and desired outcome.
+6. Separate product concepts from implementation mechanics.
+7. Define valid data meaning and expose invalid, partial, unsupported, or ambiguous states.
+8. Capture the smallest useful acceptance baseline and ask only questions that change direction.
+9. Report readiness truthfully.
 
 Slow down when multiple user goals, comparison modes, coverage warnings, legends, fractions,
 colors, or explanatory UI could imply different product meanings. Do not treat exploratory
@@ -211,6 +247,7 @@ until it is resolved or explicitly classify the work as exploratory-only.
 Do not:
 
 - turn every task into a full PRD or require exhaustive user stories;
+- require Solution-Design Review for clear routine work;
 - force end-user Product Framing onto workflow, rule, skill, prompt, documentation, maintenance,
   source-of-truth, or synchronization work;
 - publish to an issue tracker or require issue labels;
@@ -232,4 +269,6 @@ Before finishing, verify that the output:
 - provides a product acceptance baseline when applicable and an honest readiness result;
 - rejects or reframes plans and proposals that solve a broader or different problem than the
   established current problem;
+- compares existing protections, a simpler alternative, residual risk, and complexity
+  justification when Level 2 or Level 3 applies;
 - routes unresolved ambiguity or later planning without silently expanding scope.
