@@ -521,9 +521,7 @@ describe("source repository reference hygiene", () => {
     const contract = documents["kit/rules/agent-operating-contract.md"];
 
     expect(contract.match(/^## Publishable Change Handoff$/gm)).toHaveLength(1);
-    expect(contract).toContain(
-      "Before sending a final report after file-producing work, run:",
-    );
+    expect(contract).toContain("Before sending a final report after file-producing work, run:");
     expect(contract).toContain("Use this output as the mechanical handoff trigger");
     const fixedFields = [
       "Recommended update type:",
@@ -579,9 +577,7 @@ describe("source repository reference hygiene", () => {
       "Printing it does\nnot authorize running it, committing, pushing, creating or updating a PR",
     );
     expect(contract).toContain("Local-only artifacts:\n- <paths or summary>");
-    expect(contract).toContain(
-      "Do not place local-only artifact notes in `Publication guardrail`",
-    );
+    expect(contract).toContain("Do not place local-only artifact notes in `Publication guardrail`");
     expect(contract).toContain("does not itself authorize any publication action");
     expect(contract).toMatch(
       /`publish-current-branch`\s+remains the only workflow\s+authorized to push/,
