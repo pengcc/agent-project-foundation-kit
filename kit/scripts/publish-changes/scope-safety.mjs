@@ -82,7 +82,9 @@ export async function collectExactPublishScope({
         "Worktree changed after scope collection. No files were committed or pushed. Re-run and confirm the updated scope.",
       );
     }
-    await git.addPaths(state.worktreeSnapshot.paths);
+    if (state.worktreeSnapshot.stagePaths.length) {
+      await git.addPaths(state.worktreeSnapshot.stagePaths);
+    }
     const scope = await buildStagedScope(git, state.branch, state.compareRef, showDiff);
     validateOrRenderExactScope({ scope, preliminaryScope, output, showDiff });
     return {
@@ -96,8 +98,8 @@ export async function collectExactPublishScope({
   const confirmedRange = `${state.compareRef}...${head.head}`;
   const scope = buildScopeSummary({
     branch: state.branch,
-    nameStatus: await git.diff(["--name-status", confirmedRange]),
-    numstat: await git.diff(["--numstat", confirmedRange]),
+    nameStatus: await git.diff(["--name-status", "--no-renames", confirmedRange]),
+    numstat: await git.diff(["--numstat", "--no-renames", confirmedRange]),
     diff: showDiff ? await git.diff([confirmedRange]) : "",
   });
   validateOrRenderExactScope({ scope, preliminaryScope, output, showDiff });

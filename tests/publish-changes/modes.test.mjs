@@ -202,26 +202,41 @@ describe("PR-review flow", () => {
     ).toHaveLength(1);
   });
 
-  it("stages an already-staged rename without the removed source path", async () => {
+  it("validates staged deletions and a rename without restaging missing paths", async () => {
     const harness = createPrReviewHarness();
-    const addPaths = harness.git.addPaths;
     harness.git.status = async () =>
-      "R  kit/scripts/publish-changes/pr-only-flow.mjs -> kit/scripts/publish-changes/pr-review-flow.mjs";
+      [
+        "D  .codex/skills/core/code-review/SKILL.md",
+        "D  .codex/skills/core/code-review/metadata.yml",
+        "R  .codex/scripts/publish-changes/pr-only-flow.mjs -> .codex/scripts/publish-changes/pr-review-flow.mjs",
+      ].join("\n");
     harness.git.statusZ = async () =>
-      "R  kit/scripts/publish-changes/pr-review-flow.mjs\0kit/scripts/publish-changes/pr-only-flow.mjs\0";
+      [
+        "D  .codex/skills/core/code-review/SKILL.md\0",
+        "D  .codex/skills/core/code-review/metadata.yml\0",
+        "R  .codex/scripts/publish-changes/pr-review-flow.mjs\0",
+        ".codex/scripts/publish-changes/pr-only-flow.mjs\0",
+      ].join("");
+    harness.git.writeTree = async () => "confirmed-tree";
     harness.git.diff = async (args) => {
       if (args.includes("--binary")) return "rename patch";
       if (args.includes("--name-status")) {
-        return "R100\tkit/scripts/publish-changes/pr-only-flow.mjs\tkit/scripts/publish-changes/pr-review-flow.mjs";
+        return [
+          "D\t.codex/skills/core/code-review/SKILL.md",
+          "D\t.codex/skills/core/code-review/metadata.yml",
+          "D\t.codex/scripts/publish-changes/pr-only-flow.mjs",
+          "A\t.codex/scripts/publish-changes/pr-review-flow.mjs",
+        ].join("\n");
       }
       if (args.includes("--numstat")) {
-        return "0\t0\tkit/scripts/publish-changes/pr-review-flow.mjs";
+        return [
+          "0\t518\t.codex/skills/core/code-review/SKILL.md",
+          "0\t16\t.codex/skills/core/code-review/metadata.yml",
+          "0\t163\t.codex/scripts/publish-changes/pr-only-flow.mjs",
+          "163\t0\t.codex/scripts/publish-changes/pr-review-flow.mjs",
+        ].join("\n");
       }
       return "";
-    };
-    harness.git.addPaths = async (paths) => {
-      expect(paths).toEqual(["kit/scripts/publish-changes/pr-review-flow.mjs"]);
-      await addPaths(paths);
     };
 
     await expect(
@@ -231,7 +246,29 @@ describe("PR-review flow", () => {
         env: {},
       }),
     ).resolves.toMatchObject({ status: "published" });
-    expect(harness.calls).toContain("add:kit/scripts/publish-changes/pr-review-flow.mjs");
+    expect(harness.calls.some((call) => call.startsWith("add:"))).toBe(false);
+  });
+
+  it("blocks mixed staged and unstaged state before staging", async () => {
+    const harness = createPrReviewHarness();
+    harness.git.status = async () => "D  obsolete.md\n?? obsolete.md";
+    harness.git.statusZ = async () => "D  obsolete.md\0?? obsolete.md\0";
+    harness.git.hashFiles = async () => "restored-hash";
+
+    await expect(
+      runPrReviewFlow({
+        ...harness,
+        options: prReviewOptions(),
+        env: {},
+      }),
+    ).rejects.toMatchObject({
+      type: "MIXED_INDEX_WORKTREE_STATE",
+      message: expect.stringContaining("obsolete.md"),
+    });
+    expect(harness.calls).toEqual(["fetch"]);
+    expect(harness.calls.some((call) => call.startsWith("add:"))).toBe(false);
+    expect(harness.calls.some((call) => call.startsWith("commit:"))).toBe(false);
+    expect(harness.calls.some((call) => call.startsWith("push:"))).toBe(false);
   });
 
   it("reports exact staged line contributions for untracked files before success", async () => {
