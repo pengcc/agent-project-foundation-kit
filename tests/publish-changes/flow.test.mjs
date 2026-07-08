@@ -309,7 +309,17 @@ describe("publish flow classification gates", () => {
       env: {},
     });
 
-    expect(diffCalls).toContainEqual(["--cached", "--name-status", "origin/feature/publish"]);
+    expect(diffCalls).toContainEqual([
+      "--cached",
+      "--name-status",
+      "--no-renames",
+      "origin/feature/publish",
+    ]);
+    expect(
+      diffCalls
+        .filter((args) => args.includes("--name-status") || args.includes("--numstat"))
+        .every((args) => args.includes("--no-renames")),
+    ).toBe(true);
     expect(harness.output.messages).toContainEqual(["STEP", "Exact publish scope"]);
     expect(harness.output.messages.some(([, message]) => message.includes("A committed.txt"))).toBe(
       true,

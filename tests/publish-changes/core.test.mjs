@@ -27,6 +27,7 @@ import {
 } from "../../kit/scripts/publish-changes/scope-summary.mjs";
 import {
   captureWorktreeSnapshot,
+  findMixedIndexWorktreePaths,
   parsePorcelainZ,
 } from "../../kit/scripts/publish-changes/state.mjs";
 import {
@@ -546,6 +547,7 @@ describe("scope and validation", () => {
     };
     const snapshot = await captureWorktreeSnapshot(git);
     expect(snapshot.paths).toEqual(["new file.txt", "tracked.txt"]);
+    expect(snapshot.stagePaths).toEqual(["new file.txt", "tracked.txt"]);
     expect(snapshot.untracked).toEqual([{ path: "new file.txt", hash: "untracked-hash" }]);
     expect(parsePorcelainZ(snapshot.statusZ)).toContainEqual({
       status: "??",
@@ -553,14 +555,15 @@ describe("scope and validation", () => {
     });
   });
 
-  it("omits an already-staged rename source from staging paths", async () => {
+  it("keeps an already-staged rename in the observed scope without restaging it", async () => {
     const git = {
       statusZ: async () => "R  new-name.txt\0old-name.txt\0",
       diff: async () => "rename patch",
       hashFiles: async () => "",
     };
     const snapshot = await captureWorktreeSnapshot(git);
-    expect(snapshot.paths).toEqual(["new-name.txt"]);
+    expect(snapshot.paths).toEqual(["new-name.txt", "old-name.txt"]);
+    expect(snapshot.stagePaths).toEqual([]);
     expect(parsePorcelainZ(snapshot.statusZ)).toEqual([
       { status: "R ", path: "new-name.txt", originalPath: "old-name.txt" },
     ]);
@@ -574,6 +577,40 @@ describe("scope and validation", () => {
     };
     const snapshot = await captureWorktreeSnapshot(git);
     expect(snapshot.paths).toEqual(["new-name.txt", "old-name.txt"]);
+    expect(snapshot.stagePaths).toEqual(["new-name.txt", "old-name.txt"]);
+  });
+
+  it("does not restage tracked deletions that are already present in the index", async () => {
+    const git = {
+      statusZ: async () =>
+        "D  .codex/skills/core/code-review/SKILL.md\0D  .codex/skills/core/code-review/metadata.yml\0",
+      diff: async () => "deletion patch",
+      hashFiles: async () => "",
+    };
+    const snapshot = await captureWorktreeSnapshot(git);
+    expect(snapshot.paths).toEqual([
+      ".codex/skills/core/code-review/SKILL.md",
+      ".codex/skills/core/code-review/metadata.yml",
+    ]);
+    expect(snapshot.stagePaths).toEqual([]);
+  });
+
+  it("stages a tracked deletion that is only present in the worktree", async () => {
+    const git = {
+      statusZ: async () => " D obsolete.md\0",
+      diff: async () => "deletion patch",
+      hashFiles: async () => "",
+    };
+    const snapshot = await captureWorktreeSnapshot(git);
+    expect(snapshot.paths).toEqual(["obsolete.md"]);
+    expect(snapshot.stagePaths).toEqual(["obsolete.md"]);
+  });
+
+  it("detects mixed index and worktree changes, including staged deletion plus untracked copy", () => {
+    const entries = parsePorcelainZ(
+      "MM modified.md\0D  restored.md\0?? restored.md\0D  staged-only.md\0?? untracked-only.md\0",
+    );
+    expect(findMixedIndexWorktreePaths(entries)).toEqual(["modified.md", "restored.md"]);
   });
 
   it("keeps full diff output opt-in", () => {
