@@ -2,9 +2,6 @@
 
 Use the `code-review` skill.
 
-This installed downstream copy is a temporary review-report-persistence pilot. It must later be
-promoted to the canonical Foundation Kit or reverted; do not extend it into unrelated tooling.
-
 Review only. Do not implement, modify project files, approve, request changes, merge, apply,
 publish, release, deploy, or update project memory unless a separate explicitly authorized
 workflow is requested. The only file write allowed within this review workflow is an explicitly

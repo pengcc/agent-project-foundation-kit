@@ -380,12 +380,6 @@ Route follow-up work as:
 
 ## Review Report Persistence
 
-### Temporary downstream pilot
-
-This installed copy contains a disposable downstream pilot for review-report persistence. It is not
-canonical Foundation Kit guidance and must later be either promoted to the Foundation Kit or
-reverted. Do not extend this pilot into unrelated downstream tooling.
-
 ### Default behavior
 
 Return reviews in chat by default. Do not create or update a report file for an ordinary review
