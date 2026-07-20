@@ -1,34 +1,23 @@
 # AGENTS.md
 
-This file is the stable entry point for coding agents working in this project.
+This is the stable, concise entry point for agents working in this project. Keep detailed project
+facts in `.codex/project/project-guideline.md`, durable decisions in
+`.codex/project/project-decisions.md`, and reusable lessons in
+`.codex/project/lessons-learned.md`.
 
-Keep this file short and operational. Do not store detailed project facts here. Project-specific facts belong in `.codex/project/project-guideline.md`.
+## Required Context
 
-## Required Startup Context
+Before project-related planning, implementation, review, debugging, documentation, or publishing,
+pass and report the Project Memory Context Gate from the installed `project-memory` skill.
 
-Before any project-related planning, implementation, review, refactor, debugging, documentation,
-or publishing task, pass the Project Memory Context Gate defined in the installed
-`project-memory` skill. Report the gate result before context-dependent output or mutation.
+Use the project guideline as the current source of truth for the stack, scripts, testing,
+deployment, environment-variable names, directory rules, and project-specific constraints.
+Use `agent-roles-and-capabilities` for role routing and missing-specialist fallback, and
+`docs-first-research` when decisions depend on consequential external technical facts.
 
-The `project-memory` skill is the unified entry point for reading and applying durable project memory.
+## First Project Adoption
 
-It covers:
-
-```txt
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
-```
-
-For project-specific technology stack, package manager, runtime, scripts, testing, deployment, environment variables, and directory rules, always use `.codex/project/project-guideline.md` as the current source of truth.
-
-Use installed skills for detailed workflow rules: `project-memory` for durable memory context,
-`update-project-memory` for confirmed durable writes, `docs-first-research` for external fact
-verification, and `agent-roles-and-capabilities` for role routing and missing-specialist fallback.
-
-## First-Run Startup Order
-
-After installing the foundation kit or first adopting this project, use this order:
+After installing the Foundation Kit or first adopting this project, use:
 
 ```txt
 AGENTS.md
@@ -38,72 +27,8 @@ AGENTS.md
 -> routed follow-up skill
 ```
 
-`grill-me` is not the first startup step. Use it when goals, scope, requirements, constraints, or decision branches remain unclear after checking available project context.
-
-## Project Root Boundary
-
-The current project root is the default file-operation boundary.
-
-Do not write, delete, move, or generate files outside the project root unless the user explicitly
-approves the exact path and purpose. Read-only global toolchain diagnostics are allowed when
-needed to distinguish project-local state from machine state.
-
-## Global Toolchain and Out-of-Project Operation Boundary
-
-Do not install, upgrade, downgrade, unlink, relink, configure, or otherwise mutate global
-developer tooling without explicit user approval. This includes Homebrew or system packages,
-Node.js, pnpm, npm, corepack, mise, Volta, global package managers, global Git configuration,
-shell profiles such as `.zprofile`, `.zshrc`, or `.bashrc`, PATH configuration, and files outside
-the project root.
-
-Allowed read-only diagnostics include commands such as `node -v`, `which node`, `which -a node`,
-`pnpm -v`, `mise current`, `mise doctor`, `brew info`, `brew list --versions`, and inspection of
-logs, PATH, shell profiles, or Git configuration without editing them.
-
-Commands or changes such as `brew install`, `brew upgrade`, `brew reinstall`, `brew link`,
-`brew unlink`, `mise use -g`, non-project/global `mise install`, `pnpm env use`,
-`corepack enable`, shell-profile edits, PATH changes, global Git configuration changes, or other
-out-of-project writes require explicit approval.
-
-If required tooling is missing or has the wrong version, stop and report the detected version,
-required version, failing command, and whether the mismatch is global or project-local. Recommend
-a manual fix, explain the risk of changing global tools, and wait for explicit approval before any
-mutation. Never silently change global tooling to make validation pass.
-
-## Working Style
-
-Work professionally, efficiently, and concisely. Spend time on thinking. Do not use the commentary channel for routine progress updates. Use it only when you need user input, approval, blocker resolution, external-action approval, or when scope, risk, or validation materially changes.
-
-For meaningful changes, explain:
-
-- why the change is needed
-- the tradeoffs or alternatives considered
-- the expected impact and risk
-- how the change should be validated
-
-Keep reports concise unless the task requires depth or the user asks for detail.
-
-Do not silently perform meaningful or risky actions. Prefer small, reviewable, reversible changes.
-
-Report external or global actions in the final handoff.
-
-## Agent Operating Contract
-
-Detailed first-run, skill routing, Requirement Clarification, explicit target reference
-verification, concise output, durable memory, evidence-first research, and safety rules live in:
-
-```txt
-.codex/rules/agent-operating-contract.md
-```
-
-Apply its Explicit Target Reference Guardrail before relying on a concrete repository path.
-
-Do not guess through material ambiguity. Use the installed Requirement Clarification Gate when
-scope, safety, files, architecture, data, Git/publish, external side effects, irreversible
-actions, user intent, or acceptance criteria are unclear.
-
-Use `grill-me` only when lightweight clarification is not enough, such as broad, branching,
-decision-heavy, or systematic requirement discovery.
+Do not use `initialize-project-context` for routine work once current project memory is sufficient.
+Use `grill-me` only when available evidence cannot resolve material scope or decision ambiguity.
 
 ## Role Routing
 
@@ -111,185 +36,53 @@ decision-heavy, or systematic requirement discovery.
 Display Condition rather than repeating a header for routine follow-ups whose workflow, mode,
 scope, stop conditions, and risk are unchanged.
 
-## Installed Foundation Content
+## Project and Global Boundaries
 
-Use the installed project content under:
+The repository root is the default file-operation boundary. Project-related external development
+infrastructure is allowed only when explicitly pre-authorized by
+`.codex/project/project-guideline.md`; access must remain within the active task and approved
+resource type. Other out-of-project writes, destructive operations, or resource access require
+explicit user approval.
 
-```txt
-.codex/skills/
-.codex/rules/
-.codex/prompts/
-.codex/project/
-```
+Do not mutate global developer tooling, package managers, shell profiles, PATH, or global Git
+configuration without explicit user approval. Read-only diagnostics are allowed when needed.
+If required tooling is missing or incompatible, report the detected and required versions, the
+failing command, and the global or project-local distinction; do not change global tooling to make
+validation pass.
 
-Use the relevant skill before acting.
+## Workflow and Safety Contract
 
-Do not bypass the required workflow when a task clearly matches an installed skill.
+Apply `.codex/rules/agent-operating-contract.md` for target-reference verification, requirement
+clarification, skill routing, project-root and global-tooling boundaries, Git preflight,
+publishing, final reporting, and the Publishable Change Handoff. Use the relevant installed skill
+rather than duplicating its workflow contract here.
 
-Use the skill routing map in `.codex/rules/agent-operating-contract.md` when the correct workflow is unclear.
+Installed Foundation Kit workflows are under `.codex/skills/`, `.codex/rules/`, and
+`.codex/prompts/`. Project-specific durable memory is maintained separately under
+`.codex/project/`.
 
-## Planning Rules
+Use the matching workflow for planning, execution, review, handoff, durable-memory updates, and
+publishing. Plans and handoffs are local process artifacts under `dev_locals/`; they are not
+current project truth.
 
-Temporary plans belong in:
+## Git and Publication
 
-```txt
-dev_locals/plans/
-```
+Before a Git-visible repository mutation, perform the contract's Git preflight and work on a
+dedicated feature branch unless the user explicitly authorizes editing the default branch for that
+task. Do not push directly to the default branch.
 
-Plans are process documents.
+Commits require an approved execution plan that includes them or explicit user instruction. Push,
+pull request, merge, release, deployment, and publication require separate explicit user intent
+and the `publish-current-branch` workflow.
 
-They are not continuously maintained after execution and must not be treated as the current project source of truth.
+Apply the Publishable Change Handoff whenever `agent-operating-contract.md` identifies a
+publishable change; do not infer that a clean worktree means there is nothing to hand off.
 
-If Plan Mode or the active tool environment blocks file writes, do not claim that a plan was
-saved. State that writing is blocked, show the exact intended path, and provide the complete plan
-content or a clear save action. Tell the user to save it manually or switch to a write-capable
-mode and ask the agent to save it.
+## Working Style
 
-Plan creation is not execution approval. The default next step is to review, revise, or save the
-plan. Execution requires explicit user approval after review, even if the UI or tool offers an
-execution action automatically.
+Use the smallest safe, reviewable change. Do not expand scope silently. Preserve secrets and
+environment-specific data; do not place them in repository files or project memory.
 
-If a plan produces durable project changes, summarize the resulting facts, decisions, or lessons into the project memory files under `.codex/project/` using `update-project-memory`.
-
-## Handoff Rules
-
-Agent handoffs belong in:
-
-```txt
-dev_locals/handoffs/
-```
-
-Handoffs are local-only context transfer documents.
-
-If a handoff contains durable decisions, risks, or lessons, summarize them into the project memory files under `.codex/project/` using `update-project-memory`.
-
-## Local-Only Files
-
-The following directory is local-only and must not be committed:
-
-```txt
-dev_locals/
-```
-
-It may contain temporary plans, handoffs, scratch notes, research notes, theme zip files, and other local agent working files.
-
-## Project Memory Rules
-
-Current project facts belong in:
-
-```txt
-.codex/project/project-guideline.md
-```
-
-Important long-term decisions belong in:
-
-```txt
-.codex/project/project-decisions.md
-```
-
-Reusable mistakes, debugging findings, successful patterns, and lessons belong in:
-
-```txt
-.codex/project/lessons-learned.md
-```
-
-Update project memory only for durable current facts, important long-term decisions, and reusable lessons.
-
-Do not record routine implementation details, temporary status, logs, or unverified assumptions.
-
-After meaningful planning, implementation, debugging, review, publishing, installation, or major discussion, consider whether the `update-project-memory` workflow is needed.
-
-## Git and Publishing Rules
-
-Before editing files for any publishable repository change, check:
-
-- current branch
-- uncommitted changes
-- unpushed commits
-- current-branch open pull request
-- repository-level open pull requests
-
-If a non-default branch has unfinished work, stop before starting an unrelated task and ask
-whether to finish, merge, or switch branches. Do not mix tasks without explicit user approval.
-
-Start new work from an up-to-date default branch. Create a new feature branch before modifying
-files, then make the updates on that feature branch.
-
-Do not edit files directly on the default branch unless the user explicitly approves default-branch
-editing for that specific task.
-
-If the agent is on the default branch and the task may edit tracked or intended-to-be-tracked files,
-stop before editing and create or switch to a feature branch unless that same explicit approval was
-given.
-
-Routine documentation, workflow, and tracked project-memory updates are publishable repository
-changes when the files are tracked or intended to be tracked. They are not exempt from the
-feature-branch workflow by default.
-
-Do not push directly to the default branch.
-
-Project memory updates under `.codex/project/**` are publishable repository changes when those
-files are tracked or intended to be tracked. Apply the same Git preflight and feature-branch
-workflow before editing them. When tracking status is unclear, check repository status and ignore
-rules before classifying the update.
-
-If the project explicitly excludes `.codex/project/**` from version control, such as through
-`.gitignore`, treat those files as local-only project memory. Local-only memory updates still
-require user confirmation before writing, but they do not by themselves require a publishable-
-change branch unless the user or project rules say otherwise.
-
-Local commits may be part of an approved `execute-plan` workflow if the approved plan explicitly includes a commit step or the user explicitly requested commit.
-
-Do not treat a local commit as a remote publish.
-
-Push, pull request, merge, release, and publish actions require explicit user intent.
-
-When work is complete and validated, use `publish-current-branch` for push / PR / merge workflows.
-
-Do not release or deploy unless a separate workflow or explicit user instruction covers it.
-
-## Final Report Requirements
-
-Every implementation final report must classify the update as one of:
-
-- `small safe update`
-- `normal update`
-- `significant / high-impact update`
-
-The report must include:
-
-- recommended update type when Git-visible repository changes exist
-- recommended commit message when Git-visible repository changes exist
-- recommended PR title when Git-visible repository changes exist
-- complete Publishable Change Handoff when Git-visible repository changes exist, including
-  `PR review helper command`, `Recommended next action`, and `Publication guardrail`
-- changed files
-- reason for the change
-- impact / risk
-- validation performed
-- project memory or documentation updates
-- whether commit, push, pull request, merge, or other external actions were performed
-
-When `git status --short` shows Git-visible repository changes, apply the Publishable Change
-Handoff in `.codex/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
-anti-omission requirement, publication authorization, and local-only artifact boundaries.
-
-Every task final report must also include:
-
-```txt
-External / global actions:
-- None
-```
-
-If approved external or global actions occurred, list each command or change, approval, reason,
-and result. If a possible out-of-project change is discovered, report it explicitly.
-
-## Scope and Safety Rules
-
-Prefer minimal, reversible changes.
-
-Do not expand scope without calling it out.
-
-Do not introduce new dependencies, tools, workflows, or architecture changes without checking project memory and explaining the impact.
-
-Do not store secrets, tokens, private data, local databases, or environment-specific files in project memory or committed files.
+For meaningful work, state the reason, material trade-offs, expected impact or risk, and relevant
+validation. Keep final reporting concise while preserving the fields and authorization boundaries
+owned by `agent-operating-contract.md`.
