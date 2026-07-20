@@ -6,3 +6,8 @@ required: true
 invocation: user
 depends_on:
   - project-memory
+triggers:
+  - acceptance review
+  - review acceptance criteria
+  - verify requirements were met
+  - delivery acceptance
