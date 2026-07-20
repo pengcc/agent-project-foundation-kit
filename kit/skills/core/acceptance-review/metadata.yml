@@ -1,0 +1,8 @@
+name: acceptance-review
+description: Evaluate delivered work against an explicit acceptance baseline, evidence, scope, and validation expectations.
+version: 0.1.0
+category: core
+required: true
+invocation: user
+depends_on:
+  - project-memory

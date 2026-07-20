@@ -30,10 +30,15 @@ Use these source files as the intended installed behavior:
 Core workflow boundaries live in the kit source skills: `project-memory` reads/applies durable
 memory and owns the context gate, `update-project-memory` owns confirmed durable writes,
 `docs-first-research` owns external fact verification, and `agent-roles-and-capabilities` owns
-role routing and missing-specialist fallback.
+role routing and missing-specialist fallback. `acceptance-review` evaluates delivered work against
+an explicit acceptance baseline.
 
 Before relying on a concrete repository path, apply the Explicit Target Reference Guardrail in
 `kit/rules/agent-operating-contract.md`.
+
+Apply `kit/rules/agent-operating-contract.md` and the matching source skill for detailed
+target-reference verification, routing, safety, final reporting, and Publishable Change Handoff
+rules rather than duplicating their workflow contracts here.
 
 ## Working Style
 
@@ -52,11 +57,11 @@ Do not silently perform meaningful or risky actions. Prefer small, reviewable, r
 
 Report external or global actions in the final handoff.
 
-## Required Role Routing
+## Role Routing
 
-For every meaningful task, state the active workflow, primary role, supporting roles, scope, and stop conditions.
-
-When switching workflow or mode, restate the role routing.
+`agent-roles-and-capabilities` owns when Role Routing is displayed. Apply its Role Routing
+Display Condition rather than repeating a header for routine follow-ups whose workflow, mode,
+scope, stop conditions, and risk are unchanged.
 
 Use the relevant kit source skills as workflow guidance. Commonly relevant skills include:
 
@@ -66,6 +71,7 @@ Use the relevant kit source skills as workflow guidance. Commonly relevant skill
 - `plan-with-context`
 - `execute-plan`
 - `code-review`
+- `acceptance-review`
 - `writing-great-skills`
 - `handoff`
 - `update-project-memory`

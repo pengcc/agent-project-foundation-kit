@@ -102,6 +102,7 @@ const CODE_WORKFLOW_TARGETS = new Set([
 ]);
 
 const CODE_WORKFLOW_PREFIXES = Object.freeze([
+  ".codex/skills/core/acceptance-review/",
   ".codex/skills/core/code-review/",
   ".codex/skills/core/codebase-audit/",
   ".codex/skills/core/diagnose/",

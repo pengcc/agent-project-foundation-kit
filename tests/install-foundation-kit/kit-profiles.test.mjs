@@ -37,7 +37,7 @@ describe("installer kit profiles", () => {
     const selection = selectMappingsForKitProfile(mappings, "docs");
     const groups = new Set(selection.mappings.map((mapping) => payloadGroupFor(mapping)));
 
-    expect(selection.mappings).toHaveLength(67);
+    expect(selection.mappings).toHaveLength(68);
     expect(groups).toEqual(new Set(DOCS_PROFILE_GROUPS));
     expect(selection.mappings.some((mapping) => payloadGroupFor(mapping) === "code-workflow")).toBe(
       false,

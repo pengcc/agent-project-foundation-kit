@@ -105,22 +105,11 @@ actions, user intent, or acceptance criteria are unclear.
 Use `grill-me` only when lightweight clarification is not enough, such as broad, branching,
 decision-heavy, or systematic requirement discovery.
 
-## Required Role Routing
+## Role Routing
 
-For every meaningful task, state:
-
-```txt
-Role Routing:
-- Workflow:
-- Primary role:
-- Supporting roles:
-- Scope:
-- Stop conditions:
-```
-
-Keep the header concise and truthful.
-
-When switching workflow or mode, restate the role routing.
+`agent-roles-and-capabilities` owns when Role Routing is displayed. Apply its Role Routing
+Display Condition rather than repeating a header for routine follow-ups whose workflow, mode,
+scope, stop conditions, and risk are unchanged.
 
 ## Installed Foundation Content
 
