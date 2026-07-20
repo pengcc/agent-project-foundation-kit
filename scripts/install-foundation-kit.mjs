@@ -30,7 +30,7 @@ export async function main(argv = process.argv.slice(2)) {
   assertSupportedRuntime();
 
   const { theme, warning, source } = await loadOutputTheme({
-    path: resolve(repoRoot, "kit", "config", "publish-cli-theme.json"),
+    path: resolve(repoRoot, "kit", "repo-tools", "config", "publish-cli-theme.json"),
   });
   const output = createOutput({ verbose: options.verbose, theme });
   if (warning) output.warning(warning);
