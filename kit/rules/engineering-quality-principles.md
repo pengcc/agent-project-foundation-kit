@@ -142,8 +142,10 @@ Add or retain a test only when its failure identifies a meaningful regression. P
 behavior, installability, payload and ownership contracts, routing, stable commands or fields, and
 safety boundaries over ordinary prose or mirrored implementation details.
 
-Use exact text assertions only when the text is itself a stable interface, ownership or routing
-contract, or safety boundary. Avoid locking rationale, examples, and every checklist sentence.
+For installed Kit assets, tests should verify missing files, incorrect mappings, invalid
+machine-readable structures, or executable tools that no longer work. Do not freeze mutable
+Markdown headings, prose sentences, prompt wording, or skill-instruction wording unless the exact
+text is itself a machine-consumed interface.
 For frequently run tests, weigh maintenance and review cost as well as runtime cost, and preserve
 the original regression signal when consolidating or replacing coverage.
 

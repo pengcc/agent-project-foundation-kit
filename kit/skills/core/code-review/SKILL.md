@@ -4,7 +4,8 @@
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
 
-Then output a concise Role Routing Header using this default routing:
+Apply the Role Routing Display Condition owned by `agent-roles-and-capabilities`. When it requires
+output, use this concise default routing:
 
 ```txt
 Role Routing:
@@ -16,7 +17,7 @@ Role Routing:
 - Quality rule: engineering-quality-principles applies
 ```
 
-For Plan Alignment Review, use this routing:
+When output is required for Plan Alignment Review, use this routing:
 
 ```txt
 Role Routing:
@@ -179,7 +180,7 @@ This workflow must not:
 - Produce a full executable fix plan by default
 - Treat a readiness verdict as approval or merge permission
 
-It may read project files, inspect diffs, inspect PR metadata/diff when available, inspect generated package contents, read local plans/reports, and save a review report under `dev_locals/research-notes/`.
+It may read project files, inspect diffs, inspect PR metadata/diff when available, inspect generated package contents, and read local plans/reports. It may save a review report under `dev_locals/research-notes/` only when the user explicitly requests a durable local report or a formally approved workflow explicitly requires durable evidence or handoff.
 
 ## Truthful Workflow Declaration
 
@@ -379,7 +380,20 @@ Route follow-up work as:
 
 ## Review Report Persistence
 
-Important review reports should be saved as local-only artifacts.
+### Default behavior
+
+Return reviews in chat by default. Do not create or update a report file for an ordinary review
+request, including a non-trivial PR, plan-alignment, or recommendation-bearing review.
+
+Save a full review report only when:
+
+- the user explicitly requests a durable local review report; or
+- a formally approved workflow explicitly requires durable evidence or handoff.
+
+Do not treat a review's importance, findings, risk area, recommendations, or plan-alignment mode
+as implicit authorization to save a report.
+
+### Authorized local reports
 
 Default save path:
 
@@ -387,21 +401,9 @@ Default save path:
 dev_locals/research-notes/YYYY-MM-DD-code-review-<topic>.md
 ```
 
-Save a full report when the review is:
-
-- PR diff review with non-trivial findings
-- Plan Alignment Review
-- generated theme zip / package review
-- security / data / migration / deployment / script workflow risk review
-- a review that produces fix recommendations or re-plan recommendations
-
-Saving may be skipped for:
-
-- trivial diffs
-- pure formatting changes
-- quick reviews explicitly requested by the user
-
-Full review reports are not committed by default.
+When a report is authorized, save it only under this approved local-artifact location. Do not add
+it to project memory or Git-visible project content. Full review reports are not committed by
+default.
 
 Only distilled and user-confirmed facts, decisions, or lessons may be promoted into `.codex/project/` through `update-project-memory`.
 
@@ -462,21 +464,22 @@ Use this structure for formal reports:
 ```md
 # Code Review Report: <topic>
 
-## 1. Role Routing
+## Role Routing
+Include this section only when the Role Routing Display Condition requires it.
 
-## 2. Review Metadata
+## Review Metadata
 
-## 3. Review Mode
+## Review Mode
 
-## 4. Review Target
+## Review Target
 
-## 5. Baseline / Context Reviewed
+## Baseline / Context Reviewed
 
-## 6. Summary Verdict
+## Summary Verdict
 
-## 7. Positive Findings
+## Positive Findings
 
-## 8. Findings by Severity
+## Findings by Severity
 
 ### Blocking
 
@@ -486,13 +489,13 @@ Use this structure for formal reports:
 
 ### Low / Notes
 
-## 9. Fix Recommendations
+## Fix Recommendations
 
-## 10. Validation Gaps
+## Validation Gaps
 
-## 11. Plan Alignment Notes
+## Plan Alignment Notes
 
-## 12. Lesson Candidates
+## Lesson Candidates
 
 ### Avoid
 
@@ -500,12 +503,14 @@ Use this structure for formal reports:
 
 ### Mixed
 
-## 13. Recommended Next Workflow
+## Recommended Next Workflow
 
-## 14. Report Save Path
+## Report Save Path
 ```
 
-For quick reviews, a shorter chat summary is acceptable, but important reviews should still save the full report.
+For quick reviews, a shorter chat summary is acceptable. For all other reviews, return the review
+in chat unless an authorized local report is requested or required. State `not saved` in the
+Report Save Path when no local report was authorized.
 
 ## Recommended Next Workflow
 

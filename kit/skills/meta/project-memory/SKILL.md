@@ -110,6 +110,17 @@ tests
 
 8. Report the gate result before context-dependent output or mutation.
 
+### Optional Findings Source
+
+`docs/open-findings.md` is a supporting reference, not Project Memory and not a mandatory context
+source. Read it only when the user or active task explicitly identifies a relevant finding, or when
+an authorized promotion/update workflow names it as evidence. Do not scan it for unrelated tasks,
+add it to the gate sequence, treat it as current authority, or promote entries automatically.
+
+Before using a named finding, revalidate its evidence and confirm that no current plan, issue,
+specification, decision, engineering rule, or Project Memory source already represents it
+accurately. The current authoritative destination always overrides the open finding.
+
 ### Reporting Interface
 
 ```txt

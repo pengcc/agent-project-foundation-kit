@@ -2,7 +2,10 @@
 
 Use the `code-review` skill.
 
-Review only. Do not implement, modify files, approve, request changes, merge, apply, publish, release, deploy, or update project memory unless a separate explicitly authorized workflow is requested.
+Review only. Do not implement, modify project files, approve, request changes, merge, apply,
+publish, release, deploy, or update project memory unless a separate explicitly authorized
+workflow is requested. The only file write allowed within this review workflow is an explicitly
+authorized local review report under the approved `dev_locals/research-notes/` path.
 
 Start by determining the review mode:
 
@@ -19,11 +22,15 @@ Apply `project-memory`, use `agent-roles-and-capabilities` when available, and a
 
 Use `docs-first-research` when the review depends on external technical facts, CLI/API behavior, framework/version behavior, security standards, deployment behavior, or CI behavior.
 
-For important reviews, save the full report under:
+Return the review in chat by default. Do not create or update a report file unless I explicitly
+request a durable local report or a formally approved workflow explicitly requires durable
+evidence or handoff. When authorized, save it only under:
 
 ```txt
 dev_locals/research-notes/YYYY-MM-DD-code-review-<topic>.md
 ```
+
+Do not add a local review report to project memory or Git-visible project content.
 
 The report may include issue-specific Fix Recommendations, but must not produce a full executable fix plan by default. Route larger or unclear fixes to `plan-with-context`.
 

@@ -4,7 +4,8 @@
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
 
-Then output a concise Role Routing Header using this default routing:
+Apply the Role Routing Display Condition owned by `agent-roles-and-capabilities`. When it requires
+output, use this concise default routing:
 
 ```txt
 Role Routing:
@@ -42,7 +43,9 @@ Before creating a plan, pass the Project Memory Context Gate defined in the `pro
 skill and include its report in the planning context. Follow the central gate result before
 producing a plan; do not redefine its sequence or status meanings here.
 
-If the plan involves technical judgment, API behavior, versions, dependencies, configuration, deployment, tests, external services, debugging, or review best practices, run `docs-first-research`.
+Use `docs-first-research` only when the plan depends on material external facts not established by
+verified current project evidence. Apply its trigger for authoritative, version-sensitive,
+security, compatibility, deployment, provider, or external-skill facts.
 
 ## Planning-Only Boundary
 
@@ -104,7 +107,11 @@ it as relevant, and only after the Project Memory Context Gate freshness check.
 
 ## Docs-First Requirement
 
-Trigger `docs-first-research` when planning involves technical judgment, APIs, versions, dependencies, configuration, deployment, build/test/lint behavior, CI/CD, external services, security/privacy, database schema, framework behavior, or technical best practices.
+`docs-first-research` owns its trigger. Use it when a material planning conclusion depends on
+external API/provider/tool behavior, version-specific or compatibility facts, security/privacy or
+deployment requirements, or another authoritative external claim not established by verified
+current project evidence. Do not require research merely because planning is technical or includes
+local build, test, lint, configuration, code, or repository facts.
 
 ## Grill-Me Requirement
 

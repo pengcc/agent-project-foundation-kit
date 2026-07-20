@@ -43,6 +43,7 @@ describe("installer payload reporting groups", () => {
     [".codex/skills/meta/handoff/SKILL.md", "docs-writing-workflow"],
     [".codex/prompts/force-writing-great-skills.md", "docs-writing-workflow"],
     [".codex/rules/engineering-quality-principles.md", "code-workflow"],
+    [".codex/skills/core/acceptance-review/metadata.yml", "code-workflow"],
     [".codex/skills/core/code-review/metadata.yml", "code-workflow"],
     [".codex/prompts/force-codebase-audit.md", "code-workflow"],
     [".codex/skills/core/publish-current-branch/SKILL.md", "publish-package"],

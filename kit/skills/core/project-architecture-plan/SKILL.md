@@ -15,7 +15,8 @@ This skill is planning-only. It does not implement changes.
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
 
-Then output a concise Role Routing Header using this default routing:
+Apply the Role Routing Display Condition owned by `agent-roles-and-capabilities`. When it requires
+output, use this concise default routing:
 
 ```txt
 Role Routing:
@@ -45,7 +46,9 @@ Before creating an architecture plan, pass the Project Memory Context Gate defin
 `project-memory` skill and include its report in the architecture context. Follow the central
 gate result before planning; do not redefine its sequence or status meanings here.
 
-If the architecture plan involves technical judgment, versions, APIs, dependencies, configuration, deployment, tests, external services, security/privacy, database/ORM behavior, or long-term technical maintenance risk, run `docs-first-research`.
+Use `docs-first-research` only when the architecture plan depends on material external facts not
+established by verified current project evidence. Apply its trigger for authoritative,
+version-sensitive, security, compatibility, deployment, provider, or external-skill facts.
 
 ## Project Lifecycle Boundary
 
@@ -204,7 +207,8 @@ For an existing or non-empty repo:
 
 ## Docs-First Requirement for Technical Choices
 
-Use `docs-first-research` for technology choices or technical claims involving:
+Use `docs-first-research` when a technology choice or technical claim requires authoritative
+external evidence not established by verified current project evidence, including:
 
 - framework/library/API behavior
 - version-specific behavior
@@ -215,7 +219,9 @@ Use `docs-first-research` for technology choices or technical claims involving:
 - security/privacy/compliance constraints
 - long-term maintenance risk tied to technology choices
 
-Official documentation and project files win over model memory.
+Do not require external research merely because a technology choice is being documented; current
+accepted project evidence is sufficient for facts it already establishes. Official documentation
+and project files win over model memory when external research is required.
 
 If a technology choice is already confirmed by project memory, repo, or user decision, record it as Current / Accepted Tech Stack.
 
@@ -453,6 +459,7 @@ Saved Project Architecture Plans must use this structure:
 # Project Architecture Plan: <project-name-or-topic>
 
 ## 1. Role Routing
+Include this section only when the Role Routing Display Condition requires it.
 
 ## 2. Plan Status
 

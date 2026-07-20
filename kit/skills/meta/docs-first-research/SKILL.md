@@ -4,7 +4,8 @@
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
 
-Then output a concise Role Routing Header using this default routing:
+Apply the Role Routing Display Condition owned by `agent-roles-and-capabilities`. When it requires
+output, use this concise default routing:
 
 ```txt
 Role Routing:
@@ -19,7 +20,9 @@ Role Routing:
 Do not claim `agent-roles-and-capabilities` was used unless it was actually read or applied.
 
 
-Use this skill when a task depends on technical facts, official API behavior, version-specific behavior, configuration rules, deployment behavior, testing tools, external services, or best practices.
+Use this skill when a decision or conclusion depends on externally variable, authoritative,
+version-sensitive, security, compatibility, deployment, provider, or external-skill facts that are
+not established by verified current project evidence.
 
 This skill prevents agents from relying only on model memory when official documentation or project files should be the source of truth.
 
@@ -35,20 +38,14 @@ The Research Assistant verifies technical facts, checks project reality, exposes
 
 ## When to Use
 
-Use this skill when a task involves:
+Use this skill when verified project files, accepted decisions, and current repository evidence do
+not establish facts material to:
 
-- Technical judgment
-- Framework or library API usage
-- Version-specific behavior
-- Dependency selection or upgrades
-- Configuration changes
-- Build, lint, format, test, or deploy workflow changes
-- GitHub Actions or CI/CD changes
-- External service integration
-- Security or privacy-sensitive behavior
-- Database schema or migration behavior
-- Debugging that may depend on framework, runtime, or library behavior
-- Code review involving API correctness, configuration, security, deployment, or best practices
+- an external API, provider, service, or tool behavior;
+- framework, library, runtime, CLI, or version-specific behavior;
+- compatibility, security, privacy, compliance, or deployment requirements;
+- a dependency, configuration, CI/CD, database/ORM, or migration claim that requires authoritative external evidence; or
+- evaluation of an external skill before adapting it.
 
 This skill may be used independently, or as a required pre-check inside another workflow.
 
@@ -62,8 +59,11 @@ Do not require this skill for:
 - Small renames that do not affect runtime behavior
 - User-requested drafts that do not involve technical judgment
 - Internal project organization that only uses already-confirmed project facts
+- Technical planning, implementation, diagnosis, or review whose material facts are established by
+  verified current project evidence
 
-If the task is low-impact and purely local, state why docs-first research is not required.
+Do not use external research merely because the task is technical. If current project evidence is
+sufficient, state that docs-first research is not required and identify that evidence.
 
 ## Required Context
 
@@ -156,7 +156,8 @@ Project memory updates must still use `update-project-memory` and provide its re
 
 ### plan-with-context
 
-If a plan involves technical judgment, run docs-first-research first or include its findings in the plan.
+Use docs-first-research when a plan depends on external facts that meet this skill's trigger. Do
+not require it when verified current project evidence establishes the material facts.
 
 ### execute-plan
 

@@ -30,10 +30,15 @@ Use these source files as the intended installed behavior:
 Core workflow boundaries live in the kit source skills: `project-memory` reads/applies durable
 memory and owns the context gate, `update-project-memory` owns confirmed durable writes,
 `docs-first-research` owns external fact verification, and `agent-roles-and-capabilities` owns
-role routing and missing-specialist fallback.
+role routing and missing-specialist fallback. `acceptance-review` evaluates delivered work against
+an explicit acceptance baseline.
 
 Before relying on a concrete repository path, apply the Explicit Target Reference Guardrail in
 `kit/rules/agent-operating-contract.md`.
+
+Apply `kit/rules/agent-operating-contract.md` and the matching source skill for detailed
+target-reference verification, routing, safety, final reporting, and Publishable Change Handoff
+rules rather than duplicating their workflow contracts here.
 
 ## Working Style
 
@@ -52,11 +57,11 @@ Do not silently perform meaningful or risky actions. Prefer small, reviewable, r
 
 Report external or global actions in the final handoff.
 
-## Required Role Routing
+## Role Routing
 
-For every meaningful task, state the active workflow, primary role, supporting roles, scope, and stop conditions.
-
-When switching workflow or mode, restate the role routing.
+`agent-roles-and-capabilities` owns when Role Routing is displayed. Apply its Role Routing
+Display Condition rather than repeating a header for routine follow-ups whose workflow, mode,
+scope, stop conditions, and risk are unchanged.
 
 Use the relevant kit source skills as workflow guidance. Commonly relevant skills include:
 
@@ -66,6 +71,7 @@ Use the relevant kit source skills as workflow guidance. Commonly relevant skill
 - `plan-with-context`
 - `execute-plan`
 - `code-review`
+- `acceptance-review`
 - `writing-great-skills`
 - `handoff`
 - `update-project-memory`
@@ -121,41 +127,16 @@ When ready to publish local changes, normally use:
 pnpm publish:changes "Commit message"
 ```
 
-## Final Report Requirement
+## Final Reporting
 
-Every implementation final report must classify any publishable update as one of:
+Apply the final-report and Publishable Change Handoff rules in
+`kit/rules/agent-operating-contract.md` whenever that canonical contract identifies a publishable
+change. Its decision accounts for both Git-visible worktree changes and commits ahead of the
+verified publish base; a clean worktree alone does not mean there is nothing to hand off.
 
-- `small safe update`
-- `normal update`
-- `significant / high-impact update`
-
-The final report must include:
-
-- recommended update type when Git-visible repository changes exist
-- recommended commit message when Git-visible repository changes exist
-- recommended PR title when Git-visible repository changes exist
-- complete Publishable Change Handoff when Git-visible repository changes exist, including
-  `PR review helper command`, `Recommended next action`, and `Publication guardrail`
-- files changed
-- why the change was made
-- impact / risk level
-- validation performed
-- whether project memory or docs were updated
-- whether commit, push, PR, merge, or other external actions were performed
-
-When `git status --short` shows Git-visible repository changes, apply the Publishable Change
-Handoff in `kit/rules/agent-operating-contract.md`. It owns the fixed PR review helper command,
-anti-omission requirement, publication authorization, and local-only artifact boundaries.
-
-Every task final report must also include:
-
-```txt
-External / global actions:
-- None
-```
-
-If approved external or global actions occurred, list each command or change, approval, reason,
-and result. If a possible out-of-project change is discovered, report it explicitly.
+The contract owns the handoff fields, trigger logic, publication authorization, local-only
+artifact boundary, and external/global action reporting. Keep the factual task summary concise
+and do not duplicate those detailed rules here.
 
 ## Project Memory
 

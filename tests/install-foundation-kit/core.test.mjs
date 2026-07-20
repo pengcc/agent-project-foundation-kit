@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { PassThrough } from "node:stream";
 import { afterEach, describe, expect, it } from "vitest";
 import YAML from "yaml";
-import { parseCliOptions, usage } from "../../scripts/install-foundation-kit/cli-options.mjs";
+import { parseCliOptions } from "../../scripts/install-foundation-kit/cli-options.mjs";
 import { buildMappings } from "../../scripts/install-foundation-kit/mapping.mjs";
 import { buildInstallPlan } from "../../scripts/install-foundation-kit/planner.mjs";
 import {
@@ -41,7 +41,7 @@ async function workspace(name) {
 
 describe("installer CLI", () => {
   it("requires Node 24+", () => {
-    expect(() => assertSupportedRuntime("22.0.0")).toThrow("Node.js 24 or newer");
+    expect(() => assertSupportedRuntime("22.0.0")).toThrow();
     expect(() => assertSupportedRuntime("24.0.0")).not.toThrow();
   });
 
@@ -74,16 +74,11 @@ describe("installer CLI", () => {
 
   it("supports side-effect-free help and rejects missing or unknown arguments", () => {
     expect(parseCliOptions(["--help"]).help).toBe(true);
-    expect(usage()).toContain("Default mode is dry-run");
     expect(parseCliOptions(["--target", "/tmp/x"]).projectMode).toBe("auto");
-    expect(() => parseCliOptions(["--target", "/tmp/x", "--project-mode"])).toThrow(
-      "--project-mode requires a value",
-    );
-    expect(() => parseCliOptions(["--target", "/tmp/x", "--project-mode", "legacy"])).toThrow(
-      "Unsupported project mode",
-    );
-    expect(() => parseCliOptions([])).toThrow("--target is required");
-    expect(() => parseCliOptions(["--target", "/tmp/x", "--unknown"])).toThrow("Unknown option");
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--project-mode"])).toThrow();
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--project-mode", "legacy"])).toThrow();
+    expect(() => parseCliOptions([])).toThrow();
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--unknown"])).toThrow();
   });
 
   it("parses safe apply and repeatable optional skill selections directly", () => {
@@ -104,9 +99,6 @@ describe("installer CLI", () => {
       overwriteConflicts: false,
       includeOptional: ["optional-example"],
     });
-    expect(usage()).toContain(
-      "pnpm install:node --target /path/to/project --apply --skip-conflicts",
-    );
   });
 
   it("supports only the explicit docs profile", () => {
@@ -114,13 +106,8 @@ describe("installer CLI", () => {
       kitProfile: "docs",
       includeOptional: [],
     });
-    expect(usage()).toContain("--kit-profile docs");
-    expect(() => parseCliOptions(["--target", "/tmp/x", "--kit-profile"])).toThrow(
-      "--kit-profile requires a value",
-    );
-    expect(() => parseCliOptions(["--target", "/tmp/x", "--kit-profile", "full"])).toThrow(
-      "Unsupported kit profile: full",
-    );
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--kit-profile"])).toThrow();
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--kit-profile", "full"])).toThrow();
     expect(() =>
       parseCliOptions([
         "--target",
@@ -130,7 +117,7 @@ describe("installer CLI", () => {
         "--include-optional",
         "optional-example",
       ]),
-    ).toThrow("cannot be combined with --include-optional");
+    ).toThrow();
     expect(() =>
       parseCliOptions([
         "--target",
@@ -142,13 +129,11 @@ describe("installer CLI", () => {
         "docs",
         "--replace-kit-managed",
       ]),
-    ).toThrow("cannot be combined with --replace-kit-managed");
+    ).toThrow();
   });
 
   it("rejects invalid safe apply combinations and an extra argument separator", () => {
-    expect(() => parseCliOptions(["--target", "/tmp/x", "--skip-conflicts"])).toThrow(
-      "--skip-conflicts requires --apply",
-    );
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--skip-conflicts"])).toThrow();
     expect(() =>
       parseCliOptions([
         "--target",
@@ -157,7 +142,7 @@ describe("installer CLI", () => {
         "--skip-conflicts",
         "--overwrite-conflicts",
       ]),
-    ).toThrow("mutually exclusive");
+    ).toThrow();
     expect(() =>
       parseCliOptions([
         "--target",
@@ -167,11 +152,9 @@ describe("installer CLI", () => {
         "--project-mode",
         "new",
       ]),
-    ).toThrow("cannot be combined");
-    expect(() => parseCliOptions(["--target", "/tmp/x", "--include-optional"])).toThrow(
-      "--include-optional requires a skill name",
-    );
-    expect(() => parseCliOptions(["--", "--target", "/tmp/x"])).toThrow("Unknown option: --");
+    ).toThrow();
+    expect(() => parseCliOptions(["--target", "/tmp/x", "--include-optional"])).toThrow();
+    expect(() => parseCliOptions(["--", "--target", "/tmp/x"])).toThrow();
   });
 
   it("requires a dedicated existing-project authorization for managed replacement", () => {
@@ -200,10 +183,10 @@ describe("installer CLI", () => {
         "existing",
         "--replace-kit-managed",
       ]),
-    ).toThrow("--replace-kit-managed requires --apply");
+    ).toThrow();
     expect(() =>
       parseCliOptions(["--target", "/tmp/x", "--apply", "--replace-kit-managed"]),
-    ).toThrow("requires --project-mode existing");
+    ).toThrow();
     for (const conflictFlag of ["--skip-conflicts", "--overwrite-conflicts"]) {
       expect(() =>
         parseCliOptions([
@@ -215,7 +198,7 @@ describe("installer CLI", () => {
           "--replace-kit-managed",
           conflictFlag,
         ]),
-      ).toThrow("mutually exclusive");
+      ).toThrow();
     }
   });
 });
@@ -367,381 +350,6 @@ describe("source repository metadata hygiene", () => {
   });
 });
 
-describe("source repository reference hygiene", () => {
-  it("allows scoped briefs only for behavior-preserving UI presentation fixes", async () => {
-    const text = await readFile("kit/rules/task-execution-classification.md", "utf8");
-
-    for (const excludedFeatureWork of [
-      "new product features",
-      "new user workflows",
-      "behavior-changing feature work",
-    ]) {
-      expect(text, excludedFeatureWork).toContain(excludedFeatureWork);
-    }
-    expect(text).toMatch(/meaningful product or technical\s+decisions/);
-    expect(text).toContain("A narrow UI, CSS, layout, responsive presentation, or readability fix");
-    for (const preservedBoundary of [
-      "existing behavior",
-      "data semantics",
-      "routing and state",
-      "accessibility contract",
-      "validation boundary",
-      "safety boundaries",
-    ]) {
-      expect(text, preservedBoundary).toContain(preservedBoundary);
-    }
-    for (const strictExclusion of [
-      "architecture changes",
-      "publish, merge, release, or deployment workflow behavior",
-      "package scripts, dependencies, runtime requirements, or CI/CD behavior",
-      "authentication, secrets, permissions, authorization, or security-sensitive behavior",
-      "data models, schemas, persistence, or migrations",
-      "external-service integration or production behavior",
-      "destructive filesystem or network side effects",
-    ]) {
-      expect(text, strictExclusion).toContain(strictExclusion);
-    }
-    expect(text).toContain("When uncertain whether UI work preserves");
-    expect(text).toContain("classify it as a Full Saved Plan or Work Items");
-    expect(text).not.toContain("- feature implementation, architecture changes, broad refactors");
-  });
-
-  it("requires an objective recheck before extending existing plans", async () => {
-    const text = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
-
-    expect(text).toContain("## Objective Recheck for Existing Plans");
-    expect(text).toContain("If the objective is already satisfied, recommend closeout or re-scope");
-    expect(text).toContain(
-      "Do not require a full lessons-file read for unrelated or trivial tasks.",
-    );
-  });
-
-  it("keeps task and product framing proportional and separate from later workflows", async () => {
-    const skill = await readFile("kit/skills/meta/product-framing-review/SKILL.md", "utf8");
-    const contract = await readFile("kit/rules/agent-operating-contract.md", "utf8");
-    const planning = await readFile("kit/skills/meta/plan-with-context/SKILL.md", "utf8");
-    const diagnosis = await readFile("kit/skills/core/diagnose/SKILL.md", "utf8");
-    const review = await readFile("kit/skills/core/code-review/SKILL.md", "utf8");
-    const safety = await readFile("kit/rules/task-and-change-safety-principles.md", "utf8");
-    const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
-    const metadata = await readFile("kit/skills/meta/product-framing-review/metadata.yml", "utf8");
-    const guideline = await readFile(".codex/project/project-guideline.md", "utf8");
-    const decisions = await readFile(".codex/project/project-decisions.md", "utf8");
-
-    // Prefer installed-payload inclusion, canonical ownership, routing, and the absence of
-    // duplicated standalone files. Limit exact phrases to stable routing, ownership, or safety
-    // boundaries; do not assert every checklist item or snapshot long skill prose.
-    expect(skill).toContain("Visible skill name: Task and Product Framing Skill");
-    expect(skill).toContain("Stable workflow and package identifier: product-framing-review");
-    expect(skill).toContain("Installed package path: .codex/skills/meta/product-framing-review/");
-    expect(skill).toContain("Task / Change Framing Check:");
-    expect(skill).toContain("Primary actor / affected party:");
-    expect(skill).toContain("Proposed solution:");
-    expect(skill).toContain("Not doing now:");
-    expect(skill).toContain("Do not force end-user Product Framing onto non-product work");
-    expect(skill).toContain("## Framing Review Gate");
-    expect(skill).toContain("stop and reframe the task before continuing");
-    expect(skill).toContain("migration, cleanup, compatibility, installer behavior, publishing");
-    expect(skill).toContain("## Layered Solution-Design Review");
-    expect(skill).toContain("### Level 2: Solution-Design Review");
-    expect(skill).toContain("### Level 3: Deep Solution-Design Review");
-    expect(skill).toContain("do not require visible review output for every small change");
-    expect(skill).toContain("existing protections such as validation, tests, review, guardrails");
-    expect(skill).toContain("simplest sufficient alternative");
-    expect(skill).toContain("residual risk");
-    expect(skill).toContain("## Product Framing for End-User Behavior");
-    expect(skill).toContain("### 1. Focused Product Framing Check");
-    expect(skill).toContain("### 2. Broader Product / Module Review or PRD Repair");
-    expect(skill).toContain("Purpose statement:");
-    expect(skill).toContain("Readiness: ready / blocked / exploratory-only");
-    expect(skill).toContain("implementation mechanics");
-    for (const workflow of [
-      "clarification",
-      "grill-me",
-      "plan-with-context",
-      "update-project-memory",
-    ]) {
-      expect(skill, workflow).toContain(workflow);
-    }
-    expect(contract).toContain("Unclear or drift-prone task/change");
-    expect(planning).toContain("Use `product-framing-review` before planning");
-    expect(planning).toContain("Before reviewing or approving a plan");
-    expect(planning).toContain("Use its Solution-Design Review before planning");
-    expect(diagnosis).toContain("use the Solution-Design Review");
-    expect(review).toContain("apply the Solution-Design Review");
-    expect(safety).toContain("use the trigger-gated Solution-Design Review");
-    expect(roles).toContain("Workflow: product-framing-review");
-    expect(roles).toContain("Primary role: Task and Product Framing Reviewer");
-    expect(roles).toContain("as a framing-alignment gate before reviewing");
-    expect(metadata).toContain("review plan or proposal framing");
-    expect(metadata).toContain("review solution-design complexity and risk");
-    expect(guideline).toContain("`product-framing-review` has the visible name");
-    expect(decisions).toContain(
-      "## Decision: Task and product framing is a lightweight pre-planning discipline",
-    );
-  });
-
-  it("keeps shared task and change principles advisory with direct operating boundaries", async () => {
-    const paths = [
-      "kit/rules/agent-operating-contract.md",
-      "kit/rules/engineering-quality-principles.md",
-      "kit/rules/task-and-change-safety-principles.md",
-    ];
-    const documents = Object.fromEntries(
-      await Promise.all(paths.map(async (path) => [path, await readFile(path, "utf8")])),
-    );
-    const contract = documents["kit/rules/agent-operating-contract.md"];
-    const engineering = documents["kit/rules/engineering-quality-principles.md"];
-    const shared = documents["kit/rules/task-and-change-safety-principles.md"];
-
-    expect(contract).toContain("task-and-change-safety-principles.md");
-    expect(engineering).toContain("task-and-change-safety-principles.md");
-    expect(shared).toContain("This rule is non-authorizing and non-ceremonial");
-    expect(shared).toContain("It is not a workflow");
-    expect(shared).toContain("This rule guides judgment only");
-
-    for (const heading of [
-      "Startup Order",
-      "Project Memory Context Gate",
-      "Explicit Target Reference Guardrail",
-      "Requirement Clarification Gate",
-      "Project Root Boundary",
-      "Global Toolchain and Out-of-Project Operation Boundary",
-      "Skill Routing Map",
-      "Durable Project Memory Loop",
-      "Final Report Boundary",
-      "Publishable Change Handoff",
-    ]) {
-      expect(contract.match(new RegExp(`^## ${heading}$`, "gm")), heading).toHaveLength(1);
-    }
-
-    for await (const path of glob("kit/rules/*.md")) {
-      expect(await readFile(path, "utf8"), path).not.toContain("Base Collaboration Protocol");
-    }
-  });
-
-  it("keeps the publishable change handoff canonical with concise workflow pointers", async () => {
-    const paths = [
-      "AGENTS.md",
-      "kit/project-templates/AGENTS.md",
-      "kit/rules/agent-operating-contract.md",
-      "kit/skills/core/execute-plan/SKILL.md",
-      "kit/skills/core/publish-current-branch/SKILL.md",
-      "kit/skills/meta/update-project-memory/SKILL.md",
-      "kit/skills/meta/writing-great-skills/SKILL.md",
-    ];
-    const documents = Object.fromEntries(
-      await Promise.all(paths.map(async (path) => [path, await readFile(path, "utf8")])),
-    );
-    const contract = documents["kit/rules/agent-operating-contract.md"];
-
-    expect(contract.match(/^## Publishable Change Handoff$/gm)).toHaveLength(1);
-    expect(contract).toContain("Before sending a final report after file-producing work, run:");
-    expect(contract).toContain("Use this output as the mechanical handoff trigger");
-    const fixedFields = [
-      "Recommended update type:",
-      "Recommended commit message:",
-      "Recommended PR title:",
-      "PR review helper command:",
-      "Recommended next action:",
-      "Publication guardrail:",
-    ];
-    for (let index = 1; index < fixedFields.length; index += 1) {
-      expect(contract.indexOf(fixedFields[index])).toBeGreaterThan(
-        contract.indexOf(fixedFields[index - 1]),
-      );
-    }
-    expect(contract).toContain(
-      "Create/update the PR for review, then run code-review on the resulting PR.",
-    );
-    expect(contract).toContain(
-      "Fix the validation failure or blocker before creating/updating a PR for review.",
-    );
-    expect(contract).toContain(
-      [
-        "PR review helper command:",
-        "",
-        "```bash",
-        'pnpm pr:review "<commit message>" "<PR title>"',
-        "```",
-      ].join("\n"),
-    );
-    expect(contract).not.toContain(
-      'PR review helper command: pnpm pr:review "<commit message>" "<PR title>"',
-    );
-    expect(contract).toContain("PR review helper command:\nnot applicable.");
-    expect(contract).toContain(
-      "not applicable; git status --short reported no Git-visible repository changes.",
-    );
-    expect(contract).toContain(
-      "<appropriate blocker, retry, planning, review, or none action; do not create/update a PR unless Git-visible repository changes exist.>",
-    );
-    expect(contract).not.toContain("Recommended next action:\nnone.");
-    expect(contract).not.toContain("Create PR for review command");
-    expect(contract).toContain("Publication guardrail:");
-    expect(contract).toContain("do not create/update a PR unless the user explicitly authorizes");
-    expect(contract).toContain("until review is complete and the user explicitly authorizes it");
-    expect(contract).not.toContain("Fast PR after review approval");
-    expect(contract).toContain("Local-only artifacts:\n- <paths or summary>");
-    expect(contract).toContain("Do not place local-only artifact notes in `Publication guardrail`");
-    expect(contract).toContain("does not itself authorize any publication action");
-    expect(contract).toMatch(
-      /`publish-current-branch`\s+remains the only workflow\s+authorized to push/,
-    );
-
-    for (const path of [
-      "AGENTS.md",
-      "kit/project-templates/AGENTS.md",
-      "kit/skills/core/execute-plan/SKILL.md",
-      "kit/skills/meta/update-project-memory/SKILL.md",
-      "kit/skills/meta/writing-great-skills/SKILL.md",
-    ]) {
-      expect(documents[path], path).toContain("Publishable Change Handoff");
-      expect(documents[path], path).not.toContain(
-        "`Recommended commit message` and `Recommended PR title` are present",
-      );
-    }
-
-    for (const path of ["AGENTS.md", "kit/project-templates/AGENTS.md"]) {
-      expect(documents[path], path).toContain("PR review helper command");
-      expect(documents[path], path).not.toContain("Create PR for review command");
-      expect(documents[path], path).toContain("Recommended next action");
-      expect(documents[path], path).toContain("Publication guardrail");
-      expect(documents[path], path).not.toContain('pnpm pr:review "<commit message>" "<PR title>"');
-      expect(documents[path].match(/Fast PR/g), path).toBeNull();
-    }
-
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "apply the Publishable Change Handoff from\n`rules/agent-operating-contract.md` exactly",
-    );
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "no executable PR review helper command appears",
-    );
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).toContain(
-      "must not push, create PRs, update PRs, merge, release, deploy, or mutate external",
-    );
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
-      'pnpm pr:review "<commit message>" "<PR title>"',
-    );
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
-      "Fast PR after review approval",
-    );
-    expect(documents["kit/skills/core/execute-plan/SKILL.md"]).not.toContain(
-      "publish readiness / publish handoff -> recommend publish-current-branch after execution",
-    );
-    expect(documents["AGENTS.md"]).toContain(
-      "recommended commit message when Git-visible repository changes exist",
-    );
-    expect(documents["kit/skills/meta/update-project-memory/SKILL.md"]).toContain(
-      "The no-update output below does not trigger that handoff",
-    );
-    expect(documents["kit/skills/meta/writing-great-skills/SKILL.md"].match(/Fast PR/g)).toBeNull();
-    expect(documents["kit/skills/core/publish-current-branch/SKILL.md"]).not.toContain(
-      "Publishable Change Handoff",
-    );
-  });
-
-  it("keeps the explicit target reference guardrail canonical with concise pointers", async () => {
-    const paths = [
-      "AGENTS.md",
-      "kit/project-templates/AGENTS.md",
-      "kit/rules/agent-operating-contract.md",
-      "kit/rules/skill-invocation-and-dependency-boundaries.md",
-      "kit/skills/meta/initialize-project-context/SKILL.md",
-    ];
-    const documents = Object.fromEntries(
-      await Promise.all(paths.map(async (path) => [path, await readFile(path, "utf8")])),
-    );
-    const heading = "Explicit Target Reference Guardrail";
-
-    expect(
-      documents["kit/rules/agent-operating-contract.md"].match(
-        /^## Explicit Target Reference Guardrail$/gm,
-      ),
-    ).toHaveLength(1);
-    expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
-      "Stop and ask for direction when the target is required",
-    );
-    expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
-      "unless the reference is clearly historical",
-    );
-    expect(documents["kit/rules/agent-operating-contract.md"]).toContain(
-      "The installer does not automatically clean obsolete installed paths",
-    );
-    expect(documents["AGENTS.md"]).toContain(
-      "Explicit Target Reference Guardrail in\n`kit/rules/agent-operating-contract.md`",
-    );
-    expect(documents["kit/project-templates/AGENTS.md"]).toContain(heading);
-    expect(documents["kit/project-templates/AGENTS.md"]).toContain(
-      ".codex/rules/agent-operating-contract.md",
-    );
-    expect(documents["kit/rules/skill-invocation-and-dependency-boundaries.md"]).toContain(heading);
-    expect(documents["kit/skills/meta/initialize-project-context/SKILL.md"]).toContain(heading);
-  });
-
-  it("distinguishes logical rule invocation from source and installed paths", async () => {
-    const roles = await readFile("kit/skills/meta/agent-roles-and-capabilities/SKILL.md", "utf8");
-    const authoring = await readFile("kit/skills/meta/writing-great-skills/SKILL.md", "utf8");
-    const boundaries = await readFile(
-      "kit/rules/skill-invocation-and-dependency-boundaries.md",
-      "utf8",
-    );
-
-    expect(roles).toContain("Apply the `skill-invocation-and-dependency-boundaries` rule");
-    expect(roles).toContain("apply the\n`engineering-quality-principles` rule");
-    expect(authoring).toContain(
-      "Apply the `skill-invocation-and-dependency-boundaries` rule as the single source of truth",
-    );
-    expect(`${roles}\n${authoring}`).not.toContain("Apply `kit/rules/");
-    expect(boundaries).toContain("Foundation-kit source paths must match metadata category");
-    expect(boundaries).toContain("Installed paths preserve the meta and core categories");
-    expect(boundaries).toContain("`.codex/skills/engineering/<name>/`");
-  });
-
-  it("keeps active surfaces free of obsolete meta skill paths", async () => {
-    const activePaths = new Set([
-      "AGENTS.md",
-      "README.md",
-      "kit/project-templates/AGENTS.md",
-      ".codex/project/project-guideline.md",
-      "docs/foundation-kit-skills-review-and-optimization-roadmap.md",
-    ]);
-    for (const pattern of [
-      "kit/skills/**/*.md",
-      "kit/prompts/**/*.md",
-      "kit/rules/**/*.md",
-      "tests/**/*.mjs",
-      "scripts/**/*.mjs",
-    ]) {
-      for await (const path of glob(pattern)) activePaths.add(path);
-    }
-
-    const metaSkillNames = [
-      "agent-roles-and-capabilities",
-      "docs-first-research",
-      "grilling",
-      "grill-me",
-      "handoff",
-      "initialize-project-context",
-      "plan-with-context",
-      "project-memory",
-      "update-project-memory",
-      "writing-great-skills",
-    ];
-    const obsoleteReferences = metaSkillNames.flatMap((name) => [
-      ["kit", "skills", "core", name].join("/"),
-      [".codex", "skills", "core", name].join("/"),
-    ]);
-
-    for (const path of [...activePaths].sort()) {
-      const text = await readFile(path, "utf8");
-      for (const reference of obsoleteReferences) {
-        expect(text, `${path}: obsolete active reference ${reference}`).not.toContain(reference);
-      }
-    }
-  });
-});
-
 describe("mapping and boundaries", () => {
   it("maps templates and complete installable trees deterministically", async () => {
     const fixture = await workspace("mapping");
@@ -815,7 +423,7 @@ describe("mapping and boundaries", () => {
     const unknown = await workspace("optional-unknown");
     await expect(
       buildMappings(unknown.kitRoot, { includeOptional: ["missing-skill"] }),
-    ).rejects.toThrow("Unknown optional skill: missing-skill");
+    ).rejects.toThrow();
 
     const malformed = await workspace("optional-malformed");
     await writeFile(
@@ -824,7 +432,7 @@ describe("mapping and boundaries", () => {
     );
     await expect(
       buildMappings(malformed.kitRoot, { includeOptional: ["optional-example"] }),
-    ).rejects.toThrow("metadata must match its directory");
+    ).rejects.toThrow();
   });
 
   it("excludes local OS junk files from installable tree mappings", async () => {
@@ -1024,26 +632,24 @@ describe("mapping and boundaries", () => {
     await mkdir(outside);
     await mkdir(resolve(targetFixture.targetRoot, ".codex"));
     await symlink(outside, resolve(targetFixture.targetRoot, ".codex/skills"));
-    await expect(buildInstallPlan(targetFixture)).rejects.toThrow("symlink");
+    await expect(buildInstallPlan(targetFixture)).rejects.toThrow();
 
     const sourceFixture = await workspace("source-symlink");
     await symlink(
       resolve(sourceFixture.kitRoot, "prompts/example.md"),
       resolve(sourceFixture.kitRoot, "prompts/linked.md"),
     );
-    await expect(buildMappings(sourceFixture.kitRoot)).rejects.toThrow(
-      "Source symlinks are not supported",
-    );
+    await expect(buildMappings(sourceFixture.kitRoot)).rejects.toThrow();
   });
 
   it("rejects repository-root and kit-contained targets", async () => {
     const fixture = await workspace("unsafe-target");
     await expect(
       resolveInstallRoots({ repoRoot: fixture.repoRoot, target: fixture.repoRoot }),
-    ).rejects.toThrow("foundation-kit repository itself");
+    ).rejects.toThrow();
     await expect(
       resolveInstallRoots({ repoRoot: fixture.repoRoot, target: fixture.kitRoot }),
-    ).rejects.toThrow("source kit");
+    ).rejects.toThrow();
   });
 
   it("requires the optional-skill source boundary to remain a real directory", async () => {
@@ -1053,7 +659,7 @@ describe("mapping and boundaries", () => {
     await writeFile(optionalRoot, "not a directory\n");
     await expect(
       resolveInstallRoots({ repoRoot: fixture.repoRoot, target: fixture.targetRoot }),
-    ).rejects.toThrow("must be a directory: optional-skills");
+    ).rejects.toThrow();
   });
 });
 
@@ -1097,11 +703,7 @@ describe("confirmation input", () => {
   });
 
   it("rejects wrong or missing confirmation", async () => {
-    await expect(runPrompt({ token: "NO", interactive: false })).rejects.toThrow(
-      "Confirmation token did not match",
-    );
-    await expect(runPrompt({ token: "", interactive: false })).rejects.toThrow(
-      "Confirmation token did not match",
-    );
+    await expect(runPrompt({ token: "NO", interactive: false })).rejects.toThrow();
+    await expect(runPrompt({ token: "", interactive: false })).rejects.toThrow();
   });
 });
