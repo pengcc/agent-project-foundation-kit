@@ -112,6 +112,36 @@ describe("publish secret safety scanning", () => {
     expect(findings.every(({ preview }) => preview === "[REDACTED]")).toBe(true);
   });
 
+  it("allows braced and bare environment-variable credential references", async () => {
+    const bracedVariable = ["$", "{CI_JOB_TOKEN}"].join("");
+    const diff = addedFileDiff("scripts/deploy.sh", [
+      `TOKEN=${bracedVariable}`,
+      "TOKEN=$CI_JOB_TOKEN",
+    ]);
+
+    expect(scanSecretSafety({ diff })).toEqual([]);
+    await expect(assertSecretSafePublishScope(guardInput(diff))).resolves.toMatchObject({
+      findings: [],
+    });
+  });
+
+  it("keeps comma and semicolon characters in unquoted password values", () => {
+    const commaPassword = ["Correct", ",", "Horse42!"].join("");
+    const semicolonPassword = ["Correct", ";", "Horse42!"].join("");
+    const findings = scanSecretSafety({
+      diff: addedFileDiff("config/runtime.env", [
+        `PASSWORD=${commaPassword}`,
+        `PASSWORD=${semicolonPassword}`,
+      ]),
+    });
+
+    expect(findings).toHaveLength(2);
+    expect(findings.every(({ rule }) => rule === "hard-coded-password")).toBe(true);
+    expect(findings.every(({ level }) => level === SECRET_FINDING_LEVEL.HIGH_CONFIDENCE)).toBe(
+      true,
+    );
+  });
+
   it("retains unquoted placeholder, synthetic fixture, and high-confidence deduplication", () => {
     const providerToken = `sk-proj-${"A".repeat(24)}`;
     const findings = scanSecretSafety({

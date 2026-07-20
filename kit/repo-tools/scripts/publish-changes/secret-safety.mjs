@@ -40,10 +40,10 @@ const HIGH_CONFIDENCE_CONTENT_RULES = [
 ];
 
 const CREDENTIAL_LITERAL_PATTERN =
-  /(?:^|[\s,{;])(?:["'])?(api[_-]?key|secret|token|password)(?:["'])?\s*[:=]\s*(?:(["'])([^"'`\r\n]+)\2|([^\s"'`#;,}\]]+))/gi;
+  /(?:^|[\s,{;])(?:["'])?(api[_-]?key|secret|token|password)(?:["'])?\s*[:=]\s*(?:(["'])([^"'`\r\n]+)\2|(\$\{[^}\r\n]+})|(\$[A-Za-z_][A-Za-z0-9_]*)|([^\s"'`#]+))/gi;
 
 const PLACEHOLDER_VALUE_PATTERN =
-  /^(?:x+|_+|-+|\*+|<[^>]+>|\$\{[^}]+}|your[-_]?.*|example.*|sample.*|placeholder.*|dummy.*|fake.*|test.*|changeme|change-me|replace[_-]?me|redacted|not[_-]?a[_-]?secret)$/i;
+  /^(?:x+|_+|-+|\*+|<[^>]+>|\$\{[^}]+}|\$[A-Za-z_][A-Za-z0-9_]*|your[-_]?.*|example.*|sample.*|placeholder.*|dummy.*|fake.*|test.*|changeme|change-me|replace[_-]?me|redacted|not[_-]?a[_-]?secret)$/i;
 
 export function isTemplatePath(path) {
   return TEMPLATE_PATH_PATTERNS.some((pattern) => pattern.test(path));
@@ -142,7 +142,7 @@ export function scanSecretSafety({ files = [], diff = "" } = {}) {
     CREDENTIAL_LITERAL_PATTERN.lastIndex = 0;
     for (const match of line.matchAll(CREDENTIAL_LITERAL_PATTERN)) {
       const identifier = match[1].toLowerCase().replace(/[-_]/g, "");
-      const value = (match[3] ?? match[4]).trim();
+      const value = (match[3] ?? match[4] ?? match[5] ?? match[6]).trim();
       if (isPlaceholderValue(value)) continue;
       if (matchesHighConfidenceContent(value)) continue;
       if (identifier === "password") {
