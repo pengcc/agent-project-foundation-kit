@@ -22,7 +22,8 @@ package cleanup; this skill wording update does not authorize that migration.
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
 
-Use this default routing:
+Apply the Role Routing Display Condition owned by `agent-roles-and-capabilities`. When it requires
+output, use this concise default routing:
 
 ```txt
 Role Routing:

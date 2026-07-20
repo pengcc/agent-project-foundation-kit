@@ -4,7 +4,8 @@
 
 If `agent-roles-and-capabilities` is installed, read or apply it before continuing.
 
-Then output a concise Role Routing Header using this default routing:
+Apply the Role Routing Display Condition owned by `agent-roles-and-capabilities`. When it requires
+output, use this concise default routing:
 
 ```txt
 Role Routing:
@@ -147,6 +148,11 @@ Also inspect changed files when the update follows implementation work.
 Use a plan, handoff, or other local process artifact only when the user or active task identifies
 it as relevant, and only after the Project Memory Context Gate freshness check.
 
+`docs/open-findings.md` may be used as an optional evidence source only when the approved update
+explicitly names a relevant finding or authorizes its promotion. Do not add it to mandatory context
+reads, scan it during unrelated updates, or treat an entry as confirmed merely because it was
+recorded there.
+
 ## Workflow Header
 
 Use this header:
@@ -274,6 +280,22 @@ Do not store:
 - Local database content
 - Large logs
 - `dev_locals/` scratch content without durable value
+
+### 7. Promote an explicitly authorized finding selectively
+
+When the approved update names an open finding whose destination is one of the three Project Memory
+files:
+
+1. revalidate the evidence against current authoritative sources;
+2. confirm the knowledge is not already represented accurately;
+3. apply the normal fact, decision, or lesson admission rules above; and
+4. record only the durable result in the correct Project Memory file.
+
+This skill's write boundary remains the three Project Memory files. It must not remove or rewrite
+`docs/open-findings.md` unless a separate approved documentation workflow authorizes that mutation,
+and it must not create an automatic promotion queue. When promotion completes, the promoting commit
+or PR should identify the durable destination so the separately authorized documentation cleanup
+can remove the open entry without maintaining a permanent disposition log.
 
 ## Domain Vocabulary and Durable Decisions
 

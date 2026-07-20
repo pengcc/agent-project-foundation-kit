@@ -78,19 +78,18 @@ requirement discovery. Do not route every tiny ambiguity to `grill-me`.
 
 The current project root is the default file-operation boundary.
 
-Do not write, delete, move, or generate files outside the project root unless the user explicitly
-approves the exact path and purpose. Read-only global toolchain diagnostics are allowed when
-needed to distinguish project-local state from machine state.
+`.codex/project/project-guideline.md` may define a bounded allowlist of project-related external
+development infrastructure. Operations within that allowlist do not require repeated confirmation
+merely because the resource is outside the repository root.
 
-Any exception must include:
+Approved operations must remain directly related to the active task and within the resource types,
+purposes, and cleanup boundaries defined by the project guideline.
 
-1. exact path
-2. reason
-3. risk
-4. cleanup or rollback option
-5. user confirmation
+All other out-of-project writes, destructive operations, or resource access require explicit user
+approval of the resource, purpose, risk, and cleanup or rollback approach.
 
-Controlled exceptions must be documented by the active workflow. For example, the foundation-kit installer may copy from `repo_root/kit/` into an explicit `target_root/`.
+Read-only global toolchain diagnostics are allowed when needed to distinguish project-local state
+from machine state.
 
 ## Global Toolchain and Out-of-Project Operation Boundary
 
@@ -105,7 +104,8 @@ configure, or otherwise mutate:
 - shell profiles such as `.zprofile`, `.zshrc`, or `.bashrc`
 - PATH configuration
 - global Git configuration
-- files outside the current project root
+- files or resources outside the current project root that are not explicitly pre-authorized by
+  `.codex/project/project-guideline.md`
 
 Read-only diagnostics are allowed without approval. Examples include `node -v`, `which node`,
 `which -a node`, `pnpm -v`, `mise current`, `mise doctor`, `brew info`,
@@ -117,6 +117,9 @@ Mutating commands such as `brew install`, `brew upgrade`, `brew reinstall`, `bre
 `corepack enable`, shell-profile edits, PATH changes, and global Git configuration changes require
 explicit approval.
 
+Using approved project-related external infrastructure is not equivalent to changing global
+tooling or machine configuration.
+
 If required tooling is missing or wrong:
 
 1. stop the affected workflow
@@ -127,8 +130,8 @@ If required tooling is missing or wrong:
 6. recommend a manual fix and explain global-change risk
 7. wait for explicit approval before running a mutating command
 
-Never silently change global tooling to make validation pass. If a possible global or
-out-of-project change is discovered, report it instead of hiding it or assuming it is safe.
+Never silently change global tooling to make validation pass. If a global or non-pre-authorized
+out-of-project change is required, report it instead of assuming it is safe.
 
 ## Skill Routing Map
 
@@ -164,6 +167,9 @@ Approved execution:
 
 Review / alignment / PR / diff:
   code-review
+
+Delivered-work acceptance against explicit requirements or criteria:
+  acceptance-review
 
 Repository survey / prioritized improvement audit:
   codebase-audit
@@ -282,10 +288,13 @@ global-tooling, routing, memory, reporting, publish, or other hard boundary in t
 
 - Do not expand scope without calling it out.
 - Do not bypass matching installed skills.
-- Do not perform destructive actions without explicit user approval.
+- Do not perform destructive actions unless they are explicitly authorized by the user or fall
+  within disposable infrastructure pre-authorized by `.codex/project/project-guideline.md`.
 - Do not publish, merge, release, or deploy unless the user explicitly requests the matching workflow.
 - Do not introduce dependencies, tooling, architecture changes, or workflow changes without checking project memory and explaining impact.
 - Prefer small, reversible changes.
+- Do not treat project-approved external development infrastructure as unrestricted access to
+  unrelated application data or machine resources.
 
 ## Final Report Boundary
 
@@ -301,14 +310,24 @@ approval, reason, and result.
 
 ## Publishable Change Handoff
 
-Before sending a final report after file-producing work, run:
+Before sending a final report after file-producing work, inspect both the worktree and the current branch relative to the verified publish base:
 
 ```bash
 git status --short
+git rev-list --count <publish-base>..HEAD
 ```
 
-Use this output as the mechanical handoff trigger. If it reports any Git-visible repository
-changes, the final report must include this complete field group in the fixed order shown:
+Use origin/main as the publish base unless the active workflow establishes another verified base.
+
+A publishable change exists when either:
+
+* git status --short reports Git-visible repository changes; or
+* the current branch contains one or more commits not present in the publish base.
+
+A clean worktree does not mean that no publishable changes exist.
+
+If a publishable change exists under the conditions above, the final report must include this
+complete field group in the fixed order shown:
 
 Recommended update type: <small safe update | normal update | significant / high-impact update>
 
@@ -338,8 +357,7 @@ containing only this fixed command shape:
 pnpm pr:review "<commit message>" "<PR title>"
 ```
 
-Use the same commit message and PR title values in their fields and in the command. Whenever
-`git status --short` reports changes, all six fields are required. Do not emit only the update
+Use the same commit message and PR title values in their fields and in the command. Whenever a publishable change exists, all six fields are required. Do not emit only the update
 type, commit message, or PR title, and do not silently omit the helper command, next action, or
 publication guardrail.
 
@@ -364,21 +382,24 @@ Create/update the PR for review, then run code-review on the resulting PR.
 Fix the validation failure or blocker before creating/updating a PR for review.
 ```
 
-The helper command remains present when Git-visible changes exist, including when validation
+The helper command remains present when publishable changes exist, including when validation
 failed, but the next action must not encourage immediate PR creation while a failure or blocker
 remains.
 
-If `git status --short` has no output, do not print an executable helper command. Use:
+Print the not-applicable handoff only when both conditions are true:
+- `git status --short` has no output; and
+- the current branch has no commits ahead of the verified publish base.
+In that case, use:
 
 ```txt
 Publishable change handoff:
-not applicable; git status --short reported no Git-visible repository changes.
+not applicable; the worktree is clean and the current branch has no commits ahead of the verified publish base.
 
 PR review helper command:
 not applicable.
 
 Recommended next action:
-<appropriate blocker, retry, planning, review, or none action; do not create/update a PR unless Git-visible repository changes exist.>
+<appropriate blocker, retry, planning, review, or none action; do not create/update a PR unless publishable Git changes exist.>
 ```
 
 Local-only artifacts, including `dev_locals/**` plans, research notes, handoffs, scratch files,
