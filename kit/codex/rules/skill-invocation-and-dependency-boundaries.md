@@ -9,8 +9,8 @@ Use this rule when creating, refining, routing, or reviewing foundation-kit skil
 - `optional`: explicitly adopted specialist capabilities outside the default install.
 
 Foundation-kit source paths must match metadata category: meta skills live under
-`kit/skills/meta/`, core workflows under `kit/skills/core/`, and optional skills under
-`kit/optional-skills/`.
+`kit/codex/skills/meta/`, core workflows under `kit/codex/skills/core/`, and optional skills under
+`kit/codex/optional-skills/`.
 
 Installed paths preserve the meta and core categories under `.codex/skills/meta/` and
 `.codex/skills/core/`. Meta and core skills remain default-installed. Optional skills require

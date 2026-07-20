@@ -39,6 +39,7 @@ export async function applyStagedPlan({
   stagedRoot,
   targetRoot,
   materializedBackup,
+  finalizeBackup = true,
   signal,
   hooks = {},
 }) {
@@ -87,7 +88,7 @@ export async function applyStagedPlan({
     error.completedTargets = completedTargets;
     throw error;
   }
-  if (materializedBackup) {
+  if (materializedBackup && finalizeBackup) {
     await updateBackupManifest(materializedBackup, {
       status: "completed",
       completedTargets: [...completedTargets],

@@ -3,7 +3,7 @@
 This directory contains optional specialist skills available for explicit project adoption.
 
 Optional metadata and dependency direction follow
-`kit/rules/skill-invocation-and-dependency-boundaries.md`.
+`kit/codex/rules/skill-invocation-and-dependency-boundaries.md`.
 
 Optional skills live inside the installable `kit/` source boundary but are not copied by default.
 The foundation-kit installer includes one only when the user names it with `--include-optional`;
@@ -18,7 +18,7 @@ Selected downstream adoption requires:
 - validation of metadata, content, dependencies, conflicts, and installed-skill routing
 - a confirmed target project-memory update through `update-project-memory`
 
-Do not copy the complete `kit/optional-skills/` tree or treat catalog presence as adoption
+Do not copy the complete `kit/codex/optional-skills/` tree or treat catalog presence as adoption
 approval. Do not install selected optional skills under `.codex/skills/optional/`,
 `.codex/project-specific/`, or a flat `.codex/skills/<skill-name>/` path.
 

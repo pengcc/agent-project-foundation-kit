@@ -1006,3 +1006,61 @@ remaining risk is real, harmful, uncontrolled, and significant enough to justify
   wording, or explicit boundaries when existing protections are sufficient;
 - keep the reasoning proportional to the decision; and
 - preserve safety controls while avoiding speculative branches and exceptions.
+
+## Keep: Complete multi-phase apply state only after every owned phase succeeds
+
+### Context
+
+An installer apply can finish copying its Kit-owned payload and then fail while augmenting the
+repository-owned `package.json`. Marking the backup manifest completed at the payload boundary
+misrepresents the overall operation and weakens recovery evidence.
+
+### Lesson
+
+For a multi-phase apply, record payload progress incrementally but defer terminal success until all
+owned phases complete. A later failure must retain the completed payload targets, identify the
+failing phase, mark any backup manifest failed or interrupted, and report partial progress even
+when no backup was required.
+
+### Reuse guidance
+
+- distinguish progress fields from terminal lifecycle status;
+- let the outer orchestrator own completion across phases;
+- preserve phase-specific completed targets in errors and backup manifests; and
+- test both materialized-backup and no-backup failure paths.
+
+### Related files
+
+```txt
+scripts/install-foundation-kit/copier.mjs
+scripts/install-foundation-kit/flow.mjs
+tests/install-foundation-kit/flow.test.mjs
+```
+
+## Keep: Promote reusable tooling from immutable sources selectively
+
+### Context
+
+A downstream repository can mature reusable automation ahead of the Foundation Kit while also
+containing application-specific state or older Kit conventions.
+
+### Lesson
+
+Resolve the source branch to an immutable commit, compare the complete reusable runtime boundary,
+exclude downstream tests and fixtures from direct copying, and port meaningful behavior and tests
+selectively. Preserve newer intentional destination behavior instead of treating the downstream
+tree as an unconditional replacement.
+
+### Reuse guidance
+
+- record the exact source commit in the task handoff;
+- compare entrypoint, runtime modules, shared helpers, and config resolution together;
+- reject application-specific paths, assumptions, and project-memory conventions; and
+- verify source and installed execution through the same maintained files.
+
+### Related files
+
+```txt
+kit/repo-tools/scripts/
+tests/publish-changes/
+```

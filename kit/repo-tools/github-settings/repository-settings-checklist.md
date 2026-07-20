@@ -50,7 +50,7 @@ From the downstream project root:
 gh api \
   --method PATCH \
   'repos/{owner}/{repo}' \
-  --input .codex/github-settings/general-settings.required.json
+  --input .repo-tools/github-settings/general-settings.required.json
 ```
 
 The payload changes only:
@@ -69,7 +69,7 @@ allow_auto_merge = true
 3. Import:
 
 ```txt
-.codex/github-settings/protect-default-branch.ruleset.json
+.repo-tools/github-settings/protect-default-branch.ruleset.json
 ```
 
 4. Review the imported ruleset.
@@ -91,7 +91,7 @@ Create the ruleset only when no equivalent ruleset exists:
 gh api \
   --method POST \
   'repos/{owner}/{repo}/rulesets' \
-  --input .codex/github-settings/protect-default-branch.ruleset.json
+  --input .repo-tools/github-settings/protect-default-branch.ruleset.json
 ```
 
 The ruleset:

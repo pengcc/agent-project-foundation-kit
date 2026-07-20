@@ -8,6 +8,7 @@ import { runMergePrFlow } from "./publish-changes/merge-pr-flow.mjs";
 import { loadPolicy } from "./publish-changes/policy.mjs";
 import { runPrReviewFlow } from "./publish-changes/pr-review-flow.mjs";
 import { createPrompts } from "./publish-changes/prompts.mjs";
+import { runSafetyGuardFlow } from "./publish-changes/safety-guard-flow.mjs";
 import { createCommandRunner } from "./shared/command-runner.mjs";
 import { PublishError } from "./shared/errors.mjs";
 import { createGhClient } from "./shared/gh-client.mjs";
@@ -46,12 +47,16 @@ export async function main(argv = process.argv.slice(2)) {
   const output = createOutput({ verbose: options.verbose, theme });
   if (themeWarning) output.warning(themeWarning);
   output.debug(`Theme source: ${themeSource}`);
+  const commandRunner = createCommandRunner();
+  const git = createGitClient(commandRunner, process.cwd());
+  if (options.mode === "safety-guard") {
+    await runSafetyGuardFlow({ git, output });
+    return;
+  }
   const prompts = createPrompts({
     formatPrompt: (message) => output.format("PROMPT", message),
     warning: output.warning,
   });
-  const commandRunner = createCommandRunner();
-  const git = createGitClient(commandRunner, process.cwd());
   const gh = createGhClient(commandRunner, process.cwd());
   try {
     if (options.mode === "pr-review") {

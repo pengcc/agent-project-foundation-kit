@@ -1,10 +1,10 @@
 const HIGH_RISK_PATTERNS = [
   ["scripts/", "workflow scripts changed"],
-  ["kit/scripts/", "installable workflow changed"],
+  ["kit/repo-tools/scripts/", "installable workflow changed"],
   ["scripts/install-foundation-kit.mjs", "installer changed"],
   ["package.json", "package configuration changed"],
   [".github/", "GitHub automation changed"],
-  ["kit/config/", "workflow policy changed"],
+  ["kit/repo-tools/config/", "workflow policy changed"],
 ];
 
 export function parseNameStatus(text) {

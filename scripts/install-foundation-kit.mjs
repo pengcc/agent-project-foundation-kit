@@ -2,8 +2,8 @@
 
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createOutput } from "../kit/scripts/shared/output.mjs";
-import { loadOutputTheme } from "../kit/scripts/shared/output-theme.mjs";
+import { createOutput } from "../kit/repo-tools/scripts/shared/output.mjs";
+import { loadOutputTheme } from "../kit/repo-tools/scripts/shared/output-theme.mjs";
 import { parseCliOptions, usage } from "./install-foundation-kit/cli-options.mjs";
 import { InstallerError } from "./install-foundation-kit/errors.mjs";
 import { runInstallerFlow } from "./install-foundation-kit/flow.mjs";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { runPublishFlow } from "../../kit/scripts/publish-changes/flow.mjs";
-import { DEFAULT_POLICY } from "../../kit/scripts/publish-changes/policy.mjs";
+import { runPublishFlow } from "../../kit/repo-tools/scripts/publish-changes/flow.mjs";
+import { DEFAULT_POLICY } from "../../kit/repo-tools/scripts/publish-changes/policy.mjs";
 
 function createOutput() {
   const messages = [];

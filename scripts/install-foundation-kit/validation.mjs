@@ -5,18 +5,18 @@ import { InstallerError } from "./errors.mjs";
 import { assertInside, canonicalExistingDirectory, isInside } from "./path-boundary.mjs";
 
 const REQUIRED_KIT_PATHS = [
-  "project-templates/AGENTS.md",
-  "project-templates/project-memory/guideline.md",
-  "project-templates/project-memory/decisions.md",
-  "project-templates/project-memory/lessons-learned.md",
-  "project-templates/project-specific/agent-guidance.md",
-  "skills",
-  "prompts",
-  "rules",
-  "config",
-  "github-settings",
-  "scripts",
-  "optional-skills",
+  ["AGENTS.md", "file"],
+  ["codex/project-memory/guideline.md", "file"],
+  ["codex/project-memory/decisions.md", "file"],
+  ["codex/project-memory/lessons-learned.md", "file"],
+  ["codex/project-specific/agent-guidance.md", "file"],
+  ["codex/skills", "directory"],
+  ["codex/prompts", "directory"],
+  ["codex/rules", "directory"],
+  ["codex/optional-skills", "directory"],
+  ["repo-tools/config", "directory"],
+  ["repo-tools/github-settings", "directory"],
+  ["repo-tools/scripts", "directory"],
 ];
 
 export function sourceRepositoryRoot(importMetaUrl) {
@@ -49,7 +49,7 @@ export async function resolveInstallRoots({ repoRoot, target }) {
 }
 
 export async function validateRequiredKitPaths(kitRoot) {
-  for (const relativePath of REQUIRED_KIT_PATHS) {
+  for (const [relativePath, expectedType] of REQUIRED_KIT_PATHS) {
     const path = resolve(kitRoot, relativePath);
     const stats = await lstat(path).catch(() => null);
     if (!stats || stats.isSymbolicLink()) {
@@ -58,10 +58,11 @@ export async function validateRequiredKitPaths(kitRoot) {
         `Required kit source is missing or is a symlink: ${relativePath}`,
       );
     }
-    if (relativePath === "optional-skills" && !stats.isDirectory()) {
+    const validType = expectedType === "file" ? stats.isFile() : stats.isDirectory();
+    if (!validType) {
       throw new InstallerError(
         "INVALID_SOURCE",
-        "Required kit source must be a directory: optional-skills",
+        `Required kit source must be a ${expectedType}: ${relativePath}`,
       );
     }
   }

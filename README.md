@@ -12,11 +12,11 @@ Foundation-kit skills use three conceptual categories:
 
 Metadata also declares `invocation: user | model | support`, `required`, and hard `depends_on`
 relationships. Physical source paths match metadata category: meta skills live under
-`kit/skills/meta/`, core workflows under `kit/skills/core/`, and optional skills under
-`kit/optional-skills/`. The installer copies the complete `kit/skills/` tree, so meta and core
+`kit/codex/skills/meta/`, core workflows under `kit/codex/skills/core/`, and optional skills under
+`kit/codex/optional-skills/`. The installer copies the complete `kit/codex/skills/` tree, so meta and core
 remain default-installed. Optional skills remain excluded unless selected explicitly and install
 under `.codex/skills/engineering/<name>/`. See
-`kit/rules/skill-invocation-and-dependency-boundaries.md` for the canonical boundaries.
+`kit/codex/rules/skill-invocation-and-dependency-boundaries.md` for the canonical boundaries.
 
 ## Local Commands
 
@@ -33,6 +33,7 @@ pnpm pr:auto-merge 123
 pnpm install:node --target /path/to/project
 pnpm test:install
 pnpm test:publish
+pnpm safety:guard
 pnpm format
 pnpm format:check
 pnpm biome:fix
@@ -47,15 +48,21 @@ before the Node publish tests, installer tests, and whitespace validation.
 
 Biome is a source-repo quality gate for the foundation kit, not a downstream installation
 requirement. Source checks cover installable files under `kit/`, including scripts later copied to
-`.codex/scripts/`, before they are published or installed. The installer does not install Biome or
+`.repo-tools/scripts/`, before they are published or installed. The installer does not install Biome or
 create Biome configuration. Its only `package.json` convenience is safely adding missing default
 publish aliases without replacing conflicting values. If a downstream project has no
 formatter/linter, `initialize-project-context` may recommend Biome as a manual setup task; it does
 not require or install it.
 
 `publish:changes` and `pr:review` run a lightweight local secret-safety guard against the
-confirmed publish scope before commit, push, or PR updates. The guard is dependency-free and
-high-confidence only; it can have false positives and false negatives.
+confirmed publish scope before commit, push, or PR updates. High-confidence findings always
+block. Review-required credential literals block unless the user reviews the fully redacted
+finding and explicitly supplies `--acknowledge-secret-review`. The dependency-free guard can have
+false positives and false negatives.
+
+`pnpm safety:guard` runs the same scanner in standalone read-only mode across committed branch
+changes plus staged, unstaged, and untracked work. It never fetches, stages, commits, pushes, or
+uses GitHub, and it does not allow acknowledgement overrides.
 Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
 historical reference. Future apply-theme behavior should be planned as a Node.js workflow before
 being reintroduced.
@@ -75,7 +82,7 @@ When using pnpm's direct script shortcut, pass installer flags directly as shown
 
 The installer defaults to dry-run. It reads installable content only from `kit/`
 and never installs its own `scripts/install-foundation-kit.mjs` entrypoint or installer-specific
-modules. It may reuse source-repository output helpers from `kit/scripts/shared/` at runtime, but
+modules. It may reuse source-repository output helpers from `kit/repo-tools/scripts/shared/` at runtime, but
 that does not make the installer part of the downstream payload.
 
 `--kit-profile docs` selects only project templates, common workflow, docs/writing workflow, and
@@ -114,7 +121,7 @@ preserves same-name aliases with different values. This bounded augmentation is 
 separate from full Kit-owned payload replacement.
 
 Use repeatable `--include-optional <name>` flags to select packages from
-`kit/optional-skills/<name>/`. Selected packages install only under
+`kit/codex/optional-skills/<name>/`. Selected packages install only under
 `.codex/skills/engineering/<name>/`; they are never installed under `.codex/skills/optional/`,
 `.codex/project-specific/`, or a flat `.codex/skills/<name>/` path. Repository-only capabilities
 belong under `.codex/project-specific/` and are preserved across installation and update.
@@ -209,27 +216,28 @@ eligibility. Failed or unknown checks still block.
 The installer copies the reusable Node publish implementation and helpers to:
 
 ```txt
-.codex/scripts/publish-changes.mjs
-.codex/scripts/publish-changes/
-.codex/scripts/shared/
-.codex/config/publish-changes-policy.yml
-.codex/config/publish-cli-theme.json
+.repo-tools/scripts/publish-changes.mjs
+.repo-tools/scripts/publish-changes/
+.repo-tools/scripts/shared/
+.repo-tools/config/publish-changes-policy.yml
+.repo-tools/config/publish-cli-theme.json
 ```
 
 Use the installed Node CLI directly when Node.js 24 or newer is available:
 
 ```bash
-node .codex/scripts/publish-changes.mjs --help
-node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-merge 123
-node .codex/scripts/publish-changes.mjs --mode pr-merge 123 --yes
-node .codex/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
+node .repo-tools/scripts/publish-changes.mjs --help
+node .repo-tools/scripts/publish-changes.mjs "Commit message" "PR title"
+node .repo-tools/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
+node .repo-tools/scripts/publish-changes.mjs --mode safety-guard
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge 123
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge 123 --yes
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
 ```
 
 Run these commands from the target project root. For a valid existing `package.json`, installer
-dry-run reports and apply safely adds missing `publish:changes`, `pr:review`, `pr:merge`, and
-`pr:auto-merge` aliases. Existing aliases with different values
+dry-run reports and apply safely adds missing `publish:changes`, `pr:review`, `pr:merge`,
+`pr:auto-merge`, and `safety:guard` aliases. Existing aliases with different values
 are reported and preserved. The installer does not create or repair `package.json` solely for
 these shortcuts.
 
@@ -237,9 +245,9 @@ The source repository uses package-managed `yaml` for policy loading. The instal
 downstream dependencies; if `yaml` is unavailable downstream, the Node CLI ignores the external
 YAML file, warns clearly, and uses built-in conservative defaults.
 
-`kit/config/publish-cli-theme.json` is the source of truth for publish CLI level colors and
+`kit/repo-tools/config/publish-cli-theme.json` is the source of truth for publish CLI level colors and
 label-only versus full-line rendering. Installed projects receive the same file at
-`.codex/config/publish-cli-theme.json`. Theme styles support ANSI color strings such as `"96"` and
+`.repo-tools/config/publish-cli-theme.json`. Theme styles support ANSI color strings such as `"96"` and
 RGB arrays such as `[243, 156, 18]`; hex strings are not supported. Every `[LEVEL]` label is always
 bold, so label bold is intentionally not configurable. Missing or invalid theme config produces a
 warning and activates matching built-in defaults. Documentation should reference the config
@@ -254,10 +262,10 @@ apply-theme behavior should be planned as a Node.js workflow before being reintr
 Reusable settings for downstream repositories are provided under:
 
 ```txt
-kit/github-settings/
+kit/repo-tools/github-settings/
 ```
 
-The installer maps them to `.codex/github-settings/` as copied-only artifacts; it does not apply
+The installer maps them to `.repo-tools/github-settings/` as copied-only artifacts; it does not apply
 repository settings. The package contains an importable default-branch ruleset, a minimal General
 settings REST payload, and an apply/verification checklist.
 

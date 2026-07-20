@@ -149,6 +149,7 @@ export async function runPublishFlow({
     state,
     confirmed,
     output,
+    acknowledgeSecretReview: options.acknowledgeSecretReview,
   });
 
   const branch = await ensureFeatureBranch({

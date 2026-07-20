@@ -13,7 +13,7 @@ Files:
 Install location in downstream projects:
 
 ```txt
-.codex/github-settings/
+.repo-tools/github-settings/
 ```
 
 The installer copies these files and does not apply GitHub settings.

@@ -75,20 +75,20 @@ const CODE_WORKFLOW_PREFIXES = Object.freeze([
 
 const PUBLISH_PACKAGE_TARGETS = new Set([
   ".codex/prompts/force-publish-current-branch.md",
-  ".codex/config/publish-changes-policy.yml",
-  ".codex/config/publish-cli-theme.json",
-  ".codex/scripts/publish-changes.mjs",
-  ".codex/scripts/shared/command-runner.mjs",
-  ".codex/scripts/shared/errors.mjs",
-  ".codex/scripts/shared/gh-client.mjs",
-  ".codex/scripts/shared/git-client.mjs",
-  ".codex/scripts/shared/output-theme.mjs",
-  ".codex/scripts/shared/output.mjs",
+  ".repo-tools/config/publish-changes-policy.yml",
+  ".repo-tools/config/publish-cli-theme.json",
+  ".repo-tools/scripts/publish-changes.mjs",
+  ".repo-tools/scripts/shared/command-runner.mjs",
+  ".repo-tools/scripts/shared/errors.mjs",
+  ".repo-tools/scripts/shared/gh-client.mjs",
+  ".repo-tools/scripts/shared/git-client.mjs",
+  ".repo-tools/scripts/shared/output-theme.mjs",
+  ".repo-tools/scripts/shared/output.mjs",
 ]);
 
 const PUBLISH_PACKAGE_PREFIXES = Object.freeze([
   ".codex/skills/core/publish-current-branch/",
-  ".codex/scripts/publish-changes/",
+  ".repo-tools/scripts/publish-changes/",
 ]);
 
 function matchesTarget(target, exactTargets, prefixes) {
@@ -102,7 +102,7 @@ export function payloadGroupFor(entry) {
     return "optional-skills";
   if (matchesTarget(target, PUBLISH_PACKAGE_TARGETS, PUBLISH_PACKAGE_PREFIXES))
     return "publish-package";
-  if (target.startsWith(".codex/github-settings/")) return "github-setup";
+  if (target.startsWith(".repo-tools/github-settings/")) return "github-setup";
   if (matchesTarget(target, COMMON_WORKFLOW_TARGETS, COMMON_WORKFLOW_PREFIXES))
     return "common-workflow";
   if (matchesTarget(target, DOCS_WRITING_TARGETS, DOCS_WRITING_PREFIXES))

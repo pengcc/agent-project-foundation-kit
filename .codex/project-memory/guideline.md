@@ -359,14 +359,9 @@ Important directories:
 
 ```txt
 kit/
-kit/optional-skills/
-kit/project-templates/
-kit/skills/
-kit/prompts/
-kit/rules/
-kit/config/
-kit/github-settings/
-kit/scripts/
+kit/AGENTS.md
+kit/codex/{skills,optional-skills,rules,prompts,project-memory,project-specific}/
+kit/repo-tools/{scripts,config,github-settings}/
 tests/publish-changes/
 tests/install-foundation-kit/
 archive/legacy-bash-workflows/
@@ -378,7 +373,7 @@ dev_locals/
 
 `kit/` is the installable payload source.
 
-`kit/optional-skills/` is source content for explicitly adopted specialist skills. It is excluded
+`kit/codex/optional-skills/` is source content for explicitly adopted specialist skills. It is excluded
 from default mapping and selected packages install only under `.codex/skills/engineering/<name>/`.
 
 `.codex/project-memory/` is durable project memory for this repository itself and is not part of
@@ -419,11 +414,11 @@ scripts/install-foundation-kit/
 Installable workflow scripts:
 
 ```txt
-kit/scripts/publish-changes.mjs
-kit/scripts/publish-changes/
-kit/scripts/shared/
-kit/config/publish-changes-policy.yml
-kit/config/publish-cli-theme.json
+kit/repo-tools/scripts/publish-changes.mjs
+kit/repo-tools/scripts/publish-changes/
+kit/repo-tools/scripts/shared/
+kit/repo-tools/config/publish-changes-policy.yml
+kit/repo-tools/config/publish-cli-theme.json
 ```
 
 Short command entrypoints:
@@ -433,6 +428,7 @@ pnpm publish:changes
 pnpm pr:review
 pnpm pr:merge
 pnpm pr:auto-merge
+pnpm safety:guard
 pnpm install:node
 pnpm test
 pnpm test:node
@@ -442,11 +438,9 @@ pnpm format
 pnpm format:check
 pnpm biome:fix
 pnpm check
-```
-
 Maintained workflow tooling boundary:
 
-- `kit/scripts/publish-changes.mjs`, invoked by `pnpm publish:changes`, is
+- `kit/repo-tools/scripts/publish-changes.mjs`, invoked by `pnpm publish:changes`, is
   the maintained publish path.
 - `pnpm pr:review`, `pnpm pr:merge`, and `pnpm pr:auto-merge` are explicit
   entrypoints to modes of the same maintained
@@ -455,13 +449,17 @@ Maintained workflow tooling boundary:
   secret-safety guard against the confirmed publish scope before commit, push, or PR create/update
   side effects.
 - The secret-safety guard scans confirmed publish-scope paths and diff content for dangerous
-  credential paths and high-confidence secret patterns. It is not a complete secret-scanning
-  product and does not validate tokens over the network.
+  credential paths, high-confidence secret patterns, and review-required generic credential
+  literals. High-confidence findings cannot be overridden; review-required findings require the
+  explicit `--acknowledge-secret-review` flag after local review.
+- `pnpm safety:guard` runs the same scanner in standalone read-only mode over committed branch,
+  staged, unstaged, and untracked changes. It performs no fetch, stage, commit, push, PR, or GitHub
+  operation and permits no acknowledgement override.
 - `pnpm pr:merge` does not perform remote PR diff secret scanning.
 - `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
   installation path.
 - The installer supports repeatable exact `--include-optional <name>` selection from
-  `kit/optional-skills/`, with selected packages mapped only to `.codex/skills/engineering/`.
+  `kit/codex/optional-skills/`, with selected packages mapped only to `.codex/skills/engineering/`.
 - The installer supports exactly one bounded profile, `--kit-profile docs`, selecting project
   templates, common workflow, docs/writing workflow, and the complete publish package. It excludes
   code workflow, GitHub setup, optional skills, and unclassified mappings. The flag is mutually
@@ -469,11 +467,11 @@ Maintained workflow tooling boundary:
 - Normal apply replaces selected Kit-owned targets, including differing `AGENTS.md`, skills,
   rules, prompts, scripts, configuration, GitHub settings, and optional packages, without
   per-file conflict flags or manual merge classification.
-- Files absent from the selected current payload are removed from the corresponding Kit-owned
-  target roots. The retired `.codex/foundation-kit/` manifest state is removed when encountered.
+- Files absent from the selected current payload are removed only from the corresponding current
+  Kit-owned target roots. The installer does not migrate or delete legacy downstream paths.
 - `.codex/project-memory/` and `.codex/project-specific/` are repository-owned. Their starter
   templates install only when missing and existing content is preserved.
-- A valid downstream `package.json` remains project-owned and receives only missing publish
+- A valid downstream `package.json` remains project-owned and receives only missing publish/safety
   aliases; conflicting same-name values are preserved.
 - Skill `metadata.yml` files should remain single YAML metadata documents, with source-repository
   tests covering parse hygiene.
@@ -529,7 +527,7 @@ Historical `apply-theme-zip.sh` safety behavior:
 
 Current publish workflow architecture:
 
-- `pnpm publish:changes` runs `kit/scripts/publish-changes.mjs`
+- `pnpm publish:changes` runs `kit/repo-tools/scripts/publish-changes.mjs`
 - `pnpm pr:review` and `pnpm pr:merge` expose explicit modes of the same Node CLI
 - Node is the maintained publish workflow; future publish defects should be fixed there first
 - legacy Bash publish snapshots are unsupported source-only history under
@@ -582,9 +580,9 @@ Current publish workflow architecture:
 
 
 - require Node.js 24+
-- keep reusable command, Git, GitHub, error, and output modules under `kit/scripts/shared/`
+- keep reusable command, Git, GitHub, error, and output modules under `kit/repo-tools/scripts/shared/`
 - keep publish-only orchestration, prompts, policy, state, actions, and validation modules under
-  `kit/scripts/publish-changes/`
+  `kit/repo-tools/scripts/publish-changes/`
 - show a concise preliminary scope before classification and keep full diff output opt-in
 - select update type before final scope confirmation
 - fingerprint tracked and untracked worktree state and abort if it changes before staging
@@ -603,8 +601,8 @@ Current publish workflow architecture:
   `pnpm publish:local` alias before the source publish command was consolidated to
   `publish:changes`
 - consider Theme 17.5 post-cutover validated for source-repository usage
-- load publish output styles from `kit/config/publish-cli-theme.json` in the source repository and
-  `.codex/config/publish-cli-theme.json` after installation
+- load publish output styles from the sibling `kit/repo-tools/config/publish-cli-theme.json` in
+  the source repository and `.repo-tools/config/publish-cli-theme.json` after installation
 - accept only ANSI color strings or three-integer RGB arrays plus `fullLine` in theme level styles
 - render every `[LEVEL]` label bold as a fixed rule; label bold is not theme-configurable
 - warn and use matching built-in defaults when the theme config is missing or invalid
@@ -651,15 +649,15 @@ Current `install-foundation-kit.mjs` purpose:
   differences, and remove files no longer present in that selected payload
 - preserve `.codex/project-memory/` and `.codex/project-specific/`; create only missing starter
   templates and never generate the legacy `.codex/project/` structure
-- select optional packages exactly from `kit/optional-skills/` and install them only under
+- select optional packages exactly from `kit/codex/optional-skills/` and install them only under
   `.codex/skills/engineering/<name>/`
 - stage replacements, prepare a verified backup of existing files inside the selected Kit-owned
   replacement boundary, and revalidate the complete plan before target writes
-- map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
+- map `kit/AGENTS.md` to target root `AGENTS.md`
 - map project-memory templates to `.codex/project-memory/` and the guidance starter to
   `.codex/project-specific/agent-guidance.md`
-- map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/config/`,
-  `kit/github-settings/`, and `kit/scripts/` to their matching `.codex/` directories
+- map `kit/codex/{skills,prompts,rules}/` to their matching `.codex/` directories and
+  `kit/repo-tools/{config,github-settings,scripts}/` to their matching `.repo-tools/` directories
 - validate source and target path boundaries before copying
 - never auto-merge project-owned files
 - never install this repo's own `.codex/project-memory/`, `dev_locals/`, `docs/`, or
@@ -678,25 +676,25 @@ Current Node installer test purpose:
   payload removal, repository-owned preservation, dry-run, plan drift, package augmentation,
   source mappings, metadata validity, and profile dependency closure
 
-Current `kit/github-settings/` purpose:
+Current `kit/repo-tools/github-settings/` purpose:
 
 - provide a reusable default-branch ruleset JSON for GitHub UI or REST API import
 - provide a minimal General settings REST payload enabling squash merge and auto-merge
 - provide a checklist for UI/API application, verification, optional hardening, and rollback
-- install into downstream projects under `.codex/github-settings/`
+- install into downstream projects under `.repo-tools/github-settings/`
 - remain copied-only artifacts; the installer does not apply repository settings
 
-Current `kit/scripts/` purpose:
+Current `kit/repo-tools/scripts/` purpose:
 
 - provide installable mechanical workflow executors for downstream projects
-- install under `.codex/scripts/`
-- run from the downstream project root; the installer may safe-add the four default publish
-  aliases to a valid existing `package.json`, while
-  `node .codex/scripts/publish-changes.mjs` remains the canonical guaranteed executor
+- install under `.repo-tools/scripts/`
+- run from the downstream project root; the installer may safe-add the five default publish and
+  safety aliases to a valid existing `package.json`, while
+  `node .repo-tools/scripts/publish-changes.mjs` remains the canonical guaranteed executor
 - provide a Node.js 24+ ESM publish default with modular Git, GitHub, output, prompt, policy,
   state, action, and final-report boundaries
-- install publish policy under `.codex/config/`
-- install publish CLI theme config under `.codex/config/`
+- install publish policy under `.repo-tools/config/`
+- install publish CLI theme config under `.repo-tools/config/`
 - fall back to built-in conservative policy when downstream YAML support is unavailable
 - fall back to built-in canonical output styles when publish theme config is missing or invalid
 - let skills own workflow strategy and authorization while scripts own repeatable mechanics

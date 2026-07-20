@@ -55,6 +55,9 @@ export async function runInstallerFlow({
 
   let runtimeRoot = "";
   let materialized = null;
+  let completedTargets = [];
+  let completedSupplementalTargets = [];
+  let applyPhase = "preparation";
   try {
     const applyPlan = {
       ...plan,
@@ -108,25 +111,29 @@ export async function runInstallerFlow({
     for (const targetDirectory of plan.replaceRoots) {
       await removeTree(resolve(roots.targetRoot, targetDirectory));
     }
-    await removeTree(resolve(roots.targetRoot, ".codex/foundation-kit"));
-    const completedTargets = await applyStagedPlan({
+    applyPhase = "payload";
+    completedTargets = await applyStagedPlan({
       plan: applyPlan,
       stagedRoot,
       targetRoot: roots.targetRoot,
       materializedBackup: materialized,
+      finalizeBackup: false,
       signal,
       hooks,
     });
+    applyPhase = "publish-aliases";
+    await hooks.beforePublishAliases?.({ plan, roots, materialized, completedTargets });
     const publishAliasesApplied = await applyPublishAliases({
       plan: plan.publishAliases,
       targetRoot: roots.targetRoot,
       signal,
     });
+    if (publishAliasesApplied) completedSupplementalTargets = ["package.json"];
     if (materialized) {
       await updateBackupManifest(materialized, {
         status: "completed",
         completedTargets,
-        completedSupplementalTargets: publishAliasesApplied ? ["package.json"] : [],
+        completedSupplementalTargets,
       });
     }
     const report = createFinalReport({
@@ -140,9 +147,20 @@ export async function runInstallerFlow({
     printFinalReport(report, output);
     return { report, plan };
   } catch (error) {
-    if (error?.completedTargets?.length) {
+    if (error?.completedTargets?.length) completedTargets = error.completedTargets;
+    if (materialized) {
+      await updateBackupManifest(materialized, {
+        status: error?.type === "INTERRUPTED" ? "interrupted" : "failed",
+        completedTargets,
+        completedSupplementalTargets,
+      });
+    }
+    error.completedTargets = completedTargets;
+    error.completedSupplementalTargets = completedSupplementalTargets;
+    error.applyPhase = applyPhase;
+    if (completedTargets.length) {
       output.danger(
-        `Partial apply: ${error.completedTargets.length} payload item(s) completed before failure.`,
+        `Partial apply: ${completedTargets.length} payload item(s) completed before failure during ${applyPhase}.`,
       );
     }
     if (materialized?.backupRelative)

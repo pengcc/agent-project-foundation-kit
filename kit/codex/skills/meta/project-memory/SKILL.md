@@ -76,7 +76,7 @@ For the foundation-kit source repository, use:
 
 ```txt
 root AGENTS.md
-kit/skills/meta/project-memory/SKILL.md
+kit/codex/skills/meta/project-memory/SKILL.md
 .codex/project-memory/guideline.md
 .codex/project-memory/decisions.md
 .codex/project-memory/lessons-learned.md

@@ -42,6 +42,11 @@ export function createGitClient(commandRunner, cwd) {
       return result.ok ? result.stdout.trim() : "";
     },
     verifyRef: async (ref) => (await run(["rev-parse", "--verify", ref])).ok,
+    mergeBase: (left, right) =>
+      required(
+        ["merge-base", left, right],
+        `Could not determine merge base for ${left} and ${right}`,
+      ),
     logRange: (range, format = "--oneline") =>
       required(["log", format, range], "Could not inspect commits"),
     latestSubject: () =>

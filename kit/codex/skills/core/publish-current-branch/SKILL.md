@@ -94,13 +94,14 @@ If new implementation work is needed, stop and recommend `execute-plan`.
 Use the installed Node.js 24+ CLI as the maintained mechanical executor:
 
 ```bash
-node .codex/scripts/publish-changes.mjs
-node .codex/scripts/publish-changes.mjs "Commit message"
-node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-merge 123
-node .codex/scripts/publish-changes.mjs --mode pr-merge 123 --yes
-node .codex/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
+node .repo-tools/scripts/publish-changes.mjs
+node .repo-tools/scripts/publish-changes.mjs "Commit message"
+node .repo-tools/scripts/publish-changes.mjs "Commit message" "PR title"
+node .repo-tools/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
+node .repo-tools/scripts/publish-changes.mjs --mode safety-guard
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge 123
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge 123 --yes
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
 ```
 
 The skill remains responsible for publish judgment, role routing, scope, authorization, and final
@@ -131,14 +132,14 @@ mergeability, or head verification.
 Agents should prefer invoking the installed script instead of reproducing its Git and GitHub
 command sequence. Users may also run the same command directly.
 
-The installer copies the script into `.codex/scripts/`; it does not add or modify a downstream
-`package.json`. Projects may manually add their own short command aliases, including an auto-merge
-alias, if desired.
+The installer copies the script into `.repo-tools/scripts/`. For a valid existing downstream
+`package.json`, it may safely add missing publish and safety aliases while preserving conflicts;
+the file remains project-owned and is never created or repaired solely for these shortcuts.
 
 If downstream `yaml` support is absent, the Node CLI must warn and use built-in conservative
 policy defaults rather than depending on an uninstalled package.
 
-The Node CLI loads output styles from `.codex/config/publish-cli-theme.json`. Level entries support
+The Node CLI loads output styles from `.repo-tools/config/publish-cli-theme.json`. Level entries support
 ANSI color strings or RGB arrays plus `fullLine`; all `[LEVEL]` labels remain bold by fixed
 rendering policy. Missing or invalid theme config warns and uses matching built-in defaults.
 

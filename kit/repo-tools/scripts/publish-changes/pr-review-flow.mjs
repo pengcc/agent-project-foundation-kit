@@ -98,6 +98,7 @@ export async function runPrReviewFlow({ git, gh, prompts, output, options, env =
     state,
     confirmed,
     output,
+    acknowledgeSecretReview: options.acknowledgeSecretReview,
   });
 
   let expectedPushHead = confirmed.head;

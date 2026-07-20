@@ -8,8 +8,6 @@ import { OWNERSHIP, ownershipPolicyFor } from "./ownership-policy.mjs";
 import { assertInside, assertNoTargetSymlinks, assertRelativePathSafe } from "./path-boundary.mjs";
 import { planPublishAliases, publishAliasPlanFingerprint } from "./publish-aliases.mjs";
 
-const RETIRED_KIT_STATE_ROOT = ".codex/foundation-kit";
-
 function posixRelative(base, path) {
   return relative(base, path).split("\\").join("/");
 }
@@ -92,7 +90,7 @@ function replaceRootsFor(selectedMappings) {
 async function obsoleteEntries({ selectedMappings, replaceRoots, targetRoot }) {
   const selectedTargets = new Set(selectedMappings.map((mapping) => mapping.targetRelative));
   const entries = [];
-  for (const targetDirectory of [...replaceRoots, RETIRED_KIT_STATE_ROOT]) {
+  for (const targetDirectory of replaceRoots) {
     const root = resolve(targetRoot, targetDirectory);
     if (!(await pathStats(root))) continue;
     for (const targetPath of await walkRegularFiles(root, { boundary: targetRoot })) {

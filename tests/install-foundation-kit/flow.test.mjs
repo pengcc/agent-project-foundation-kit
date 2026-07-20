@@ -1,4 +1,4 @@
-import { lstat, mkdir, readFile, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { runInstallerFlow } from "../../scripts/install-foundation-kit/flow.mjs";
@@ -30,15 +30,20 @@ function options(target, overrides = {}) {
 
 async function run(fixture, overrides = {}, hooks = {}) {
   const output = createOutput();
-  const result = await runInstallerFlow({
-    repoRoot: fixture.repoRoot,
-    options: options(fixture.targetRoot, overrides),
-    output,
-    signal: new AbortController().signal,
-    runId: `test-${Date.now()}-${Math.random()}`,
-    hooks,
-  });
-  return { ...result, output };
+  try {
+    const result = await runInstallerFlow({
+      repoRoot: fixture.repoRoot,
+      options: options(fixture.targetRoot, overrides),
+      output,
+      signal: new AbortController().signal,
+      runId: `test-${Date.now()}-${Math.random()}`,
+      hooks,
+    });
+    return { ...result, output };
+  } catch (error) {
+    error.testOutput = output;
+    throw error;
+  }
 }
 
 async function exists(path) {
@@ -99,6 +104,15 @@ describe("foundation kit install/update flow", () => {
       resolve(fixture.targetRoot, ".codex/foundation-kit/installation-manifest.json"),
       "{}\n",
     );
+    for (const legacyPath of [
+      ".codex/scripts/legacy-publish.mjs",
+      ".codex/config/legacy-policy.yml",
+      ".codex/github-settings/legacy-settings.json",
+      ".codex/project/project-guideline.md",
+    ]) {
+      await mkdir(resolve(fixture.targetRoot, legacyPath, ".."), { recursive: true });
+      await writeFile(resolve(fixture.targetRoot, legacyPath), "legacy\n");
+    }
 
     const result = await run(fixture, { apply: true });
 
@@ -131,9 +145,19 @@ describe("foundation kit install/update flow", () => {
     expect(
       await exists(resolve(fixture.targetRoot, ".codex/skills/engineering/optional-example")),
     ).toBe(false);
-    expect(await exists(resolve(fixture.targetRoot, ".codex/foundation-kit"))).toBe(false);
+    expect(await exists(resolve(fixture.targetRoot, ".codex/foundation-kit"))).toBe(true);
+    for (const legacyPath of [
+      ".codex/scripts/legacy-publish.mjs",
+      ".codex/config/legacy-policy.yml",
+      ".codex/github-settings/legacy-settings.json",
+      ".codex/project/project-guideline.md",
+    ]) {
+      await expect(readFile(resolve(fixture.targetRoot, legacyPath), "utf8")).resolves.toBe(
+        "legacy\n",
+      );
+    }
     expect(result.report.replacedFiles).toBeGreaterThan(0);
-    expect(result.report.removedFiles).toBeGreaterThanOrEqual(3);
+    expect(result.report.removedFiles).toBeGreaterThanOrEqual(2);
     expect(result.report.preservedFiles).toBe(4);
     await expect(
       readFile(
@@ -165,6 +189,79 @@ describe("foundation kit install/update flow", () => {
     }
     expect(result.report.publishAliases.skippedConflicts).toEqual(["publish:changes"]);
     expect(result.report.publishAliases.applied).toBe(true);
+  });
+
+  it("marks the backup failed when package alias augmentation fails after payload apply", async () => {
+    const fixture = await workspace("alias-failure-lifecycle");
+    await writeFile(
+      resolve(fixture.targetRoot, "package.json"),
+      `${JSON.stringify({ name: "target", scripts: {} }, null, 2)}\n`,
+    );
+
+    let failure;
+    try {
+      await run(
+        fixture,
+        { apply: true },
+        {
+          beforePublishAliases: async () => {
+            await writeFile(
+              resolve(fixture.targetRoot, "package.json"),
+              `${JSON.stringify({ name: "changed-after-payload", scripts: {} }, null, 2)}\n`,
+            );
+          },
+        },
+      );
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toBeDefined();
+    expect(failure.applyPhase).toBe("publish-aliases");
+    expect(failure.completedTargets.length).toBeGreaterThan(0);
+    expect(failure.completedSupplementalTargets).toEqual([]);
+    expect(failure.testOutput.messages).toContainEqual([
+      "DANGER",
+      expect.stringContaining("completed before failure during publish-aliases"),
+    ]);
+    const backups = await readdir(resolve(fixture.targetRoot, ".codex/backups"));
+    expect(backups).toHaveLength(1);
+    const manifest = JSON.parse(
+      await readFile(
+        resolve(fixture.targetRoot, ".codex/backups", backups[0], "manifest.json"),
+        "utf8",
+      ),
+    );
+    expect(manifest.status).toBe("failed");
+    expect(manifest.completedTargets).toEqual(failure.completedTargets);
+    expect(manifest.completedSupplementalTargets).toEqual([]);
+  });
+
+  it("reports completed payload targets truthfully when a post-payload failure has no backup", async () => {
+    const fixture = await workspace("no-backup-failure-reporting");
+    let failure;
+    try {
+      await run(
+        fixture,
+        { apply: true },
+        {
+          beforePublishAliases: async () => {
+            throw new Error("simulated post-payload failure");
+          },
+        },
+      );
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(failure).toBeDefined();
+    expect(failure.applyPhase).toBe("publish-aliases");
+    expect(failure.completedTargets.length).toBeGreaterThan(0);
+    expect(await exists(resolve(fixture.targetRoot, ".codex/backups"))).toBe(false);
+    expect(failure.testOutput.messages).toContainEqual([
+      "DANGER",
+      expect.stringContaining(`${failure.completedTargets.length} payload item(s) completed`),
+    ]);
   });
 
   it("dry-run reports replacement and preservation without target writes", async () => {
@@ -200,6 +297,16 @@ describe("foundation kit install/update flow", () => {
     await expect(readFile(resolve(fixture.targetRoot, "AGENTS.md"), "utf8")).resolves.toBe(
       "appeared after plan\n",
     );
+  });
+
+  it("rejects mapped target paths containing symlinks", async () => {
+    const fixture = await workspace("mapped-target-symlink");
+    const outside = resolve(fixture.root, "outside-rules");
+    await mkdir(resolve(fixture.targetRoot, ".codex"), { recursive: true });
+    await mkdir(outside);
+    await symlink(outside, resolve(fixture.targetRoot, ".codex/rules"), "dir");
+
+    await expect(run(fixture)).rejects.toThrow("Refusing target path containing a symlink");
   });
 
   it("replaces selected Kit-owned roots as complete bounded units", async () => {

@@ -91,10 +91,10 @@ sequence or status meanings here.
 Then inspect task-relevant sources as available:
 
 ```txt
-kit/rules/agent-operating-contract.md
-kit/rules/engineering-quality-principles.md
-existing related skills under kit/skills/meta/ and kit/skills/core/
-existing prompts under kit/prompts/
+kit/codex/rules/agent-operating-contract.md
+kit/codex/rules/engineering-quality-principles.md
+existing related skills under kit/codex/skills/meta/ and kit/codex/skills/core/
+existing prompts under kit/codex/prompts/
 docs/foundation-design-log.md
 ```
 
@@ -167,17 +167,17 @@ semantics in individual skills.
 Required files for an installable meta or core skill:
 
 ```txt
-kit/skills/<category>/<skill-name>/SKILL.md
-kit/skills/<category>/<skill-name>/metadata.yml
+kit/codex/skills/<category>/<skill-name>/SKILL.md
+kit/codex/skills/<category>/<skill-name>/metadata.yml
 ```
 
 Optional support files:
 
 ```txt
-kit/prompts/force-<skill-name>.md
-kit/skills/<category>/<skill-name>/REFERENCE.md
-kit/skills/<category>/<skill-name>/EXAMPLES.md
-kit/skills/<category>/<skill-name>/scripts/
+kit/codex/prompts/force-<skill-name>.md
+kit/codex/skills/<category>/<skill-name>/REFERENCE.md
+kit/codex/skills/<category>/<skill-name>/EXAMPLES.md
+kit/codex/skills/<category>/<skill-name>/scripts/
 ```
 
 Rules:

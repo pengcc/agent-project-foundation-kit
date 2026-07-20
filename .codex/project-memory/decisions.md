@@ -3291,3 +3291,57 @@ validation, auto-merge confirmation, and fast-forward-only refresh remain unchan
 - `README.md`
 - `tests/publish-changes/`
 - `tests/install-foundation-kit/`
+
+## Decision: Separate installed agent content from repository tooling
+
+### Status
+
+Accepted
+
+### Context
+
+The former flat `kit/` layout mixed agent instructions and capabilities with mechanical
+repository automation. It also installed scripts, configuration, and copied GitHub settings under
+`.codex/`, obscuring ownership and making source and installed runtime paths diverge conceptually.
+
+### Decision
+
+Use three explicit source surfaces:
+
+```txt
+kit/AGENTS.md
+kit/codex/{skills,optional-skills,rules,prompts,project-memory,project-specific}/
+kit/repo-tools/{scripts,config,github-settings}/
+```
+
+Install agent content under root `AGENTS.md` and `.codex/`, and install mechanical repository
+automation under `.repo-tools/`. Keep `AGENTS.md`, installed skills, rules, prompts, and
+`.repo-tools/` Kit-owned. Keep project memory, project-specific content, and `package.json`
+repository-owned. The installer replaces only current Kit-owned target roots and does not migrate
+or delete legacy downstream paths.
+
+The source repository and installed project execute the same publish runtime with sibling config
+resolution. A valid existing downstream `package.json` may receive missing `publish:changes`,
+`pr:review`, `pr:merge`, `pr:auto-merge`, and `safety:guard` aliases without transferring ownership
+or replacing conflicts.
+
+Reusable publish behavior may be promoted from a downstream repository only from an immutable
+commit and only after excluding application-specific behavior and preserving newer intentional Kit
+semantics.
+
+### Impact
+
+Agent discovery content and repository automation now have distinct ownership surfaces. Source and
+installed publish execution share one path shape, legacy downstream state remains untouched, and
+future promotions have a reproducible provenance boundary.
+
+### Related Files
+
+- `kit/AGENTS.md`
+- `kit/codex/`
+- `kit/repo-tools/`
+- `scripts/install-foundation-kit/`
+- `package.json`
+- `README.md`
+- `tests/install-foundation-kit/`
+- `tests/publish-changes/`
