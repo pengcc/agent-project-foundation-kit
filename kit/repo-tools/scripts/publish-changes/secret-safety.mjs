@@ -40,7 +40,7 @@ const HIGH_CONFIDENCE_CONTENT_RULES = [
 ];
 
 const CREDENTIAL_LITERAL_PATTERN =
-  /(?:^|[\s,{;])(?:["'])?(api[_-]?key|secret|token|password)(?:["'])?\s*[:=]\s*(["'])([^"'`\r\n]+)\2/gi;
+  /(?:^|[\s,{;])(?:["'])?(api[_-]?key|secret|token|password)(?:["'])?\s*[:=]\s*(?:(["'])([^"'`\r\n]+)\2|([^\s"'`#;,}\]]+))/gi;
 
 const PLACEHOLDER_VALUE_PATTERN =
   /^(?:x+|_+|-+|\*+|<[^>]+>|\$\{[^}]+}|your[-_]?.*|example.*|sample.*|placeholder.*|dummy.*|fake.*|test.*|changeme|change-me|replace[_-]?me|redacted|not[_-]?a[_-]?secret)$/i;
@@ -142,7 +142,7 @@ export function scanSecretSafety({ files = [], diff = "" } = {}) {
     CREDENTIAL_LITERAL_PATTERN.lastIndex = 0;
     for (const match of line.matchAll(CREDENTIAL_LITERAL_PATTERN)) {
       const identifier = match[1].toLowerCase().replace(/[-_]/g, "");
-      const value = match[3].trim();
+      const value = (match[3] ?? match[4]).trim();
       if (isPlaceholderValue(value)) continue;
       if (matchesHighConfidenceContent(value)) continue;
       if (identifier === "password") {

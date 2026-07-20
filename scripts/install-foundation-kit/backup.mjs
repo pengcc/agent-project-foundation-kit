@@ -9,7 +9,7 @@ function timestamp(date) {
 }
 
 export async function chooseBackupRelative(targetRoot, now = () => new Date()) {
-  const base = `.codex/backups/install-${timestamp(now())}`;
+  const base = `.repo-tools-state/foundation-kit/backups/install-${timestamp(now())}`;
   let candidate = base;
   for (let suffix = 1; await pathStats(resolve(targetRoot, candidate)); suffix += 1) {
     candidate = `${base}-${suffix}`;

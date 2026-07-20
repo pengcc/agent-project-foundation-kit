@@ -95,15 +95,15 @@ Optional:
 - `react-component-patterns`
 - `tanstack-router-query-patterns`
 
-The categories now match the source layout: meta skills live under `kit/skills/meta/`, core skills
-remain under `kit/skills/core/`, and optional skills live under `kit/optional-skills/`.
-The installer still copies the complete `kit/skills/` tree, so fresh default installs include meta
-and core skills. Optional skills now live under `kit/optional-skills/`, remain excluded by default,
-and install only to `.codex/skills/engineering/<name>/` after exact selection.
+The categories match the source layout: meta skills live under `kit/codex/skills/meta/`, core
+skills remain under `kit/codex/skills/core/`, and optional skills live under
+`kit/codex/optional-skills/`. The installer copies the complete `kit/codex/skills/` tree, so fresh
+default installs include meta and core skills. Optional skills remain excluded by default and
+install only to `.codex/skills/engineering/<name>/` after exact selection.
 
 Skill metadata declares `invocation: user | model | support`, `required`, and hard `depends_on`
 relationships. The canonical taxonomy, dependency, and context-load rules live in
-`kit/rules/skill-invocation-and-dependency-boundaries.md`.
+`kit/codex/rules/skill-invocation-and-dependency-boundaries.md`.
 
 Current canonical core rules:
 
@@ -116,7 +116,7 @@ Current canonical core rules:
 
 Current project-memory context control:
 
-- `kit/skills/meta/project-memory/SKILL.md` is the single canonical definition of the Project
+- `kit/codex/skills/meta/project-memory/SKILL.md` is the single canonical definition of the Project
   Memory Context Gate.
 - `project-memory` owns durable memory reading/applying; `update-project-memory` owns confirmed
   durable writes and uses the `Project Memory Curator` role.
@@ -129,7 +129,7 @@ Current project-memory context control:
 
 Current foundation alignment boundaries:
 
-- `kit/project-templates/AGENTS.md` remains a short downstream entrypoint. It points agents to
+- `kit/AGENTS.md` remains a short downstream entrypoint. It points agents to
   `.codex/rules/agent-operating-contract.md` for detailed operating rules, including Requirement
   Clarification and concise-output behavior, without duplicating full rule text.
 - `agent-operating-contract` owns the Explicit Target Reference Guardrail. Agents verify concrete
@@ -241,7 +241,7 @@ Current codebase-audit boundaries:
 
 Current UI Quality Foundation boundaries:
 
-- UI quality guidance lives in `kit/rules/engineering-quality-principles.md`.
+- UI quality guidance lives in `kit/codex/rules/engineering-quality-principles.md`.
 - It applies through existing planning, architecture, review, and audit workflows.
 - It covers user flow clarity, visual hierarchy, responsive behavior, accessibility basics,
   loading / empty / error / disabled / success states, interaction feedback, content clarity,
@@ -290,12 +290,12 @@ Current Optional Skill Catalog boundaries:
 - It defines vocabulary, candidate metadata shape, status values, and workflow routing.
 - It is not an installer manifest, package registry, marketplace, generated package workflow, or
   downstream-installed runtime file.
-- `kit/optional-skills/` contains optional specialist packages inside the source boundary but
+- `kit/codex/optional-skills/` contains optional specialist packages inside the source boundary but
   outside the default mapping.
-- `kit/optional-skills/react-component-patterns/` is an experimental, install-default-never specialist
+- `kit/codex/optional-skills/react-component-patterns/` is an experimental, install-default-never specialist
   for React component and local-state implementation patterns. It requires explicit project
   adoption and a React project signal.
-- `kit/optional-skills/tanstack-router-query-patterns/` is an experimental,
+- `kit/codex/optional-skills/tanstack-router-query-patterns/` is an experimental,
   install-default-never specialist for TanStack Router routing/URL state and TanStack Query server
   state. It requires explicit project adoption plus a matching project signal or explicit request.
 - Exact optional-skill selection is supported; broader pack/taxonomy work remains future work.
@@ -340,7 +340,7 @@ Current known tooling:
 
 - Markdown for skills, templates, rules, prompts, and design logs
 - Archived source-only Bash apply-theme tooling under `archive/legacy-bash-workflows/`
-- Installable Node ESM scripts under `kit/scripts/`
+- Installable Node ESM scripts under `kit/repo-tools/scripts/`
 - Source-only historical Bash snapshots under `archive/legacy-bash-workflows/`
 - Historical zip-based theme delivery during development; future apply-theme behavior should be
   planned as a Node.js workflow before reintroduction
@@ -755,10 +755,10 @@ The installer must not copy this repo's own `.codex/project-memory/` into downst
 - Run `pnpm check` for Biome checks, publish workflow tests, installer tests, and whitespace
   validation
 - Verify the complete Project Memory Context Gate sequence and status meanings exist only in
-  `kit/skills/meta/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills contain
-  short references only
+  `kit/codex/skills/meta/project-memory/SKILL.md`; other entrypoints, rules, and workflow skills
+  contain short references only
 - Verify the complete Missing Specialist Skill Policy exists only in
-  `kit/skills/meta/agent-roles-and-capabilities/SKILL.md`
+  `kit/codex/skills/meta/agent-roles-and-capabilities/SKILL.md`
 - For Theme 19-style docs-only alignment, confirm no scripts, package commands, installer files,
   dependencies, runtime behavior, tests, or archive files changed
 - For Theme 20-style plan/execute/review hardening, confirm no new workflows, prompts, metadata,
@@ -976,9 +976,14 @@ Completed:
     - Bash apply-theme was later archived under `archive/legacy-bash-workflows/`
     - `pnpm check` now validates Node publish, Node installer, and whitespace
 - Foundation Kit ownership and directory architecture
-    - moved source and downstream durable memory to `.codex/project-memory/` with concise filenames
+    - keeps source memory seeds under `kit/codex/project-memory/` and downstream durable memory
+      under `.codex/project-memory/` with concise filenames
     - added `.codex/project-specific/agent-guidance.md` as the repository-owned specialization surface
-    - made root downstream `AGENTS.md` and selected installed Kit payloads fully replaceable
+    - made root downstream `AGENTS.md`, selected installed agent payloads, and `.repo-tools/`
+      fully replaceable for a complete install
+    - declares profile-aware replacement roots independently from currently discovered source files
+    - stores recoverable installer state under `.repo-tools-state/foundation-kit/backups/`, outside
+      both `.codex/` and replaceable `.repo-tools/`
     - removed manifest, project-mode, conflict-override, manual-merge, workflow-script, and React-canary replacement machinery
     - preserved missing-only repository-owned templates and bounded downstream `package.json` publish-alias augmentation
     - simplified installer coverage to fresh install, replacement/removal, preservation, augmentation, mappings, metadata, profiles, dry-run, and plan drift
@@ -994,15 +999,15 @@ In progress / next likely themes:
 
 - Theme zip files cannot express deletions.
 - Rename migrations can miss references outside skills/prompts/templates/docs.
-- Reusable templates under `kit/project-templates/` must stay generic.
+- Reusable downstream instructions and seeds under `kit/` must stay generic.
 - `.codex/project-memory/` belongs to this repo and must not be treated as installable payload.
-- `.codex/skills/` is not committed for this repo to avoid duplicating `kit/skills/`.
+- `.codex/skills/` is not committed for this repo to avoid duplicating `kit/codex/skills/`.
 - `initialize-project-context` can identify capability areas and use `agent-roles-and-capabilities` when installed.
 - `agent-roles-and-capabilities` now defines generic role profiles and role routing, but technology-specific expert skills remain future work.
 - `project-architecture-plan` is a Project Lifecycle Skill and is normally used after initialization and before feature-level planning.
 - `code-review` is a core Review Workflow Skill with Change Review and Plan Alignment Review modes.
 - `install-foundation-kit.mjs` is maintained source-repository tooling for fresh or early-stage
-  downstream installation. It may reuse source helpers from `kit/scripts/shared/`, but neither
+  downstream installation. It may reuse source helpers from `kit/repo-tools/scripts/shared/`, but neither
   the entrypoint nor installer-specific modules are copied downstream.
 - The Node installer must not write downstream until apply authorization, replacement staging,
   backup snapshot preparation, and complete plan revalidation have succeeded.
@@ -1017,8 +1022,8 @@ In progress / next likely themes:
 - Full-file replacement can be safer than manual multi-location edits, but mature files still require diff and line-count review.
 - Project-specific lessons should not be copied into reusable `kit/` templates unless deliberately distilled into generic guidance.
 - Project-local validation must not silently mutate global tooling to satisfy runtime requirements.
-- PR #115 resolved downstream publish alias defaults as safe-add installer conveniences. Source
-  repository aliases invoke `kit/scripts/publish-changes.mjs`; installed downstream aliases invoke
-  `.codex/scripts/publish-changes.mjs`. Missing, invalid, non-object, or structurally unsafe
+- Downstream publish alias defaults are safe-add installer conveniences. Source-repository aliases
+  invoke `kit/repo-tools/scripts/publish-changes.mjs`; installed downstream aliases invoke
+  `.repo-tools/scripts/publish-changes.mjs`. Missing, invalid, non-object, or structurally unsafe
   `package.json` files are not created or repaired, and conflicting aliases are preserved and
   reported.

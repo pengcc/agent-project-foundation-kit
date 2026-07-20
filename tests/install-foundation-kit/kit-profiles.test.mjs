@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import YAML from "yaml";
 import {
   DOCS_PROFILE_GROUPS,
+  replacementRootsForKitProfile,
   resolveKitProfile,
   selectMappingsForKitProfile,
 } from "../../scripts/install-foundation-kit/kit-profiles.mjs";
@@ -30,6 +31,22 @@ describe("installer kit profiles", () => {
     expect(selection.mappings).toBe(mappings);
     expect(selection.requestedKitProfile).toBe("");
     expect(selection.selectedPayloadGroups).toEqual([]);
+  });
+
+  it("declares profile-aware replacement roots independently from discovered files", () => {
+    expect(replacementRootsForKitProfile()).toEqual([
+      ".codex/prompts",
+      ".codex/rules",
+      ".codex/skills",
+      ".repo-tools",
+    ]);
+    expect(replacementRootsForKitProfile("docs")).toEqual([
+      ".codex/prompts",
+      ".codex/rules",
+      ".codex/skills",
+      ".repo-tools/config",
+      ".repo-tools/scripts",
+    ]);
   });
 
   it("selects only the approved docs groups from current real mappings", async () => {

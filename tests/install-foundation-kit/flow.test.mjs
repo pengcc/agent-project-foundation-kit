@@ -1,4 +1,4 @@
-import { lstat, mkdir, readdir, readFile, symlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { runInstallerFlow } from "../../scripts/install-foundation-kit/flow.mjs";
@@ -224,13 +224,11 @@ describe("foundation kit install/update flow", () => {
       "DANGER",
       expect.stringContaining("completed before failure during publish-aliases"),
     ]);
-    const backups = await readdir(resolve(fixture.targetRoot, ".codex/backups"));
+    const backupParent = resolve(fixture.targetRoot, ".repo-tools-state/foundation-kit/backups");
+    const backups = await readdir(backupParent);
     expect(backups).toHaveLength(1);
     const manifest = JSON.parse(
-      await readFile(
-        resolve(fixture.targetRoot, ".codex/backups", backups[0], "manifest.json"),
-        "utf8",
-      ),
+      await readFile(resolve(backupParent, backups[0], "manifest.json"), "utf8"),
     );
     expect(manifest.status).toBe("failed");
     expect(manifest.completedTargets).toEqual(failure.completedTargets);
@@ -257,7 +255,9 @@ describe("foundation kit install/update flow", () => {
     expect(failure).toBeDefined();
     expect(failure.applyPhase).toBe("publish-aliases");
     expect(failure.completedTargets.length).toBeGreaterThan(0);
-    expect(await exists(resolve(fixture.targetRoot, ".codex/backups"))).toBe(false);
+    expect(
+      await exists(resolve(fixture.targetRoot, ".repo-tools-state/foundation-kit/backups")),
+    ).toBe(false);
     expect(failure.testOutput.messages).toContainEqual([
       "DANGER",
       expect.stringContaining(`${failure.completedTargets.length} payload item(s) completed`),
@@ -329,5 +329,28 @@ describe("foundation kit install/update flow", () => {
     expect(await exists(resolve(fixture.targetRoot, ".codex/rules/appeared-after-check.md"))).toBe(
       false,
     );
+  });
+
+  it("full install removes stale files directly under the Kit-owned repo-tools root", async () => {
+    const fixture = await workspace("repo-tools-root-replacement");
+    await run(fixture, { apply: true });
+    const stale = resolve(fixture.targetRoot, ".repo-tools/obsolete-file");
+    await writeFile(stale, "stale\n");
+
+    await run(fixture, { apply: true });
+
+    expect(await exists(stale)).toBe(false);
+  });
+
+  it("removes stale target files when a selected source subtree becomes empty", async () => {
+    const fixture = await workspace("empty-source-subtree");
+    await run(fixture, { apply: true });
+    const targetFile = resolve(fixture.targetRoot, ".repo-tools/github-settings/example.json");
+    await expect(readFile(targetFile, "utf8")).resolves.toBe('{"private":true}\n');
+    await rm(resolve(fixture.kitRoot, "repo-tools/github-settings/example.json"));
+
+    await run(fixture, { apply: true });
+
+    expect(await exists(targetFile)).toBe(false);
   });
 });

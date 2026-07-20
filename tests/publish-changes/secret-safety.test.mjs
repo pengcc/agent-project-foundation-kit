@@ -98,6 +98,36 @@ describe("publish secret safety scanning", () => {
     });
   });
 
+  it("detects unquoted env and YAML credential assignments", () => {
+    const value = ["opaque", "credential", "value", "42"].join("");
+    const findings = scanSecretSafety({
+      diff: addedFileDiff("config/runtime.yml", [`TOKEN=${value}`, `token: ${value}`]),
+    });
+
+    expect(findings).toHaveLength(2);
+    expect(findings.every(({ rule }) => rule === "generic-credential-literal")).toBe(true);
+    expect(findings.every(({ level }) => level === SECRET_FINDING_LEVEL.REVIEW_REQUIRED)).toBe(
+      true,
+    );
+    expect(findings.every(({ preview }) => preview === "[REDACTED]")).toBe(true);
+  });
+
+  it("retains unquoted placeholder, synthetic fixture, and high-confidence deduplication", () => {
+    const providerToken = `sk-proj-${"A".repeat(24)}`;
+    const findings = scanSecretSafety({
+      diff: [
+        addedFileDiff("src/config.ts", ["TOKEN=placeholder-value", `TOKEN=${providerToken}`]),
+        addedFileDiff("tests/fixture.yml", ["password: ValidPassword1"]),
+      ].join("\n"),
+    });
+
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({
+      level: SECRET_FINDING_LEVEL.HIGH_CONFIDENCE,
+      rule: "openai-api-key",
+    });
+  });
+
   it("never lets acknowledgement override a high-confidence finding", async () => {
     const password = ["Correct", "Horse", "42!"].join("");
     await expect(

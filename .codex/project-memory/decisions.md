@@ -6,7 +6,7 @@ This file records durable decisions for the `agent-project-foundation-kit` repos
 
 ### Status
 
-Accepted
+Superseded for current memory paths — 2026-07-20
 
 ### Decision
 
@@ -30,7 +30,7 @@ The repo's own `.codex/project/` is committed to this repository but is not part
 
 ### Status
 
-Accepted
+Superseded for current memory filenames; skill rename retained — 2026-07-20
 
 ### Decision
 
@@ -53,7 +53,7 @@ lessons-learned.md
 
 ### Status
 
-Accepted
+Superseded for current memory and source paths; non-duplication policy retained — 2026-07-20
 
 ### Decision
 
@@ -77,7 +77,11 @@ Agents should reference canonical skill sources under `kit/skills/` while develo
 
 ### Status
 
-Accepted — 2026-07-20
+Superseded for current source/tooling paths and replacement boundaries — 2026-07-20
+
+The repository-owned Project Memory rationale remains historical context. The current source
+layout, installed tooling namespace, publish command paths, and replacement boundaries are owned
+by `Separate installed agent content from repository tooling` below.
 
 ### Context
 
@@ -539,7 +543,11 @@ Only distilled and user-confirmed facts, decisions, or lessons may be promoted i
 
 ### Status
 
-Accepted
+Accepted for the source-to-target boundary; current mappings, replacement policy, and backup path
+superseded — 2026-07-20
+
+The boundary rule remains active. The mapping, conflict, and `.codex/backups/` details below are
+historical and are superseded by the later ownership and repository-tooling decisions.
 
 ### Context
 
@@ -2974,7 +2982,11 @@ behavior, publish-script behavior, or publication permissions.
 
 ### Status
 
-Accepted
+Superseded for command names and runtime paths — 2026-07-20
+
+The safe-add and conflict-preservation policy remains accepted. The current alias names and
+source/installed runtime paths are owned by `PR workflow commands distinguish review creation from
+post-review merge` and `Separate installed agent content from repository tooling` below.
 
 ### Context
 
@@ -3318,7 +3330,14 @@ Install agent content under root `AGENTS.md` and `.codex/`, and install mechanic
 automation under `.repo-tools/`. Keep `AGENTS.md`, installed skills, rules, prompts, and
 `.repo-tools/` Kit-owned. Keep project memory, project-specific content, and `package.json`
 repository-owned. The installer replaces only current Kit-owned target roots and does not migrate
-or delete legacy downstream paths.
+or delete legacy downstream paths. A complete install treats `.repo-tools/` as one replacement
+root, including files directly under that root and selected source subtrees that are currently
+empty. Profile installs use an explicit narrower replacement-root contract so they retain their
+existing payload semantics.
+
+Store recoverable installer operational state under
+`.repo-tools-state/foundation-kit/backups/`. This namespace is repository-local but is neither
+agent collaboration content nor part of the replaceable `.repo-tools/` payload.
 
 The source repository and installed project execute the same publish runtime with sibling config
 resolution. A valid existing downstream `package.json` may receive missing `publish:changes`,
@@ -3328,6 +3347,15 @@ or replacing conflicts.
 Reusable publish behavior may be promoted from a downstream repository only from an immutable
 commit and only after excluding application-specific behavior and preserving newer intentional Kit
 semantics.
+
+### Supersedes
+
+This decision supersedes the current source/tooling paths and replacement-boundary portions of
+`Foundation Kit ownership and directory architecture`, including `.codex/scripts/`,
+`.codex/config/`, `.codex/github-settings/`, `kit/project-templates/`, and `kit/skills/`. It also
+supersedes the runtime-path portions of `Downstream publish package aliases are safe-add installer
+conveniences`. Those decisions retain only the historical rationale and explicitly preserved
+repository-ownership or safe-add policies stated in their updated status notes.
 
 ### Impact
 
@@ -3340,6 +3368,7 @@ future promotions have a reproducible provenance boundary.
 - `kit/AGENTS.md`
 - `kit/codex/`
 - `kit/repo-tools/`
+- `.repo-tools-state/foundation-kit/backups/`
 - `scripts/install-foundation-kit/`
 - `package.json`
 - `README.md`

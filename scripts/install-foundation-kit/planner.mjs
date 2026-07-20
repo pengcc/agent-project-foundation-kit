@@ -2,8 +2,8 @@ import { lstat, realpath } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 import { InstallerError } from "./errors.mjs";
 import { hashFile, pathStats, walkRegularFiles } from "./fs-safe.mjs";
-import { selectMappingsForKitProfile } from "./kit-profiles.mjs";
-import { buildMappings, TREE_MAPPINGS } from "./mapping.mjs";
+import { replacementRootsForKitProfile, selectMappingsForKitProfile } from "./kit-profiles.mjs";
+import { buildMappings } from "./mapping.mjs";
 import { OWNERSHIP, ownershipPolicyFor } from "./ownership-policy.mjs";
 import { assertInside, assertNoTargetSymlinks, assertRelativePathSafe } from "./path-boundary.mjs";
 import { planPublishAliases, publishAliasPlanFingerprint } from "./publish-aliases.mjs";
@@ -75,18 +75,6 @@ async function mappedEntry({ mapping, kitRoot, targetRoot }) {
   });
 }
 
-function replaceRootsFor(selectedMappings) {
-  const replaceRoots = [];
-  for (const [, targetDirectory] of TREE_MAPPINGS) {
-    if (
-      selectedMappings.some((mapping) => mapping.targetRelative.startsWith(`${targetDirectory}/`))
-    ) {
-      replaceRoots.push(targetDirectory);
-    }
-  }
-  return Object.freeze(replaceRoots.sort());
-}
-
 async function obsoleteEntries({ selectedMappings, replaceRoots, targetRoot }) {
   const selectedTargets = new Set(selectedMappings.map((mapping) => mapping.targetRelative));
   const entries = [];
@@ -137,7 +125,7 @@ export async function buildInstallPlan({
 }) {
   const allMappings = await buildMappings(kitRoot, { includeOptional });
   const selection = selectMappingsForKitProfile(allMappings, kitProfile);
-  const replaceRoots = replaceRootsFor(selection.mappings);
+  const replaceRoots = replacementRootsForKitProfile(selection.requestedKitProfile);
   const entries = [];
   for (const mapping of selection.mappings) {
     entries.push(await mappedEntry({ mapping, kitRoot, targetRoot }));

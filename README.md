@@ -101,7 +101,9 @@ paths.
 The installer stages and verifies replacements under `dev_locals/workflow-tmp/`, prepares a
 verified backup of existing files inside the selected replacement boundary, and revalidates the
 complete plan before the first downstream write. Backups are materialized under
-`.codex/backups/install-YYYYMMDD-HHMMSS[-N]/`.
+`.repo-tools-state/foundation-kit/backups/install-YYYYMMDD-HHMMSS[-N]/`. This operational-state
+namespace is intentionally outside both agent collaboration content in `.codex/` and the
+replaceable Kit-owned `.repo-tools/` root.
 
 Repository-owned content is created only when missing and preserved afterward:
 
