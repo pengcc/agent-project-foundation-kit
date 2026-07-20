@@ -38,6 +38,18 @@ invocation type, or hard dependency.
 Do not infer installed capability from category metadata alone. Meta and core routing must remain
 functional when optional skills are absent.
 
+## Project-Specific Capability Routing
+
+When present and relevant, read `.codex/project-specific/agent-guidance.md` and inspect
+`.codex/project-specific/skills/`, `.codex/project-specific/rules/`, and
+`.codex/project-specific/prompts/`. These repository-owned capabilities use the same formats,
+metadata, invocation, dependency, routing, and authoring standards as Kit capabilities.
+
+Project-specific skills may depend on Kit skills. Kit skills must not depend on a downstream
+repository's project-specific skill. Avoid ambiguous duplicate skill identities across Kit-owned
+and project-specific paths. Route explicitly by path; do not assume native automatic discovery or
+introduce a second capability system.
+
 ## Bootstrap-Safe Routing Invariant
 
 This skill may be used for initial role/workflow routing without first passing the Project Memory

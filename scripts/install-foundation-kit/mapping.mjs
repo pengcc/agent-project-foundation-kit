@@ -3,18 +3,27 @@ import { relativePosix, walkRegularFiles } from "./fs-safe.mjs";
 import { buildOptionalSkillMappings } from "./optional-skills.mjs";
 
 export const DIRECT_MAPPINGS = Object.freeze([
-  ["project-templates/AGENTS.md", "AGENTS.md", "project-template"],
+  ["project-templates/AGENTS.md", "AGENTS.md", "kit-owned"],
   [
-    "project-templates/project-guideline.md",
-    ".codex/project/project-guideline.md",
-    "project-template",
+    "project-templates/project-memory/guideline.md",
+    ".codex/project-memory/guideline.md",
+    "project-owned-seed",
   ],
   [
-    "project-templates/project-decisions.md",
-    ".codex/project/project-decisions.md",
-    "project-template",
+    "project-templates/project-memory/decisions.md",
+    ".codex/project-memory/decisions.md",
+    "project-owned-seed",
   ],
-  ["project-templates/lessons-learned.md", ".codex/project/lessons-learned.md", "project-template"],
+  [
+    "project-templates/project-memory/lessons-learned.md",
+    ".codex/project-memory/lessons-learned.md",
+    "project-owned-seed",
+  ],
+  [
+    "project-templates/project-specific/agent-guidance.md",
+    ".codex/project-specific/agent-guidance.md",
+    "project-owned-seed",
+  ],
 ]);
 
 export const TREE_MAPPINGS = Object.freeze([

@@ -6,9 +6,10 @@ import { assertInside, canonicalExistingDirectory, isInside } from "./path-bound
 
 const REQUIRED_KIT_PATHS = [
   "project-templates/AGENTS.md",
-  "project-templates/project-guideline.md",
-  "project-templates/project-decisions.md",
-  "project-templates/lessons-learned.md",
+  "project-templates/project-memory/guideline.md",
+  "project-templates/project-memory/decisions.md",
+  "project-templates/project-memory/lessons-learned.md",
+  "project-templates/project-specific/agent-guidance.md",
   "skills",
   "prompts",
   "rules",

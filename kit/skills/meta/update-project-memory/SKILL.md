@@ -27,9 +27,9 @@ Use this skill when the agent operating contract or another workflow determines 
 After meaningful planning, implementation, debugging, review, publishing, installation, or major discussion, classify durable updates as:
 
 ```txt
-Current facts -> .codex/project/project-guideline.md
-Long-term decisions -> .codex/project/project-decisions.md
-Lessons and reusable patterns -> .codex/project/lessons-learned.md
+Current facts -> .codex/project-memory/guideline.md
+Long-term decisions -> .codex/project-memory/decisions.md
+Lessons and reusable patterns -> .codex/project-memory/lessons-learned.md
 ```
 
 Lessons are not limited to mistakes. Classify lesson candidates as:
@@ -84,9 +84,9 @@ context-discovery workflow.
 This skill updates one or more of:
 
 ```txt
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
+.codex/project-memory/guideline.md
+.codex/project-memory/decisions.md
+.codex/project-memory/lessons-learned.md
 ```
 
 It must not silently update project memory.
@@ -186,12 +186,12 @@ The summary should help the user or future agent understand why durable project 
 
 ## Update Rules
 
-### 1. Current facts go to project-guideline.md
+### 1. Current facts go to guideline.md
 
 Update:
 
 ```txt
-.codex/project/project-guideline.md
+.codex/project-memory/guideline.md
 ```
 
 when the current project state changes.
@@ -210,12 +210,12 @@ Examples:
 - Changed workflow
 - Changed implementation status
 
-### 2. Reasons go to project-decisions.md
+### 2. Reasons go to decisions.md
 
 Update:
 
 ```txt
-.codex/project/project-decisions.md
+.codex/project-memory/decisions.md
 ```
 
 when a decision is important and future agents should not re-litigate it accidentally.
@@ -235,7 +235,7 @@ Do not record every small implementation choice.
 Update:
 
 ```txt
-.codex/project/lessons-learned.md
+.codex/project-memory/lessons-learned.md
 ```
 
 when a debugging discovery, mistake, risk, successful pattern, or tradeoff has reuse value.
@@ -254,7 +254,7 @@ Do not record one-off noise.
 
 ### 4. Prefer updating existing sections
 
-When updating `project-guideline.md`, prefer existing fixed sections.
+When updating `guideline.md`, prefer existing fixed sections.
 
 Do not create duplicate headings.
 
@@ -304,15 +304,15 @@ implementation, review, onboarding, or future planning. Keep it inside the exist
 structure. Do not create a parallel `CONTEXT.md` or second source of truth unless the project has
 explicitly adopted one.
 
-Record durable decisions sparingly. A decision belongs in `project-decisions.md` when it is hard to
+Record durable decisions sparingly. A decision belongs in `decisions.md` when it is hard to
 reverse, surprising without context, based on a real tradeoff, or likely to affect future
 implementation or review. Do not turn every implementation detail into an ADR-like entry.
 
 Use the existing memory split:
 
-- `project-guideline.md` for stable project overview, conventions, vocabulary, and workflow
+- `guideline.md` for stable project overview, conventions, vocabulary, and workflow
   context.
-- `project-decisions.md` for durable architectural, product, workflow, or policy decisions.
+- `decisions.md` for durable architectural, product, workflow, or policy decisions.
 - `lessons-learned.md` for reusable lessons from incidents, bugs, migrations, or reviews.
 - `dev_locals/` for temporary plans, research notes, work items, and local-only analysis unless the
   repository convention says otherwise.

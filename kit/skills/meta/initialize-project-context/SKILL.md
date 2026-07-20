@@ -156,7 +156,7 @@ Read and compare available sources in this order:
 2. User-provided project development plan or roadmap
 3. `README.md`
 4. Product, architecture, planning, or design documents under `docs/`
-5. Existing project memory under `.codex/project/`, if present
+5. Existing project memory under `.codex/project-memory/`, if present
 6. `package.json`, lockfile, and package manager indicators
 7. Framework and tool configuration files
 8. `.env.example` and environment documentation
@@ -353,7 +353,7 @@ dev_locals/research-notes/YYYY-MM-DD-project-initialization-report.md
 
 The report is local-only. It is not committed. It is not a long-term source of truth.
 
-Long-term facts, decisions, and lessons must be written to `.codex/project/` via `update-project-memory`.
+Long-term facts, decisions, and lessons must be written to `.codex/project-memory/` via `update-project-memory`.
 
 Do not start feature implementation until initialization is complete and the user has approved any
 required durable project-memory updates.
@@ -400,7 +400,7 @@ Do not silently write project memory.
 The report must include recommended project memory updates grouped by file:
 
 ```txt
-project-guideline.md:
+guideline.md:
 - Project Overview
 - Current Scope
 - Tech Stack and Runtime
@@ -410,7 +410,7 @@ project-guideline.md:
 - Current Implementation Status
 - Known Constraints and Risks
 
-project-decisions.md:
+decisions.md:
 - selected package manager
 - selected framework
 - selected database

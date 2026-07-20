@@ -73,6 +73,90 @@ for now.
 
 Agents should reference canonical skill sources under `kit/skills/` while developing this repo.
 
+## Decision: Foundation Kit ownership and directory architecture
+
+### Status
+
+Accepted — 2026-07-20
+
+### Context
+
+The previous downstream layout mixed replaceable Kit content with repository-owned memory and
+treated several installed Kit payloads as manual merge or manifest-gated replacement candidates.
+That made fresh installation, routine Kit updates, and deliberate downstream-to-Kit promotion
+more complex than the content ownership model required.
+
+### Decision
+
+Use these repository-owned downstream paths:
+
+```txt
+.codex/project-memory/guideline.md
+.codex/project-memory/decisions.md
+.codex/project-memory/lessons-learned.md
+.codex/project-specific/agent-guidance.md
+```
+
+Optional repository-specific skills, rules, and prompts live under `.codex/project-specific/`
+only when needed. They use the same capability formats and standards as Kit equivalents, may
+depend on Kit skills, and must not become dependencies of Kit skills.
+
+Treat root downstream `AGENTS.md` and the selected installed payload under `.codex/skills/`,
+`.codex/rules/`, `.codex/prompts/`, `.codex/scripts/`, `.codex/config/`, and
+`.codex/github-settings/` as Foundation Kit-owned and replaceable. Normal apply replaces differing
+Kit-owned content and removes payload files no longer present in the selected source without
+per-file conflict flags, semantic merge, or manifest-derived authority.
+
+The installer creates missing Project Memory and project-specific guidance starters, then
+preserves both repository-owned namespaces. It does not migrate or generate legacy
+`.codex/project/` content. A valid downstream `package.json` remains project-owned and may receive
+only missing default publish aliases as a bounded augmentation.
+
+The Foundation Kit source repository uses the same current memory filenames under
+`.codex/project-memory/`, but its root `AGENTS.md` remains distinct from
+`kit/project-templates/AGENTS.md`.
+
+### Supersedes
+
+This decision supersedes the current-path and current-behavior portions of these earlier accepted
+decisions while preserving their historical rationale:
+
+- `Separate installable kit payload from repo development memory`, for the `.codex/project/`
+  location;
+- `Keep memory file names but rename memory skills`, for `project-guideline.md` and
+  `project-decisions.md`;
+- `Do not commit .codex/skills/ for this repo yet`, only where it says `.codex/project/` is the
+  committed memory path;
+- `Installer has a controlled source-to-target boundary exception`, for old template mappings and
+  conflict handling;
+- `Installer project mode controls conflict policy without changing payload behavior`;
+- `Existing-project safe apply and selected optional-skill installation`, for safe-add-only and
+  `.codex/skills/project/` ownership;
+- `Installation manifests are evidence, not replacement authority`;
+- `Managed replacement starts with a package-atomic React canary`;
+- `Existing-project scripts are workflow-script merge items when different`; and
+- `Existing-project upgrade safety v1 closes after WI-1/WI-2 validation`, for its accepted
+  replacement limitations.
+
+### Impact
+
+Fresh installation and update share one direct mapping model. Repository-owned context survives
+reinstallation, Kit-owned payload differences are normal update state, and reusable improvements
+can be promoted deliberately between corresponding downstream and `kit/` paths without Markdown
+merging or a second discovery system.
+
+### Related files
+
+```txt
+AGENTS.md
+kit/project-templates/
+kit/skills/meta/project-memory/
+kit/skills/meta/update-project-memory/
+scripts/install-foundation-kit/
+tests/install-foundation-kit/
+.codex/project-memory/
+```
+
 ## Decision: Theme zips belong under `dev_locals/theme-zips/`
 
 ### Status

@@ -32,9 +32,10 @@ export async function createFixtureKit(repoRoot) {
   const optionalSkillsDirectory = "optional-skills";
   const files = {
     "project-templates/AGENTS.md": "agent instructions\n",
-    "project-templates/project-guideline.md": "guideline\n",
-    "project-templates/project-decisions.md": "decisions\n",
-    "project-templates/lessons-learned.md": "lessons\n",
+    "project-templates/project-memory/guideline.md": "guideline\n",
+    "project-templates/project-memory/decisions.md": "decisions\n",
+    "project-templates/project-memory/lessons-learned.md": "lessons\n",
+    "project-templates/project-specific/agent-guidance.md": "guidance\n",
     "skills/meta/meta-example/SKILL.md": "meta skill\n",
     "skills/core/core-example/SKILL.md": "core skill\n",
     "prompts/example.md": "prompt\n",

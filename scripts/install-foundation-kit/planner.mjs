@@ -1,18 +1,22 @@
 import { lstat, realpath } from "node:fs/promises";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import { InstallerError } from "./errors.mjs";
-import { hashFile, pathStats } from "./fs-safe.mjs";
-import { loadInstallationManifest } from "./installation-manifest.mjs";
-import { kitProfileIncludesGroup, selectMappingsForKitProfile } from "./kit-profiles.mjs";
-import { buildMappings } from "./mapping.mjs";
-import { isManifestManaged, OWNERSHIP, ownershipPolicyFor, RISK } from "./ownership-policy.mjs";
+import { hashFile, pathStats, walkRegularFiles } from "./fs-safe.mjs";
+import { selectMappingsForKitProfile } from "./kit-profiles.mjs";
+import { buildMappings, TREE_MAPPINGS } from "./mapping.mjs";
+import { OWNERSHIP, ownershipPolicyFor } from "./ownership-policy.mjs";
 import { assertInside, assertNoTargetSymlinks, assertRelativePathSafe } from "./path-boundary.mjs";
-import { payloadGroupFor } from "./payload-groups.mjs";
 import { planPublishAliases, publishAliasPlanFingerprint } from "./publish-aliases.mjs";
+
+const RETIRED_KIT_STATE_ROOT = ".codex/foundation-kit";
+
+function posixRelative(base, path) {
+  return relative(base, path).split("\\").join("/");
+}
 
 function planFingerprint(
   entries,
-  installationManifest,
+  replaceRoots,
   publishAliases,
   requestedKitProfile,
   selectedPayloadGroups,
@@ -20,232 +24,21 @@ function planFingerprint(
   return JSON.stringify({
     requestedKitProfile,
     selectedPayloadGroups,
-    installationManifest: {
-      status: installationManifest.status,
-      fileSha256: installationManifest.fileSha256,
-      issues: installationManifest.issues,
-    },
+    replaceRoots,
     entries: entries.map((entry) => ({
       sourceRelative: entry.sourceRelative,
       targetRelative: entry.targetRelative,
       sourceSha256: entry.sourceSha256,
       targetSha256: entry.targetSha256,
-      baselineSha256: entry.baselineSha256,
-      baselineStatus: entry.baselineStatus,
       contentState: entry.contentState,
       ownership: entry.ownership,
-      risk: entry.risk,
-      kind: entry.kind,
-      managedReplaceAllowed: entry.managedReplaceAllowed,
-      mappingState: entry.mappingState,
-      migrationState: entry.migrationState,
-      collisionPath: entry.collisionPath,
-      resultCategory: entry.resultCategory,
-      reasonCode: entry.reasonCode,
       action: entry.action,
-      optionalName: entry.optionalName ?? "",
     })),
     publishAliases: publishAliasPlanFingerprint(publishAliases),
   });
 }
 
-async function firstExistingPath(targetRoot, candidates) {
-  for (const candidate of candidates) {
-    if (await pathStats(resolve(targetRoot, candidate))) return candidate;
-  }
-  return "";
-}
-
-async function migrationCollisionFor(mapping, targetRoot, contentState) {
-  if (contentState !== "new") return "";
-  if (mapping.category === "optional") {
-    const name = mapping.optionalName;
-    return firstExistingPath(targetRoot, [
-      `.codex/skills/core/${name}`,
-      `.codex/skills/meta/${name}`,
-    ]);
-  }
-
-  const match = mapping.targetRelative.match(/^\.codex\/skills\/meta\/([^/]+)\//);
-  if (!match) return "";
-  const name = match[1];
-  const candidates = [`.codex/skills/core/${name}`];
-  if (name === "writing-great-skills") candidates.push(".codex/skills/core/write-a-skill");
-  return firstExistingPath(targetRoot, candidates);
-}
-
-function manifestPolicyIssues(mappings, installationManifest) {
-  if (installationManifest.status !== "valid") return [];
-  const mappingsByTarget = new Map(mappings.map((mapping) => [mapping.targetRelative, mapping]));
-  const issues = [];
-  for (const [target, record] of Object.entries(installationManifest.manifest.files)) {
-    const mapping = mappingsByTarget.get(target);
-    if (!mapping) continue;
-    const policy = ownershipPolicyFor(mapping);
-    if (!isManifestManaged(policy)) {
-      issues.push(`Manifest claims a source-policy project or mixed path: ${target}`);
-    }
-    if (record.source !== mapping.sourceRelative) {
-      issues.push(`Manifest source does not match the current mapping: ${target}`);
-    }
-  }
-  return issues;
-}
-
-function withPolicyValidation(installationManifest, issues) {
-  if (!issues.length) return installationManifest;
-  return Object.freeze({
-    status: "invalid",
-    fileSha256: installationManifest.fileSha256,
-    manifest: installationManifest.manifest,
-    issues: Object.freeze(issues),
-  });
-}
-
-function baselineFor(mapping, installationManifest) {
-  return installationManifest.manifest?.files[mapping.targetRelative] ?? null;
-}
-
-function classify({
-  contentState,
-  policy,
-  migrationState,
-  baselineRecord,
-  installationManifest,
-  sourceSha256,
-  targetSha256,
-}) {
-  if (installationManifest.status === "invalid") {
-    return {
-      resultCategory: "BLOCKED_MANUAL",
-      reasonCode: "installation-manifest-invalid",
-      action: "blocked",
-      baselineStatus: "invalid",
-    };
-  }
-  if (contentState === "new") {
-    if (baselineRecord) {
-      return {
-        resultCategory: "BLOCKED_MANUAL",
-        reasonCode: "manifested-target-missing",
-        action: "blocked",
-        baselineStatus: "present",
-      };
-    }
-    if (migrationState === "legacy-path-collision") {
-      return {
-        resultCategory: "BLOCKED_MANUAL",
-        reasonCode: "legacy-path-collision",
-        action: "migration-review",
-        baselineStatus: "missing",
-      };
-    }
-    return {
-      resultCategory: "SAFE_ADD",
-      reasonCode: "target-missing-additive",
-      action: "write",
-      baselineStatus: "missing",
-    };
-  }
-  if (contentState === "existing-identical") {
-    return {
-      resultCategory: null,
-      reasonCode: policy.baselineAdoptable
-        ? baselineRecord
-          ? "unchanged-managed-baseline"
-          : "unchanged-managed-adoptable"
-        : "unchanged-not-adoptable",
-      action: "skip-identical",
-      baselineStatus: baselineRecord
-        ? "present"
-        : policy.baselineAdoptable
-          ? "adoptable"
-          : "not-applicable",
-    };
-  }
-  if (policy.ownership === OWNERSHIP.PROJECT_OWNED) {
-    return {
-      resultCategory: "PROJECT_OWNED",
-      reasonCode: "source-policy-project-owned",
-      action: "preserve",
-      baselineStatus: "not-applicable",
-    };
-  }
-  if (policy.ownership === OWNERSHIP.MIXED) {
-    return {
-      resultCategory: "BLOCKED_MANUAL",
-      reasonCode: "mixed-file-without-managed-sections",
-      action: "manual-merge",
-      baselineStatus: "not-applicable",
-    };
-  }
-  if (policy.risk === RISK.MANUAL) {
-    return {
-      resultCategory: "BLOCKED_MANUAL",
-      reasonCode: "manual-risk-existing-difference",
-      action: policy.kind === "workflow-script" ? "script-merge" : "blocked",
-      baselineStatus: baselineRecord ? "present" : "missing",
-    };
-  }
-  if (!baselineRecord) {
-    return {
-      resultCategory: "BLOCKED_MANUAL",
-      reasonCode: "installed-baseline-missing",
-      action: "review",
-      baselineStatus: "missing",
-    };
-  }
-  if (contentState === "existing-different") {
-    if (baselineRecord.baselineSha256 === targetSha256) {
-      return {
-        resultCategory: "KIT_MANAGED_REPLACE",
-        reasonCode: "target-equals-installed-baseline",
-        action: "managed-replace-review",
-        baselineStatus: "present",
-      };
-    }
-    return {
-      resultCategory: "MIXED_AGENT_MERGE",
-      reasonCode:
-        baselineRecord.baselineSha256 === sourceSha256
-          ? "target-changed-from-baseline"
-          : "source-and-target-changed-from-baseline",
-      action: "agent-merge",
-      baselineStatus: "present",
-    };
-  }
-  throw new InstallerError("INVALID_PLAN", `Unsupported content state: ${contentState}`);
-}
-
-function summaryFor(entries, includeOptional) {
-  const categoryCount = (category) =>
-    entries.filter((entry) => entry.resultCategory === category).length;
-  return {
-    total: entries.length,
-    newFiles: entries.filter((entry) => entry.contentState === "new").length,
-    writableNewFiles: entries.filter((entry) => entry.action === "write").length,
-    identicalFiles: entries.filter((entry) => entry.contentState === "existing-identical").length,
-    differentFiles: entries.filter((entry) => entry.contentState === "existing-different").length,
-    conflicts: entries.filter((entry) => entry.contentState === "existing-different").length,
-    preservedFiles: entries.filter((entry) => entry.action === "preserve").length,
-    mergeFiles: entries.filter((entry) => entry.action === "manual-merge").length,
-    scriptMergeFiles: entries.filter((entry) => entry.action === "script-merge").length,
-    migrationReviews: entries.filter((entry) => entry.action === "migration-review").length,
-    optionalSelectedFiles: entries.filter((entry) => entry.kind === "optional").length,
-    safeAddFiles: categoryCount("SAFE_ADD"),
-    kitManagedReplaceFiles: categoryCount("KIT_MANAGED_REPLACE"),
-    projectOwnedFiles: categoryCount("PROJECT_OWNED"),
-    mixedAgentMergeFiles: categoryCount("MIXED_AGENT_MERGE"),
-    blockedManualFiles: categoryCount("BLOCKED_MANUAL"),
-    unchangedFiles: entries.filter((entry) => entry.resultCategory === null).length,
-    reviewItems: entries.filter(
-      (entry) => entry.resultCategory && entry.resultCategory !== "SAFE_ADD",
-    ).length,
-    selectedOptionalSkills: Object.freeze([...new Set(includeOptional)].sort()),
-  };
-}
-
-async function mappedEntry({ mapping, kitRoot, targetRoot, installationManifest }) {
+async function mappedEntry({ mapping, kitRoot, targetRoot }) {
   assertRelativePathSafe(mapping.sourceRelative, "Source path");
   assertRelativePathSafe(mapping.targetRelative, "Target path");
   const sourcePath = resolve(kitRoot, mapping.sourceRelative);
@@ -268,71 +61,74 @@ async function mappedEntry({ mapping, kitRoot, targetRoot, installationManifest 
   }
   const sourceSha256 = await hashFile(sourcePath);
   const targetSha256 = targetStats ? await hashFile(targetPath) : "";
-  const contentState = targetStats
-    ? targetSha256 === sourceSha256
+  const contentState = !targetStats
+    ? "new"
+    : sourceSha256 === targetSha256
       ? "existing-identical"
-      : "existing-different"
-    : "new";
+      : "existing-different";
   const policy = ownershipPolicyFor(mapping);
-  const baselineRecord = baselineFor(mapping, installationManifest);
-  const collisionPath = await migrationCollisionFor(mapping, targetRoot, contentState);
-  const migrationState = collisionPath ? "legacy-path-collision" : "none";
-  const classification = classify({
-    contentState,
-    policy,
-    migrationState,
-    baselineRecord,
-    installationManifest,
-    sourceSha256,
-    targetSha256,
-  });
-  return {
+  return Object.freeze({
     ...mapping,
     ...policy,
-    ...classification,
-    mappingState: "current",
-    migrationState,
-    collisionPath,
     contentState,
     sourceSha256,
     targetSha256,
-    baselineSha256: baselineRecord?.baselineSha256 ?? "",
-  };
+    action: policy.ownership === OWNERSHIP.PROJECT_OWNED && targetStats ? "preserve" : "install",
+  });
 }
 
-async function obsoleteEntries({ mappings, targetRoot, installationManifest }) {
-  if (!installationManifest.manifest) return [];
-  const mappedTargets = new Set(mappings.map((mapping) => mapping.targetRelative));
+function replaceRootsFor(selectedMappings) {
+  const replaceRoots = [];
+  for (const [, targetDirectory] of TREE_MAPPINGS) {
+    if (
+      selectedMappings.some((mapping) => mapping.targetRelative.startsWith(`${targetDirectory}/`))
+    ) {
+      replaceRoots.push(targetDirectory);
+    }
+  }
+  return Object.freeze(replaceRoots.sort());
+}
+
+async function obsoleteEntries({ selectedMappings, replaceRoots, targetRoot }) {
+  const selectedTargets = new Set(selectedMappings.map((mapping) => mapping.targetRelative));
   const entries = [];
-  for (const [targetRelative, record] of Object.entries(installationManifest.manifest.files)) {
-    if (mappedTargets.has(targetRelative)) continue;
-    await assertNoTargetSymlinks(targetRoot, targetRelative);
-    const targetPath = resolve(targetRoot, targetRelative);
-    const stats = await pathStats(targetPath);
-    const targetSha256 = stats?.isFile() ? await hashFile(targetPath) : "";
-    entries.push({
-      sourceRelative: record.source,
-      targetRelative,
-      category: "manifest-only",
-      ownership: "kit-managed",
-      risk: "manual",
-      kind: "obsolete",
-      baselineAdoptable: false,
-      managedReplaceAllowed: false,
-      mappingState: "source-no-longer-mapped",
-      migrationState: "none",
-      collisionPath: "",
-      contentState: stats ? "existing-different" : "missing",
-      sourceSha256: "",
-      targetSha256,
-      baselineSha256: record.baselineSha256,
-      baselineStatus: "present",
-      resultCategory: "BLOCKED_MANUAL",
-      reasonCode: "source-no-longer-mapped",
-      action: "blocked",
-    });
+  for (const targetDirectory of [...replaceRoots, RETIRED_KIT_STATE_ROOT]) {
+    const root = resolve(targetRoot, targetDirectory);
+    if (!(await pathStats(root))) continue;
+    for (const targetPath of await walkRegularFiles(root, { boundary: targetRoot })) {
+      const targetRelative = posixRelative(targetRoot, targetPath);
+      if (selectedTargets.has(targetRelative)) continue;
+      entries.push(
+        Object.freeze({
+          sourceRelative: "",
+          targetRelative,
+          category: "obsolete-kit-owned",
+          ownership: OWNERSHIP.KIT_MANAGED,
+          kind: "obsolete-kit-owned",
+          contentState: "existing-different",
+          sourceSha256: "",
+          targetSha256: await hashFile(targetPath),
+          action: "delete",
+        }),
+      );
+    }
   }
   return entries;
+}
+
+function summaryFor(entries, includeOptional) {
+  return {
+    total: entries.length,
+    installedFiles: entries.filter((entry) => entry.action === "install").length,
+    replacedFiles: entries.filter(
+      (entry) => entry.action === "install" && entry.contentState.startsWith("existing-"),
+    ).length,
+    newFiles: entries.filter((entry) => entry.action === "install" && entry.contentState === "new")
+      .length,
+    preservedFiles: entries.filter((entry) => entry.action === "preserve").length,
+    removedFiles: entries.filter((entry) => entry.action === "delete").length,
+    selectedOptionalSkills: Object.freeze([...new Set(includeOptional)].sort()),
+  };
 }
 
 export async function buildInstallPlan({
@@ -342,41 +138,35 @@ export async function buildInstallPlan({
   kitProfile = "",
 }) {
   const allMappings = await buildMappings(kitRoot, { includeOptional });
-  const loadedManifest = await loadInstallationManifest(targetRoot);
-  const installationManifest = withPolicyValidation(
-    loadedManifest,
-    manifestPolicyIssues(allMappings, loadedManifest),
-  );
   const selection = selectMappingsForKitProfile(allMappings, kitProfile);
+  const replaceRoots = replaceRootsFor(selection.mappings);
   const entries = [];
   for (const mapping of selection.mappings) {
-    entries.push(await mappedEntry({ mapping, kitRoot, targetRoot, installationManifest }));
+    entries.push(await mappedEntry({ mapping, kitRoot, targetRoot }));
   }
-  const obsolete = await obsoleteEntries({
-    mappings: allMappings,
-    targetRoot,
-    installationManifest,
-  });
   entries.push(
-    ...obsolete.filter((entry) => kitProfileIncludesGroup(kitProfile, payloadGroupFor(entry))),
+    ...(await obsoleteEntries({
+      selectedMappings: selection.mappings,
+      replaceRoots,
+      targetRoot,
+    })),
   );
   entries.sort((left, right) => left.targetRelative.localeCompare(right.targetRelative));
-  const frozenEntries = entries.map((entry) => Object.freeze(entry));
   const publishAliases = await planPublishAliases(targetRoot);
   return Object.freeze({
-    entries: Object.freeze(frozenEntries),
-    installationManifest,
+    entries: Object.freeze(entries),
     publishAliases,
     requestedKitProfile: selection.requestedKitProfile,
     selectedPayloadGroups: selection.selectedPayloadGroups,
+    replaceRoots,
     fingerprint: planFingerprint(
-      frozenEntries,
-      installationManifest,
+      entries,
+      replaceRoots,
       publishAliases,
       selection.requestedKitProfile,
       selection.selectedPayloadGroups,
     ),
-    ...summaryFor(frozenEntries, includeOptional),
+    ...summaryFor(entries, includeOptional),
   });
 }
 
@@ -391,7 +181,7 @@ export async function revalidateInstallPlan({
   if (current.fingerprint !== expected.fingerprint) {
     throw new InstallerError(
       "PLAN_DRIFT",
-      "Source, target, policy, or installation manifest changed after planning. Run the installer again.",
+      "Source or target state changed after planning. Run the installer again.",
     );
   }
   return current;

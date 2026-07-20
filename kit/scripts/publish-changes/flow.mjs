@@ -281,7 +281,7 @@ export async function runPublishFlow({
       (file) => file.path === "README.md" || file.path?.startsWith("docs/"),
     ),
     projectMemoryUpdated: confirmedScope.files.some((file) =>
-      file.path?.startsWith(".codex/project/"),
+      file.path?.startsWith(".codex/project-memory/"),
     ),
   };
   renderFinalReport(output, report);

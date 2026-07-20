@@ -1,9 +1,9 @@
 # AGENTS.md
 
 This is the stable, concise entry point for agents working in this project. Keep detailed project
-facts in `.codex/project/project-guideline.md`, durable decisions in
-`.codex/project/project-decisions.md`, and reusable lessons in
-`.codex/project/lessons-learned.md`.
+facts in `.codex/project-memory/guideline.md`, durable decisions in
+`.codex/project-memory/decisions.md`, and reusable lessons in
+`.codex/project-memory/lessons-learned.md`.
 
 ## Required Context
 
@@ -12,6 +12,9 @@ pass and report the Project Memory Context Gate from the installed `project-memo
 
 Use the project guideline as the current source of truth for the stack, scripts, testing,
 deployment, environment-variable names, directory rules, and project-specific constraints.
+Read and apply `.codex/project-specific/agent-guidance.md` when it exists. It supplements this
+Kit-owned entrypoint with repository-specific guidance and must not duplicate the full operating
+contract.
 Use `agent-roles-and-capabilities` for role routing and missing-specialist fallback, and
 `docs-first-research` when decisions depend on consequential external technical facts.
 
@@ -40,7 +43,7 @@ scope, stop conditions, and risk are unchanged.
 
 The repository root is the default file-operation boundary. Project-related external development
 infrastructure is allowed only when explicitly pre-authorized by
-`.codex/project/project-guideline.md`; access must remain within the active task and approved
+`.codex/project-memory/guideline.md`; access must remain within the active task and approved
 resource type. Other out-of-project writes, destructive operations, or resource access require
 explicit user approval.
 
@@ -59,7 +62,14 @@ rather than duplicating its workflow contract here.
 
 Installed Foundation Kit workflows are under `.codex/skills/`, `.codex/rules/`, and
 `.codex/prompts/`. Project-specific durable memory is maintained separately under
-`.codex/project/`.
+`.codex/project-memory/`.
+
+When present and relevant, inspect project-specific capabilities under
+`.codex/project-specific/skills/`, `.codex/project-specific/rules/`, and
+`.codex/project-specific/prompts/`. They use the same formats, metadata, invocation, dependency,
+routing, and authoring standards as Kit capabilities. Project-specific skills may depend on Kit
+skills, but Kit skills must not depend on project-specific skills. Avoid duplicate skill
+identities across the two ownership paths.
 
 Use the matching workflow for planning, execution, review, handoff, durable-memory updates, and
 publishing. Plans and handoffs are local process artifacts under `dev_locals/`; they are not

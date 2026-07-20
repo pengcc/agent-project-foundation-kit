@@ -41,7 +41,7 @@ For project-impacting work, pass the Project Memory Context Gate through `projec
 Inspect relevant project sources before proposing UI direction:
 
 ```txt
-.codex/project/project-guideline.md
+.codex/project-memory/guideline.md
 package.json and UI-related configuration
 existing screens and routes
 existing components and variants

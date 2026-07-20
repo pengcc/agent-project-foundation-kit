@@ -78,7 +78,7 @@ requirement discovery. Do not route every tiny ambiguity to `grill-me`.
 
 The current project root is the default file-operation boundary.
 
-`.codex/project/project-guideline.md` may define a bounded allowlist of project-related external
+`.codex/project-memory/guideline.md` may define a bounded allowlist of project-related external
 development infrastructure. Operations within that allowlist do not require repeated confirmation
 merely because the resource is outside the repository root.
 
@@ -105,7 +105,7 @@ configure, or otherwise mutate:
 - PATH configuration
 - global Git configuration
 - files or resources outside the current project root that are not explicitly pre-authorized by
-  `.codex/project/project-guideline.md`
+  `.codex/project-memory/guideline.md`
 
 Read-only diagnostics are allowed without approval. Examples include `node -v`, `which node`,
 `which -a node`, `pnpm -v`, `mise current`, `mise doctor`, `brew info`,
@@ -234,9 +234,9 @@ After meaningful planning, implementation, debugging, review, publishing, instal
 Route durable knowledge as follows:
 
 ```txt
-Current facts -> .codex/project/project-guideline.md
-Long-term decisions -> .codex/project/project-decisions.md
-Lessons and reusable patterns -> .codex/project/lessons-learned.md
+Current facts -> .codex/project-memory/guideline.md
+Long-term decisions -> .codex/project-memory/decisions.md
+Lessons and reusable patterns -> .codex/project-memory/lessons-learned.md
 ```
 
 Use `update-project-memory` for confirmed updates.
@@ -289,7 +289,7 @@ global-tooling, routing, memory, reporting, publish, or other hard boundary in t
 - Do not expand scope without calling it out.
 - Do not bypass matching installed skills.
 - Do not perform destructive actions unless they are explicitly authorized by the user or fall
-  within disposable infrastructure pre-authorized by `.codex/project/project-guideline.md`.
+  within disposable infrastructure pre-authorized by `.codex/project-memory/guideline.md`.
 - Do not publish, merge, release, or deploy unless the user explicitly requests the matching workflow.
 - Do not introduce dependencies, tooling, architecture changes, or workflow changes without checking project memory and explaining impact.
 - Prefer small, reversible changes.

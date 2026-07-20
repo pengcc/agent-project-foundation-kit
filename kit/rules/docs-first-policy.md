@@ -22,7 +22,7 @@ Model memory can support reasoning, but must not override official documentation
    - official GitHub repo docs
 
 2. Project sources
-   - `.codex/project/project-guideline.md`
+   - `.codex/project-memory/guideline.md`
    - `package.json`
    - lockfile
    - config files

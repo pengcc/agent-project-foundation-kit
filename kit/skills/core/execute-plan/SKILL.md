@@ -375,9 +375,9 @@ Use this structure:
 
 ```txt
 Project memory update check:
-- project-guideline.md: yes | no
+- guideline.md: yes | no
   Reason:
-- project-decisions.md: yes | no
+- decisions.md: yes | no
   Reason:
 - lessons-learned.md: yes | no
   Reason:

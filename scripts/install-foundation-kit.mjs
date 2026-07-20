@@ -2,13 +2,11 @@
 
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createCommandRunner } from "../kit/scripts/shared/command-runner.mjs";
 import { createOutput } from "../kit/scripts/shared/output.mjs";
 import { loadOutputTheme } from "../kit/scripts/shared/output-theme.mjs";
 import { parseCliOptions, usage } from "./install-foundation-kit/cli-options.mjs";
 import { InstallerError } from "./install-foundation-kit/errors.mjs";
 import { runInstallerFlow } from "./install-foundation-kit/flow.mjs";
-import { createInstallerPrompts } from "./install-foundation-kit/prompts.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
@@ -37,9 +35,6 @@ export async function main(argv = process.argv.slice(2)) {
   const output = createOutput({ verbose: options.verbose, theme });
   if (warning) output.warning(warning);
   output.debug(`Theme source: ${source}`);
-  const prompts = createInstallerPrompts({
-    formatPrompt: (message) => output.format("PROMPT", message),
-  });
   const abortController = new AbortController();
   const abort = () => abortController.abort();
   process.once("SIGINT", abort);
@@ -49,12 +44,9 @@ export async function main(argv = process.argv.slice(2)) {
       repoRoot,
       options,
       output,
-      prompts,
-      commandRunner: createCommandRunner(),
       signal: abortController.signal,
     });
   } finally {
-    prompts.close();
     process.off("SIGINT", abort);
     process.off("SIGTERM", abort);
   }

@@ -20,7 +20,7 @@ Selected downstream adoption requires:
 
 Do not copy the complete `kit/optional-skills/` tree or treat catalog presence as adoption
 approval. Do not install selected optional skills under `.codex/skills/optional/`,
-`.codex/skills/project/`, or a flat `.codex/skills/<skill-name>/` path.
+`.codex/project-specific/`, or a flat `.codex/skills/<skill-name>/` path.
 
-`.codex/skills/project/` is target-project-owned and outside optional-skill discovery, validation,
-migration, and collision checks.
+Repository-only capabilities belong under `.codex/project-specific/` and remain outside optional
+Kit package selection and replacement.

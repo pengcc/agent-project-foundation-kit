@@ -61,6 +61,7 @@ Completed themes:
 - Downstream installation and first-adoption hardening
 - Extract Grilling Primitive
 - Existing-project upgrade safety v1 closeout
+- Foundation Kit ownership and directory architecture
 
 Current conceptual skill taxonomy:
 
@@ -122,7 +123,7 @@ Current project-memory context control:
 - Root and downstream AGENTS entrypoints, the operating contract, and project-state workflow
   skills use short references to that definition.
 - The gate applies both to downstream installed projects and this source repository's
-  `.codex/project/` memory.
+  `.codex/project-memory/` memory.
 - Referenced plans, handoffs, reports, and research notes are checked only when task-relevant and
   only after freshness and source-of-truth verification.
 
@@ -371,7 +372,7 @@ tests/install-foundation-kit/
 archive/legacy-bash-workflows/
 docs/
 scripts/
-.codex/project/
+.codex/project-memory/
 dev_locals/
 ```
 
@@ -380,7 +381,8 @@ dev_locals/
 `kit/optional-skills/` is source content for explicitly adopted specialist skills. It is excluded
 from default mapping and selected packages install only under `.codex/skills/engineering/<name>/`.
 
-`.codex/project/` is durable project memory for this repository itself and is not part of the installable `kit/` payload.
+`.codex/project-memory/` is durable project memory for this repository itself and is not part of
+the installable `kit/` payload.
 
 `dev_locals/` is local-only and contains plans, handoffs, scratch notes, research notes, initialization reports, and theme zip files.
 
@@ -458,39 +460,21 @@ Maintained workflow tooling boundary:
 - `pnpm pr:merge` does not perform remote PR diff secret scanning.
 - `scripts/install-foundation-kit.mjs`, invoked by `pnpm install:node`, is the maintained
   installation path.
-- Successful apply writes a deterministic schema-v1 installation manifest at
-  `.codex/foundation-kit/installation-manifest.json`. Its SHA-256 records are baseline evidence,
-  not overwrite authorization; source-controlled ownership policy remains authoritative.
 - The installer supports repeatable exact `--include-optional <name>` selection from
   `kit/optional-skills/`, with selected packages mapped only to `.codex/skills/engineering/`.
 - The installer supports exactly one bounded profile, `--kit-profile docs`, selecting project
   templates, common workflow, docs/writing workflow, and the complete publish package. It excludes
   code workflow, GitHub setup, optional skills, and unclassified mappings. The flag is mutually
-  exclusive with `--include-optional` and `--replace-kit-managed`.
-- Docs-profile selection occurs after complete mapping and manifest-policy validation but before
-  per-target planning. It is additive per invocation: schema-v1 stores no profile field, prior
-  out-of-profile records and files remain untouched, and no-profile behavior remains the complete
-  mapping. Explicit profile reports show the requested profile and selected groups.
-- Existing-project apply remains safe-add-only by default. The only managed-replacement exception
-  is the exact two-file `react-component-patterns` canary under explicit
-  `--replace-kit-managed --include-optional react-component-patterns`; all other existing-file
-  replacement remains report-only, and `--overwrite-conflicts` does not broaden authorization.
-- The React canary is package-atomic: both `SKILL.md` and `metadata.yml` must be selected and each
-  qualify as `KIT_MANAGED_REPLACE` with `managedReplaceAllowed`. Otherwise neither file is
-  replaced. Copy or manifest-write failure restores both target files and preserves the previous
-  installation manifest, so no partial package baseline advances.
-- Existing-project upgrade safety v1 is closed after WI-1/WI-2 and read-only downstream dry-run
-  validation. No immediate installer safety fix is required; WI-3 marker work and WI-4
-  script-runtime seam work remain deferred and require new evidence, separate planning, and
-  explicit approval.
-- During explicit apply, exact unchanged baseline-adoptable kit-managed files may be adopted into
-  the installation manifest without rewriting their target bytes.
-- Project memory, project-owned publish config, workflow scripts and other manual-risk paths,
-  mixed entrypoints/config, and unclaimed project skills are not silently claimed as replaceable
-  kit baselines. Project-owned `.codex/skills/project/` remains outside installer inspection and
-  collision handling.
-- Malformed or source-policy-conflicting installation manifests block apply before mapped target
-  writes.
+  exclusive with `--include-optional`.
+- Normal apply replaces selected Kit-owned targets, including differing `AGENTS.md`, skills,
+  rules, prompts, scripts, configuration, GitHub settings, and optional packages, without
+  per-file conflict flags or manual merge classification.
+- Files absent from the selected current payload are removed from the corresponding Kit-owned
+  target roots. The retired `.codex/foundation-kit/` manifest state is removed when encountered.
+- `.codex/project-memory/` and `.codex/project-specific/` are repository-owned. Their starter
+  templates install only when missing and existing content is preserved.
+- A valid downstream `package.json` remains project-owned and receives only missing publish
+  aliases; conflicting same-name values are preserved.
 - Skill `metadata.yml` files should remain single YAML metadata documents, with source-repository
   tests covering parse hygiene.
 - Installer tree mapping excludes local OS junk files such as `.DS_Store`, `Thumbs.db`,
@@ -658,56 +642,31 @@ Current `install-foundation-kit.mjs` purpose:
 - block target equal to the foundation-kit repo root
 - default to dry-run
 - require `--apply` before writing files
-- default `--project-mode` to `auto`, resolving project signals or conflicts to existing-like
-  caution and empty conflict-free targets to new-like behavior
-- support explicit `new` and `existing` modes without changing file mappings
 - support exactly `--kit-profile docs` as an explicit selected-mapping view over the complete
   validated mapping; preserve the complete mapping and output when no profile is requested
 - include project templates, common workflow, docs/writing workflow, and publish package in the
   docs profile while excluding code workflow, GitHub setup, optional skills, and unclassified
   mappings
-- keep profile use additive and report-only in schema-v1: never clean up prior files or records,
-  persist an active profile, or change ownership, conflict, backup, apply, alias, or verification
-  authority
-- block existing-like conflict apply before staging; `--overwrite-conflicts` does not authorize
-  existing-project replacement
-- support `--apply --skip-conflicts` as a zero-overwrite new-files-only apply path
-- classify content state separately from source-controlled ownership and risk, producing
-  `SAFE_ADD`, `KIT_MANAGED_REPLACE`, `PROJECT_OWNED`, `MIXED_AGENT_MERGE`, or `BLOCKED_MANUAL`
-  review outcomes plus unchanged no-op entries
-- use `.codex/foundation-kit/installation-manifest.json` as SHA-256 baseline evidence for eligible
-  kit-managed full-file content, while rejecting malformed manifests and ownership claims that
-  conflict with source policy before apply writes
-- keep existing-project mapped target writes safe-add-only by default; exact unchanged eligible
-  kit-managed files may be adopted into the manifest during explicit apply without rewriting
-  target bytes
-- permit managed replacement only for the exact selected two-file `react-component-patterns`
-  canary under `--replace-kit-managed`, and only when both files independently qualify as
-  `KIT_MANAGED_REPLACE` with `managedReplaceAllowed`
-- treat the React canary as one atomic package for eligibility, target replacement, rollback, and
-  manifest advancement; all other existing-file replacement remains report-only
-- report existing-different `.codex/scripts/*` as workflow-script merge items while preserving
-  new-script installation, identical skips, safe apply zero-overwrite, and explicit overwrite
-  safeguards
+- replace the selected bounded Kit-owned payload on normal apply, regardless of downstream byte
+  differences, and remove files no longer present in that selected payload
+- preserve `.codex/project-memory/` and `.codex/project-specific/`; create only missing starter
+  templates and never generate the legacy `.codex/project/` structure
 - select optional packages exactly from `kit/optional-skills/` and install them only under
   `.codex/skills/engineering/<name>/`
-- collision-check selected optional skills only against kit-managed core, meta, and engineering
-  paths; never inspect or collision-check `.codex/skills/project/`
-- keep conflict display, strong warning, typed confirmation, verified backup, plan revalidation,
-  and overwrite safeguards for replacement; existing-project authorization remains limited to
-  the exact package-atomic React canary
+- stage replacements, prepare a verified backup of existing files inside the selected Kit-owned
+  replacement boundary, and revalidate the complete plan before target writes
 - map `kit/project-templates/AGENTS.md` to target root `AGENTS.md`
-- map project templates to `.codex/project/`
+- map project-memory templates to `.codex/project-memory/` and the guidance starter to
+  `.codex/project-specific/agent-guidance.md`
 - map `kit/skills/`, `kit/prompts/`, `kit/rules/`, `kit/config/`,
   `kit/github-settings/`, and `kit/scripts/` to their matching `.codex/` directories
 - validate source and target path boundaries before copying
-- warn when target files already exist
-- never auto-merge existing files
-- backup existing files before replacement under `.codex/backups/install-YYYYMMDD-HHMMSS/`
-- never install this repo's own `.codex/project/`, `dev_locals/`, `docs/`, or source-repository `scripts/`
+- never auto-merge project-owned files
+- never install this repo's own `.codex/project-memory/`, `dev_locals/`, `docs/`, or
+  source-repository `scripts/`
 - never create or repair a downstream `package.json`; for a valid existing file, add only missing
   default publish aliases, preserve and report conflicting same-name values, and keep the file
-  project-owned and outside installation-manifest ownership
+  project-owned and outside full payload replacement
 - report first-adoption next steps and direct successful installs to
   `.codex/prompts/force-initialize-project-context.md`
 
@@ -715,13 +674,9 @@ Current Node installer test purpose:
 
 - run local validation for installer behavior
 - keep test artifacts under `dev_locals/test-runs/install-foundation-kit/`
-- verify explicit target requirement, project-mode parsing/resolution, project-signal detection,
-  dry-run, fresh install, complete mapping correctness, existing-like pre-staging conflict blocking,
-  explicit overwrite safeguards, no silent overwrite, backup-before-replace, missing-source
-  blocking, missing-target blocking, target==repo-root blocking, and target boundary escape blocking
-- verify docs-profile group selection, hard-dependency closure, selected-only planning/apply,
-  default pass-through behavior, profile-aware revalidation/reporting, manifest record
-  preservation, and unchanged publish-alias safety
+- verify fresh install structure, absence of legacy memory, normal Kit-owned replacement, obsolete
+  payload removal, repository-owned preservation, dry-run, plan drift, package augmentation,
+  source mappings, metadata validity, and profile dependency closure
 
 Current `kit/github-settings/` purpose:
 
@@ -776,7 +731,7 @@ kit/
 Repository development memory:
 
 ```txt
-.codex/project/
+.codex/project-memory/
 ```
 
 Local-only execution/planning/research artifacts:
@@ -787,7 +742,7 @@ dev_locals/
 
 Future installer behavior should copy installable content from `kit/` into a target project `.codex/`.
 
-The installer should not copy this repo's own `.codex/project/` into downstream projects.
+The installer must not copy this repo's own `.codex/project-memory/` into downstream projects.
 
 ## 9. Testing and Validation
 
@@ -1022,6 +977,13 @@ Completed:
     - existing downstream Bash files are not automatically deleted
     - Bash apply-theme was later archived under `archive/legacy-bash-workflows/`
     - `pnpm check` now validates Node publish, Node installer, and whitespace
+- Foundation Kit ownership and directory architecture
+    - moved source and downstream durable memory to `.codex/project-memory/` with concise filenames
+    - added `.codex/project-specific/agent-guidance.md` as the repository-owned specialization surface
+    - made root downstream `AGENTS.md` and selected installed Kit payloads fully replaceable
+    - removed manifest, project-mode, conflict-override, manual-merge, workflow-script, and React-canary replacement machinery
+    - preserved missing-only repository-owned templates and bounded downstream `package.json` publish-alias augmentation
+    - simplified installer coverage to fresh install, replacement/removal, preservation, augmentation, mappings, metadata, profiles, dry-run, and plan drift
 
 
 In progress / next likely themes:
@@ -1035,7 +997,7 @@ In progress / next likely themes:
 - Theme zip files cannot express deletions.
 - Rename migrations can miss references outside skills/prompts/templates/docs.
 - Reusable templates under `kit/project-templates/` must stay generic.
-- `.codex/project/` belongs to this repo and must not be treated as installable payload.
+- `.codex/project-memory/` belongs to this repo and must not be treated as installable payload.
 - `.codex/skills/` is not committed for this repo to avoid duplicating `kit/skills/`.
 - `initialize-project-context` can identify capability areas and use `agent-roles-and-capabilities` when installed.
 - `agent-roles-and-capabilities` now defines generic role profiles and role routing, but technology-specific expert skills remain future work.

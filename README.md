@@ -67,11 +67,8 @@ The Node.js 24+ ESM installer is maintained source-repository tooling:
 ```bash
 pnpm install:node --target /path/to/downstream-project
 pnpm install:node --target /path/to/downstream-project --apply
-pnpm install:node --target /path/to/downstream-project --apply --skip-conflicts
 pnpm install:node --target /path/to/downstream-project --include-optional react-component-patterns
 pnpm install:node --target /path/to/downstream-project --kit-profile docs
-pnpm install:node --target /path/to/downstream-project --project-mode existing
-pnpm install:node --target /path/to/downstream-project --project-mode existing --apply --replace-kit-managed --include-optional react-component-patterns
 ```
 
 When using pnpm's direct script shortcut, pass installer flags directly as shown above. If using the explicit `pnpm run` form, use pnpm's separator instead: `pnpm run install:node -- --target /path/to/downstream-project`.
@@ -85,95 +82,42 @@ that does not make the installer part of the downstream payload.
 the complete publish package. It excludes code workflow, GitHub setup, optional skills, and
 unclassified mappings. The profile is intended for writing, research, planning, business-note,
 interview-preparation, and documentation projects. It cannot be combined with
-`--include-optional` or `--replace-kit-managed`.
+`--include-optional`.
 
-Without `--kit-profile`, the installer preserves the complete current mapping and output. Profile
-selection is additive per invocation: it does not remove previously installed out-of-profile
-files or manifest records, does not persist an active profile in the schema-v1 manifest, and does
-not alter ownership, conflict, backup, apply, alias, or verification policy. Explicit profile runs
-report the profile and selected groups in dry-run, blocked, and successful final output. The docs
-profile includes publish files and the existing safe-add publish aliases; it does not include
-GitHub settings.
+Without `--kit-profile`, the installer selects the complete current Kit payload. `--apply`
+replaces selected Kit-owned targets, including root `AGENTS.md`, installed skills, rules, prompts,
+scripts, configuration, GitHub settings, and selected optional packages. Differences in those
+paths are ordinary update state and do not require conflict flags or per-file approval. Files no
+longer present in the selected source payload are removed from the corresponding Kit-owned target
+paths.
 
-For conflicting files, Node apply requires the exact `INSTALL_WITH_BACKUP` token from interactive
-or piped input. It stages and verifies all replacements and backup snapshots under
-`dev_locals/workflow-tmp/` and revalidates the plan before the first downstream write. Verified
-backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` with a
-`manifest.json`. For a valid existing downstream `package.json`, the installer may safely add
-missing default publish aliases. It never creates or repairs `package.json`, and it preserves
-same-name aliases with different values.
+The installer stages and verifies replacements under `dev_locals/workflow-tmp/`, prepares a
+verified backup of existing files inside the selected replacement boundary, and revalidates the
+complete plan before the first downstream write. Backups are materialized under
+`.codex/backups/install-YYYYMMDD-HHMMSS[-N]/`.
 
-Successful apply creates or updates a separate stable installation baseline at
-`.codex/foundation-kit/installation-manifest.json`. This deterministic schema-v1 manifest stores
-SHA-256 evidence only for exact kit-managed full files that were safely added or explicitly
-adopted while byte-identical, plus completed allowlisted canary replacements. It stores no target
-contents, timestamps, absolute machine paths, or project-owned baselines. The manifest is
-classification evidence, not overwrite authority; source-controlled ownership and risk policy
-always wins. Dry-run never creates or updates it.
-
-Project mode controls conflict policy without changing mappings:
-
-- `--project-mode auto` is the default. Existing-project signals or mapped-file conflicts select
-  existing-like caution; no signals and no conflicts select new-like behavior.
-- `--project-mode new` treats conflicts as starter files or previous-install remnants and permits
-  the existing backup-and-overwrite flow after the typed confirmation.
-- `--project-mode existing` treats conflicts as important project context. Broad replacement stays
-  blocked even when `--overwrite-conflicts` is supplied. The only managed-replacement exception is
-  the exact React optional-skill canary described below.
-
-`--apply --skip-conflicts` is the zero-overwrite existing-project path. It writes only mapped
-targets classified as `SAFE_ADD`, safely skips byte-identical targets, records eligible unchanged
-kit-managed baselines, and preserves differing files, existing project memory, differing
-`AGENTS.md`, and skill migration collisions for review.
-It is mutually exclusive with `--overwrite-conflicts` and explicit `--project-mode new`.
-
-Upgrade reports separate `SAFE_ADD`, `KIT_MANAGED_REPLACE`, `PROJECT_OWNED`,
-`MIXED_AGENT_MERGE`, and `BLOCKED_MANUAL` from unchanged files. Missing, malformed, unsafe,
-unsupported, or source-policy-conflicting installation manifests block apply before target
-writes.
-
-Existing-project full-file replacement is limited to this exact allowlist:
+Repository-owned content is created only when missing and preserved afterward:
 
 ```txt
-.codex/skills/engineering/react-component-patterns/SKILL.md
-.codex/skills/engineering/react-component-patterns/metadata.yml
+.codex/project-memory/
+.codex/project-specific/
 ```
 
-The package must be selected through `--include-optional react-component-patterns`. Both files
-must be recorded in a valid installation manifest, classified `KIT_MANAGED_REPLACE`, allowlisted,
-and unchanged from their recorded target baselines. If either file is missing, mixed, blocked, or
-otherwise ineligible, neither file is replaced. Replacement requires the normal
-`INSTALL_WITH_BACKUP` confirmation and:
+Fresh installs create `guideline.md`, `decisions.md`, `lessons-learned.md`, and the concise
+`project-specific/agent-guidance.md` starter. Optional project-specific capability directories are
+not created unless the repository needs them. The installer does not generate or migrate the
+legacy `.codex/project/` structure.
 
-```bash
---project-mode existing --apply --replace-kit-managed
-```
-
-The flag is mutually exclusive with `--skip-conflicts` and `--overwrite-conflicts`. All other
-managed-replacement candidates remain report-only; target-only or concurrent changes remain
-preserved for review. If either package copy or its manifest update fails, both React files are
-restored from the verified backup and the previous installation manifest is preserved.
-
-In existing projects, differing `.codex/scripts/*` files are reported as workflow-script merge
-items because installed scripts may contain project-specific workflow, publish, CI, or local
-automation changes. New scripts still install normally, identical scripts are skipped, and safe
-apply preserves differing scripts. Existing-project overwrite cannot bypass this classification;
-the installer does not auto-merge or migrate target scripts.
+For a valid existing downstream `package.json`, the installer may add missing default publish
+aliases. `package.json` remains project-owned: the installer never creates or repairs it and
+preserves same-name aliases with different values. This bounded augmentation is intentionally
+separate from full Kit-owned payload replacement.
 
 Use repeatable `--include-optional <name>` flags to select packages from
 `kit/optional-skills/<name>/`. Selected packages install only under
 `.codex/skills/engineering/<name>/`; they are never installed under `.codex/skills/optional/`,
-`.codex/skills/project/`, or a flat `.codex/skills/<name>/` path. Project-owned
-`.codex/skills/project/` content is outside installer inspection and collision handling.
-
-`--overwrite-conflicts` cannot bypass ownership or classification in existing-project mode.
-Explicit new-project replacement retains conflict display, strong warning, typed
-confirmation, backup preparation, plan revalidation, and verified overwrite. Project mode never
-changes package files, dependencies, formatter or linter tooling, optional-skill selection,
-project-memory merging, or publish behavior.
-
-Use `--show-diff` for optional `diff -u` previews. A missing `diff` command warns but does not
-block dry-run, apply authorization, backup, installation, or verification.
+`.codex/project-specific/`, or a flat `.codex/skills/<name>/` path. Repository-only capabilities
+belong under `.codex/project-specific/` and are preserved across installation and update.
 
 ### After Installation or First Adoption
 
@@ -189,8 +133,7 @@ not a conflicting replacement target. Do not begin feature implementation until 
 complete and proposed durable-memory updates have been reviewed and approved through
 `update-project-memory`.
 
-The installer does not silently merge installed templates into existing project memory. For
-important conflicting context, use manual review/merge rather than authorizing overwrite.
+The installer does not merge or overwrite existing project memory or project-specific guidance.
 
 The Node publish implementation uses a feature branch and pull request. It never pushes directly
 to `main`. At startup it checks default-branch freshness, lists repository-level open PRs, detects

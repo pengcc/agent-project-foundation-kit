@@ -515,8 +515,8 @@ Suggested next workflow: update-project-memory
 When memory updates are needed, group recommended updates by:
 
 ```txt
-project-guideline.md:
-project-decisions.md:
+guideline.md:
+decisions.md:
 lessons-learned.md:
 ```
 

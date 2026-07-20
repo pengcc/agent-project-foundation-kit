@@ -280,8 +280,8 @@ Preferred baseline order:
 
 1. User-provided plan / architecture plan
 2. Referenced `dev_locals/plans/*`
-3. `.codex/project/project-decisions.md`
-4. `.codex/project/project-guideline.md`
+3. `.codex/project-memory/decisions.md`
+4. `.codex/project-memory/guideline.md`
 5. `docs/foundation-design-log.md`
 6. PR description / commit messages
 
@@ -405,7 +405,7 @@ When a report is authorized, save it only under this approved local-artifact loc
 it to project memory or Git-visible project content. Full review reports are not committed by
 default.
 
-Only distilled and user-confirmed facts, decisions, or lessons may be promoted into `.codex/project/` through `update-project-memory`.
+Only distilled and user-confirmed facts, decisions, or lessons may be promoted into `.codex/project-memory/` through `update-project-memory`.
 
 ## Lesson Candidates
 
@@ -431,7 +431,7 @@ Use for good patterns worth preserving and reusing.
 
 Use for tradeoffs, such as a pattern that is useful in one context but dangerous if overused.
 
-Do not write lesson candidates directly into `.codex/project/lessons-learned.md`.
+Do not write lesson candidates directly into `.codex/project-memory/lessons-learned.md`.
 
 Recommend `update-project-memory` when the user confirms that a lesson should become durable project memory.
 

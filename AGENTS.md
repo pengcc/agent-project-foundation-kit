@@ -11,7 +11,7 @@ The goal is to make the kit mature, directly usable, safe, and maintainable for 
 This repository develops the kit; it is not a downstream project with the kit installed.
 
 - `kit/` is the installable payload source of truth.
-- `.codex/project/` is this repository's own development memory.
+- `.codex/project-memory/` is this repository's own development memory.
 - `kit/project-templates/AGENTS.md` is the downstream project template, not this repository's root AGENTS file.
 - Do not assume `.codex/skills/` exists or that the kit has been installed into this repository.
 
@@ -140,7 +140,7 @@ and do not duplicate those detailed rules here.
 
 ## Project Memory
 
-Use `.codex/project/` as this repository's durable development memory.
+Use `.codex/project-memory/` as this repository's durable development memory.
 
 Before project-state planning, implementation, review, documentation, or publishing, pass the
 Project Memory Context Gate defined in `kit/skills/meta/project-memory/SKILL.md`. Use the

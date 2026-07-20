@@ -23,7 +23,11 @@ export function createBackupManifest({ plan, createdAt, supplementalEntries = []
     createdAt,
     status: "prepared",
     entries: plan.entries
-      .filter((entry) => entry.contentState === "existing-different")
+      .filter(
+        (entry) =>
+          ["install", "delete"].includes(entry.action) &&
+          entry.contentState.startsWith("existing-"),
+      )
       .map((entry) => ({
         target: entry.targetRelative,
         backup: entry.targetRelative,
@@ -51,8 +55,11 @@ export async function prepareBackupSnapshots({
   now = () => new Date(),
   signal,
 }) {
-  const conflicts = plan.entries.filter((entry) => entry.contentState === "existing-different");
-  if (!conflicts.length && !supplementalEntries.length) return null;
+  const existingTargets = plan.entries.filter(
+    (entry) =>
+      ["install", "delete"].includes(entry.action) && entry.contentState.startsWith("existing-"),
+  );
+  if (!existingTargets.length && !supplementalEntries.length) return null;
   const backupRelative = await chooseBackupRelative(targetRoot, now);
   const snapshotRoot = resolve(runtimeRoot, "backup-snapshot");
   const manifest = createBackupManifest({
@@ -61,7 +68,7 @@ export async function prepareBackupSnapshots({
     supplementalEntries,
   });
   const snapshots = [
-    ...conflicts.map((entry) => ({
+    ...existingTargets.map((entry) => ({
       targetRelative: entry.targetRelative,
       originalSha256: entry.targetSha256,
     })),

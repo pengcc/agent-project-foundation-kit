@@ -10,15 +10,15 @@ durable memory directly; confirmed writes belong to `update-project-memory`.
 It covers:
 
 ```txt
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
+.codex/project-memory/guideline.md
+.codex/project-memory/decisions.md
+.codex/project-memory/lessons-learned.md
 ```
 
 The memory file names stay specific:
 
-- `project-guideline.md` stores current project facts.
-- `project-decisions.md` stores durable decision rationale.
+- `guideline.md` stores current project facts.
+- `decisions.md` stores durable decision rationale.
 - `lessons-learned.md` stores reusable lessons, mistakes, and debugging findings.
 
 ## Role
@@ -67,9 +67,9 @@ For a downstream project, use:
 
 ```txt
 .codex/skills/meta/project-memory/SKILL.md
-.codex/project/project-decisions.md
-.codex/project/project-guideline.md
-.codex/project/lessons-learned.md
+.codex/project-memory/decisions.md
+.codex/project-memory/guideline.md
+.codex/project-memory/lessons-learned.md
 ```
 
 For the foundation-kit source repository, use:
@@ -77,9 +77,9 @@ For the foundation-kit source repository, use:
 ```txt
 root AGENTS.md
 kit/skills/meta/project-memory/SKILL.md
-.codex/project/project-guideline.md
-.codex/project/project-decisions.md
-.codex/project/lessons-learned.md
+.codex/project-memory/guideline.md
+.codex/project-memory/decisions.md
+.codex/project-memory/lessons-learned.md
 ```
 
 Do not assume the source repository has the kit installed under `.codex/skills/`.
@@ -88,10 +88,10 @@ Do not assume the source repository has the kit installed under `.codex/skills/`
 
 1. Read and apply the applicable `AGENTS.md` instructions.
 2. Read and apply this `project-memory` skill from the applicable source above.
-3. Read `.codex/project/project-guideline.md` when available.
-4. Read `.codex/project/project-decisions.md` when the task touches architecture, dependencies,
+3. Read `.codex/project-memory/guideline.md` when available.
+4. Read `.codex/project-memory/decisions.md` when the task touches architecture, dependencies,
    workflow, conventions, product direction, or prior tradeoffs.
-5. Read `.codex/project/lessons-learned.md` when the task touches implementation, debugging,
+5. Read `.codex/project-memory/lessons-learned.md` when the task touches implementation, debugging,
    recurring mistakes, review, refactoring, tooling, publishing, or skill evolution.
 6. If the user or active task identifies a plan, handoff, report, or research note, verify its
    date, status, and alignment with current sources before using it. Do not scan local process
@@ -157,21 +157,21 @@ Start with a short workflow header for explicit project workflows:
 Workflow:
 - Role: Project Memory Reader
 - Skill: project-memory
-- Context: .codex/project/project-guideline.md
+- Context: .codex/project-memory/guideline.md
 - Mode: context check
 ```
 
 If project memory is missing, say so:
 
 ```txt
-Context: .codex/project/project-guideline.md missing
+Context: .codex/project-memory/guideline.md missing
 ```
 
 ## Core Rules
 
 ### 1. Project guideline is the current source of truth
 
-Treat `.codex/project/project-guideline.md` as the current project fact source.
+Treat `.codex/project-memory/guideline.md` as the current project fact source.
 
 Use it for:
 
@@ -191,13 +191,13 @@ Use it for:
 
 ### 2. Decisions explain why
 
-Treat `.codex/project/project-decisions.md` as the source for durable decision rationale.
+Treat `.codex/project-memory/decisions.md` as the source for durable decision rationale.
 
 Use it to avoid re-litigating settled decisions.
 
 ### 3. Lessons prevent repeated mistakes
 
-Treat `.codex/project/lessons-learned.md` as the source for reusable execution, debugging, and workflow lessons.
+Treat `.codex/project-memory/lessons-learned.md` as the source for reusable execution, debugging, and workflow lessons.
 
 Use it to avoid repeating previous mistakes.
 
@@ -218,19 +218,19 @@ After execution, update project memory if the resulting current facts, decisions
 Use the right memory file:
 
 ```txt
-.codex/project/project-guideline.md
+.codex/project-memory/guideline.md
 ```
 
 For current project facts.
 
 ```txt
-.codex/project/project-decisions.md
+.codex/project-memory/decisions.md
 ```
 
 For important decision rationale.
 
 ```txt
-.codex/project/lessons-learned.md
+.codex/project-memory/lessons-learned.md
 ```
 
 For reusable mistakes, debugging discoveries, or lessons future agents should avoid.

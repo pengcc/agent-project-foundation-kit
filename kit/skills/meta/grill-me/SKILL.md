@@ -294,9 +294,9 @@ If the clarification creates durable facts, decisions, or lessons, recommend `up
 Classify memory targets:
 
 ```txt
-Current facts -> .codex/project/project-guideline.md
-Long-term decisions -> .codex/project/project-decisions.md
-Lessons and reusable patterns -> .codex/project/lessons-learned.md
+Current facts -> .codex/project-memory/guideline.md
+Long-term decisions -> .codex/project-memory/decisions.md
+Lessons and reusable patterns -> .codex/project-memory/lessons-learned.md
 ```
 
 Do not silently update project memory.
