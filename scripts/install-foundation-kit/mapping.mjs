@@ -3,27 +3,28 @@ import { relativePosix, walkRegularFiles } from "./fs-safe.mjs";
 import { buildOptionalSkillMappings } from "./optional-skills.mjs";
 
 export const DIRECT_MAPPINGS = Object.freeze([
-  ["project-templates/AGENTS.md", "AGENTS.md", "project-template"],
+  ["AGENTS.md", "AGENTS.md", "kit-owned"],
+  ["codex/project-memory/guideline.md", ".codex/project-memory/guideline.md", "project-owned-seed"],
+  ["codex/project-memory/decisions.md", ".codex/project-memory/decisions.md", "project-owned-seed"],
   [
-    "project-templates/project-guideline.md",
-    ".codex/project/project-guideline.md",
-    "project-template",
+    "codex/project-memory/lessons-learned.md",
+    ".codex/project-memory/lessons-learned.md",
+    "project-owned-seed",
   ],
   [
-    "project-templates/project-decisions.md",
-    ".codex/project/project-decisions.md",
-    "project-template",
+    "codex/project-specific/agent-guidance.md",
+    ".codex/project-specific/agent-guidance.md",
+    "project-owned-seed",
   ],
-  ["project-templates/lessons-learned.md", ".codex/project/lessons-learned.md", "project-template"],
 ]);
 
 export const TREE_MAPPINGS = Object.freeze([
-  ["skills", ".codex/skills", "skills"],
-  ["prompts", ".codex/prompts", "prompts"],
-  ["rules", ".codex/rules", "rules"],
-  ["config", ".codex/config", "config"],
-  ["github-settings", ".codex/github-settings", "github-settings"],
-  ["scripts", ".codex/scripts", "scripts"],
+  ["codex/skills", ".codex/skills", "skills"],
+  ["codex/prompts", ".codex/prompts", "prompts"],
+  ["codex/rules", ".codex/rules", "rules"],
+  ["repo-tools/config", ".repo-tools/config", "config"],
+  ["repo-tools/github-settings", ".repo-tools/github-settings", "github-settings"],
+  ["repo-tools/scripts", ".repo-tools/scripts", "scripts"],
 ]);
 
 export function isLocalOsJunkFile(relativePath) {

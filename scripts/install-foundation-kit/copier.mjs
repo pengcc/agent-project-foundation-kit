@@ -19,6 +19,7 @@ export async function createRuntimeRoot(repoRoot, runId) {
 export async function stageReplacements({ plan, kitRoot, runtimeRoot, signal }) {
   const stagedRoot = resolve(runtimeRoot, "replacements");
   for (const entry of plan.entries) {
+    if (entry.action === "delete") continue;
     throwIfAborted(signal);
     const source = resolve(kitRoot, entry.sourceRelative);
     const staged = resolve(stagedRoot, entry.targetRelative);
@@ -38,13 +39,11 @@ export async function applyStagedPlan({
   stagedRoot,
   targetRoot,
   materializedBackup,
+  finalizeBackup = true,
   signal,
   hooks = {},
-  allowOverwrite = true,
-  overwriteTargets = [],
 }) {
   const completedTargets = [];
-  const exactOverwriteTargets = new Set(overwriteTargets);
   if (materializedBackup) {
     await updateBackupManifest(materializedBackup, { status: "applying" });
   }
@@ -52,13 +51,18 @@ export async function applyStagedPlan({
     for (const entry of plan.entries) {
       throwIfAborted(signal);
       await hooks.beforeCopy?.({ entry, completedTargets: [...completedTargets] });
+      if (entry.action === "delete") {
+        await removeTree(resolve(targetRoot, entry.targetRelative));
+        completedTargets.push(entry.targetRelative);
+        continue;
+      }
       const staged = resolve(stagedRoot, entry.targetRelative);
       await atomicCopyIntoTarget({
         source: staged,
         targetRoot,
         targetRelative: entry.targetRelative,
         signal,
-        overwrite: allowOverwrite || exactOverwriteTargets.has(entry.targetRelative),
+        overwrite: entry.ownership === "kit-managed",
       });
       if ((await hashFile(resolve(targetRoot, entry.targetRelative))) !== entry.sourceSha256) {
         throw new InstallerError(
@@ -84,7 +88,7 @@ export async function applyStagedPlan({
     error.completedTargets = completedTargets;
     throw error;
   }
-  if (materializedBackup) {
+  if (materializedBackup && finalizeBackup) {
     await updateBackupManifest(materializedBackup, {
       status: "completed",
       completedTargets: [...completedTargets],

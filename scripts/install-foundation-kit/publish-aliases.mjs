@@ -6,13 +6,14 @@ import { atomicWriteTextIntoTarget, hashFile, pathStats } from "./fs-safe.mjs";
 import { assertNoTargetSymlinks } from "./path-boundary.mjs";
 
 export const PUBLISH_PACKAGE_ALIASES = Object.freeze({
-  "publish:changes": "node .codex/scripts/publish-changes.mjs",
-  "pr:review": "node .codex/scripts/publish-changes.mjs --mode pr-review",
-  "pr:merge": "node .codex/scripts/publish-changes.mjs --mode pr-merge",
-  "pr:auto-merge": "node .codex/scripts/publish-changes.mjs --mode pr-merge --auto-merge",
+  "publish:changes": "node .repo-tools/scripts/publish-changes.mjs",
+  "pr:review": "node .repo-tools/scripts/publish-changes.mjs --mode pr-review",
+  "pr:merge": "node .repo-tools/scripts/publish-changes.mjs --mode pr-merge",
+  "pr:auto-merge": "node .repo-tools/scripts/publish-changes.mjs --mode pr-merge --auto-merge",
+  "safety:guard": "node .repo-tools/scripts/publish-changes.mjs --mode safety-guard",
 });
 
-export const PUBLISH_SCRIPT_FALLBACK = "node .codex/scripts/publish-changes.mjs";
+export const PUBLISH_SCRIPT_FALLBACK = "node .repo-tools/scripts/publish-changes.mjs";
 const PACKAGE_JSON = "package.json";
 
 function hashText(contents) {

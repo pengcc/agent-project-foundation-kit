@@ -6,7 +6,7 @@ import { relativePosix, walkRegularFiles } from "./fs-safe.mjs";
 import { assertInside } from "./path-boundary.mjs";
 
 const OPTIONAL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const OPTIONAL_SOURCE_DIRECTORY = "optional-skills";
+const OPTIONAL_SOURCE_DIRECTORY = "codex/optional-skills";
 
 function isLocalOsJunkFile(relativePath) {
   const name = relativePath.split("/").at(-1);
@@ -22,7 +22,7 @@ async function optionalRoot(kitRoot) {
   if (!stats?.isDirectory() || stats.isSymbolicLink()) {
     throw new InstallerError(
       "INVALID_SOURCE",
-      "kit/optional-skills must be a real directory inside the source kit.",
+      "kit/codex/optional-skills must be a real directory inside the source kit.",
     );
   }
   return root;

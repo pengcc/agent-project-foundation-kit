@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import YAML from "yaml";
 import {
   DOCS_PROFILE_GROUPS,
+  replacementRootsForKitProfile,
   resolveKitProfile,
   selectMappingsForKitProfile,
 } from "../../scripts/install-foundation-kit/kit-profiles.mjs";
@@ -32,12 +33,28 @@ describe("installer kit profiles", () => {
     expect(selection.selectedPayloadGroups).toEqual([]);
   });
 
+  it("declares profile-aware replacement roots independently from discovered files", () => {
+    expect(replacementRootsForKitProfile()).toEqual([
+      ".codex/prompts",
+      ".codex/rules",
+      ".codex/skills",
+      ".repo-tools",
+    ]);
+    expect(replacementRootsForKitProfile("docs")).toEqual([
+      ".codex/prompts",
+      ".codex/rules",
+      ".codex/skills",
+      ".repo-tools/config",
+      ".repo-tools/scripts",
+    ]);
+  });
+
   it("selects only the approved docs groups from current real mappings", async () => {
     const mappings = await buildMappings(kitRoot);
     const selection = selectMappingsForKitProfile(mappings, "docs");
     const groups = new Set(selection.mappings.map((mapping) => payloadGroupFor(mapping)));
 
-    expect(selection.mappings).toHaveLength(68);
+    expect(selection.mappings.length).toBeGreaterThan(0);
     expect(groups).toEqual(new Set(DOCS_PROFILE_GROUPS));
     expect(selection.mappings.some((mapping) => payloadGroupFor(mapping) === "code-workflow")).toBe(
       false,

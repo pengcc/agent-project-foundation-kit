@@ -29,24 +29,25 @@ export async function createTestWorkspace(name) {
 
 export async function createFixtureKit(repoRoot) {
   const kitRoot = resolve(repoRoot, "kit");
-  const optionalSkillsDirectory = "optional-skills";
+  const optionalSkillsDirectory = "codex/optional-skills";
   const files = {
-    "project-templates/AGENTS.md": "agent instructions\n",
-    "project-templates/project-guideline.md": "guideline\n",
-    "project-templates/project-decisions.md": "decisions\n",
-    "project-templates/lessons-learned.md": "lessons\n",
-    "skills/meta/meta-example/SKILL.md": "meta skill\n",
-    "skills/core/core-example/SKILL.md": "core skill\n",
-    "prompts/example.md": "prompt\n",
-    "prompts/force-initialize-project-context.md": "initialize\n",
-    "rules/example.md": "rule\n",
-    "config/example.json": '{"enabled":true}\n',
-    "config/publish-changes-policy.yml": "updateTypes: {}\n",
-    "config/publish-cli-theme.json": '{"levels":{}}\n',
-    "github-settings/example.json": '{"private":true}\n',
-    "scripts/publish-changes.mjs": 'console.log("publish");\n',
-    "scripts/shared/command-runner.mjs": "export function createCommandRunner() {}\n",
-    "scripts/shared/git-client.mjs": "export function createGitClient() {}\n",
+    "AGENTS.md": "agent instructions\n",
+    "codex/project-memory/guideline.md": "guideline\n",
+    "codex/project-memory/decisions.md": "decisions\n",
+    "codex/project-memory/lessons-learned.md": "lessons\n",
+    "codex/project-specific/agent-guidance.md": "guidance\n",
+    "codex/skills/meta/meta-example/SKILL.md": "meta skill\n",
+    "codex/skills/core/core-example/SKILL.md": "core skill\n",
+    "codex/prompts/example.md": "prompt\n",
+    "codex/prompts/force-initialize-project-context.md": "initialize\n",
+    "codex/rules/example.md": "rule\n",
+    "repo-tools/config/example.json": '{"enabled":true}\n',
+    "repo-tools/config/publish-changes-policy.yml": "updateTypes: {}\n",
+    "repo-tools/config/publish-cli-theme.json": '{"levels":{}}\n',
+    "repo-tools/github-settings/example.json": '{"private":true}\n',
+    "repo-tools/scripts/publish-changes.mjs": 'console.log("publish");\n',
+    "repo-tools/scripts/shared/command-runner.mjs": "export function createCommandRunner() {}\n",
+    "repo-tools/scripts/shared/git-client.mjs": "export function createGitClient() {}\n",
     [`${optionalSkillsDirectory}/optional-example/SKILL.md`]: "optional skill\n",
     [`${optionalSkillsDirectory}/optional-example/metadata.yml`]: [
       "name: optional-example",
@@ -75,7 +76,7 @@ export async function createFixtureKit(repoRoot) {
     await mkdir(resolve(path, ".."), { recursive: true });
     await writeFile(path, contents, "utf8");
   }
-  await chmod(resolve(kitRoot, "scripts/publish-changes.mjs"), 0o755);
+  await chmod(resolve(kitRoot, "repo-tools/scripts/publish-changes.mjs"), 0o755);
   return kitRoot;
 }
 

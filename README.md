@@ -12,11 +12,11 @@ Foundation-kit skills use three conceptual categories:
 
 Metadata also declares `invocation: user | model | support`, `required`, and hard `depends_on`
 relationships. Physical source paths match metadata category: meta skills live under
-`kit/skills/meta/`, core workflows under `kit/skills/core/`, and optional skills under
-`kit/optional-skills/`. The installer copies the complete `kit/skills/` tree, so meta and core
+`kit/codex/skills/meta/`, core workflows under `kit/codex/skills/core/`, and optional skills under
+`kit/codex/optional-skills/`. The installer copies the complete `kit/codex/skills/` tree, so meta and core
 remain default-installed. Optional skills remain excluded unless selected explicitly and install
 under `.codex/skills/engineering/<name>/`. See
-`kit/rules/skill-invocation-and-dependency-boundaries.md` for the canonical boundaries.
+`kit/codex/rules/skill-invocation-and-dependency-boundaries.md` for the canonical boundaries.
 
 ## Local Commands
 
@@ -33,6 +33,7 @@ pnpm pr:auto-merge 123
 pnpm install:node --target /path/to/project
 pnpm test:install
 pnpm test:publish
+pnpm safety:guard
 pnpm format
 pnpm format:check
 pnpm biome:fix
@@ -47,15 +48,21 @@ before the Node publish tests, installer tests, and whitespace validation.
 
 Biome is a source-repo quality gate for the foundation kit, not a downstream installation
 requirement. Source checks cover installable files under `kit/`, including scripts later copied to
-`.codex/scripts/`, before they are published or installed. The installer does not install Biome or
+`.repo-tools/scripts/`, before they are published or installed. The installer does not install Biome or
 create Biome configuration. Its only `package.json` convenience is safely adding missing default
 publish aliases without replacing conflicting values. If a downstream project has no
 formatter/linter, `initialize-project-context` may recommend Biome as a manual setup task; it does
 not require or install it.
 
 `publish:changes` and `pr:review` run a lightweight local secret-safety guard against the
-confirmed publish scope before commit, push, or PR updates. The guard is dependency-free and
-high-confidence only; it can have false positives and false negatives.
+confirmed publish scope before commit, push, or PR updates. High-confidence findings always
+block. Review-required credential literals block unless the user reviews the fully redacted
+finding and explicitly supplies `--acknowledge-secret-review`. The dependency-free guard can have
+false positives and false negatives.
+
+`pnpm safety:guard` runs the same scanner in standalone read-only mode across committed branch
+changes plus staged, unstaged, and untracked work. It never fetches, stages, commits, pushes, or
+uses GitHub, and it does not allow acknowledgement overrides.
 Bash apply-theme tooling is archived under `archive/legacy-bash-workflows/` as source-only
 historical reference. Future apply-theme behavior should be planned as a Node.js workflow before
 being reintroduced.
@@ -67,113 +74,59 @@ The Node.js 24+ ESM installer is maintained source-repository tooling:
 ```bash
 pnpm install:node --target /path/to/downstream-project
 pnpm install:node --target /path/to/downstream-project --apply
-pnpm install:node --target /path/to/downstream-project --apply --skip-conflicts
 pnpm install:node --target /path/to/downstream-project --include-optional react-component-patterns
 pnpm install:node --target /path/to/downstream-project --kit-profile docs
-pnpm install:node --target /path/to/downstream-project --project-mode existing
-pnpm install:node --target /path/to/downstream-project --project-mode existing --apply --replace-kit-managed --include-optional react-component-patterns
 ```
 
 When using pnpm's direct script shortcut, pass installer flags directly as shown above. If using the explicit `pnpm run` form, use pnpm's separator instead: `pnpm run install:node -- --target /path/to/downstream-project`.
 
 The installer defaults to dry-run. It reads installable content only from `kit/`
 and never installs its own `scripts/install-foundation-kit.mjs` entrypoint or installer-specific
-modules. It may reuse source-repository output helpers from `kit/scripts/shared/` at runtime, but
+modules. It may reuse source-repository output helpers from `kit/repo-tools/scripts/shared/` at runtime, but
 that does not make the installer part of the downstream payload.
 
 `--kit-profile docs` selects only project templates, common workflow, docs/writing workflow, and
 the complete publish package. It excludes code workflow, GitHub setup, optional skills, and
 unclassified mappings. The profile is intended for writing, research, planning, business-note,
 interview-preparation, and documentation projects. It cannot be combined with
-`--include-optional` or `--replace-kit-managed`.
+`--include-optional`.
 
-Without `--kit-profile`, the installer preserves the complete current mapping and output. Profile
-selection is additive per invocation: it does not remove previously installed out-of-profile
-files or manifest records, does not persist an active profile in the schema-v1 manifest, and does
-not alter ownership, conflict, backup, apply, alias, or verification policy. Explicit profile runs
-report the profile and selected groups in dry-run, blocked, and successful final output. The docs
-profile includes publish files and the existing safe-add publish aliases; it does not include
-GitHub settings.
+Without `--kit-profile`, the installer selects the complete current Kit payload. `--apply`
+replaces selected Kit-owned targets, including root `AGENTS.md`, installed skills, rules, prompts,
+scripts, configuration, GitHub settings, and selected optional packages. Differences in those
+paths are ordinary update state and do not require conflict flags or per-file approval. Files no
+longer present in the selected source payload are removed from the corresponding Kit-owned target
+paths.
 
-For conflicting files, Node apply requires the exact `INSTALL_WITH_BACKUP` token from interactive
-or piped input. It stages and verifies all replacements and backup snapshots under
-`dev_locals/workflow-tmp/` and revalidates the plan before the first downstream write. Verified
-backups are materialized under `.codex/backups/install-YYYYMMDD-HHMMSS[-N]/` with a
-`manifest.json`. For a valid existing downstream `package.json`, the installer may safely add
-missing default publish aliases. It never creates or repairs `package.json`, and it preserves
-same-name aliases with different values.
+The installer stages and verifies replacements under `dev_locals/workflow-tmp/`, prepares a
+verified backup of existing files inside the selected replacement boundary, and revalidates the
+complete plan before the first downstream write. Backups are materialized under
+`.repo-tools-state/foundation-kit/backups/install-YYYYMMDD-HHMMSS[-N]/`. This operational-state
+namespace is intentionally outside both agent collaboration content in `.codex/` and the
+replaceable Kit-owned `.repo-tools/` root.
 
-Successful apply creates or updates a separate stable installation baseline at
-`.codex/foundation-kit/installation-manifest.json`. This deterministic schema-v1 manifest stores
-SHA-256 evidence only for exact kit-managed full files that were safely added or explicitly
-adopted while byte-identical, plus completed allowlisted canary replacements. It stores no target
-contents, timestamps, absolute machine paths, or project-owned baselines. The manifest is
-classification evidence, not overwrite authority; source-controlled ownership and risk policy
-always wins. Dry-run never creates or updates it.
-
-Project mode controls conflict policy without changing mappings:
-
-- `--project-mode auto` is the default. Existing-project signals or mapped-file conflicts select
-  existing-like caution; no signals and no conflicts select new-like behavior.
-- `--project-mode new` treats conflicts as starter files or previous-install remnants and permits
-  the existing backup-and-overwrite flow after the typed confirmation.
-- `--project-mode existing` treats conflicts as important project context. Broad replacement stays
-  blocked even when `--overwrite-conflicts` is supplied. The only managed-replacement exception is
-  the exact React optional-skill canary described below.
-
-`--apply --skip-conflicts` is the zero-overwrite existing-project path. It writes only mapped
-targets classified as `SAFE_ADD`, safely skips byte-identical targets, records eligible unchanged
-kit-managed baselines, and preserves differing files, existing project memory, differing
-`AGENTS.md`, and skill migration collisions for review.
-It is mutually exclusive with `--overwrite-conflicts` and explicit `--project-mode new`.
-
-Upgrade reports separate `SAFE_ADD`, `KIT_MANAGED_REPLACE`, `PROJECT_OWNED`,
-`MIXED_AGENT_MERGE`, and `BLOCKED_MANUAL` from unchanged files. Missing, malformed, unsafe,
-unsupported, or source-policy-conflicting installation manifests block apply before target
-writes.
-
-Existing-project full-file replacement is limited to this exact allowlist:
+Repository-owned content is created only when missing and preserved afterward:
 
 ```txt
-.codex/skills/engineering/react-component-patterns/SKILL.md
-.codex/skills/engineering/react-component-patterns/metadata.yml
+.codex/project-memory/
+.codex/project-specific/
 ```
 
-The package must be selected through `--include-optional react-component-patterns`. Both files
-must be recorded in a valid installation manifest, classified `KIT_MANAGED_REPLACE`, allowlisted,
-and unchanged from their recorded target baselines. If either file is missing, mixed, blocked, or
-otherwise ineligible, neither file is replaced. Replacement requires the normal
-`INSTALL_WITH_BACKUP` confirmation and:
+Fresh installs create `guideline.md`, `decisions.md`, `lessons-learned.md`, and the concise
+`project-specific/agent-guidance.md` starter. Optional project-specific capability directories are
+not created unless the repository needs them. The installer does not generate or migrate the
+legacy `.codex/project/` structure.
 
-```bash
---project-mode existing --apply --replace-kit-managed
-```
-
-The flag is mutually exclusive with `--skip-conflicts` and `--overwrite-conflicts`. All other
-managed-replacement candidates remain report-only; target-only or concurrent changes remain
-preserved for review. If either package copy or its manifest update fails, both React files are
-restored from the verified backup and the previous installation manifest is preserved.
-
-In existing projects, differing `.codex/scripts/*` files are reported as workflow-script merge
-items because installed scripts may contain project-specific workflow, publish, CI, or local
-automation changes. New scripts still install normally, identical scripts are skipped, and safe
-apply preserves differing scripts. Existing-project overwrite cannot bypass this classification;
-the installer does not auto-merge or migrate target scripts.
+For a valid existing downstream `package.json`, the installer may add missing default publish
+aliases. `package.json` remains project-owned: the installer never creates or repairs it and
+preserves same-name aliases with different values. This bounded augmentation is intentionally
+separate from full Kit-owned payload replacement.
 
 Use repeatable `--include-optional <name>` flags to select packages from
-`kit/optional-skills/<name>/`. Selected packages install only under
+`kit/codex/optional-skills/<name>/`. Selected packages install only under
 `.codex/skills/engineering/<name>/`; they are never installed under `.codex/skills/optional/`,
-`.codex/skills/project/`, or a flat `.codex/skills/<name>/` path. Project-owned
-`.codex/skills/project/` content is outside installer inspection and collision handling.
-
-`--overwrite-conflicts` cannot bypass ownership or classification in existing-project mode.
-Explicit new-project replacement retains conflict display, strong warning, typed
-confirmation, backup preparation, plan revalidation, and verified overwrite. Project mode never
-changes package files, dependencies, formatter or linter tooling, optional-skill selection,
-project-memory merging, or publish behavior.
-
-Use `--show-diff` for optional `diff -u` previews. A missing `diff` command warns but does not
-block dry-run, apply authorization, backup, installation, or verification.
+`.codex/project-specific/`, or a flat `.codex/skills/<name>/` path. Repository-only capabilities
+belong under `.codex/project-specific/` and are preserved across installation and update.
 
 ### After Installation or First Adoption
 
@@ -189,8 +142,7 @@ not a conflicting replacement target. Do not begin feature implementation until 
 complete and proposed durable-memory updates have been reviewed and approved through
 `update-project-memory`.
 
-The installer does not silently merge installed templates into existing project memory. For
-important conflicting context, use manual review/merge rather than authorizing overwrite.
+The installer does not merge or overwrite existing project memory or project-specific guidance.
 
 The Node publish implementation uses a feature branch and pull request. It never pushes directly
 to `main`. At startup it checks default-branch freshness, lists repository-level open PRs, detects
@@ -266,27 +218,28 @@ eligibility. Failed or unknown checks still block.
 The installer copies the reusable Node publish implementation and helpers to:
 
 ```txt
-.codex/scripts/publish-changes.mjs
-.codex/scripts/publish-changes/
-.codex/scripts/shared/
-.codex/config/publish-changes-policy.yml
-.codex/config/publish-cli-theme.json
+.repo-tools/scripts/publish-changes.mjs
+.repo-tools/scripts/publish-changes/
+.repo-tools/scripts/shared/
+.repo-tools/config/publish-changes-policy.yml
+.repo-tools/config/publish-cli-theme.json
 ```
 
 Use the installed Node CLI directly when Node.js 24 or newer is available:
 
 ```bash
-node .codex/scripts/publish-changes.mjs --help
-node .codex/scripts/publish-changes.mjs "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
-node .codex/scripts/publish-changes.mjs --mode pr-merge 123
-node .codex/scripts/publish-changes.mjs --mode pr-merge 123 --yes
-node .codex/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
+node .repo-tools/scripts/publish-changes.mjs --help
+node .repo-tools/scripts/publish-changes.mjs "Commit message" "PR title"
+node .repo-tools/scripts/publish-changes.mjs --mode pr-review "Commit message" "PR title"
+node .repo-tools/scripts/publish-changes.mjs --mode safety-guard
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge 123
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge 123 --yes
+node .repo-tools/scripts/publish-changes.mjs --mode pr-merge --auto-merge 123
 ```
 
 Run these commands from the target project root. For a valid existing `package.json`, installer
-dry-run reports and apply safely adds missing `publish:changes`, `pr:review`, `pr:merge`, and
-`pr:auto-merge` aliases. Existing aliases with different values
+dry-run reports and apply safely adds missing `publish:changes`, `pr:review`, `pr:merge`,
+`pr:auto-merge`, and `safety:guard` aliases. Existing aliases with different values
 are reported and preserved. The installer does not create or repair `package.json` solely for
 these shortcuts.
 
@@ -294,9 +247,9 @@ The source repository uses package-managed `yaml` for policy loading. The instal
 downstream dependencies; if `yaml` is unavailable downstream, the Node CLI ignores the external
 YAML file, warns clearly, and uses built-in conservative defaults.
 
-`kit/config/publish-cli-theme.json` is the source of truth for publish CLI level colors and
+`kit/repo-tools/config/publish-cli-theme.json` is the source of truth for publish CLI level colors and
 label-only versus full-line rendering. Installed projects receive the same file at
-`.codex/config/publish-cli-theme.json`. Theme styles support ANSI color strings such as `"96"` and
+`.repo-tools/config/publish-cli-theme.json`. Theme styles support ANSI color strings such as `"96"` and
 RGB arrays such as `[243, 156, 18]`; hex strings are not supported. Every `[LEVEL]` label is always
 bold, so label bold is intentionally not configurable. Missing or invalid theme config produces a
 warning and activates matching built-in defaults. Documentation should reference the config
@@ -311,10 +264,10 @@ apply-theme behavior should be planned as a Node.js workflow before being reintr
 Reusable settings for downstream repositories are provided under:
 
 ```txt
-kit/github-settings/
+kit/repo-tools/github-settings/
 ```
 
-The installer maps them to `.codex/github-settings/` as copied-only artifacts; it does not apply
+The installer maps them to `.repo-tools/github-settings/` as copied-only artifacts; it does not apply
 repository settings. The package contains an importable default-branch ruleset, a minimal General
 settings REST payload, and an apply/verification checklist.
 

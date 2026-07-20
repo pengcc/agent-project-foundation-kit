@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { runPublishFlow } from "../../kit/scripts/publish-changes/flow.mjs";
-import { DEFAULT_POLICY } from "../../kit/scripts/publish-changes/policy.mjs";
+import { runPublishFlow } from "../../kit/repo-tools/scripts/publish-changes/flow.mjs";
+import { DEFAULT_POLICY } from "../../kit/repo-tools/scripts/publish-changes/policy.mjs";
 
 function createOutput() {
   const messages = [];
@@ -802,14 +802,14 @@ describe("publish flow classification gates", () => {
   it("reports confirmed files, documentation, memory, validation, and external actions", async () => {
     const harness = createHarness({ classification: "normal" });
     harness.git.status = async () => (harness.calls.includes("commit") ? "" : " M README.md");
-    harness.git.statusZ = async () => " M README.md\0 M .codex/project/project-guideline.md\0";
+    harness.git.statusZ = async () => " M README.md\0 M .codex/project-memory/guideline.md\0";
     harness.git.diff = async (args) => {
       if (args.includes("--binary")) return "documentation patch";
       if (args.includes("--name-status")) {
-        return "M\tREADME.md\nM\t.codex/project/project-guideline.md";
+        return "M\tREADME.md\nM\t.codex/project-memory/guideline.md";
       }
       if (args.includes("--numstat")) {
-        return "2\t0\tREADME.md\n1\t0\t.codex/project/project-guideline.md";
+        return "2\t0\tREADME.md\n1\t0\t.codex/project-memory/guideline.md";
       }
       return "";
     };
@@ -825,10 +825,7 @@ describe("publish flow classification gates", () => {
       env: {},
     });
 
-    expect(result.report.filesChanged).toEqual([
-      "README.md",
-      ".codex/project/project-guideline.md",
-    ]);
+    expect(result.report.filesChanged).toEqual(["README.md", ".codex/project-memory/guideline.md"]);
     expect(result.report.docsUpdated).toBe(true);
     expect(result.report.projectMemoryUpdated).toBe(true);
     expect(result.report.validation).toBe("CHECK_PASSED");

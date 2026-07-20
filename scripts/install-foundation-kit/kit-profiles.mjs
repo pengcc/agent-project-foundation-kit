@@ -12,6 +12,23 @@ const KIT_PROFILES = Object.freeze({
   docs: DOCS_PROFILE_GROUPS,
 });
 
+const FULL_REPLACEMENT_ROOTS = Object.freeze([
+  ".codex/prompts",
+  ".codex/rules",
+  ".codex/skills",
+  ".repo-tools",
+]);
+
+const PROFILE_REPLACEMENT_ROOTS = Object.freeze({
+  docs: Object.freeze([
+    ".codex/prompts",
+    ".codex/rules",
+    ".codex/skills",
+    ".repo-tools/config",
+    ".repo-tools/scripts",
+  ]),
+});
+
 export function resolveKitProfile(requestedKitProfile = "") {
   if (!requestedKitProfile) {
     return Object.freeze({
@@ -49,4 +66,11 @@ export function selectMappingsForKitProfile(mappings, requestedKitProfile = "") 
 export function kitProfileIncludesGroup(requestedKitProfile, payloadGroup) {
   const profile = resolveKitProfile(requestedKitProfile);
   return !profile.requestedKitProfile || profile.selectedPayloadGroups.includes(payloadGroup);
+}
+
+export function replacementRootsForKitProfile(requestedKitProfile = "") {
+  const profile = resolveKitProfile(requestedKitProfile);
+  return profile.requestedKitProfile
+    ? PROFILE_REPLACEMENT_ROOTS[profile.requestedKitProfile]
+    : FULL_REPLACEMENT_ROOTS;
 }

@@ -7,49 +7,55 @@ import {
   refreshDefaultBranch,
   safeBranchName,
   verifyAndMerge,
-} from "../../kit/scripts/publish-changes/actions.mjs";
-import { parseCliOptions, usage } from "../../kit/scripts/publish-changes/cli-options.mjs";
+} from "../../kit/repo-tools/scripts/publish-changes/actions.mjs";
+import {
+  parseCliOptions,
+  usage,
+} from "../../kit/repo-tools/scripts/publish-changes/cli-options.mjs";
 import {
   DEFAULT_POLICY,
   loadPolicy,
   validatePolicy,
-} from "../../kit/scripts/publish-changes/policy.mjs";
+} from "../../kit/repo-tools/scripts/publish-changes/policy.mjs";
 import {
   chooseCompletionMode,
   chooseValidation,
   confirmWithRetry,
-} from "../../kit/scripts/publish-changes/prompts.mjs";
+} from "../../kit/repo-tools/scripts/publish-changes/prompts.mjs";
 import {
   buildScopeSummary,
   compareScopeSummaries,
   recommendClassification,
   renderScopeSummary,
-} from "../../kit/scripts/publish-changes/scope-summary.mjs";
+} from "../../kit/repo-tools/scripts/publish-changes/scope-summary.mjs";
 import {
   captureWorktreeSnapshot,
   findMixedIndexWorktreePaths,
   parsePorcelainZ,
-} from "../../kit/scripts/publish-changes/state.mjs";
+} from "../../kit/repo-tools/scripts/publish-changes/state.mjs";
 import {
   assertMergeReady,
   evaluateRequiredChecks,
-} from "../../kit/scripts/publish-changes/validation.mjs";
-import { assertSupportedRuntime } from "../../kit/scripts/publish-changes.mjs";
-import { createCommandRunner } from "../../kit/scripts/shared/command-runner.mjs";
-import { createGhClient } from "../../kit/scripts/shared/gh-client.mjs";
-import { createOutput } from "../../kit/scripts/shared/output.mjs";
+} from "../../kit/repo-tools/scripts/publish-changes/validation.mjs";
+import { assertSupportedRuntime } from "../../kit/repo-tools/scripts/publish-changes.mjs";
+import { createCommandRunner } from "../../kit/repo-tools/scripts/shared/command-runner.mjs";
+import { createGhClient } from "../../kit/repo-tools/scripts/shared/gh-client.mjs";
+import { createOutput } from "../../kit/repo-tools/scripts/shared/output.mjs";
 import {
   DEFAULT_OUTPUT_THEME,
   loadOutputTheme,
   OUTPUT_LEVELS,
   validateOutputTheme,
-} from "../../kit/scripts/shared/output-theme.mjs";
+} from "../../kit/repo-tools/scripts/shared/output-theme.mjs";
 
 const packageJson = JSON.parse(
   readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
 );
 const canonicalOutputTheme = JSON.parse(
-  readFileSync(new URL("../../kit/config/publish-cli-theme.json", import.meta.url), "utf8"),
+  readFileSync(
+    new URL("../../kit/repo-tools/config/publish-cli-theme.json", import.meta.url),
+    "utf8",
+  ),
 );
 
 describe("CLI options", () => {
@@ -70,6 +76,7 @@ describe("CLI options", () => {
       showDiff: true,
       verbose: false,
       policyPath: "",
+      acknowledgeSecretReview: false,
       help: false,
     });
   });
@@ -146,17 +153,22 @@ describe("CLI options", () => {
 
 describe("source repository package scripts", () => {
   it("uses publish:changes as the maintained publish command without Bash or duplicate aliases", () => {
-    expect(packageJson.scripts["publish:changes"]).toBe("node kit/scripts/publish-changes.mjs");
+    expect(packageJson.scripts["publish:changes"]).toBe(
+      "node kit/repo-tools/scripts/publish-changes.mjs",
+    );
     expect(packageJson.scripts["publish:local"]).toBeUndefined();
     expect(packageJson.scripts["publish:node"]).toBeUndefined();
     expect(packageJson.scripts["pr:review"]).toBe(
-      "node kit/scripts/publish-changes.mjs --mode pr-review",
+      "node kit/repo-tools/scripts/publish-changes.mjs --mode pr-review",
     );
     expect(packageJson.scripts["pr:merge"]).toBe(
-      "node kit/scripts/publish-changes.mjs --mode pr-merge",
+      "node kit/repo-tools/scripts/publish-changes.mjs --mode pr-merge",
     );
     expect(packageJson.scripts["pr:auto-merge"]).toBe(
-      "node kit/scripts/publish-changes.mjs --mode pr-merge --auto-merge",
+      "node kit/repo-tools/scripts/publish-changes.mjs --mode pr-merge --auto-merge",
+    );
+    expect(packageJson.scripts["safety:guard"]).toBe(
+      "node kit/repo-tools/scripts/publish-changes.mjs --mode safety-guard",
     );
     expect(packageJson.scripts["publish:pr-only"]).toBeUndefined();
     expect(packageJson.scripts["publish:merge-pr"]).toBeUndefined();
@@ -376,7 +388,7 @@ describe("interactive prompts and output", () => {
 describe("output theme config", () => {
   it("loads the canonical config with every required level and no boldLabel option", async () => {
     const result = await loadOutputTheme({
-      path: new URL("../../kit/config/publish-cli-theme.json", import.meta.url),
+      path: new URL("../../kit/repo-tools/config/publish-cli-theme.json", import.meta.url),
     });
     expect(result.warning).toBe("");
     expect(result.theme).toEqual(canonicalOutputTheme);
@@ -465,7 +477,7 @@ describe("output theme config", () => {
 describe("policy loading", () => {
   it("parses the shipped YAML policy through the package-managed runtime dependency", async () => {
     const result = await loadPolicy({
-      path: new URL("../../kit/config/publish-changes-policy.yml", import.meta.url),
+      path: new URL("../../kit/repo-tools/config/publish-changes-policy.yml", import.meta.url),
     });
     expect(result.policy).toEqual(DEFAULT_POLICY);
   });
@@ -531,8 +543,8 @@ describe("scope and validation", () => {
   it("summarizes risk without requiring a full diff", () => {
     const summary = buildScopeSummary({
       branch: "feature/test",
-      nameStatus: "M\tkit/scripts/publish-changes.mjs\nA\tdocs/note.md",
-      numstat: "10\t2\tkit/scripts/publish-changes.mjs\n3\t0\tdocs/note.md",
+      nameStatus: "M\tkit/repo-tools/scripts/publish-changes.mjs\nA\tdocs/note.md",
+      numstat: "10\t2\tkit/repo-tools/scripts/publish-changes.mjs\n3\t0\tdocs/note.md",
     });
     expect(summary.lines).toEqual({ added: 13, deleted: 2 });
     expect(summary.highRiskHints).toContain("installable workflow changed");
@@ -659,9 +671,10 @@ describe("scope and validation", () => {
     });
     const exact = buildScopeSummary({
       branch: "feature/test",
-      nameStatus: "A\tstatus.md\nM\tline.md\nA\tkit/scripts/new-a.mjs\nA\tkit/scripts/new-b.mjs",
+      nameStatus:
+        "A\tstatus.md\nM\tline.md\nA\tkit/repo-tools/scripts/new-a.mjs\nA\tkit/repo-tools/scripts/new-b.mjs",
       numstat:
-        "2\t0\tstatus.md\n5\t1\tline.md\n1\t0\tkit/scripts/new-a.mjs\n1\t0\tkit/scripts/new-b.mjs",
+        "2\t0\tstatus.md\n5\t1\tline.md\n1\t0\tkit/repo-tools/scripts/new-a.mjs\n1\t0\tkit/repo-tools/scripts/new-b.mjs",
     });
 
     const comparison = compareScopeSummaries(preliminary, exact, { sampleLimit: 2 });

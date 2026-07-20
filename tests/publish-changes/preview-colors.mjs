@@ -1,7 +1,7 @@
-import { createOutput, OUTPUT_LEVELS } from "../../kit/scripts/shared/output.mjs";
-import { loadOutputTheme } from "../../kit/scripts/shared/output-theme.mjs";
+import { createOutput, OUTPUT_LEVELS } from "../../kit/repo-tools/scripts/shared/output.mjs";
+import { loadOutputTheme } from "../../kit/repo-tools/scripts/shared/output-theme.mjs";
 
-const themePath = new URL("../../kit/config/publish-cli-theme.json", import.meta.url);
+const themePath = new URL("../../kit/repo-tools/config/publish-cli-theme.json", import.meta.url);
 const { theme, source, warning } = await loadOutputTheme({ path: themePath });
 const output = createOutput({ verbose: true, theme });
 

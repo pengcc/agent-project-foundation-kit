@@ -57,7 +57,7 @@ The intended source-of-truth split is:
 
 1. **Source repo operating context**
    - root `AGENTS.md`
-   - `.codex/project/`
+   - `.codex/project-memory/`
 
 2. **Installable payload source**
    - `kit/`
@@ -198,7 +198,7 @@ Use the repository documents with distinct authority:
 docs/foundation-kit-skills-review-and-optimization-roadmap.md
   canonical long-term roadmap and planning reference
 
-.codex/project/
+.codex/project-memory/
   current project facts, durable decisions, and reusable lessons
 
 docs/foundation-kit-stage-review-and-forward-plan-2026-06-16.md
@@ -581,7 +581,7 @@ kit/skills/meta/writing-great-skills/SKILL.md
 #### Source-Repository Memory and Design Record
 
 Record the completed Phase 1 capability and durable decision in this repository's
-`.codex/project/` memory, with lessons updated only if a reusable lesson is discovered. Record the
+`.codex/project-memory/` memory, with lessons updated only if a reusable lesson is discovered. Record the
 accepted design in `docs/foundation-design-log.md`.
 
 ### 7.6 Reporting
@@ -1069,9 +1069,9 @@ Non-goals:
 Source-repository updates:
 
 ```text
-- .codex/project/project-guideline.md
-- .codex/project/project-decisions.md
-- .codex/project/lessons-learned.md only if a reusable lesson is discovered
+- .codex/project-memory/guideline.md
+- .codex/project-memory/decisions.md
+- .codex/project-memory/lessons-learned.md only if a reusable lesson is discovered
 - docs/foundation-design-log.md
 ```
 

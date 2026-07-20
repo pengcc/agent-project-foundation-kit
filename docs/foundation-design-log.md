@@ -2679,3 +2679,37 @@ kit/skills/core/to-work-items/SKILL.md
 .codex/project/project-decisions.md
 docs/foundation-design-log.md
 ```
+
+## Foundation Kit Ownership, Directory Architecture, and Publish Tool Promotion
+
+Accepted implementation result:
+
+1. Normalize the installable source into `kit/AGENTS.md`, agent-facing `kit/codex/`, and
+   mechanical `kit/repo-tools/` surfaces.
+2. Install agent capabilities under `.codex/` and repository automation under `.repo-tools/`,
+   while preserving project-owned memory, project-specific content, and `package.json`.
+3. Replace only current Kit-owned roots and do not migrate or delete legacy downstream paths.
+4. Defer backup-manifest completion until payload installation and safe package-alias augmentation
+   both succeed; retain truthful completed-target evidence on later failure with or without backup.
+5. Promote the reusable publish runtime from `pengcc/badminton-club-app` commit
+   `9e25658c4c04768fa422d7e2c67dce4a636de736`, excluding downstream test artifacts and preserving
+   the Kit's newer `.codex/project-memory/` convention.
+6. Add standalone read-only `safety:guard`, redacted review-required secret findings with explicit
+   publish acknowledgement, and non-overridable high-confidence findings.
+7. Validate destructive installer boundaries, dynamic meta/core/optional metadata and dependency
+   contracts, publish behavior, standalone safety scanning, formatting, and whitespace.
+
+Resulting files / changes:
+
+```txt
+kit/AGENTS.md
+kit/codex/
+kit/repo-tools/
+scripts/install-foundation-kit/
+tests/install-foundation-kit/
+tests/publish-changes/
+package.json
+README.md
+.codex/project-memory/
+docs/foundation-design-log.md
+```

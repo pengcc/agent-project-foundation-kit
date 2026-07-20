@@ -11,21 +11,24 @@ The goal is to make the kit mature, directly usable, safe, and maintainable for 
 This repository develops the kit; it is not a downstream project with the kit installed.
 
 - `kit/` is the installable payload source of truth.
-- `.codex/project/` is this repository's own development memory.
-- `kit/project-templates/AGENTS.md` is the downstream project template, not this repository's root AGENTS file.
+- `.codex/project-memory/` is this repository's own development memory.
+- `kit/AGENTS.md` is the downstream project template, not this repository's root AGENTS file.
 - Do not assume `.codex/skills/` exists or that the kit has been installed into this repository.
 
 Use these source files as the intended installed behavior:
 
-- `kit/skills/meta/*/SKILL.md`
-- `kit/skills/meta/*/metadata.yml`
-- `kit/skills/core/*/SKILL.md`
-- `kit/skills/core/*/metadata.yml`
-- `kit/optional-skills/*/SKILL.md`
-- `kit/optional-skills/*/metadata.yml`
-- `kit/rules/*`
-- `kit/prompts/*`
-- `kit/project-templates/*`
+- `kit/codex/skills/meta/*/SKILL.md`
+- `kit/codex/skills/meta/*/metadata.yml`
+- `kit/codex/skills/core/*/SKILL.md`
+- `kit/codex/skills/core/*/metadata.yml`
+- `kit/codex/optional-skills/*/SKILL.md`
+- `kit/codex/optional-skills/*/metadata.yml`
+- `kit/codex/rules/*`
+- `kit/codex/prompts/*`
+- `kit/codex/project-memory/*`
+- `kit/codex/project-specific/*`
+- `kit/repo-tools/*`
+- `kit/AGENTS.md`
 
 Core workflow boundaries live in the kit source skills: `project-memory` reads/applies durable
 memory and owns the context gate, `update-project-memory` owns confirmed durable writes,
@@ -34,9 +37,9 @@ role routing and missing-specialist fallback. `acceptance-review` evaluates deli
 an explicit acceptance baseline.
 
 Before relying on a concrete repository path, apply the Explicit Target Reference Guardrail in
-`kit/rules/agent-operating-contract.md`.
+`kit/codex/rules/agent-operating-contract.md`.
 
-Apply `kit/rules/agent-operating-contract.md` and the matching source skill for detailed
+Apply `kit/codex/rules/agent-operating-contract.md` and the matching source skill for detailed
 target-reference verification, routing, safety, final reporting, and Publishable Change Handoff
 rules rather than duplicating their workflow contracts here.
 
@@ -130,7 +133,7 @@ pnpm publish:changes "Commit message"
 ## Final Reporting
 
 Apply the final-report and Publishable Change Handoff rules in
-`kit/rules/agent-operating-contract.md` whenever that canonical contract identifies a publishable
+`kit/codex/rules/agent-operating-contract.md` whenever that canonical contract identifies a publishable
 change. Its decision accounts for both Git-visible worktree changes and commits ahead of the
 verified publish base; a clean worktree alone does not mean there is nothing to hand off.
 
@@ -140,10 +143,10 @@ and do not duplicate those detailed rules here.
 
 ## Project Memory
 
-Use `.codex/project/` as this repository's durable development memory.
+Use `.codex/project-memory/` as this repository's durable development memory.
 
 Before project-state planning, implementation, review, documentation, or publishing, pass the
-Project Memory Context Gate defined in `kit/skills/meta/project-memory/SKILL.md`. Use the
+Project Memory Context Gate defined in `kit/codex/skills/meta/project-memory/SKILL.md`. Use the
 source-repository path defined there and report the gate result before context-dependent output or
 mutation.
 

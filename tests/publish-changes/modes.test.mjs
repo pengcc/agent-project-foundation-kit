@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { runMergePrFlow } from "../../kit/scripts/publish-changes/merge-pr-flow.mjs";
-import { runPrReviewFlow } from "../../kit/scripts/publish-changes/pr-review-flow.mjs";
-import { PublishError } from "../../kit/scripts/shared/errors.mjs";
+import { runMergePrFlow } from "../../kit/repo-tools/scripts/publish-changes/merge-pr-flow.mjs";
+import { runPrReviewFlow } from "../../kit/repo-tools/scripts/publish-changes/pr-review-flow.mjs";
+import { PublishError } from "../../kit/repo-tools/scripts/shared/errors.mjs";
 
 function createOutput() {
   const messages = [];
@@ -449,10 +449,10 @@ describe("PR-review flow", () => {
     const diff = harness.git.diff;
     harness.git.diff = async (args) => {
       if (args.includes("--cached") && args.includes("--name-status")) {
-        return "A\tpackage.json\nA\tkit/scripts/new-helper.mjs";
+        return "A\tpackage.json\nA\tkit/repo-tools/scripts/new-helper.mjs";
       }
       if (args.includes("--cached") && args.includes("--numstat")) {
-        return "4\t1\tpackage.json\n2\t0\tkit/scripts/new-helper.mjs";
+        return "4\t1\tpackage.json\n2\t0\tkit/repo-tools/scripts/new-helper.mjs";
       }
       return diff(args);
     };
